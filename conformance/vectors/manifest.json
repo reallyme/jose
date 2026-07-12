@@ -1,0 +1,29 @@
+{
+  "schema": "reallyme.jose.conformance.vector_manifest.v1",
+  "suites": [
+    {
+      "id": "jws-compact",
+      "source": "RFC7515/RFC8037 and ReallyMe deterministic fixtures",
+      "path": "jws-compact.json",
+      "case_count": 26
+    },
+    {
+      "id": "signed-jwt",
+      "source": "RFC7519/RFC8725 and ReallyMe deterministic fixtures",
+      "path": "signed-jwt.json",
+      "case_count": 31
+    },
+    {
+      "id": "unsigned-jwt",
+      "source": "RFC7519/RFC8725 and ReallyMe deterministic fixtures",
+      "path": "unsigned-jwt.json",
+      "case_count": 6
+    },
+    {
+      "id": "jwe-compact",
+      "source": "RFC7516/RFC7518 and ReallyMe deterministic fixtures",
+      "path": "jwe-compact.json",
+      "case_count": 28
+    }
+  ]
+}

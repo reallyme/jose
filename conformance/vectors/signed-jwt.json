@@ -1,0 +1,613 @@
+{
+  "cases": [
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_claims_json": {
+        "aud": "did:me:verifier",
+        "iss": "did:me:issuer",
+        "sub": "alice"
+      },
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/es256-valid",
+      "private_key_hex": "0000000000000000000000000000000000000000000000000000000000000011",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7519",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256K",
+      "compact": "eyJhbGciOiJFUzI1NksiLCJ0eXAiOiJKV1QiLCJraWQiOiJrLWsxIn0.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.BlX9gfxym3q3HzDCFZ3o_1ee08M7Y-qBi9mjW7HRTmFo0tnKTCWPZfmEcHe5t48zMrWTEdVUFJfHj9ip1pHIgQ",
+      "expected_claims_json": {
+        "aud": "did:me:verifier",
+        "iss": "did:me:issuer",
+        "sub": "alice"
+      },
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/es256k-valid",
+      "private_key_hex": "0000000000000000000000000000000000000000000000000000000000000013",
+      "public_key_hex": "022b4ea0a797a443d293ef5cff444f4979f06acfebd7e86d277475656138385b6c",
+      "source": "RFC7519",
+      "verification_jwk": {
+        "alg": "ES256K",
+        "crv": "secp256k1",
+        "kid": "k-k1",
+        "kty": "EC",
+        "use": "sig",
+        "x": "K06gp5ekQ9KT71z_RE9JefBqz-vX6G0ndHVlYTg4W2w",
+        "y": "heibwDeUXZOzQwg7WhyGExoB9gxQJpdjtXDIVOXAm3o"
+      }
+    },
+    {
+      "alg": "EdDSA",
+      "compact": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsImtpZCI6ImstZWQifQ.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.HQYS1IRwYfB8lGoUC9Dgafc8NybhxH4-PEACNGoiFwIdoKzLOejHheqoe6TDKfFzrldr5Mxuqu3pTI4o88CiDw",
+      "expected_claims_json": {
+        "aud": "did:me:verifier",
+        "iss": "did:me:issuer",
+        "sub": "alice"
+      },
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/eddsa-valid",
+      "private_key_hex": "0909090909090909090909090909090909090909090909090909090909090909",
+      "public_key_hex": "fd1724385aa0c75b64fb78cd602fa1d991fdebf76b13c58ed702eac835e9f618",
+      "source": "RFC7519",
+      "verification_jwk": {
+        "alg": "EdDSA",
+        "crv": "Ed25519",
+        "kid": "k-ed",
+        "kty": "OKP",
+        "use": "sig",
+        "x": "_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOlsiZGlkOm1lOnZlcmlmaWVyIiwiZGlkOm1lOm90aGVyIl0sImlzcyI6ImRpZDptZTppc3N1ZXIiLCJzdWIiOiJhbGljZSJ9.q-qxP1PjdIvWZUBTlE9ZIyDa8jKK_IwNrWJMNobSLWbhXfUc2N2b2N5VuS2dr7d20Oxsq6Lq6Y8DCv7WZFkPMQ",
+      "expected_claims_json": {
+        "aud": [
+          "did:me:verifier",
+          "did:me:other"
+        ],
+        "iss": "did:me:issuer",
+        "sub": "alice"
+      },
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/es256-array-audience",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7519 Section 4.1.3",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidHeader",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/alg-none-signed-path",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJOb25lIiwidHlwIjoiSldUIn0.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "UnsupportedAlgorithm",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/alg-none-capitalized",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJOT05FIiwidHlwIjoiSldUIn0.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "UnsupportedAlgorithm",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/alg-none-uppercase",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "UnsupportedAlgorithm",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/alg-hs256-unsupported",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsImFsZyI6IkVTMjU2IiwidHlwIjoiSldUIn0.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidHeader",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/duplicate-alg-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImNyaXQiOlsiYjY0Il19.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidHeader",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/crit-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImI2NCI6ZmFsc2V9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidHeader",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/b64-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImprdSI6Imh0dHBzOi8vZXhhbXBsZS50ZXN0L2p3a3MifQ.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidHeader",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/jku-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsIng1dSI6Imh0dHBzOi8vZXhhbXBsZS50ZXN0L2NlcnQifQ.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidHeader",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/x5u-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImp3ayI6eyJrdHkiOiJFQyJ9fQ.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidHeader",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/embedded-jwk-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsIng1YyI6WyJNSUlCIl19.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidHeader",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/embedded-x5c-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6ImF0K2p3dCJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidHeader",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/typ-not-jwt",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.AyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidSignature",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/tampered-payload",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.AJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidSignature",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/tampered-signature",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.",
+      "expected_error": "InvalidSignature",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/signature-stripped",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ",
+      "expected_error": "InvalidJwtFormat",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/two-parts",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidJwtFormat",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/four-parts",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "AlgorithmMismatch",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/alg-key-mismatch",
+      "public_key_hex": "fd1724385aa0c75b64fb78cd602fa1d991fdebf76b13c58ed702eac835e9f618",
+      "source": "RFC8725 Section 3.1",
+      "verification_jwk": {
+        "alg": "EdDSA",
+        "crv": "Ed25519",
+        "kid": "k-ed",
+        "kty": "OKP",
+        "use": "sig",
+        "x": "_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "InvalidSignature",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/wrong-public-key",
+      "public_key_hex": "032f9e6ebf717def118d1a092fce97133919cf2d31b7f8be6cfb7fdbe16820999e",
+      "source": "RFC7519",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256-other",
+        "kty": "EC",
+        "use": "sig",
+        "x": "L55uv3F97xGNGgkvzpcTORnPLTG3-L5s-3_b4WggmZ4",
+        "y": "eu6q2FMviCHjyxoU0PUk9haC0pUK7eoNdWuIAwa-Cy8"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJleHAiOjE3MDAwMDEwMDAsImlhdCI6MTY5OTk5OTkwMCwiaXNzIjoiZGlkOm1lOmlzc3VlciIsIm5iZiI6MTY5OTk5OTkwMCwic3ViIjoiYWxpY2UifQ.Y3-9cMWJC-6mpBwrp-5U1-8A7KWClmHY04f8JaShylZi5eDz-pA_JeH1Xef2heEe-w0-y7KUI0TnK_LXYhdWig",
+      "expected_claims_json": {
+        "aud": "did:me:verifier",
+        "exp": 1700001000,
+        "iat": 1699999900,
+        "iss": "did:me:issuer",
+        "nbf": 1699999900,
+        "sub": "alice"
+      },
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/temporal-valid",
+      "now_unix": 1700000000,
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7519 Section 4.1",
+      "temporal_policy": "strict",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJleHAiOjE2OTk5OTUwMDAsImlhdCI6MTY5OTk5MDAwMCwiaXNzIjoiZGlkOm1lOmlzc3VlciIsInN1YiI6ImFsaWNlIn0.kl484GqFEZrX9L7CRdEtmarjp9t9UfvGUcn3-BsiD6gmXldGktfzrxKa-O09Esf685lWiMZIUVHxzWsTBi3FdQ",
+      "expected_error": "Expired",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/temporal-expired",
+      "now_unix": 1700000000,
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7519 Section 4.1",
+      "temporal_policy": "strict",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJleHAiOjE3MDAwMTAwMDAsImlhdCI6MTY5OTk5OTkwMCwiaXNzIjoiZGlkOm1lOmlzc3VlciIsIm5iZiI6MTcwMDAwNTAwMCwic3ViIjoiYWxpY2UifQ.mb4AbPJh8c8MmOoDAmdwHyhK38L4Zdrkco_KGSa7EcPj64w5scfB49sSTiWQdbMi3tBHLe1K40w7f9sOXcdHRA",
+      "expected_error": "NotYetValid",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/temporal-not-yet-valid",
+      "now_unix": 1700000000,
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7519 Section 4.1",
+      "temporal_policy": "strict",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJleHAiOjE3MDAwMTAwMDAsImlhdCI6MTcwMDAwNTAwMCwiaXNzIjoiZGlkOm1lOmlzc3VlciIsInN1YiI6ImFsaWNlIn0.D9e-xvR5df_FGkHAB23g9V6axXSlRCUwVaYrCMdqjz6_fWxwZ5oAnlXaBZMPUBPUWVZSIDi-mHUSPTRvTqRBtg",
+      "expected_error": "IssuedAtInFuture",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/temporal-issued-in-future",
+      "now_unix": 1700000000,
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7519 Section 4.1",
+      "temporal_policy": "strict",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpYXQiOjE2OTk5OTk5MDAsImlzcyI6ImRpZDptZTppc3N1ZXIiLCJzdWIiOiJhbGljZSJ9.mthzH6o9ALovHUhyIeS6NYB-OdSVRRNVopmL2log833Kfb-gmBGCehNc326Ug-MXj0hU5XL97aYrV14L5NWQXQ",
+      "expected_error": "MissingRequiredTemporalClaim:Exp",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/temporal-missing-exp-strict",
+      "now_unix": 1700000000,
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7519 Section 4.1",
+      "temporal_policy": "strict",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJleHAiOiJzb29uIiwiaWF0IjoxNjk5OTk5OTAwLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.Lfwd7ftCn1vKsSNNlZ96xxqjKsIf_UVI_6bMsi03Jy_nQpAp-J8Fyupo0-4RxYU0ZeqdzExkElJFUBzB1_id2w",
+      "expected_error": "InvalidTemporalClaimValue:Exp",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/temporal-exp-string",
+      "now_unix": 1700000000,
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7519 Section 4.1",
+      "temporal_policy": "strict",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJleHAiOjAsImlhdCI6MTY5OTk5OTkwMCwiaXNzIjoiZGlkOm1lOmlzc3VlciIsInN1YiI6ImFsaWNlIn0.dpp1qMRrj5IrRo2vbuXDk8tzoSkFQPdUjlD7OXHPzDyC7oQ1ykKC3FkcMrhVa4rakvFljgPZfG-R8oYDTAHfDQ",
+      "expected_error": "InvalidTemporalClaimValue:Exp",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/temporal-exp-zero",
+      "now_unix": 1700000000,
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7519 Section 4.1",
+      "temporal_policy": "strict",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJleHAiOjE2OTk5OTk5NzAsImlhdCI6MTY5OTk5OTkwMCwiaXNzIjoiZGlkOm1lOmlzc3VlciIsInN1YiI6ImFsaWNlIn0._Ngtk1XJ84YpyxzaGPx_X63XeWCDx1ErC8uW63WJChWDaMoDRCGUC9QsVaSiEVefFH8lwB2Hd41rThgrM6ljZQ",
+      "expected_claims_json": {
+        "aud": "did:me:verifier",
+        "exp": 1699999970,
+        "iat": 1699999900,
+        "iss": "did:me:issuer",
+        "sub": "alice"
+      },
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/temporal-expired-within-skew",
+      "now_unix": 1700000000,
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7519 Section 4.1.4",
+      "temporal_policy": "strict",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    }
+  ],
+  "schema": "reallyme.identity.conformance.vectors.v1",
+  "suite": "signed-jwt"
+}

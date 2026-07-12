@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-jose"
+version = "0.1.0"
+description = "JOSE, JWT, JWS, and JWE helpers for ReallyMe identity."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/reallyme-jose"
+categories = ["authentication", "cryptography", "encoding"]
+keywords = ["jose", "jwt", "jws", "jwe", "reallyme"]
+publish = true
+include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
+
+[features]
+default = ["native"]
+native = ["jose-crypto", "reallyme-crypto/native"]
+wasm = ["jose-crypto", "reallyme-crypto/wasm"]
+conformance-vectors = []
+jose-crypto = [
+    "reallyme-crypto/dispatch",
+    "reallyme-crypto/signer",
+    "reallyme-crypto/jwk",
+    "reallyme-crypto/aes",
+    "reallyme-crypto/concat-kdf",
+    "reallyme-crypto/csprng",
+    "reallyme-crypto/ed25519",
+    "reallyme-crypto/p256",
+    "reallyme-crypto/p384",
+    "reallyme-crypto/p521",
+    "reallyme-crypto/secp256k1",
+]
+
+[dependencies]
+reallyme-codec = { workspace = true, features = ["base64", "base64url"] }
+reallyme-crypto = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+zeroize = { workspace = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom02 = { workspace = true }
+
+[lints]
+workspace = true

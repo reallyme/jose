@@ -1,0 +1,527 @@
+{
+  "schema": "reallyme.identity.conformance.vectors.v1",
+  "suite": "jwe-compact",
+  "cases": [
+    {
+      "id": "reallyme-jwe/dir-a128gcm-direct-post-json",
+      "source": "RFC7516",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "iv_hex": "090909090909090909090909",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIn0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "plaintext_json_utf8": "{\"vp_token\":\"presented\",\"state\":\"abc\"}",
+      "expected_plaintext_json": {
+        "vp_token": "presented",
+        "state": "abc"
+      }
+    },
+    {
+      "id": "reallyme-jwe/dir-a192gcm-json",
+      "source": "RFC7516",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A192GCM",
+      "cek_hex": "050505050505050505050505050505050505050505050505",
+      "iv_hex": "060606060606060606060606",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A192GCM"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTkyR0NNIn0..BgYGBgYGBgYGBgYG.GUnzffwCxWE31q_SAFxy.juki6CEaRKDIOV1B1y4UMg",
+      "plaintext_json_utf8": "{\"middle\":true}",
+      "expected_plaintext_json": {
+        "middle": true
+      }
+    },
+    {
+      "id": "reallyme-jwe/dir-a256gcm-json",
+      "source": "RFC7516",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A256GCM",
+      "cek_hex": "0303030303030303030303030303030303030303030303030303030303030303",
+      "iv_hex": "040404040404040404040404",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A256GCM"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..BAQEBAQEBAQEBAQE.OwV8po-kc2zscf0.cg2S7FznByNP2kHDRiQQ8g",
+      "plaintext_json_utf8": "{\"ok\":true}",
+      "expected_plaintext_json": {
+        "ok": true
+      }
+    },
+    {
+      "id": "reallyme-jwe/dir-a128gcm-tampered-tag",
+      "source": "RFC7516",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "iv_hex": "090909090909090909090909",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIn0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.AAAAAAAAAAAAAAAAAAAAAA",
+      "plaintext_json_utf8": "{\"vp_token\":\"presented\",\"state\":\"abc\"}",
+      "expected_error": "Decrypt"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p256-a128gcm-json",
+      "source": "RFC7516",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A128GCM",
+      "iv_hex": "050505050505050505050505",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "kid": "recipient-key-1",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy",
+        "epk": {
+          "crv": "P-256",
+          "kty": "EC",
+          "x": "6mjXtv7fC3GHiTjVHXH4cp4Ky4wsbfiz156KS5CUnuA",
+          "y": "KidEyXLJ_OeHAUqWSo6gyE1xT-qk3oI_6FoiSk3QSPo"
+        }
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTEyOEdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktMSIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkiLCJlcGsiOnsiY3J2IjoiUC0yNTYiLCJrdHkiOiJFQyIsIngiOiI2bWpYdHY3ZkMzR0hpVGpWSFhINGNwNEt5NHdzYmZpejE1NktTNUNVbnVBIiwieSI6IktpZEV5WExKX09lSEFVcVdTbzZneUUxeFQtcWszb0lfNkZvaVNrM1FTUG8ifX0..BQUFBQUFBQUFBQUF.7Ky3h0MyAxAmRgDbL0dRHmjtSL3gjfRLEbqZCgoE-tscjV8FGGo.m0ECg80HZg7LOdXvMv4XGQ",
+      "plaintext_json_utf8": "{\"vp_token\":\"presented\",\"state\":\"abc\"}",
+      "expected_plaintext_json": {
+        "vp_token": "presented",
+        "state": "abc"
+      },
+      "recipient_private_key_hex": "0000000000000000000000000000000000000000000000000000000000000005",
+      "recipient_public_key_sec1_hex": "0251590b7a515140d2d784c85608668fdfef8c82fd1f5be52421554a0dc3d033ed",
+      "ephemeral_private_key_hex": "0000000000000000000000000000000000000000000000000000000000000009",
+      "ephemeral_public_key_sec1_hex": "02ea68d7b6fedf0b71878938d51d71f8729e0acb8c2c6df8b3d79e8a4b90949ee0",
+      "derived_cek_hex": "7b833a1e047ab7aafb11a084fd32b419"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p384-a192gcm-json",
+      "source": "RFC7516",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A192GCM",
+      "iv_hex": "060606060606060606060606",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A192GCM",
+        "kid": "recipient-key-p384",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy",
+        "epk": {
+          "crv": "P-384",
+          "kty": "EC",
+          "x": "pWe6l7Z66luv2vUAL_zGq5Yyv_nwH4c_Yme80fDxHBOe5fRBq9mfG6rxyh47XLzn",
+          "y": "3hs4s5ifMxhkTkFHrxZOzFGFWVBGky7AhjKb4FeFfWZ3a8uCciGKfWQjoSc29CnM"
+        }
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTE5MkdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktcDM4NCIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkiLCJlcGsiOnsiY3J2IjoiUC0zODQiLCJrdHkiOiJFQyIsIngiOiJwV2U2bDdaNjZsdXYydlVBTF96R3E1WXl2X253SDRjX1ltZTgwZkR4SEJPZTVmUkJxOW1mRzZyeHloNDdYTHpuIiwieSI6IjNoczRzNWlmTXhoa1RrRkhyeFpPekZHRldWQkdreTdBaGpLYjRGZUZmV1ozYTh1Q2NpR0tmV1Fqb1NjMjlDbk0ifX0..BgYGBgYGBgYGBgYG.EfjP68T-MWf_UEZuN8ZctLCBohuNMpNG4HYLo7h5zecAl97DSKo.Zaeij6rucGC_TR0WPgZ45A",
+      "plaintext_json_utf8": "{\"vp_token\":\"presented\",\"state\":\"abc\"}",
+      "expected_plaintext_json": {
+        "vp_token": "presented",
+        "state": "abc"
+      },
+      "recipient_private_key_hex": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007",
+      "recipient_public_key_sec1_hex": "02283c1d7365ce4788f29f8ebf234edffead6fe997fbea5ffa2d58cc9dfa7b1c508b05526f55b9ebb2040f05b48fb6d0e1",
+      "ephemeral_private_key_hex": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d",
+      "ephemeral_public_key_sec1_hex": "02a567ba97b67aea5bafdaf5002ffcc6ab9632bff9f01f873f6267bcd1f0f11c139ee5f441abd99f1baaf1ca1e3b5cbce7",
+      "derived_cek_hex": "35f92f3fd3b81103bd9c4f1e066bcc4ec4a20a61f4218303"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p521-a256gcm-json",
+      "source": "RFC7516",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A256GCM",
+      "iv_hex": "080808080808080808080808",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A256GCM",
+        "kid": "recipient-key-p521",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy",
+        "epk": {
+          "crv": "P-521",
+          "kty": "EC",
+          "x": "AbAN23B_Ew7aE6C4dGRZI5Bqme6eJp-is7TWZSTyaSUIWHYKaeZ0_gKH3055m1aBOA_4wwQq8NGkEHb4F6hTEQrg",
+          "y": "AIVoPx19sWV228ER1OSu3dEGt5lTTPaZEKmNaKwrIqEyPfnaVk723Qvw0vZ1fxat9CDmkFWUwrdV9TW5y3xw5kZH"
+        }
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTI1NkdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktcDUyMSIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkiLCJlcGsiOnsiY3J2IjoiUC01MjEiLCJrdHkiOiJFQyIsIngiOiJBYkFOMjNCX0V3N2FFNkM0ZEdSWkk1QnFtZTZlSnAtaXM3VFdaU1R5YVNVSVdIWUthZVowX2dLSDMwNTVtMWFCT0FfNHd3UXE4TkdrRUhiNEY2aFRFUXJnIiwieSI6IkFJVm9QeDE5c1dWMjI4RVIxT1N1M2RFR3Q1bFRUUGFaRUttTmFLd3JJcUV5UGZuYVZrNzIzUXZ3MHZaMWZ4YXQ5Q0Rta0ZXVXdyZFY5VFc1eTN4dzVrWkgifX0..CAgICAgICAgICAgI.REQxxsgFiZzrlXUyI6wym0NEl98RqT52M-O4HxQnUOg0WIEtfyI.n72dTBgEoW4wiERPoTkuLg",
+      "plaintext_json_utf8": "{\"vp_token\":\"presented\",\"state\":\"abc\"}",
+      "expected_plaintext_json": {
+        "vp_token": "presented",
+        "state": "abc"
+      },
+      "recipient_private_key_hex": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b",
+      "recipient_public_key_sec1_hex": "02008a75841259fdedff546f1a39573b4315cfed5dc7ed7c17849543ef2c54f2991652f3dbc5332663da1bd19b1aebe3191085015c024fa4c9a902ecc0e02dda0cdb9a",
+      "ephemeral_private_key_hex": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011",
+      "ephemeral_public_key_sec1_hex": "0301b00ddb707f130eda13a0b874645923906a99ee9e269fa2b3b4d66524f269250858760a69e674fe0287df4e799b5681380ff8c3042af0d1a41076f817a853110ae0",
+      "derived_cek_hex": "c98bc1392a9ceff04cf07bd4d2bcb54cfbfe8d181a2e9b5b2de98e8e391b95df"
+    },
+    {
+      "id": "reallyme-jwe/unsupported-rsa-oaep",
+      "source": "RFC7518 Section 4.3",
+      "format": "jwe-compact",
+      "alg": "RSA-OAEP",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "RSA-OAEP",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJSU0EtT0FFUCIsImVuYyI6IkExMjhHQ00ifQ..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "UnsupportedKeyManagementAlgorithm"
+    },
+    {
+      "id": "reallyme-jwe/unsupported-rsa1-5",
+      "source": "RFC7518 Section 4.2",
+      "format": "jwe-compact",
+      "alg": "RSA1_5",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "RSA1_5",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJSU0ExXzUiLCJlbmMiOiJBMTI4R0NNIn0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "UnsupportedKeyManagementAlgorithm"
+    },
+    {
+      "id": "reallyme-jwe/unsupported-a128kw",
+      "source": "RFC7518 Section 4.4",
+      "format": "jwe-compact",
+      "alg": "A128KW",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "A128KW",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJBMTI4S1ciLCJlbmMiOiJBMTI4R0NNIn0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "UnsupportedKeyManagementAlgorithm"
+    },
+    {
+      "id": "reallyme-jwe/unsupported-pbes2-hs256-a128kw",
+      "source": "RFC7518 Section 4.8",
+      "format": "jwe-compact",
+      "alg": "PBES2-HS256+A128KW",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "PBES2-HS256+A128KW",
+        "enc": "A128GCM",
+        "p2s": "AA",
+        "p2c": 4096
+      },
+      "compact": "eyJhbGciOiJQQkVTMi1IUzI1NitBMTI4S1ciLCJlbmMiOiJBMTI4R0NNIiwicDJzIjoiQUEiLCJwMmMiOjQwOTZ9..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "UnsupportedKeyManagementAlgorithm"
+    },
+    {
+      "id": "reallyme-jwe/unsupported-ecdh-es-a128kw",
+      "source": "RFC7518 Section 4.6",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES+A128KW",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "ECDH-ES+A128KW",
+        "enc": "A128GCM",
+        "epk": {
+          "crv": "P-256",
+          "kty": "EC",
+          "x": "6mjXtv7fC3GHiTjVHXH4cp4Ky4wsbfiz156KS5CUnuA",
+          "y": "KidEyXLJ_OeHAUqWSo6gyE1xT-qk3oI_6FoiSk3QSPo"
+        }
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTK0ExMjhLVyIsImVuYyI6IkExMjhHQ00iLCJlcGsiOnsiY3J2IjoiUC0yNTYiLCJrdHkiOiJFQyIsIngiOiI2bWpYdHY3ZkMzR0hpVGpWSFhINGNwNEt5NHdzYmZpejE1NktTNUNVbnVBIiwieSI6IktpZEV5WExKX09lSEFVcVdTbzZneUUxeFQtcWszb0lfNkZvaVNrM1FTUG8ifX0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "UnsupportedKeyManagementAlgorithm"
+    },
+    {
+      "id": "reallyme-jwe/unsupported-a128cbc-hs256",
+      "source": "RFC7518 Section 5.2.3",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128CBC-HS256",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128CBC-HS256"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "UnsupportedContentEncryptionAlgorithm"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p256-missing-epk",
+      "source": "RFC7518 Section 4.6.1.1",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A128GCM",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "kid": "recipient-key-1",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy"
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTEyOEdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktMSIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkifQ..BQUFBQUFBQUFBQUF.7Ky3h0MyAxAmRgDbL0dRHmjtSL3gjfRLEbqZCgoE-tscjV8FGGo.m0ECg80HZg7LOdXvMv4XGQ",
+      "recipient_private_key_hex": "0000000000000000000000000000000000000000000000000000000000000005",
+      "expected_error": "MissingRequiredHeaderParameter"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p256-epk-off-curve",
+      "source": "RFC7518 Sections 4.6.1.1 and 6.2.1",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A128GCM",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "kid": "recipient-key-1",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy",
+        "epk": {
+          "crv": "P-256",
+          "kty": "EC",
+          "x": "6mjXtv7fC3GHiTjVHXH4cp4Ky4wsbfiz156KS5CUnuA",
+          "y": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        }
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTEyOEdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktMSIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkiLCJlcGsiOnsiY3J2IjoiUC0yNTYiLCJrdHkiOiJFQyIsIngiOiI2bWpYdHY3ZkMzR0hpVGpWSFhINGNwNEt5NHdzYmZpejE1NktTNUNVbnVBIiwieSI6IkFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUEifX0..BQUFBQUFBQUFBQUF.7Ky3h0MyAxAmRgDbL0dRHmjtSL3gjfRLEbqZCgoE-tscjV8FGGo.m0ECg80HZg7LOdXvMv4XGQ",
+      "recipient_private_key_hex": "0000000000000000000000000000000000000000000000000000000000000005",
+      "expected_error": "InvalidKeyAgreementKey"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p256-epk-wrong-crv",
+      "source": "RFC7518 Sections 4.6.1.1 and 6.2.1.1",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A128GCM",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "kid": "recipient-key-1",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy",
+        "epk": {
+          "crv": "P-384",
+          "kty": "EC",
+          "x": "6mjXtv7fC3GHiTjVHXH4cp4Ky4wsbfiz156KS5CUnuA",
+          "y": "KidEyXLJ_OeHAUqWSo6gyE1xT-qk3oI_6FoiSk3QSPo"
+        }
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTEyOEdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktMSIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkiLCJlcGsiOnsiY3J2IjoiUC0zODQiLCJrdHkiOiJFQyIsIngiOiI2bWpYdHY3ZkMzR0hpVGpWSFhINGNwNEt5NHdzYmZpejE1NktTNUNVbnVBIiwieSI6IktpZEV5WExKX09lSEFVcVdTbzZneUUxeFQtcWszb0lfNkZvaVNrM1FTUG8ifX0..BQUFBQUFBQUFBQUF.7Ky3h0MyAxAmRgDbL0dRHmjtSL3gjfRLEbqZCgoE-tscjV8FGGo.m0ECg80HZg7LOdXvMv4XGQ",
+      "recipient_private_key_hex": "0000000000000000000000000000000000000000000000000000000000000005",
+      "expected_error": "InvalidKeyAgreementKey"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p256-epk-kty-not-ec",
+      "source": "RFC7518 Sections 4.6.1.1 and 6.1",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A128GCM",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "kid": "recipient-key-1",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy",
+        "epk": {
+          "crv": "P-256",
+          "kty": "OKP",
+          "x": "6mjXtv7fC3GHiTjVHXH4cp4Ky4wsbfiz156KS5CUnuA",
+          "y": "KidEyXLJ_OeHAUqWSo6gyE1xT-qk3oI_6FoiSk3QSPo"
+        }
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTEyOEdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktMSIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkiLCJlcGsiOnsiY3J2IjoiUC0yNTYiLCJrdHkiOiJPS1AiLCJ4IjoiNm1qWHR2N2ZDM0dIaVRqVkhYSDRjcDRLeTR3c2JmaXoxNTZLUzVDVW51QSIsInkiOiJLaWRFeVhMSl9PZUhBVXFXU282Z3lFMXhULXFrM29JXzZGb2lTazNRU1BvIn19..BQUFBQUFBQUFBQUF.7Ky3h0MyAxAmRgDbL0dRHmjtSL3gjfRLEbqZCgoE-tscjV8FGGo.m0ECg80HZg7LOdXvMv4XGQ",
+      "recipient_private_key_hex": "0000000000000000000000000000000000000000000000000000000000000005",
+      "expected_error": "InvalidKeyAgreementKey"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p256-epk-short-x",
+      "source": "RFC7518 Sections 4.6.1.1 and 6.2.1.2",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A128GCM",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "kid": "recipient-key-1",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy",
+        "epk": {
+          "crv": "P-256",
+          "kty": "EC",
+          "x": "AA",
+          "y": "KidEyXLJ_OeHAUqWSo6gyE1xT-qk3oI_6FoiSk3QSPo"
+        }
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTEyOEdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktMSIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkiLCJlcGsiOnsiY3J2IjoiUC0yNTYiLCJrdHkiOiJFQyIsIngiOiJBQSIsInkiOiJLaWRFeVhMSl9PZUhBVXFXU282Z3lFMXhULXFrM29JXzZGb2lTazNRU1BvIn19..BQUFBQUFBQUFBQUF.7Ky3h0MyAxAmRgDbL0dRHmjtSL3gjfRLEbqZCgoE-tscjV8FGGo.m0ECg80HZg7LOdXvMv4XGQ",
+      "recipient_private_key_hex": "0000000000000000000000000000000000000000000000000000000000000005",
+      "expected_error": "InvalidKeyAgreementKey"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p256-epk-invalid-zero-point",
+      "source": "RFC7518 Sections 4.6.1.1, 6.2.1.2, and 6.2.1.3",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A128GCM",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "kid": "recipient-key-1",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy",
+        "epk": {
+          "crv": "P-256",
+          "kty": "EC",
+          "x": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "y": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        }
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTEyOEdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktMSIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkiLCJlcGsiOnsiY3J2IjoiUC0yNTYiLCJrdHkiOiJFQyIsIngiOiJBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBIiwieSI6IkFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUEifX0..BQUFBQUFBQUFBQUF.7Ky3h0MyAxAmRgDbL0dRHmjtSL3gjfRLEbqZCgoE-tscjV8FGGo.m0ECg80HZg7LOdXvMv4XGQ",
+      "recipient_private_key_hex": "0000000000000000000000000000000000000000000000000000000000000005",
+      "expected_error": "InvalidKeyAgreementKey"
+    },
+    {
+      "id": "reallyme-jwe/dir-a128gcm-truncated-tag",
+      "source": "RFC7516 Section 3.1",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIn0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.AA",
+      "expected_error": "InvalidContentCipherInput"
+    },
+    {
+      "id": "reallyme-jwe/dir-a128gcm-empty-tag",
+      "source": "RFC7516 Section 3.1",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIn0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.",
+      "expected_error": "InvalidCompact"
+    },
+    {
+      "id": "reallyme-jwe/dir-a128gcm-short-iv",
+      "source": "RFC7516 Section 3.1",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIn0..AA.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "InvalidContentCipherInput"
+    },
+    {
+      "id": "reallyme-jwe/dir-a128gcm-empty-iv",
+      "source": "RFC7516 Section 3.1",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIn0...2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "InvalidCompact"
+    },
+    {
+      "id": "reallyme-jwe/dir-a128gcm-wrong-cek-length",
+      "source": "RFC7518 Section 5.3",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "0707070707070707070707070707070707",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIn0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "InvalidContentEncryptionKey"
+    },
+    {
+      "id": "reallyme-jwe/compact-six-parts",
+      "source": "RFC7516 Section 3.1",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIn0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw.extra",
+      "expected_error": "InvalidCompact"
+    },
+    {
+      "id": "reallyme-jwe/jws-fed-to-jwe",
+      "source": "RFC7515 Appendix A.3",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM"
+      },
+      "compact": "eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ.DtEhU3ljbEg8L38VWAfUAqOyKAM6-Xx-F4GawxaepmXFCgfTjDxw5djxLa8ISlSApmWQxfKTUJqPP3-Kg6NU1Q",
+      "expected_error": "InvalidCompact"
+    },
+    {
+      "id": "reallyme-jwe/reject-x5u-protected-header",
+      "source": "RFC7516 Section 4.1.8 / RFC7515 Section 4.1.6",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM",
+        "x5u": "https://example.test/cert.pem"
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIiwieDV1IjoiaHR0cHM6Ly9leGFtcGxlLnRlc3QvY2VydC5wZW0ifQ..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "InvalidHeader"
+    },
+    {
+      "id": "reallyme-jwe/reject-x5c-protected-header",
+      "source": "RFC7516 Section 4.1.8 / RFC7515 Section 4.1.6",
+      "format": "jwe-compact",
+      "alg": "dir",
+      "enc": "A128GCM",
+      "cek_hex": "07070707070707070707070707070707",
+      "protected_header": {
+        "alg": "dir",
+        "enc": "A128GCM",
+        "x5c": [
+          "MIIB"
+        ]
+      },
+      "compact": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIiwieDVjIjpbIk1JSUIiXX0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw",
+      "expected_error": "InvalidHeader"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Release Preflight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-crate:
+    name: rust crate metadata
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+          targets: wasm32-unknown-unknown
+
+      - name: Install Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+
+      - name: Check workspace metadata
+        run: cargo metadata --format-version 1 --no-deps
+
+      - name: Check release readiness contract
+        run: node scripts/check_release_readiness.mjs
+
+      - name: Inspect crate tarball and dry-run publish
+        run: node scripts/publish_crates_in_order.mjs inspect
+
+      - name: Check wasm32 lane
+        run: cargo check --workspace --no-default-features --features wasm --target wasm32-unknown-unknown

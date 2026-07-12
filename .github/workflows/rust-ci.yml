@@ -1,0 +1,113 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Rust CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - "LICENSE"
+      - "NOTICE"
+      - ".github/renovate.json"
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - "LICENSE"
+      - "NOTICE"
+      - ".github/renovate.json"
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: fmt, lint, test, audit, package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+          components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      - name: Install nextest
+        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # nextest
+
+      - name: Install Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Check all features
+        run: cargo check --workspace --all-features
+
+      - name: Check warnings as errors
+        run: RUSTFLAGS=-Dwarnings cargo check --workspace --all-features
+
+      - name: Check no-feature guidance
+        shell: bash
+        run: |
+          set +e
+          output="$(cargo check --workspace --no-default-features 2>&1)"
+          status="$?"
+          set -e
+          test "$status" -ne 0
+          grep -F "reallyme-jose requires a supported runtime lane" <<< "$output"
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+      - name: Test native lane
+        run: cargo nextest run --workspace --no-default-features --features native
+
+      - name: Test all features
+        run: cargo nextest run --workspace --all-features
+
+      - name: Doc build
+        run: cargo doc --workspace --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+      - name: Doctests
+        run: cargo test --workspace --all-features --doc
+
+      - name: Check native lane
+        run: cargo check --workspace --no-default-features --features native
+
+      - name: Check wasm32 lane
+        run: cargo check --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --locked
+
+      - name: Dependency policy
+        run: cargo deny check
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Security advisory audit
+        run: cargo audit
+
+      - name: Release readiness contract
+        run: node scripts/check_release_readiness.mjs
+
+      - name: Crates.io package preflight
+        run: node scripts/publish_crates_in_order.mjs inspect
