@@ -1,0 +1,51 @@
+{
+  "cases": [
+    {
+      "compact": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.",
+      "expected_claims_json": {
+        "iss": "did:me:issuer",
+        "sub": "alice"
+      },
+      "format": "unsigned-jwt",
+      "id": "reallyme-jwt/unsigned-valid",
+      "source": "RFC7519"
+    },
+    {
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.",
+      "expected_error": "InvalidJwtFormat",
+      "format": "unsigned-jwt",
+      "id": "reallyme-jwt/unsigned-alg-not-none",
+      "source": "RFC8725"
+    },
+    {
+      "compact": "eyJhbGciOiJub25lIiwidHlwIjoiYXQrand0In0.eyJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.",
+      "expected_error": "InvalidJwtFormat",
+      "format": "unsigned-jwt",
+      "id": "reallyme-jwt/unsigned-typ-not-jwt",
+      "source": "RFC8725"
+    },
+    {
+      "compact": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.AAAA",
+      "expected_error": "InvalidJwtFormat",
+      "format": "unsigned-jwt",
+      "id": "reallyme-jwt/unsigned-non-empty-signature",
+      "source": "RFC7519"
+    },
+    {
+      "compact": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ",
+      "expected_error": "InvalidJwtFormat",
+      "format": "unsigned-jwt",
+      "id": "reallyme-jwt/unsigned-two-parts",
+      "source": "RFC7519"
+    },
+    {
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.GyQbGRMvgNFVfvvUzZYl-42lRjB1NfzXu3bJ2C7zkccYlftm8x5zYIww5WHijWvKsmH0GzsyDgwB2QLbKWnwLw",
+      "expected_error": "InvalidJwtFormat",
+      "format": "unsigned-jwt",
+      "id": "reallyme-jwt/signed-token-to-unsigned-decoder",
+      "source": "RFC8725 Section 3.12"
+    }
+  ],
+  "schema": "reallyme.identity.conformance.vectors.v1",
+  "suite": "unsigned-jwt"
+}

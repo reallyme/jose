@@ -1,0 +1,246 @@
+{
+  "cases": [
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_valid": true,
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-valid",
+      "payload_utf8": "reallyme-conformance-cid",
+      "private_key_hex": "0000000000000000000000000000000000000000000000000000000000000011",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "EdDSA",
+      "compact": "eyJhbGciOiJFZERTQSJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.V-aqJPOjWYJ7P8hK-oyiqUsjO1kjXPsUp7YbXcTu2oXEJtElJoidqgSomnnsVBdING1fzza_rZwkdaE1RRYGDg",
+      "expected_valid": true,
+      "format": "jws-compact",
+      "id": "reallyme-jws/eddsa-valid",
+      "payload_utf8": "reallyme-conformance-cid",
+      "private_key_hex": "0909090909090909090909090909090909090909090909090909090909090909",
+      "public_key_hex": "fd1724385aa0c75b64fb78cd602fa1d991fdebf76b13c58ed702eac835e9f618",
+      "source": "RFC8037"
+    },
+    {
+      "alg": "EdDSA",
+      "compact": "eyJhbGciOiJFZERTQSJ9.RXhhbXBsZSBvZiBFZDI1NTE5IHNpZ25pbmc.hgyY0il_MGCjP0JzlnLWG1PPOt7-09PGcvMg3AIbQR6dWbhijcNR4ki4iylGjg5BhVsPt9g7sVvpAr_MuM0KAg",
+      "expected_valid": true,
+      "format": "jws-compact",
+      "id": "rfc8037-a4/eddsa-known-answer",
+      "payload_utf8": "Example of Ed25519 signing",
+      "public_key_hex": "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a",
+      "source": "RFC8037 Appendix A.4"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ.DtEhU3ljbEg8L38VWAfUAqOyKAM6-Xx-F4GawxaepmXFCgfTjDxw5djxLa8ISlSApmWQxfKTUJqPP3-Kg6NU1Q",
+      "expected_valid": true,
+      "format": "jws-compact",
+      "id": "rfc7515-a3/es256-known-answer",
+      "payload_utf8": "{\"iss\":\"joe\",\r\n \"exp\":1300819380,\r\n \"http://example.com/is_root\":true}",
+      "public_key_hex": "047fcdce2770f6c45d4183cbee6fdb4b7b580733357be9ef13bacf6e3c7bd15445c7f144cd1bbd9b7e872cdfedb9eeb9f4b3695d6ea90b24ad8a4623288588e5ad",
+      "source": "RFC7515 Appendix A.3"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.AmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "InvalidSignature",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-tampered-payload",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Ay45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "InvalidSignature",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-tampered-signature",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.",
+      "expected_error": "InvalidSignature",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-signature-stripped",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "expected_error": "InvalidSignature",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-signature-too-short",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "expected_error": "InvalidSignature",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-signature-too-long",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.not*base64url",
+      "expected_error": "BadSignatureBase64",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-non-base64url-signature",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJub25lIn0.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-alg-none-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NksifQ.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-alg-es256k-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsImFsZyI6IkVTMjU2In0.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-duplicate-alg-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsImNyaXQiOlsiYjY0Il19.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-crit-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsImI2NCI6ZmFsc2V9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-b64-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsImprdSI6Imh0dHBzOi8vZXhhbXBsZS50ZXN0L2p3a3MifQ.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-jku-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsImp3ayI6eyJrdHkiOiJFQyJ9fQ.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-jwk-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsIng1dSI6Imh0dHBzOi8vZXhhbXBsZS50ZXN0L2NlcnQifQ.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-x5u-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsIng1YyI6WyJNSUlCIl19.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-x5c-header",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk",
+      "expected_error": "InvalidCompactEncoding",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-two-parts",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "InvalidCompactEncoding",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-four-parts",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFZERTQSJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.V-aqJPOjWYJ7P8hK-oyiqUsjO1kjXPsUp7YbXcTu2oXEJtElJoidqgSomnnsVBdING1fzza_rZwkdaE1RRYGDg",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/eddsa-token-to-es256-verify",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "InvalidSignature",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-wrong-public-key",
+      "public_key_hex": "032f9e6ebf717def118d1a092fce97133919cf2d31b7f8be6cfb7fdbe16820999e",
+      "source": "RFC7515"
+    },
+    {
+      "alg": "EdDSA",
+      "compact": "eyJhbGciOiJFZERTQSJ9.AmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.V-aqJPOjWYJ7P8hK-oyiqUsjO1kjXPsUp7YbXcTu2oXEJtElJoidqgSomnnsVBdING1fzza_rZwkdaE1RRYGDg",
+      "expected_error": "InvalidSignature",
+      "format": "jws-compact",
+      "id": "reallyme-jws/eddsa-tampered-payload",
+      "public_key_hex": "fd1724385aa0c75b64fb78cd602fa1d991fdebf76b13c58ed702eac835e9f618",
+      "source": "RFC8037"
+    },
+    {
+      "alg": "EdDSA",
+      "compact": "eyJhbGciOiJFZERTQSJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.",
+      "expected_error": "InvalidSignature",
+      "format": "jws-compact",
+      "id": "reallyme-jws/eddsa-signature-stripped",
+      "public_key_hex": "fd1724385aa0c75b64fb78cd602fa1d991fdebf76b13c58ed702eac835e9f618",
+      "source": "RFC8037"
+    },
+    {
+      "alg": "EdDSA",
+      "compact": "eyJhbGciOiJFUzI1NiJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
+      "expected_error": "HeaderMismatch",
+      "format": "jws-compact",
+      "id": "reallyme-jws/es256-token-to-eddsa-verify",
+      "public_key_hex": "fd1724385aa0c75b64fb78cd602fa1d991fdebf76b13c58ed702eac835e9f618",
+      "source": "RFC8037"
+    }
+  ],
+  "schema": "reallyme.identity.conformance.vectors.v1",
+  "suite": "jws-compact"
+}
