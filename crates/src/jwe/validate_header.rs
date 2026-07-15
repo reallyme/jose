@@ -7,15 +7,17 @@ use std::fmt::Formatter;
 
 use serde::de::{IgnoredAny, MapAccess, Visitor};
 use serde::{Deserialize, Serialize, Serializer};
-
-use reallyme_codec::base64url::bytes_to_base64url;
+use serde_json::Map;
+use zeroize::Zeroize;
 
 use crate::JsonValue;
+use reallyme_codec::base64url::bytes_to_base64url;
 
 use super::JweError;
 
 /// Supported JWE key-management algorithms.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum JweKeyManagementAlgorithm {
     /// Direct use of a caller-supplied content-encryption key (`alg = "dir"`).
     Direct,
@@ -25,6 +27,7 @@ pub enum JweKeyManagementAlgorithm {
 
 impl JweKeyManagementAlgorithm {
     /// Returns the JOSE `alg` string.
+    #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Direct => "dir",
@@ -52,6 +55,7 @@ impl Serialize for JweKeyManagementAlgorithm {
 
 /// Supported JWE content-encryption algorithms.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum JweContentEncryptionAlgorithm {
     /// AES-128-GCM (`enc = "A128GCM"`).
     A128Gcm,
@@ -63,6 +67,7 @@ pub enum JweContentEncryptionAlgorithm {
 
 impl JweContentEncryptionAlgorithm {
     /// Returns the JOSE `enc` string.
+    #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::A128Gcm => "A128GCM",
@@ -72,6 +77,7 @@ impl JweContentEncryptionAlgorithm {
     }
 
     /// Required content-encryption key length in bytes.
+    #[must_use]
     pub const fn key_len(self) -> usize {
         match self {
             Self::A128Gcm => reallyme_crypto::aes::AES_128_GCM_KEY_LENGTH,
@@ -81,6 +87,7 @@ impl JweContentEncryptionAlgorithm {
     }
 
     /// Required IV length in bytes.
+    #[must_use]
     pub const fn nonce_len(self) -> usize {
         match self {
             Self::A128Gcm => reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH,
@@ -90,6 +97,7 @@ impl JweContentEncryptionAlgorithm {
     }
 
     /// Required authentication tag length in bytes.
+    #[must_use]
     pub const fn tag_len(self) -> usize {
         match self {
             Self::A128Gcm => reallyme_crypto::aes::AES_128_GCM_TAG_LENGTH,
@@ -118,7 +126,7 @@ impl Serialize for JweContentEncryptionAlgorithm {
 }
 
 /// Decoded compact-JWE protected header.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct CompactJweProtectedHeader {
     /// Key-management algorithm.
     pub alg: JweKeyManagementAlgorithm,
@@ -136,6 +144,31 @@ pub struct CompactJweProtectedHeader {
     pub typ: Option<String>,
     /// Optional JOSE content type.
     pub cty: Option<String>,
+}
+
+impl Drop for CompactJweProtectedHeader {
+    fn drop(&mut self) {
+        self.kid.zeroize();
+        self.apu.zeroize();
+        self.apv.zeroize();
+        if let Some(epk) = self.epk.take() {
+            zeroize_json_value(epk);
+        }
+        self.typ.zeroize();
+        self.cty.zeroize();
+    }
+}
+
+fn zeroize_json_value(value: JsonValue) {
+    match value {
+        JsonValue::String(mut value) => value.zeroize(),
+        JsonValue::Array(values) => values.into_iter().for_each(zeroize_json_value),
+        JsonValue::Object(values) => values.into_iter().for_each(|(mut key, value)| {
+            key.zeroize();
+            zeroize_json_value(value);
+        }),
+        JsonValue::Null | JsonValue::Bool(_) | JsonValue::Number(_) => {}
+    }
 }
 
 pub(crate) struct RawCompactJweProtectedHeader {
@@ -191,7 +224,10 @@ impl<'de> Visitor<'de> for RawCompactJweProtectedHeaderVisitor {
                 "kid" => kid = Some(map.next_value()?),
                 "apu" => apu = Some(map.next_value()?),
                 "apv" => apv = Some(map.next_value()?),
-                "epk" => epk = Some(map.next_value()?),
+                "epk" => {
+                    let public_epk: PublicEpkJwk = map.next_value()?;
+                    epk = Some(public_epk.into_json());
+                }
                 "typ" => typ = Some(map.next_value()?),
                 "cty" => cty = Some(map.next_value()?),
                 "b64" | "crit" | "zip" | "jku" | "x5u" | "x5c" | "jwk" => {
@@ -254,27 +290,103 @@ impl TryFrom<RawCompactJweProtectedHeader> for CompactJweProtectedHeader {
     }
 }
 
+struct PublicEpkJwk {
+    fields: Map<String, JsonValue>,
+}
+
+impl PublicEpkJwk {
+    fn into_json(self) -> JsonValue {
+        JsonValue::Object(self.fields)
+    }
+}
+
+impl<'de> Deserialize<'de> for PublicEpkJwk {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_map(PublicEpkJwkVisitor)
+    }
+}
+
+struct PublicEpkJwkVisitor;
+
+impl<'de> Visitor<'de> for PublicEpkJwkVisitor {
+    type Value = PublicEpkJwk;
+
+    fn expecting(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("a public ECDH-ES ephemeral public-key JWK")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: MapAccess<'de>,
+    {
+        let mut seen = BTreeSet::new();
+        let mut fields = Map::new();
+
+        while let Some(key) = map.next_key::<String>()? {
+            if !seen.insert(key.clone()) {
+                return Err(serde::de::Error::custom(JweError::InvalidHeader));
+            }
+
+            match key.as_str() {
+                "kty" | "crv" | "x" | "y" => {
+                    fields.insert(key, JsonValue::String(map.next_value()?));
+                }
+                _ => {
+                    let _ = map.next_value::<IgnoredAny>()?;
+                    return Err(serde::de::Error::custom(JweError::InvalidHeader));
+                }
+            }
+        }
+
+        Ok(PublicEpkJwk { fields })
+    }
+}
+
 /// Header policy for compact JWE decryption.
 #[derive(Debug, Clone, Copy)]
 pub struct CompactJwePolicy<'a> {
     /// Permitted key-management algorithms.
-    pub allowed_key_management_algorithms: &'a [JweKeyManagementAlgorithm],
+    allowed_key_management_algorithms: &'a [JweKeyManagementAlgorithm],
     /// Permitted content-encryption algorithms.
-    pub allowed_content_encryption_algorithms: &'a [JweContentEncryptionAlgorithm],
+    allowed_content_encryption_algorithms: &'a [JweContentEncryptionAlgorithm],
     /// Require a `kid` protected-header parameter.
-    pub require_kid: bool,
+    require_kid: bool,
+    /// Require an exact `kid` value.
+    expected_kid: Option<&'a str>,
     /// Require an exact `typ` value when present.
-    pub expected_typ: Option<&'a str>,
+    expected_typ: Option<&'a str>,
     /// Require an exact `cty` value when present.
-    pub expected_cty: Option<&'a str>,
+    expected_cty: Option<&'a str>,
     /// Require exact raw Agreement PartyUInfo bytes when present.
-    pub expected_apu: Option<&'a [u8]>,
+    expected_apu: Option<&'a [u8]>,
     /// Require exact raw Agreement PartyVInfo bytes when present.
-    pub expected_apv: Option<&'a [u8]>,
+    expected_apv: Option<&'a [u8]>,
 }
 
 impl<'a> CompactJwePolicy<'a> {
+    /// Builds a compact-JWE policy from the permitted algorithm sets.
+    #[must_use]
+    pub const fn new(
+        allowed_key_management_algorithms: &'a [JweKeyManagementAlgorithm],
+        allowed_content_encryption_algorithms: &'a [JweContentEncryptionAlgorithm],
+    ) -> Self {
+        Self {
+            allowed_key_management_algorithms,
+            allowed_content_encryption_algorithms,
+            require_kid: false,
+            expected_kid: None,
+            expected_typ: None,
+            expected_cty: None,
+            expected_apu: None,
+            expected_apv: None,
+        }
+    }
+
     /// Policy for OpenID4VP `direct_post.jwt` response payloads.
+    #[must_use]
     pub const fn openid4vp_direct_post_jwt() -> Self {
         Self {
             allowed_key_management_algorithms: &[
@@ -287,11 +399,54 @@ impl<'a> CompactJwePolicy<'a> {
                 JweContentEncryptionAlgorithm::A256Gcm,
             ],
             require_kid: false,
+            expected_kid: None,
             expected_typ: None,
             expected_cty: None,
             expected_apu: None,
             expected_apv: None,
         }
+    }
+
+    /// Requires a `kid` protected-header parameter.
+    #[must_use]
+    pub const fn require_kid(mut self) -> Self {
+        self.require_kid = true;
+        self
+    }
+
+    /// Requires the protected header to carry this exact `kid` value.
+    #[must_use]
+    pub const fn with_expected_kid(mut self, expected_kid: &'a str) -> Self {
+        self.expected_kid = Some(expected_kid);
+        self
+    }
+
+    /// Requires the protected header to carry this exact `typ` value.
+    #[must_use]
+    pub const fn with_expected_typ(mut self, expected_typ: &'a str) -> Self {
+        self.expected_typ = Some(expected_typ);
+        self
+    }
+
+    /// Requires the protected header to carry this exact `cty` value.
+    #[must_use]
+    pub const fn with_expected_cty(mut self, expected_cty: &'a str) -> Self {
+        self.expected_cty = Some(expected_cty);
+        self
+    }
+
+    /// Requires this exact raw Agreement PartyUInfo value.
+    #[must_use]
+    pub const fn with_expected_apu(mut self, expected_apu: &'a [u8]) -> Self {
+        self.expected_apu = Some(expected_apu);
+        self
+    }
+
+    /// Requires this exact raw Agreement PartyVInfo value.
+    #[must_use]
+    pub const fn with_expected_apv(mut self, expected_apv: &'a [u8]) -> Self {
+        self.expected_apv = Some(expected_apv);
+        self
     }
 
     pub(crate) fn validate(&self, header: &CompactJweProtectedHeader) -> Result<(), JweError> {
@@ -307,29 +462,55 @@ impl<'a> CompactJwePolicy<'a> {
         if self.require_kid && header.kid.is_none() {
             return Err(JweError::MissingRequiredHeaderParameter);
         }
+        if let Some(expected) = self.expected_kid {
+            if header.kid.as_deref() != Some(expected) {
+                return Err(JweError::KidPolicyMismatch);
+            }
+        }
         if let Some(expected) = self.expected_typ {
             if header.typ.as_deref() != Some(expected) {
-                return Err(JweError::HeaderPolicyMismatch);
+                return Err(JweError::TypPolicyMismatch);
             }
         }
         if let Some(expected) = self.expected_cty {
             if header.cty.as_deref() != Some(expected) {
-                return Err(JweError::HeaderPolicyMismatch);
+                return Err(JweError::CtyPolicyMismatch);
             }
         }
         if let Some(expected) = self.expected_apu {
-            if header.apu.as_deref() != Some(bytes_to_base64url(expected).as_str()) {
-                return Err(JweError::HeaderPolicyMismatch);
+            let expected = bytes_to_base64url(expected);
+            if header.apu.as_deref() != Some(expected.as_str()) {
+                return Err(JweError::ApuPolicyMismatch);
             }
         }
         if let Some(expected) = self.expected_apv {
-            if header.apv.as_deref() != Some(bytes_to_base64url(expected).as_str()) {
-                return Err(JweError::HeaderPolicyMismatch);
+            let expected = bytes_to_base64url(expected);
+            if header.apv.as_deref() != Some(expected.as_str()) {
+                return Err(JweError::ApvPolicyMismatch);
             }
         }
-        if header.alg == JweKeyManagementAlgorithm::EcdhEs && header.epk.is_none() {
-            return Err(JweError::MissingRequiredHeaderParameter);
+        validate_jwe_header_structure(
+            header.alg,
+            header.epk.is_some(),
+            header.apu.is_some(),
+            header.apv.is_some(),
+        )
+    }
+}
+
+pub(crate) const fn validate_jwe_header_structure(
+    alg: JweKeyManagementAlgorithm,
+    has_epk: bool,
+    has_apu: bool,
+    has_apv: bool,
+) -> Result<(), JweError> {
+    match alg {
+        JweKeyManagementAlgorithm::Direct if has_epk || has_apu || has_apv => {
+            Err(JweError::InvalidHeader)
         }
-        Ok(())
+        JweKeyManagementAlgorithm::EcdhEs if !has_epk => {
+            Err(JweError::MissingRequiredHeaderParameter)
+        }
+        JweKeyManagementAlgorithm::Direct | JweKeyManagementAlgorithm::EcdhEs => Ok(()),
     }
 }

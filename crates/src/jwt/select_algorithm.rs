@@ -8,6 +8,11 @@ use crate::Algorithm;
 /// Maps a JWT `alg` header value to the corresponding crypto algorithm.
 ///
 /// RFC 7518 + DID alignment
+///
+/// # Errors
+///
+/// Returns [`JwtError::UnsupportedAlgorithm`] for JWT algorithms outside the
+/// ReallyMe JOSE profile.
 pub fn algorithm_from_jwt_alg(alg: &str) -> Result<Algorithm, JwtError> {
     match alg {
         "ES256" => Ok(Algorithm::P256),

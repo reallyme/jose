@@ -9,6 +9,7 @@ use reallyme_crypto::dispatch::AlgorithmError;
 
 /// Registered temporal claim identifiers used in typed errors.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum JwtTemporalClaim {
     /// Expiration time (`exp`).
     Exp,
@@ -20,6 +21,7 @@ pub enum JwtTemporalClaim {
 
 /// JWT parsing, signing, verification, and temporal-validation errors.
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum JwtError {
     /// Compact serialization is malformed or has the wrong number of parts.
     #[error("invalid JWT format")]
@@ -49,6 +51,18 @@ pub enum JwtError {
     #[error("JWT algorithm mismatch")]
     AlgorithmMismatch,
 
+    /// The JOSE header key identifier does not match the supplied JWK.
+    #[error("JWT key identifier mismatch")]
+    KeyIdMismatch,
+
+    /// Public key bytes do not match the supplied JWK.
+    #[error("JWT public key mismatch")]
+    PublicKeyMismatch,
+
+    /// The signer or private key does not correspond to the supplied JWK.
+    #[error("JWT signing key mismatch")]
+    SigningKeyMismatch,
+
     /// The JWK did not carry an algorithm binding.
     #[error("missing algorithm in JWK")]
     MissingAlgorithm,
@@ -61,6 +75,10 @@ pub enum JwtError {
     #[error("missing public key in JWK")]
     MissingPublicKey,
 
+    /// The supplied public key or JWK public material was malformed.
+    #[error("invalid public key")]
+    InvalidPublicKey,
+
     /// JSON serialization or deserialization failed.
     #[error("serialization error")]
     Serialization,
@@ -68,6 +86,10 @@ pub enum JwtError {
     /// Base64URL decoding failed.
     #[error("base64url decoding error")]
     Base64Url,
+
+    /// A checked JWT serialization length calculation overflowed.
+    #[error("JWT serialization length overflow")]
+    LengthOverflow,
 
     /// The configured crypto backend rejected the operation.
     #[error("cryptographic error")]
@@ -92,6 +114,10 @@ pub enum JwtError {
     /// The issued-at time is too far in the future.
     #[error("JWT issued-at is in the future")]
     IssuedAtInFuture,
+
+    /// The verifier supplied an unsafe or unsupported temporal policy.
+    #[error("invalid JWT temporal validation policy")]
+    InvalidTemporalPolicy,
 }
 
 // ------------------------------------

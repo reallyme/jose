@@ -20,9 +20,16 @@ compatible with the production crate's strict lint configuration.
 | Target | Parser under test |
 | --- | --- |
 | `compact_jwe` | compact JWE direct decryption parser and protected-header policy |
+| `compact_jwe_ecdh_es` | compact JWE ECDH-ES protected-header, `epk`, point validation, and Concat-KDF path |
 | `compact_jws_es256` | compact JWS ES256 parser and protected-header policy |
 | `signed_jwt` | signed JWT parser, duplicate-header guard, and ES256 key binding |
 | `unsigned_jwt` | unsigned JWT parser and `alg = "none"` policy |
+| `wire_process` | process-proto and JSON result-envelope dispatch boundaries |
+
+Seed corpora live under `fuzz/corpus/<target>/`. The JOSE dictionary in
+`fuzz/dictionaries/jose.dict` gives libFuzzer compact-serialization and header
+tokens so short scheduled runs do not need to discover Base64URL-shaped inputs
+from scratch.
 
 ## Running
 
@@ -32,6 +39,7 @@ cargo install cargo-fuzz
 
 cargo +nightly fuzz build
 cargo +nightly fuzz run compact_jwe -- -max_total_time=60
+cargo +nightly fuzz run compact_jwe_ecdh_es -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
 cargo +nightly fuzz run signed_jwt -- -max_total_time=60
 ```
 

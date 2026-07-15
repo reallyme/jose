@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-jose"
-version = "0.1.0"
+version = "0.2.0"
 description = "JOSE, JWT, JWS, and JWE helpers for ReallyMe identity."
 edition.workspace = true
 rust-version.workspace = true
@@ -20,7 +20,7 @@ include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 default = ["native"]
 native = ["jose-crypto", "reallyme-crypto/native"]
 wasm = ["jose-crypto", "reallyme-crypto/wasm"]
-conformance-vectors = []
+wire = ["dep:buffa", "dep:reallyme-jose-proto"]
 jose-crypto = [
     "reallyme-crypto/dispatch",
     "reallyme-crypto/signer",
@@ -36,8 +36,10 @@ jose-crypto = [
 ]
 
 [dependencies]
+buffa = { workspace = true, optional = true }
 reallyme-codec = { workspace = true, features = ["base64", "base64url"] }
 reallyme-crypto = { workspace = true }
+reallyme-jose-proto = { workspace = true, features = ["generated"], optional = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

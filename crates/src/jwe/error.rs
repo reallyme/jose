@@ -6,6 +6,7 @@ use thiserror::Error;
 
 /// Compact JWE parse, policy, and decrypt failures.
 #[derive(Debug, Error)]
+#[non_exhaustive]
 pub enum JweError {
     /// The compact serialization did not contain five well-formed segments.
     #[error("invalid compact JWE")]
@@ -35,6 +36,26 @@ pub enum JweError {
     #[error("JWE protected-header policy mismatch")]
     HeaderPolicyMismatch,
 
+    /// The protected-header `kid` parameter did not match policy.
+    #[error("JWE kid policy mismatch")]
+    KidPolicyMismatch,
+
+    /// The protected-header `typ` parameter did not match policy.
+    #[error("JWE typ policy mismatch")]
+    TypPolicyMismatch,
+
+    /// The protected-header `cty` parameter did not match policy.
+    #[error("JWE cty policy mismatch")]
+    CtyPolicyMismatch,
+
+    /// The protected-header Agreement PartyUInfo value did not match policy.
+    #[error("JWE apu policy mismatch")]
+    ApuPolicyMismatch,
+
+    /// The protected-header Agreement PartyVInfo value did not match policy.
+    #[error("JWE apv policy mismatch")]
+    ApvPolicyMismatch,
+
     /// The encrypted-key segment is invalid for the selected key-management algorithm.
     #[error("invalid JWE encrypted-key segment")]
     InvalidEncryptedKey,
@@ -58,6 +79,14 @@ pub enum JweError {
     /// JWE key-agreement material was invalid.
     #[error("invalid JWE key-agreement key")]
     InvalidKeyAgreementKey,
+
+    /// The ECDH-ES shared secret had an invalid boundary representation.
+    #[error("invalid JWE shared secret")]
+    InvalidSharedSecret,
+
+    /// The ECDH-ES Concat KDF backend rejected otherwise validated inputs.
+    #[error("JWE key derivation failed")]
+    KeyDerivation,
 
     /// Secure random generation failed.
     #[error("JWE random generation failed")]

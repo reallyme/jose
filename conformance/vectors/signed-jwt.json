@@ -419,6 +419,24 @@
     {
       "alg": "ES256",
       "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
+      "expected_error": "KeyIdMismatch",
+      "format": "signed-jwt",
+      "id": "reallyme-jwt/kid-mismatch",
+      "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
+      "source": "RFC8725 Section 3.1",
+      "verification_jwk": {
+        "alg": "ES256",
+        "crv": "P-256",
+        "kid": "k-p256-other",
+        "kty": "EC",
+        "use": "sig",
+        "x": "R3dpBMDxzDqcCYS2b3UwGl-mhnjw1kr4uhq840c4pz4",
+        "y": "qgBe5rW5VyhiMYVld2SOg4GygEQo1XM_MveH_3Hx_Nw"
+      }
+    },
+    {
+      "alg": "ES256",
+      "compact": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImstcDI1NiJ9.eyJhdWQiOiJkaWQ6bWU6dmVyaWZpZXIiLCJpc3MiOiJkaWQ6bWU6aXNzdWVyIiwic3ViIjoiYWxpY2UifQ.uJM_-zA5Towsv-LulmXgg27qxAH9V0MJ0GJlY2FiRdfwJhWVCp83ohH4lLNEQx3w1qiPCPTGRvUzqGWUprHrpg",
       "expected_error": "InvalidSignature",
       "format": "signed-jwt",
       "id": "reallyme-jwt/wrong-public-key",
@@ -427,7 +445,7 @@
       "verification_jwk": {
         "alg": "ES256",
         "crv": "P-256",
-        "kid": "k-p256-other",
+        "kid": "k-p256",
         "kty": "EC",
         "use": "sig",
         "x": "L55uv3F97xGNGgkvzpcTORnPLTG3-L5s-3_b4WggmZ4",

@@ -173,6 +173,38 @@ fn reject_signed_jwt_with_duplicate_protected_header_members() {
 }
 
 #[test]
+fn reject_signed_jwt_with_duplicate_claim_members() {
+    let k = gen_p256();
+    let jwt = signed_jwt_with_header(
+        br#"{"alg":"ES256","typ":"JWT","kid":"k-p256"}"#,
+        br#"{"iss":"did:me:test","sub":"alice","sub":"bob","aud":"example"}"#,
+        &k.private,
+    );
+
+    let result: Result<serde_json::Value, JwtError> =
+        decode_verify_jwt_signature_only(&jwt, &k.jwk, &k.public);
+
+    assert!(matches!(result, Err(JwtError::InvalidClaims)));
+}
+
+#[test]
+fn reject_signed_eddsa_jwt_with_wrong_signature_length() {
+    let k = gen_ed25519();
+    let claims = base_claims_json();
+    let jwt = encode_signed_jwt(&claims, &k.jwk, &k.private).unwrap();
+    let mut parts: Vec<&str> = jwt.split('.').collect();
+    assert_eq!(parts.len(), 3);
+    let short_signature = bytes_to_base64url(&[1u8; 32]);
+    parts[2] = short_signature.as_str();
+    let truncated = parts.join(".");
+
+    let result: Result<serde_json::Value, JwtError> =
+        decode_verify_jwt_signature_only(&truncated, &k.jwk, &k.public);
+
+    assert!(matches!(result, Err(JwtError::InvalidSignature)));
+}
+
+#[test]
 fn reject_signed_jwt_with_untrusted_embedded_jwk_header() {
     let k = gen_p256();
     let jwt = signed_jwt_with_header(

@@ -15,6 +15,12 @@ use super::{CompactJweProtectedHeader, JweContentEncryptionAlgorithm, JweError};
 /// The ECDH operation itself is intentionally outside this helper: callers own
 /// private-key lookup, `epk` validation, and curve-specific agreement. JOSE owns
 /// the JWA Concat KDF profile and header parameter handling.
+///
+/// # Errors
+///
+/// Returns [`JweError`] when the shared secret or party-info values are invalid,
+/// the content-encryption algorithm is unsupported by this profile, or the
+/// Concat KDF backend fails.
 pub fn derive_ecdh_es_content_encryption_key(
     shared_secret: &[u8],
     header: &CompactJweProtectedHeader,
@@ -37,7 +43,7 @@ fn derive_ecdh_es_content_encryption_key_for_len<const N: usize>(
     header: &CompactJweProtectedHeader,
 ) -> Result<Zeroizing<Vec<u8>>, JweError> {
     let shared_secret = reallyme_crypto::concat_kdf::JwaSharedSecret::from_slice(shared_secret)
-        .map_err(|_| JweError::Decrypt)?;
+        .map_err(|_| JweError::InvalidSharedSecret)?;
     let algorithm_id =
         reallyme_crypto::concat_kdf::JwaAlgorithmId::from_slice(header.enc.as_str().as_bytes())
             .map_err(|_| JweError::InvalidHeader)?;
@@ -52,7 +58,7 @@ fn derive_ecdh_es_content_encryption_key_for_len<const N: usize>(
             party_v_info: &party_v_info,
         },
     )
-    .map_err(|_| JweError::Decrypt)?;
+    .map_err(|_| JweError::KeyDerivation)?;
 
     let mut derived_bytes = derived.into_bytes();
     let cek = Zeroizing::new(derived_bytes.to_vec());

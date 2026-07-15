@@ -18,6 +18,7 @@ feature-depth = 1
 
 [advisories]
 ignore = []
+yanked = "deny"
 
 [licenses]
 confidence-threshold = 0.93
@@ -26,6 +27,7 @@ allow = [
     "BSD-3-Clause",
     "MIT",
     "Unicode-3.0",
+    "Zlib",
 ]
 exceptions = []
 
@@ -34,11 +36,7 @@ ignore = true
 registries = []
 
 [bans]
-# Several cryptographic stacks are intentionally in transition at different
-# RustCrypto major versions. Keep wildcard/default-feature checks strict, but
-# do not fail the wall on duplicate transitive versions until upstream HPKE and
-# RustCrypto dependencies converge.
-multiple-versions = "allow"
+multiple-versions = "deny"
 wildcards = "deny"
 highlight = "all"
 workspace-default-features = "allow"
@@ -47,7 +45,9 @@ external-default-features = "allow"
 # and source review. Do not ban transitive use unless we are ready to replace
 # upstream dependencies that carry them internally.
 deny = []
-skip = []
+skip = [
+    { name = "getrandom", version = "0.2.17" },
+]
 skip-tree = []
 
 [sources]

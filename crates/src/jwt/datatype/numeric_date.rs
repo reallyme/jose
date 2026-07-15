@@ -13,12 +13,14 @@ pub struct NumericDate(pub i64);
 
 impl NumericDate {
     /// Creates a NumericDate from seconds since the Unix epoch.
-    pub fn new(seconds: i64) -> Self {
+    #[must_use]
+    pub const fn new(seconds: i64) -> Self {
         Self(seconds)
     }
 
     /// Returns seconds since the Unix epoch.
-    pub fn as_i64(self) -> i64 {
+    #[must_use]
+    pub const fn as_i64(self) -> i64 {
         self.0
     }
 }

@@ -62,13 +62,7 @@ fn strict_temporal_accepts_expiration_inside_clock_skew() {
 
 #[test]
 fn temporal_accepts_nbf_and_iat_at_skew_boundaries() {
-    let policy = JwtTemporalValidationPolicy {
-        require_exp: true,
-        require_nbf: true,
-        require_iat: true,
-        clock_skew_seconds: 60,
-        max_future_iat_skew_seconds: 60,
-    };
+    let policy = JwtTemporalValidationPolicy::new(true, true, true, 60, 60);
     let claims = serde_json::json!({
         "iss": "did:me:test",
         "sub": "alice",
@@ -169,20 +163,8 @@ fn temporal_rejects_missing_required_nbf_and_iat() {
         "sub": "alice",
         "exp": NOW_UNIX + 300,
     });
-    let nbf_policy = JwtTemporalValidationPolicy {
-        require_exp: true,
-        require_nbf: true,
-        require_iat: false,
-        clock_skew_seconds: 60,
-        max_future_iat_skew_seconds: 60,
-    };
-    let iat_policy = JwtTemporalValidationPolicy {
-        require_exp: true,
-        require_nbf: false,
-        require_iat: true,
-        clock_skew_seconds: 60,
-        max_future_iat_skew_seconds: 60,
-    };
+    let nbf_policy = JwtTemporalValidationPolicy::new(true, true, false, 60, 60);
+    let iat_policy = JwtTemporalValidationPolicy::new(true, false, true, 60, 60);
 
     let nbf_err = verify_claims(&claims, nbf_policy).unwrap_err();
     let iat_err = verify_claims(&claims, iat_policy).unwrap_err();
@@ -195,6 +177,59 @@ fn temporal_rejects_missing_required_nbf_and_iat() {
         iat_err,
         JwtError::MissingRequiredTemporalClaim(JwtTemporalClaim::Iat)
     ));
+}
+
+#[test]
+fn temporal_rejects_unbounded_clock_skew_policy() {
+    let claims = serde_json::json!({
+        "iss": "did:me:test",
+        "sub": "alice",
+        "exp": NOW_UNIX - 10,
+    });
+    let policy = JwtTemporalValidationPolicy::new(true, false, false, u64::MAX, 60);
+
+    let err = verify_claims(&claims, policy).unwrap_err();
+
+    assert!(matches!(err, JwtError::InvalidTemporalPolicy));
+}
+
+#[test]
+fn temporal_rejects_unbounded_future_iat_skew_policy() {
+    let claims = serde_json::json!({
+        "iss": "did:me:test",
+        "sub": "alice",
+        "exp": NOW_UNIX + 300,
+        "iat": NOW_UNIX + 10,
+    });
+    let policy = JwtTemporalValidationPolicy::new(true, false, true, 60, u64::MAX);
+
+    let err = verify_claims(&claims, policy).unwrap_err();
+
+    assert!(matches!(err, JwtError::InvalidTemporalPolicy));
+}
+
+#[test]
+fn temporal_rejects_checked_time_ceiling_overflow() {
+    let k = gen_ed25519();
+    let claims = serde_json::json!({
+        "iss": "did:me:test",
+        "sub": "alice",
+        "exp": u64::MAX,
+        "nbf": u64::MAX,
+    });
+    let jwt = encode_signed_jwt(&claims, &k.jwk, &k.private).unwrap();
+    let policy = JwtTemporalValidationPolicy::new(true, true, false, 60, 60);
+
+    let err = decode_verify_jwt_with_temporal_validation::<serde_json::Value>(
+        &jwt,
+        &k.jwk,
+        &k.public,
+        u64::MAX - 1,
+        policy,
+    )
+    .unwrap_err();
+
+    assert!(matches!(err, JwtError::InvalidTemporalPolicy));
 }
 
 #[test]

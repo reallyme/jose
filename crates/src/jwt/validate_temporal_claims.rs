@@ -6,31 +6,86 @@ use serde_json::Value as JsonValue;
 
 use super::{JwtError, JwtTemporalClaim};
 
+const MAX_TEMPORAL_SKEW_SECONDS: u64 = 86_400;
+
 /// Temporal claim validation policy for signed JWT verification.
 #[derive(Debug, Clone, Copy)]
 pub struct JwtTemporalValidationPolicy {
     /// Require an `exp` claim.
-    pub require_exp: bool,
+    require_exp: bool,
     /// Require an `nbf` claim.
-    pub require_nbf: bool,
+    require_nbf: bool,
     /// Require an `iat` claim.
-    pub require_iat: bool,
+    require_iat: bool,
     /// Symmetric leeway applied to `exp` and `nbf`, in seconds.
-    pub clock_skew_seconds: u64,
+    clock_skew_seconds: u64,
     /// Maximum accepted future skew for `iat`, in seconds.
-    pub max_future_iat_skew_seconds: u64,
+    max_future_iat_skew_seconds: u64,
 }
 
 impl JwtTemporalValidationPolicy {
-    /// Returns a verifier-grade default policy that requires expiration.
-    pub fn strict() -> Self {
+    /// Builds a temporal-claim validation policy.
+    #[must_use]
+    pub const fn new(
+        require_exp: bool,
+        require_nbf: bool,
+        require_iat: bool,
+        clock_skew_seconds: u64,
+        max_future_iat_skew_seconds: u64,
+    ) -> Self {
         Self {
-            require_exp: true,
-            require_nbf: false,
-            require_iat: false,
-            clock_skew_seconds: 60,
-            max_future_iat_skew_seconds: 60,
+            require_exp,
+            require_nbf,
+            require_iat,
+            clock_skew_seconds,
+            max_future_iat_skew_seconds,
         }
+    }
+
+    /// Returns a verifier-grade default policy that requires expiration.
+    #[must_use]
+    pub const fn strict() -> Self {
+        Self::new(true, false, false, 60, 60)
+    }
+
+    /// Returns whether `exp` is required.
+    #[must_use]
+    pub const fn require_exp(&self) -> bool {
+        self.require_exp
+    }
+
+    /// Returns whether `nbf` is required.
+    #[must_use]
+    pub const fn require_nbf(&self) -> bool {
+        self.require_nbf
+    }
+
+    /// Returns whether `iat` is required.
+    #[must_use]
+    pub const fn require_iat(&self) -> bool {
+        self.require_iat
+    }
+
+    /// Returns symmetric leeway applied to `exp` and `nbf`, in seconds.
+    #[must_use]
+    pub const fn clock_skew_seconds(&self) -> u64 {
+        self.clock_skew_seconds
+    }
+
+    /// Returns maximum accepted future skew for `iat`, in seconds.
+    #[must_use]
+    pub const fn max_future_iat_skew_seconds(&self) -> u64 {
+        self.max_future_iat_skew_seconds
+    }
+
+    const fn validate(&self) -> Result<(), JwtError> {
+        if self.clock_skew_seconds > MAX_TEMPORAL_SKEW_SECONDS {
+            return Err(JwtError::InvalidTemporalPolicy);
+        }
+        if self.max_future_iat_skew_seconds > MAX_TEMPORAL_SKEW_SECONDS {
+            return Err(JwtError::InvalidTemporalPolicy);
+        }
+        Ok(())
     }
 }
 
@@ -39,6 +94,8 @@ pub(super) fn validate_temporal_claims(
     now_unix: u64,
     temporal_policy: JwtTemporalValidationPolicy,
 ) -> Result<(), JwtError> {
+    temporal_policy.validate()?;
+
     let exp = parse_optional_numeric_date(payload, JwtTemporalClaim::Exp)?;
     let nbf = parse_optional_numeric_date(payload, JwtTemporalClaim::Nbf)?;
     let iat = parse_optional_numeric_date(payload, JwtTemporalClaim::Iat)?;
@@ -98,7 +155,8 @@ fn validate_expiration(
     if exp_unix == 0 {
         return Err(JwtError::InvalidTemporalClaimValue(JwtTemporalClaim::Exp));
     }
-    if now_unix.saturating_sub(clock_skew_seconds) > exp_unix {
+    let expiration_floor = checked_skew_floor(now_unix, clock_skew_seconds)?;
+    if expiration_floor > exp_unix {
         return Err(JwtError::Expired);
     }
     Ok(())
@@ -116,7 +174,8 @@ fn validate_not_before(
     if nbf_unix == 0 {
         return Err(JwtError::InvalidTemporalClaimValue(JwtTemporalClaim::Nbf));
     }
-    if now_unix.saturating_add(clock_skew_seconds) < nbf_unix {
+    let not_before_ceiling = checked_skew_ceiling(now_unix, clock_skew_seconds)?;
+    if not_before_ceiling < nbf_unix {
         return Err(JwtError::NotYetValid);
     }
     Ok(())
@@ -134,8 +193,24 @@ fn validate_issued_at(
     if iat_unix == 0 {
         return Err(JwtError::InvalidTemporalClaimValue(JwtTemporalClaim::Iat));
     }
-    if iat_unix > now_unix.saturating_add(max_future_iat_skew_seconds) {
+    let issued_at_ceiling = checked_skew_ceiling(now_unix, max_future_iat_skew_seconds)?;
+    if iat_unix > issued_at_ceiling {
         return Err(JwtError::IssuedAtInFuture);
     }
     Ok(())
+}
+
+fn checked_skew_floor(now_unix: u64, clock_skew_seconds: u64) -> Result<u64, JwtError> {
+    if now_unix < clock_skew_seconds {
+        return Ok(0);
+    }
+    now_unix
+        .checked_sub(clock_skew_seconds)
+        .ok_or(JwtError::InvalidTemporalPolicy)
+}
+
+fn checked_skew_ceiling(now_unix: u64, skew_seconds: u64) -> Result<u64, JwtError> {
+    now_unix
+        .checked_add(skew_seconds)
+        .ok_or(JwtError::InvalidTemporalPolicy)
 }
