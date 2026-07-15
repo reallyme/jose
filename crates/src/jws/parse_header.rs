@@ -15,7 +15,7 @@ pub(crate) enum JwsAlgorithm {
 }
 
 impl JwsAlgorithm {
-    pub(crate) fn protected_header_json(self) -> &'static [u8] {
+    pub(crate) const fn protected_header_json(self) -> &'static [u8] {
         match self {
             JwsAlgorithm::Es256 => br#"{"alg":"ES256"}"#,
             JwsAlgorithm::Eddsa => br#"{"alg":"EdDSA"}"#,

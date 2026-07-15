@@ -20,9 +20,7 @@ fn can_encode_and_decode_custom_typ_when_policy_allows_it() {
         &claims,
         &k.jwk,
         &k.private,
-        &JwtHeaderEncodeOptions {
-            typ: Some("dc+sd-jwt".to_owned()),
-        },
+        &JwtHeaderEncodeOptions::new(Some("dc+sd-jwt".to_owned())),
     )
     .expect("encode");
 
@@ -30,11 +28,7 @@ fn can_encode_and_decode_custom_typ_when_policy_allows_it() {
         &jwt,
         &k.jwk,
         &k.public,
-        &JwtHeaderValidationOptions {
-            allow_missing_typ: false,
-            allow_embedded_key_header: false,
-            accepted_typ_values: &["dc+sd-jwt"],
-        },
+        &JwtHeaderValidationOptions::new(false, false, &["dc+sd-jwt"]),
     )
     .expect("decode");
 
@@ -70,9 +64,7 @@ fn standard_policy_rejects_non_jwt_typ() {
         &claims,
         &k.jwk,
         &k.private,
-        &JwtHeaderEncodeOptions {
-            typ: Some("dc+sd-jwt".to_owned()),
-        },
+        &JwtHeaderEncodeOptions::new(Some("dc+sd-jwt".to_owned())),
     )
     .expect("encode");
 
@@ -90,7 +82,7 @@ fn can_require_typ_presence() {
         &claims,
         &k.jwk,
         &k.private,
-        &JwtHeaderEncodeOptions { typ: None },
+        &JwtHeaderEncodeOptions::new(None),
     )
     .expect("encode");
 
@@ -99,11 +91,7 @@ fn can_require_typ_presence() {
             &jwt,
             &k.jwk,
             &k.public,
-            &JwtHeaderValidationOptions {
-                allow_missing_typ: false,
-                allow_embedded_key_header: false,
-                accepted_typ_values: &["JWT"],
-            },
+            &JwtHeaderValidationOptions::new(false, false, &["JWT"]),
         );
 
     assert!(decoded.is_err());
@@ -127,11 +115,7 @@ fn empty_accepted_typ_values_rejects_present_typ() {
             &jwt,
             &k.jwk,
             &k.public,
-            &JwtHeaderValidationOptions {
-                allow_missing_typ: true,
-                allow_embedded_key_header: false,
-                accepted_typ_values: &[],
-            },
+            &JwtHeaderValidationOptions::new(true, false, &[]),
         );
 
     assert!(matches!(decoded, Err(JwtError::InvalidHeader)));

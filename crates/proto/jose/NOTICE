@@ -1,0 +1,12 @@
+SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+
+SPDX-License-Identifier: Apache-2.0
+
+ReallyMe JOSE Proto
+Copyright © 2026 ReallyMe LLC. All rights reserved.
+
+This package includes generated protobuf bindings for the ReallyMe JOSE boundary
+and is distributed under the Apache License, Version 2.0.
+
+Dependency license terms are recorded in the package manifests and enforced by
+the repository dependency policy.

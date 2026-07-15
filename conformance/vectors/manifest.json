@@ -11,7 +11,7 @@
       "id": "signed-jwt",
       "source": "RFC7519/RFC8725 and ReallyMe deterministic fixtures",
       "path": "signed-jwt.json",
-      "case_count": 31
+      "case_count": 32
     },
     {
       "id": "unsigned-jwt",
@@ -24,6 +24,12 @@
       "source": "RFC7516/RFC7518 and ReallyMe deterministic fixtures",
       "path": "jwe-compact.json",
       "case_count": 28
+    },
+    {
+      "id": "panva-jose",
+      "source": "panva/jose@6.2.3 independent positive interop fixtures",
+      "path": "panva-jose.json",
+      "case_count": 4
     }
   ]
 }

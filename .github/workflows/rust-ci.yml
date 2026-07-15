@@ -26,6 +26,10 @@ on:
 permissions:
   contents: read
 
+env:
+  CARGO_AUDIT_VERSION: 0.22.1
+  CARGO_DENY_VERSION: 0.19.6
+
 jobs:
   rust:
     name: fmt, lint, test, audit, package
@@ -56,52 +60,52 @@ jobs:
         run: cargo fmt --check
 
       - name: Check all features
-        run: cargo check --workspace --all-features
+        run: cargo check --locked --workspace --all-features
 
       - name: Check warnings as errors
-        run: RUSTFLAGS=-Dwarnings cargo check --workspace --all-features
+        run: RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features
 
       - name: Check no-feature guidance
         shell: bash
         run: |
           set +e
-          output="$(cargo check --workspace --no-default-features 2>&1)"
+          output="$(cargo check --locked --workspace --no-default-features 2>&1)"
           status="$?"
           set -e
           test "$status" -ne 0
           grep -F "reallyme-jose requires a supported runtime lane" <<< "$output"
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
       - name: Test native lane
-        run: cargo nextest run --workspace --no-default-features --features native
+        run: cargo nextest run --locked --workspace --no-default-features --features native
 
       - name: Test all features
-        run: cargo nextest run --workspace --all-features
+        run: cargo nextest run --locked --workspace --all-features
 
       - name: Doc build
-        run: cargo doc --workspace --no-deps --all-features
+        run: cargo doc --locked --workspace --no-deps --all-features
         env:
           RUSTDOCFLAGS: -D warnings
 
       - name: Doctests
-        run: cargo test --workspace --all-features --doc
+        run: cargo test --locked --workspace --all-features --doc
 
       - name: Check native lane
-        run: cargo check --workspace --no-default-features --features native
+        run: cargo check --locked --workspace --no-default-features --features native
 
       - name: Check wasm32 lane
-        run: cargo check --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
+        run: cargo check --locked --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
 
       - name: Install cargo-deny
-        run: cargo install cargo-deny --locked
+        run: cargo install cargo-deny --version "$CARGO_DENY_VERSION" --locked
 
       - name: Dependency policy
         run: cargo deny check
 
       - name: Install cargo-audit
-        run: cargo install cargo-audit --locked
+        run: cargo install cargo-audit --version "$CARGO_AUDIT_VERSION" --locked
 
       - name: Security advisory audit
         run: cargo audit
@@ -111,3 +115,5 @@ jobs:
 
       - name: Crates.io package preflight
         run: node scripts/publish_crates_in_order.mjs inspect
+        env:
+          CARGO_HOME: ${{ runner.temp }}/package-preflight-cargo-home

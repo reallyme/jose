@@ -159,10 +159,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "buffa"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33f29a40702df4b86ccd84211bfde8cee0bce6d0811450ade4a86a7d0958a23a"
+dependencies = [
+ "base64",
+ "bytes",
+ "foldhash",
+ "hashbrown",
+ "once_cell",
+ "rustversion",
+ "serde",
+ "serde_json",
+ "smoothutf8",
+ "thiserror",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
+
+[[package]]
+name = "bytes"
+version = "1.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
 name = "cfg-if"
@@ -461,6 +485,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "64cd1e32ddd350061ae6edb1b082d7c54915b5c672c389143b9a63403a109f24"
 
 [[package]]
+name = "foldhash"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d9c4f5dac5e15c24eb999c26181a6ca40b39fe946cbe4c263c7209467bc83af2"
+
+[[package]]
 name = "futures-core"
 version = "0.3.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -539,6 +569,16 @@ dependencies = [
  "ff",
  "rand_core 0.10.1",
  "subtle",
+]
+
+[[package]]
+name = "hashbrown"
+version = "0.15.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
+dependencies = [
+ "foldhash",
+ "serde",
 ]
 
 [[package]]
@@ -936,9 +976,9 @@ checksum = "63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69"
 
 [[package]]
 name = "reallyme-codec"
-version = "0.1.1"
+version = "0.1.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc0e852dfef578e3b314e890bac9aee6da6f23122abcf5eb2da9185f9ad40711"
+checksum = "c325178f3265f5473b077e65f8dbc28f0b837066668ede3fabbdc27bbac28244"
 dependencies = [
  "reallyme-codec-base64",
  "reallyme-codec-base64url",
@@ -949,9 +989,9 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-base64"
-version = "0.1.1"
+version = "0.1.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5f3e05a470c334b8b18b05cd0e765e436ad266c73bb5aaf60055ca4824fbf3a"
+checksum = "82c020399aa75b68bfd3e800cc4888ee422ceb39134be79297c785763120d116"
 dependencies = [
  "base64",
  "thiserror",
@@ -959,9 +999,9 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-base64url"
-version = "0.1.1"
+version = "0.1.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c565a3783ab52fb27bf9c0c55a0dea1b8e1828f94d5874cce5d110774a6f259e"
+checksum = "d4952e7e4c6c9f9d9e2f5be9942a11b56f36972e7add1ca6a2dc9e4ee7ba7c51"
 dependencies = [
  "base64",
  "thiserror",
@@ -980,9 +1020,9 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-multibase"
-version = "0.1.1"
+version = "0.1.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c866573200c88d9858a527c2764e7786494101dd9e91ffae0ac5043a098b992c"
+checksum = "6b9b531d304a0f3e71747b0fe49d92842a71631358e82d148a725db2e88f5314"
 dependencies = [
  "bs58",
  "reallyme-codec-base64url",
@@ -991,15 +1031,15 @@ dependencies = [
 
 [[package]]
 name = "reallyme-codec-multicodec"
-version = "0.1.1"
+version = "0.1.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afb0f85ffa7e2b2a44a8529169a9085e392dd9a71d747ed0c81e2c7f0f895160"
+checksum = "41afa6789d3c0012aa724272c4bfd575d0edba452a5594bd492bd026f0f59cc3"
 
 [[package]]
 name = "reallyme-codec-multikey"
-version = "0.1.1"
+version = "0.1.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e955e390ddddd6e54ac4f79edee3c74e2122de2cba5fbf24daabd90626c3cd0"
+checksum = "9bb6b34e6bcf600f941ffb8e68e60d96832971619bb6966e30f6dac6c9cf10ad"
 dependencies = [
  "reallyme-codec-multibase",
  "reallyme-codec-multicodec",
@@ -1536,15 +1576,26 @@ dependencies = [
 
 [[package]]
 name = "reallyme-jose"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
+ "buffa",
  "getrandom 0.2.17",
  "reallyme-codec",
  "reallyme-crypto",
+ "reallyme-jose-proto",
  "serde",
  "serde_json",
  "thiserror",
  "zeroize",
+]
+
+[[package]]
+name = "reallyme-jose-proto"
+version = "0.2.0"
+dependencies = [
+ "buffa",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1725,6 +1776,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "simdutf8"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3a9fe34e3e7a50316060351f37187a3f546bce95496156754b601a5fa71b76e"
+
+[[package]]
 name = "slab"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1748,6 +1805,15 @@ dependencies = [
  "typenum",
  "zerocopy",
  "zeroize",
+]
+
+[[package]]
+name = "smoothutf8"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "36358427d32ecdb1624616deed99eccfef0a167fe5bf40ddb51efe6980bc1ec8"
+dependencies = [
+ "simdutf8",
 ]
 
 [[package]]

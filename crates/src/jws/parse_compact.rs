@@ -40,6 +40,20 @@ pub(crate) fn parse_compact_jws<'a, E>(
     })
 }
 
-pub(crate) fn signing_input(protected_header: &str, payload: &str) -> String {
-    format!("{protected_header}.{payload}")
+pub(crate) fn build_sig_structure<E>(
+    protected_header: &str,
+    payload: &str,
+    length_overflow: E,
+) -> Result<Vec<u8>, E> {
+    let len = protected_header
+        .len()
+        .checked_add(1)
+        .and_then(|with_separator| with_separator.checked_add(payload.len()))
+        .ok_or(length_overflow)?;
+
+    let mut structure = Vec::with_capacity(len);
+    structure.extend_from_slice(protected_header.as_bytes());
+    structure.push(b'.');
+    structure.extend_from_slice(payload.as_bytes());
+    Ok(structure)
 }

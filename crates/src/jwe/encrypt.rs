@@ -16,22 +16,116 @@ use super::{
     CompactJweProtectedHeader, JweContentEncryptionAlgorithm, JweError, JweKeyManagementAlgorithm,
 };
 
+const _: () = {
+    assert!(
+        reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH
+            == reallyme_crypto::aes::AES_192_GCM_NONCE_LENGTH
+    );
+    assert!(
+        reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH
+            == reallyme_crypto::aes::AES_256_GCM_NONCE_LENGTH
+    );
+};
+
 /// Compact JWE encryption request.
 pub struct CompactJweEncryptRequest<'a> {
     /// Plaintext bytes to encrypt.
-    pub plaintext: &'a [u8],
+    plaintext: &'a [u8],
     /// Content-encryption algorithm.
-    pub enc: JweContentEncryptionAlgorithm,
+    enc: JweContentEncryptionAlgorithm,
     /// Optional key identifier copied into the protected header.
-    pub kid: Option<&'a str>,
+    kid: Option<&'a str>,
     /// Agreement PartyUInfo as raw bytes; JOSE encodes this as Base64URL.
-    pub apu: Option<&'a [u8]>,
+    apu: Option<&'a [u8]>,
     /// Agreement PartyVInfo as raw bytes; JOSE encodes this as Base64URL.
-    pub apv: Option<&'a [u8]>,
+    apv: Option<&'a [u8]>,
     /// Optional JOSE type.
-    pub typ: Option<&'a str>,
+    typ: Option<&'a str>,
     /// Optional JOSE content type.
-    pub cty: Option<&'a str>,
+    cty: Option<&'a str>,
+}
+
+impl<'a> CompactJweEncryptRequest<'a> {
+    /// Builds a compact-JWE encryption request over caller-owned plaintext bytes.
+    #[must_use]
+    pub const fn new(plaintext: &'a [u8], enc: JweContentEncryptionAlgorithm) -> Self {
+        Self {
+            plaintext,
+            enc,
+            kid: None,
+            apu: None,
+            apv: None,
+            typ: None,
+            cty: None,
+        }
+    }
+
+    /// Sets the protected-header `kid` value.
+    #[must_use]
+    pub const fn with_kid(mut self, kid: &'a str) -> Self {
+        self.kid = Some(kid);
+        self
+    }
+
+    /// Sets raw Agreement PartyUInfo bytes.
+    #[must_use]
+    pub const fn with_apu(mut self, apu: &'a [u8]) -> Self {
+        self.apu = Some(apu);
+        self
+    }
+
+    /// Sets raw Agreement PartyVInfo bytes.
+    #[must_use]
+    pub const fn with_apv(mut self, apv: &'a [u8]) -> Self {
+        self.apv = Some(apv);
+        self
+    }
+
+    /// Sets the protected-header `typ` value.
+    #[must_use]
+    pub const fn with_typ(mut self, typ: &'a str) -> Self {
+        self.typ = Some(typ);
+        self
+    }
+
+    /// Sets the protected-header `cty` value.
+    #[must_use]
+    pub const fn with_cty(mut self, cty: &'a str) -> Self {
+        self.cty = Some(cty);
+        self
+    }
+
+    /// Returns plaintext bytes to encrypt.
+    #[must_use]
+    pub const fn plaintext(&self) -> &'a [u8] {
+        self.plaintext
+    }
+
+    /// Returns the content-encryption algorithm.
+    #[must_use]
+    pub const fn enc(&self) -> JweContentEncryptionAlgorithm {
+        self.enc
+    }
+
+    pub(crate) const fn kid(&self) -> Option<&'a str> {
+        self.kid
+    }
+
+    pub(crate) const fn apu(&self) -> Option<&'a [u8]> {
+        self.apu
+    }
+
+    pub(crate) const fn apv(&self) -> Option<&'a [u8]> {
+        self.apv
+    }
+
+    pub(crate) const fn typ(&self) -> Option<&'a str> {
+        self.typ
+    }
+
+    pub(crate) const fn cty(&self) -> Option<&'a str> {
+        self.cty
+    }
 }
 
 /// Prepared CEK and protected-header additions from a JWE key-management step.
@@ -64,6 +158,12 @@ impl PreparedJweEncryptionKey {
         if alg == JweKeyManagementAlgorithm::EcdhEs && epk.is_none() {
             return Err(JweError::MissingRequiredHeaderParameter);
         }
+        if alg == JweKeyManagementAlgorithm::Direct && epk.is_some() {
+            return Err(JweError::InvalidHeader);
+        }
+        if let Some(epk) = epk.as_ref() {
+            validate_public_epk_jwk(epk)?;
+        }
         Ok(Self {
             alg,
             cek,
@@ -71,6 +171,25 @@ impl PreparedJweEncryptionKey {
             epk,
         })
     }
+}
+
+fn validate_public_epk_jwk(jwk: &JsonValue) -> Result<(), JweError> {
+    let object = jwk.as_object().ok_or(JweError::InvalidKeyAgreementKey)?;
+    if object.len() != 4
+        || !["kty", "crv", "x", "y"]
+            .iter()
+            .all(|key| object.contains_key(*key))
+    {
+        return Err(JweError::InvalidKeyAgreementKey);
+    }
+    for (key, value) in object {
+        match key.as_str() {
+            "kty" | "crv" | "x" | "y" if value.as_str().is_some() => {}
+            "kty" | "crv" | "x" | "y" => return Err(JweError::InvalidKeyAgreementKey),
+            _ => return Err(JweError::InvalidKeyAgreementKey),
+        }
+    }
+    Ok(())
 }
 
 /// Encrypt-side JWE key-management boundary.
@@ -89,6 +208,7 @@ pub struct DirectJweKeyEncryptor<'a> {
 
 impl<'a> DirectJweKeyEncryptor<'a> {
     /// Builds a direct-key encryptor over caller-owned CEK bytes.
+    #[must_use]
     pub const fn new(key: &'a [u8]) -> Self {
         Self { key }
     }
@@ -99,7 +219,7 @@ impl JweContentEncryptionKeyEncryptor for DirectJweKeyEncryptor<'_> {
         &mut self,
         request: &CompactJweEncryptRequest<'_>,
     ) -> Result<PreparedJweEncryptionKey, JweError> {
-        if self.key.len() != request.enc.key_len() {
+        if self.key.len() != request.enc().key_len() {
             return Err(JweError::InvalidContentEncryptionKey);
         }
         Ok(PreparedJweEncryptionKey {
@@ -117,31 +237,14 @@ impl JweContentEncryptionKeyEncryptor for DirectJweKeyEncryptor<'_> {
 /// crypto backend for each message.
 pub struct P256EcdhEsJweKeyEncryptor<'a> {
     recipient_public_key_sec1: &'a [u8],
-    ephemeral_private_key: Option<&'a [u8; 32]>,
 }
 
 impl<'a> P256EcdhEsJweKeyEncryptor<'a> {
     /// Builds an ECDH-ES encryptor for a recipient P-256 public key in SEC1 form.
+    #[must_use]
     pub const fn new(recipient_public_key_sec1: &'a [u8]) -> Self {
         Self {
             recipient_public_key_sec1,
-            ephemeral_private_key: None,
-        }
-    }
-
-    /// Builds an ECDH-ES encryptor with a fixed ephemeral private key.
-    ///
-    /// This constructor is only available for deterministic conformance
-    /// vectors. Reusing an ECDH-ES ephemeral private key can repeat the CEK
-    /// derivation inputs; with a repeated GCM nonce, confidentiality fails.
-    #[cfg(feature = "conformance-vectors")]
-    pub const fn new_with_ephemeral_private_key(
-        recipient_public_key_sec1: &'a [u8],
-        ephemeral_private_key: &'a [u8; 32],
-    ) -> Self {
-        Self {
-            recipient_public_key_sec1,
-            ephemeral_private_key: Some(ephemeral_private_key),
         }
     }
 }
@@ -151,12 +254,10 @@ impl JweContentEncryptionKeyEncryptor for P256EcdhEsJweKeyEncryptor<'_> {
         &mut self,
         request: &CompactJweEncryptRequest<'_>,
     ) -> Result<PreparedJweEncryptionKey, JweError> {
-        let (ephemeral_public, mut ephemeral_private) = match self.ephemeral_private_key {
-            Some(private_key) => p256_keypair_from_secret_key(private_key)?,
-            None => reallyme_crypto::p256::generate_p256_keypair()
-                .map_err(|_| JweError::InvalidKeyAgreementKey)?,
-        };
-        let shared_secret = reallyme_crypto::p256::derive_p256_shared_secret(
+        let (ephemeral_public, mut ephemeral_private) =
+            reallyme_crypto::p256::generate_p256_keypair()
+                .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+        let mut shared_secret = reallyme_crypto::p256::derive_p256_shared_secret(
             &ephemeral_private,
             self.recipient_public_key_sec1,
         )
@@ -166,15 +267,16 @@ impl JweContentEncryptionKeyEncryptor for P256EcdhEsJweKeyEncryptor<'_> {
         let epk = p256_epk_from_sec1_public_key(&ephemeral_public)?;
         let header = CompactJweProtectedHeader {
             alg: JweKeyManagementAlgorithm::EcdhEs,
-            enc: request.enc,
-            kid: request.kid.map(str::to_owned),
-            apu: request.apu.map(bytes_to_base64url),
-            apv: request.apv.map(bytes_to_base64url),
+            enc: request.enc(),
+            kid: request.kid().map(str::to_owned),
+            apu: encode_optional_base64url(request.apu()),
+            apv: encode_optional_base64url(request.apv()),
             epk: Some(epk.clone()),
-            typ: request.typ.map(str::to_owned),
-            cty: request.cty.map(str::to_owned),
+            typ: request.typ().map(str::to_owned),
+            cty: request.cty().map(str::to_owned),
         };
         let cek = derive_ecdh_es_content_encryption_key(&shared_secret, &header)?;
+        shared_secret.zeroize();
 
         Ok(PreparedJweEncryptionKey {
             alg: JweKeyManagementAlgorithm::EcdhEs,
@@ -192,6 +294,7 @@ pub struct P256EcdhEsJweKeyResolver<'a> {
 
 impl<'a> P256EcdhEsJweKeyResolver<'a> {
     /// Builds a resolver over caller-owned recipient P-256 private key bytes.
+    #[must_use]
     pub const fn new(recipient_private_key: &'a [u8]) -> Self {
         Self {
             recipient_private_key,
@@ -213,20 +316,15 @@ impl super::JweContentEncryptionKeyResolver for P256EcdhEsJweKeyResolver<'_> {
             .as_ref()
             .ok_or(JweError::MissingRequiredHeaderParameter)?;
         let ephemeral_public_key = p256_public_key_from_jwk(epk)?;
-        let shared_secret = reallyme_crypto::p256::derive_p256_shared_secret(
+        let mut shared_secret = reallyme_crypto::p256::derive_p256_shared_secret(
             self.recipient_private_key,
             &ephemeral_public_key,
         )
         .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-        derive_ecdh_es_content_encryption_key(&shared_secret, header)
+        let cek = derive_ecdh_es_content_encryption_key(&shared_secret, header)?;
+        shared_secret.zeroize();
+        Ok(cek)
     }
-}
-
-fn p256_keypair_from_secret_key(
-    private_key: &[u8; 32],
-) -> Result<(Vec<u8>, Zeroizing<Vec<u8>>), JweError> {
-    reallyme_crypto::p256::generate_p256_keypair_from_secret_key(private_key)
-        .map_err(|_| JweError::InvalidKeyAgreementKey)
 }
 
 /// Native P-384 ECDH-ES encryptor for compact JWEs.
@@ -236,32 +334,15 @@ fn p256_keypair_from_secret_key(
 #[cfg(feature = "native")]
 pub struct P384EcdhEsJweKeyEncryptor<'a> {
     recipient_public_key_sec1: &'a [u8],
-    ephemeral_private_key: Option<&'a [u8; 48]>,
 }
 
 #[cfg(feature = "native")]
 impl<'a> P384EcdhEsJweKeyEncryptor<'a> {
     /// Builds an ECDH-ES encryptor for a recipient P-384 public key in SEC1 form.
+    #[must_use]
     pub const fn new(recipient_public_key_sec1: &'a [u8]) -> Self {
         Self {
             recipient_public_key_sec1,
-            ephemeral_private_key: None,
-        }
-    }
-
-    /// Builds an ECDH-ES encryptor with a fixed ephemeral private key.
-    ///
-    /// This constructor is only available for deterministic conformance
-    /// vectors. Reusing an ECDH-ES ephemeral private key can repeat the CEK
-    /// derivation inputs; with a repeated GCM nonce, confidentiality fails.
-    #[cfg(feature = "conformance-vectors")]
-    pub const fn new_with_ephemeral_private_key(
-        recipient_public_key_sec1: &'a [u8],
-        ephemeral_private_key: &'a [u8; 48],
-    ) -> Self {
-        Self {
-            recipient_public_key_sec1,
-            ephemeral_private_key: Some(ephemeral_private_key),
         }
     }
 }
@@ -272,32 +353,29 @@ impl JweContentEncryptionKeyEncryptor for P384EcdhEsJweKeyEncryptor<'_> {
         &mut self,
         request: &CompactJweEncryptRequest<'_>,
     ) -> Result<PreparedJweEncryptionKey, JweError> {
-        let (ephemeral_public, ephemeral_private) = match self.ephemeral_private_key {
-            Some(private_key) => {
-                reallyme_crypto::p384::generate_p384_keypair_from_secret_key(private_key)
-                    .map_err(|_| JweError::InvalidKeyAgreementKey)?
-            }
-            None => reallyme_crypto::p384::generate_p384_keypair()
-                .map_err(|_| JweError::InvalidKeyAgreementKey)?,
-        };
-        let shared_secret = reallyme_crypto::p384::derive_p384_shared_secret(
+        let (ephemeral_public, mut ephemeral_private) =
+            reallyme_crypto::p384::generate_p384_keypair()
+                .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+        let mut shared_secret = reallyme_crypto::p384::derive_p384_shared_secret(
             &ephemeral_private,
             self.recipient_public_key_sec1,
         )
         .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+        ephemeral_private.zeroize();
 
         let epk = p384_epk_from_sec1_public_key(&ephemeral_public)?;
         let header = CompactJweProtectedHeader {
             alg: JweKeyManagementAlgorithm::EcdhEs,
-            enc: request.enc,
-            kid: request.kid.map(str::to_owned),
-            apu: request.apu.map(bytes_to_base64url),
-            apv: request.apv.map(bytes_to_base64url),
+            enc: request.enc(),
+            kid: request.kid().map(str::to_owned),
+            apu: encode_optional_base64url(request.apu()),
+            apv: encode_optional_base64url(request.apv()),
             epk: Some(epk.clone()),
-            typ: request.typ.map(str::to_owned),
-            cty: request.cty.map(str::to_owned),
+            typ: request.typ().map(str::to_owned),
+            cty: request.cty().map(str::to_owned),
         };
         let cek = derive_ecdh_es_content_encryption_key(&shared_secret, &header)?;
+        shared_secret.zeroize();
 
         Ok(PreparedJweEncryptionKey {
             alg: JweKeyManagementAlgorithm::EcdhEs,
@@ -317,6 +395,7 @@ pub struct P384EcdhEsJweKeyResolver<'a> {
 #[cfg(feature = "native")]
 impl<'a> P384EcdhEsJweKeyResolver<'a> {
     /// Builds a resolver over caller-owned recipient P-384 private key bytes.
+    #[must_use]
     pub const fn new(recipient_private_key: &'a [u8]) -> Self {
         Self {
             recipient_private_key,
@@ -339,12 +418,14 @@ impl super::JweContentEncryptionKeyResolver for P384EcdhEsJweKeyResolver<'_> {
             .as_ref()
             .ok_or(JweError::MissingRequiredHeaderParameter)?;
         let ephemeral_public_key = p384_public_key_from_jwk(epk)?;
-        let shared_secret = reallyme_crypto::p384::derive_p384_shared_secret(
+        let mut shared_secret = reallyme_crypto::p384::derive_p384_shared_secret(
             self.recipient_private_key,
             &ephemeral_public_key,
         )
         .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-        derive_ecdh_es_content_encryption_key(&shared_secret, header)
+        let cek = derive_ecdh_es_content_encryption_key(&shared_secret, header)?;
+        shared_secret.zeroize();
+        Ok(cek)
     }
 }
 
@@ -355,32 +436,15 @@ impl super::JweContentEncryptionKeyResolver for P384EcdhEsJweKeyResolver<'_> {
 #[cfg(feature = "native")]
 pub struct P521EcdhEsJweKeyEncryptor<'a> {
     recipient_public_key_sec1: &'a [u8],
-    ephemeral_private_key: Option<&'a [u8; 66]>,
 }
 
 #[cfg(feature = "native")]
 impl<'a> P521EcdhEsJweKeyEncryptor<'a> {
     /// Builds an ECDH-ES encryptor for a recipient P-521 public key in SEC1 form.
+    #[must_use]
     pub const fn new(recipient_public_key_sec1: &'a [u8]) -> Self {
         Self {
             recipient_public_key_sec1,
-            ephemeral_private_key: None,
-        }
-    }
-
-    /// Builds an ECDH-ES encryptor with a fixed ephemeral private key.
-    ///
-    /// This constructor is only available for deterministic conformance
-    /// vectors. Reusing an ECDH-ES ephemeral private key can repeat the CEK
-    /// derivation inputs; with a repeated GCM nonce, confidentiality fails.
-    #[cfg(feature = "conformance-vectors")]
-    pub const fn new_with_ephemeral_private_key(
-        recipient_public_key_sec1: &'a [u8],
-        ephemeral_private_key: &'a [u8; 66],
-    ) -> Self {
-        Self {
-            recipient_public_key_sec1,
-            ephemeral_private_key: Some(ephemeral_private_key),
         }
     }
 }
@@ -391,32 +455,29 @@ impl JweContentEncryptionKeyEncryptor for P521EcdhEsJweKeyEncryptor<'_> {
         &mut self,
         request: &CompactJweEncryptRequest<'_>,
     ) -> Result<PreparedJweEncryptionKey, JweError> {
-        let (ephemeral_public, ephemeral_private) = match self.ephemeral_private_key {
-            Some(private_key) => {
-                reallyme_crypto::p521::generate_p521_keypair_from_secret_key(private_key)
-                    .map_err(|_| JweError::InvalidKeyAgreementKey)?
-            }
-            None => reallyme_crypto::p521::generate_p521_keypair()
-                .map_err(|_| JweError::InvalidKeyAgreementKey)?,
-        };
-        let shared_secret = reallyme_crypto::p521::derive_p521_shared_secret(
+        let (ephemeral_public, mut ephemeral_private) =
+            reallyme_crypto::p521::generate_p521_keypair()
+                .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+        let mut shared_secret = reallyme_crypto::p521::derive_p521_shared_secret(
             &ephemeral_private,
             self.recipient_public_key_sec1,
         )
         .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+        ephemeral_private.zeroize();
 
         let epk = p521_epk_from_sec1_public_key(&ephemeral_public)?;
         let header = CompactJweProtectedHeader {
             alg: JweKeyManagementAlgorithm::EcdhEs,
-            enc: request.enc,
-            kid: request.kid.map(str::to_owned),
-            apu: request.apu.map(bytes_to_base64url),
-            apv: request.apv.map(bytes_to_base64url),
+            enc: request.enc(),
+            kid: request.kid().map(str::to_owned),
+            apu: encode_optional_base64url(request.apu()),
+            apv: encode_optional_base64url(request.apv()),
             epk: Some(epk.clone()),
-            typ: request.typ.map(str::to_owned),
-            cty: request.cty.map(str::to_owned),
+            typ: request.typ().map(str::to_owned),
+            cty: request.cty().map(str::to_owned),
         };
         let cek = derive_ecdh_es_content_encryption_key(&shared_secret, &header)?;
+        shared_secret.zeroize();
 
         Ok(PreparedJweEncryptionKey {
             alg: JweKeyManagementAlgorithm::EcdhEs,
@@ -436,6 +497,7 @@ pub struct P521EcdhEsJweKeyResolver<'a> {
 #[cfg(feature = "native")]
 impl<'a> P521EcdhEsJweKeyResolver<'a> {
     /// Builds a resolver over caller-owned recipient P-521 private key bytes.
+    #[must_use]
     pub const fn new(recipient_private_key: &'a [u8]) -> Self {
         Self {
             recipient_private_key,
@@ -458,12 +520,14 @@ impl super::JweContentEncryptionKeyResolver for P521EcdhEsJweKeyResolver<'_> {
             .as_ref()
             .ok_or(JweError::MissingRequiredHeaderParameter)?;
         let ephemeral_public_key = p521_public_key_from_jwk(epk)?;
-        let shared_secret = reallyme_crypto::p521::derive_p521_shared_secret(
+        let mut shared_secret = reallyme_crypto::p521::derive_p521_shared_secret(
             self.recipient_private_key,
             &ephemeral_public_key,
         )
         .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-        derive_ecdh_es_content_encryption_key(&shared_secret, header)
+        let cek = derive_ecdh_es_content_encryption_key(&shared_secret, header)?;
+        shared_secret.zeroize();
+        Ok(cek)
     }
 }
 
@@ -471,51 +535,78 @@ impl super::JweContentEncryptionKeyResolver for P521EcdhEsJweKeyResolver<'_> {
 ///
 /// The protected header is authenticated as JWE AAD. For `ECDH-ES`, this
 /// function relies on the supplied encryptor to produce fresh key agreement
-/// material unless the `conformance-vectors` feature is explicitly enabled.
+/// material.
+///
+/// # Errors
+///
+/// Returns [`JweError`] when key-management output is invalid, randomness is
+/// unavailable, header serialization fails, content-encryption input lengths
+/// are invalid, encryption fails, or compact serialization length arithmetic
+/// overflows.
 pub fn encrypt_compact_jwe_bytes<R: SecureRandom + ?Sized>(
     request: &CompactJweEncryptRequest<'_>,
     key_encryptor: &mut dyn JweContentEncryptionKeyEncryptor,
     rng: &mut R,
 ) -> Result<String, JweError> {
     let prepared = key_encryptor.prepare_content_encryption_key(request)?;
-    let header = SerializableCompactJweProtectedHeader {
+    let mut header = SerializableCompactJweProtectedHeader {
         alg: prepared.alg,
-        enc: request.enc,
-        kid: request.kid,
-        apu: request.apu.map(bytes_to_base64url),
-        apv: request.apv.map(bytes_to_base64url),
+        enc: request.enc(),
+        kid: request.kid(),
+        apu: encode_optional_base64url(request.apu()),
+        apv: encode_optional_base64url(request.apv()),
         epk: prepared.epk.as_ref(),
-        typ: request.typ,
-        cty: request.cty,
+        typ: request.typ(),
+        cty: request.cty(),
     };
-    let protected_header_json = serde_json::to_vec(&header).map_err(|_| JweError::InvalidHeader)?;
-    let protected_header = bytes_to_base64url(&protected_header_json);
+    super::validate_header::validate_jwe_header_structure(
+        prepared.alg,
+        prepared.epk.is_some(),
+        request.apu().is_some(),
+        request.apv().is_some(),
+    )?;
+    let protected_header_result = serde_json::to_vec(&header);
+    header.apu.zeroize();
+    header.apv.zeroize();
+    let protected_header_json = protected_header_result.map_err(|_| JweError::InvalidHeader)?;
+    let protected_header = encode_jwe_base64url(&protected_header_json);
 
     let mut nonce = [0u8; reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH];
     rng.fill_secure(&mut nonce, RngOutputKind::AeadNonce12)
         .map_err(|_| JweError::Randomness)?;
     let ciphertext_with_tag = encrypt_content(
-        request.enc,
+        request.enc(),
         &prepared.cek,
         &nonce,
         protected_header.as_bytes(),
-        request.plaintext,
+        request.plaintext(),
     )?;
     let ciphertext_and_tag = ciphertext_with_tag.as_bytes();
-    let tag_len = request.enc.tag_len();
+    let tag_len = request.enc().tag_len();
     let split_at = ciphertext_and_tag
         .len()
         .checked_sub(tag_len)
         .ok_or(JweError::LengthOverflow)?;
-    let encrypted_key = bytes_to_base64url(&prepared.encrypted_key);
-    let iv = bytes_to_base64url(&nonce);
-    let ciphertext = bytes_to_base64url(&ciphertext_and_tag[..split_at]);
-    let tag = bytes_to_base64url(&ciphertext_and_tag[split_at..]);
+    let encrypted_key = encode_jwe_base64url(&prepared.encrypted_key);
+    let iv = encode_jwe_base64url(&nonce);
+    let ciphertext_bytes = ciphertext_and_tag
+        .get(..split_at)
+        .ok_or(JweError::LengthOverflow)?;
+    let tag_bytes = ciphertext_and_tag
+        .get(split_at..)
+        .ok_or(JweError::LengthOverflow)?;
+    let ciphertext = encode_jwe_base64url(ciphertext_bytes);
+    let tag = encode_jwe_base64url(tag_bytes);
 
     format_compact_jwe(&protected_header, &encrypted_key, &iv, &ciphertext, &tag)
 }
 
 /// Encrypts a JSON-serializable payload as a compact JWE.
+///
+/// # Errors
+///
+/// Returns [`JweError`] when payload JSON serialization fails or when
+/// [`encrypt_compact_jwe_bytes`] fails.
 pub fn encrypt_compact_jwe_json<T: Serialize, R: SecureRandom + ?Sized>(
     payload: &T,
     enc: JweContentEncryptionAlgorithm,
@@ -525,15 +616,7 @@ pub fn encrypt_compact_jwe_json<T: Serialize, R: SecureRandom + ?Sized>(
     let plaintext =
         Zeroizing::new(serde_json::to_vec(payload).map_err(|_| JweError::InvalidPayloadJson)?);
     encrypt_compact_jwe_bytes(
-        &CompactJweEncryptRequest {
-            plaintext: &plaintext,
-            enc,
-            kid: None,
-            apu: None,
-            apv: None,
-            typ: None,
-            cty: None,
-        },
+        &CompactJweEncryptRequest::new(&plaintext, enc),
         key_encryptor,
         rng,
     )
@@ -717,9 +800,17 @@ fn ec_epk_from_sec1_public_key(
     let mut epk = Map::new();
     epk.insert("kty".to_owned(), JsonValue::String("EC".to_owned()));
     epk.insert("crv".to_owned(), JsonValue::String(crv.to_owned()));
-    epk.insert("x".to_owned(), JsonValue::String(bytes_to_base64url(x)));
-    epk.insert("y".to_owned(), JsonValue::String(bytes_to_base64url(y)));
+    epk.insert("x".to_owned(), JsonValue::String(encode_jwe_base64url(x)));
+    epk.insert("y".to_owned(), JsonValue::String(encode_jwe_base64url(y)));
     Ok(JsonValue::Object(epk))
+}
+
+fn encode_optional_base64url(value: Option<&[u8]>) -> Option<String> {
+    value.map(encode_jwe_base64url)
+}
+
+fn encode_jwe_base64url(bytes: &[u8]) -> String {
+    bytes_to_base64url(bytes)
 }
 
 fn ec_uncompressed_public_key(

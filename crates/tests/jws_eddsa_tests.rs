@@ -1,4 +1,9 @@
-#![allow(missing_docs, clippy::expect_used, clippy::unwrap_used)]
+#![allow(
+    missing_docs,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::unwrap_used
+)]
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -48,4 +53,14 @@ fn jws_eddsa_rejects_invalid_signature_length() {
     let err = verify_eddsa_jws(bad_jws, &public).unwrap_err();
 
     assert_eq!(err, JwsEddsaError::InvalidSignature);
+}
+
+#[test]
+fn jws_eddsa_encoder_rejects_output_over_parser_limit() {
+    let (_public, private) = generate_keypair(Algorithm::Ed25519).unwrap();
+    let payload = "a".repeat(800_000);
+
+    let err = sign_eddsa_jws(&private, &payload).unwrap_err();
+
+    assert_eq!(err, JwsEddsaError::InputTooLarge);
 }

@@ -129,15 +129,26 @@ impl JwtHeader {
 #[derive(Debug, Clone)]
 pub struct JwtHeaderEncodeOptions {
     /// Optional JOSE `typ` value to emit.
-    pub typ: Option<String>,
+    pub(super) typ: Option<String>,
 }
 
 impl JwtHeaderEncodeOptions {
+    /// Builds signed-JWT header options with an explicit optional `typ` value.
+    #[must_use]
+    pub const fn new(typ: Option<String>) -> Self {
+        Self { typ }
+    }
+
     /// Returns encode options for a conventional `typ = "JWT"` header.
+    #[must_use]
     pub fn jwt() -> Self {
-        JwtHeaderEncodeOptions {
-            typ: Some("JWT".to_owned()),
-        }
+        Self::new(Some("JWT".to_owned()))
+    }
+
+    /// Returns the configured protected-header `typ` value.
+    #[must_use]
+    pub fn typ(&self) -> Option<&str> {
+        self.typ.as_deref()
     }
 }
 
@@ -145,25 +156,66 @@ impl JwtHeaderEncodeOptions {
 #[derive(Debug, Clone, Copy)]
 pub struct JwtHeaderValidationOptions<'a> {
     /// Allows signed JWTs that omit `typ`.
-    pub allow_missing_typ: bool,
+    allow_missing_typ: bool,
     /// Allows embedded `jwk` or `x5c` headers.
-    pub allow_embedded_key_header: bool,
+    allow_embedded_key_header: bool,
     /// Exact accepted `typ` values. Empty means no present `typ` is accepted.
-    pub accepted_typ_values: &'a [&'a str],
+    accepted_typ_values: &'a [&'a str],
 }
 
 impl<'a> JwtHeaderValidationOptions<'a> {
-    /// Returns the default signed-JWT policy used by verifier helpers.
-    pub const fn standard_jwt() -> Self {
-        JwtHeaderValidationOptions {
-            allow_missing_typ: true,
-            allow_embedded_key_header: false,
-            accepted_typ_values: &["JWT"],
+    /// Builds a signed-JWT header validation policy.
+    #[must_use]
+    pub const fn new(
+        allow_missing_typ: bool,
+        allow_embedded_key_header: bool,
+        accepted_typ_values: &'a [&'a str],
+    ) -> Self {
+        Self {
+            allow_missing_typ,
+            allow_embedded_key_header,
+            accepted_typ_values,
         }
+    }
+
+    /// Returns the default signed-JWT policy used by verifier helpers.
+    ///
+    /// Missing `typ` is accepted for compatibility with deployed JWT issuers,
+    /// but embedded sender-controlled key material remains rejected.
+    #[must_use]
+    pub const fn standard_jwt() -> Self {
+        Self::new(true, false, &["JWT"])
+    }
+
+    /// Allows signed JWTs that omit `typ`.
+    #[must_use]
+    pub const fn allow_missing_typ(&self) -> bool {
+        self.allow_missing_typ
+    }
+
+    /// Allows embedded `jwk` or `x5c` headers.
+    #[must_use]
+    pub const fn allow_embedded_key_header(&self) -> bool {
+        self.allow_embedded_key_header
+    }
+
+    /// Returns exact accepted `typ` values.
+    #[must_use]
+    pub const fn accepted_typ_values(&self) -> &'a [&'a str] {
+        self.accepted_typ_values
     }
 }
 
 pub(super) fn select_jwk_algorithm(jwk: &Jwk) -> Result<String, JwtError> {
+    let use_ = match jwk {
+        Jwk::Ec(j) => j.use_.as_deref(),
+        Jwk::Okp(j) => j.use_.as_deref(),
+        Jwk::Akp(j) => j.use_.as_deref(),
+    };
+    if use_.is_some_and(|value| value != "sig") {
+        return Err(JwtError::AlgorithmMismatch);
+    }
+
     let alg = match jwk {
         Jwk::Ec(j) => j.alg.as_deref(),
         Jwk::Okp(j) => j.alg.as_deref(),

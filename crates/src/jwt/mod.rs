@@ -23,6 +23,7 @@ pub use alg::algorithm_from_jwt_alg;
 mod parse_compact;
 mod select_algorithm;
 mod sign;
+mod strict_json;
 mod unsigned;
 mod validate_header;
 mod validate_temporal_claims;
@@ -37,14 +38,22 @@ pub mod datatype;
 pub use datatype::{NumericDate, StringOrURI};
 
 pub use parse_compact::MAX_COMPACT_JWT_BYTES;
+#[cfg(feature = "wire")]
+pub(crate) use sign::encode_signed_jwt_claims_json;
 pub use sign::{
     encode_signed_jwt, encode_signed_jwt_with_header_options, encode_signed_jwt_with_signer,
     encode_signed_jwt_with_signer_and_header_options,
 };
-pub use unsigned::{decode_unsigned_jwt, encode_unsigned_jwt};
+#[cfg(feature = "wire")]
+pub(crate) use strict_json::reject_duplicate_object_members;
+#[cfg(feature = "wire")]
+pub(crate) use unsigned::encode_unsigned_jwt_claims_json;
+pub use unsigned::{decode_unsigned_jwt, decode_unsigned_jwt_claims_json, encode_unsigned_jwt};
 pub use validate_header::{JwtHeaderEncodeOptions, JwtHeaderValidationOptions};
 pub use validate_temporal_claims::JwtTemporalValidationPolicy;
 pub use verify::{
+    decode_verify_jwt_claims_json_signature_only_with_header_validation,
+    decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation,
     decode_verify_jwt_signature_only, decode_verify_jwt_signature_only_with_header_validation,
     decode_verify_jwt_with_temporal_validation,
     decode_verify_jwt_with_temporal_validation_and_header_validation,

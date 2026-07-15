@@ -1,4 +1,13 @@
-#![allow(missing_docs, clippy::expect_used, clippy::unwrap_used, clippy::panic)]
+#![allow(
+    missing_docs,
+    clippy::arithmetic_side_effects,
+    clippy::as_conversions,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::missing_const_for_fn,
+    clippy::panic,
+    clippy::unwrap_used
+)]
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -6,8 +15,8 @@
 //! Executes the portable `jws-compact` conformance vectors.
 //!
 //! Positive cases must verify; negative cases must fail closed with the exact
-//! error variant named in the vector. Regenerate the fixtures with
-//! `gen_vectors.rs`.
+//! error variant named in the checked-in fixture. Fixture changes must remain
+//! explicit and independently reviewable.
 
 use serde_json::Value;
 

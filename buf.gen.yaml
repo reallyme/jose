@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+version: v2
+plugins:
+  # Rust Buffa message/view types. Jose checks in generated bindings instead
+  # of using build.rs so downstream release builds are deterministic.
+  - local: protoc-gen-buffa
+    out: crates/proto/jose/src/generated/buffa
+    opt: [views=true, json=true]
+  - local: protoc-gen-buffa-packaging
+    out: crates/proto/jose/src/generated/buffa
+    strategy: all

@@ -9,9 +9,9 @@ use reallyme_crypto::dispatch::{sign as dispatch_sign, verify as dispatch_verify
 use thiserror::Error;
 
 use crate::jws::{
-    parse_compact::{parse_compact_jws, signing_input},
+    parse_compact::{build_sig_structure, parse_compact_jws},
     parse_header::JwsAlgorithm,
-    sign::{encode_compact_jws, encode_jws_signing_input},
+    sign::{encode_compact_jws, encode_jws_signing_input, JwsSigningInputError},
     verify::{decode_and_validate_header, decode_signature},
 };
 
@@ -19,6 +19,7 @@ const ED25519_SIGNATURE_LEN: usize = 64;
 
 /// EdDSA compact JWS signing and verification errors.
 #[derive(Debug, Clone, Copy, Eq, Error, PartialEq)]
+#[non_exhaustive]
 pub enum JwsEddsaError {
     /// The Ed25519 signing operation failed.
     #[error("EdDSA JWS signing failed")]
@@ -35,6 +36,12 @@ pub enum JwsEddsaError {
     /// The compact JWS did not contain exactly three segments or exceeded limits.
     #[error("EdDSA JWS compact serialization is invalid")]
     InvalidCompactEncoding,
+    /// A checked JWS signing-input length calculation overflowed.
+    #[error("EdDSA JWS signing input length overflow")]
+    LengthOverflow,
+    /// The encoded compact JWS would exceed the parser's public limit.
+    #[error("EdDSA JWS compact serialization is too large")]
+    InputTooLarge,
     /// The protected header did not validate as supported `alg = "EdDSA"`.
     #[error("EdDSA JWS header does not bind to alg EdDSA")]
     HeaderMismatch,
@@ -44,19 +51,31 @@ pub enum JwsEddsaError {
 }
 
 /// Sign a compact JWS using the EdDSA JOSE algorithm with Ed25519 keys.
+///
+/// # Errors
+///
+/// Returns [`JwsEddsaError`] when signing-input construction overflows,
+/// Ed25519 signing fails, or compact serialization fails.
 pub fn sign_eddsa_jws(secret_key: &[u8], payload_text: &str) -> Result<String, JwsEddsaError> {
-    let signing_input = encode_jws_signing_input(JwsAlgorithm::Eddsa, payload_text.as_bytes());
+    let signing_input = encode_jws_signing_input(JwsAlgorithm::Eddsa, payload_text.as_bytes())
+        .map_err(JwsEddsaError::from)?;
     let signature = dispatch_sign(
         CryptoAlgorithm::Ed25519,
         secret_key,
-        signing_input.signing_input.as_bytes(),
+        &signing_input.signing_input,
     )
     .map_err(|_| JwsEddsaError::SignFailed)?;
 
-    Ok(encode_compact_jws(signing_input, &signature))
+    encode_compact_jws(signing_input, &signature).map_err(JwsEddsaError::from)
 }
 
 /// Verify a compact JWS using the EdDSA JOSE algorithm with Ed25519 keys.
+///
+/// # Errors
+///
+/// Returns [`JwsEddsaError`] for malformed compact input, invalid Base64URL or
+/// UTF-8 header data, `alg` mismatch, malformed signature bytes, or Ed25519
+/// verification failure.
 pub fn verify_eddsa_jws(jws: &str, public_key: &[u8]) -> Result<(), JwsEddsaError> {
     let parts = parse_compact_jws(jws, JwsEddsaError::InvalidCompactEncoding)?;
     decode_and_validate_header(
@@ -67,7 +86,11 @@ pub fn verify_eddsa_jws(jws: &str, public_key: &[u8]) -> Result<(), JwsEddsaErro
         JwsEddsaError::HeaderMismatch,
     )?;
 
-    let signing_input = signing_input(parts.protected_header, parts.payload);
+    let signing_input = build_sig_structure(
+        parts.protected_header,
+        parts.payload,
+        JwsEddsaError::LengthOverflow,
+    )?;
     let signature = decode_signature(parts.signature, JwsEddsaError::BadSignatureBase64)?;
     if signature.len() != ED25519_SIGNATURE_LEN {
         return Err(JwsEddsaError::InvalidSignature);
@@ -76,8 +99,17 @@ pub fn verify_eddsa_jws(jws: &str, public_key: &[u8]) -> Result<(), JwsEddsaErro
     dispatch_verify(
         CryptoAlgorithm::Ed25519,
         public_key,
-        signing_input.as_bytes(),
+        &signing_input,
         &signature,
     )
     .map_err(|_| JwsEddsaError::InvalidSignature)
+}
+
+impl From<JwsSigningInputError> for JwsEddsaError {
+    fn from(error: JwsSigningInputError) -> Self {
+        match error {
+            JwsSigningInputError::LengthOverflow => JwsEddsaError::LengthOverflow,
+            JwsSigningInputError::InputTooLarge => JwsEddsaError::InputTooLarge,
+        }
+    }
 }

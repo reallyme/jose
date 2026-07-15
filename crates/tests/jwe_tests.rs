@@ -1,3 +1,12 @@
+#![allow(
+    missing_docs,
+    clippy::arithmetic_side_effects,
+    clippy::as_conversions,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::missing_const_for_fn,
+    clippy::unwrap_used
+)]
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
 // SPDX-License-Identifier: Apache-2.0
@@ -15,10 +24,8 @@ use reallyme_jose::jwe::{
     CompactJweProtectedHeader, DirectJweKeyEncryptor, DirectJweKeyResolver,
     JweContentEncryptionAlgorithm, JweContentEncryptionKeyResolver, JweError,
     JweKeyManagementAlgorithm, P256EcdhEsJweKeyEncryptor, P256EcdhEsJweKeyResolver,
-    MAX_COMPACT_JWE_BYTES,
+    PreparedJweEncryptionKey, MAX_COMPACT_JWE_BYTES,
 };
-#[cfg(all(feature = "native", feature = "conformance-vectors"))]
-use reallyme_jose::jwe::{P384EcdhEsJweKeyEncryptor, P521EcdhEsJweKeyEncryptor};
 #[cfg(feature = "native")]
 use reallyme_jose::jwe::{P384EcdhEsJweKeyResolver, P521EcdhEsJweKeyResolver};
 
@@ -34,19 +41,14 @@ struct JweVectorSuite {
 }
 
 #[derive(Debug, Deserialize)]
-#[cfg_attr(not(feature = "conformance-vectors"), allow(dead_code))]
 struct JweVectorCase {
     id: String,
     alg: String,
     enc: String,
     cek_hex: Option<String>,
-    iv_hex: Option<String>,
     recipient_private_key_hex: Option<String>,
-    recipient_public_key_sec1_hex: Option<String>,
-    ephemeral_private_key_hex: Option<String>,
     protected_header: Value,
     compact: String,
-    plaintext_json_utf8: Option<String>,
     expected_plaintext_json: Option<Value>,
     expected_error: Option<String>,
     derived_cek_hex: Option<String>,
@@ -118,15 +120,7 @@ fn encrypts_compact_dir_a128gcm_json() -> Result<(), JweError> {
     let mut encryptor = DirectJweKeyEncryptor::new(&key);
 
     let compact = encrypt_compact_jwe_bytes(
-        &CompactJweEncryptRequest {
-            plaintext: payload,
-            enc: JweContentEncryptionAlgorithm::A128Gcm,
-            kid: None,
-            apu: None,
-            apv: None,
-            typ: None,
-            cty: None,
-        },
+        &CompactJweEncryptRequest::new(payload, JweContentEncryptionAlgorithm::A128Gcm),
         &mut encryptor,
         &mut rng,
     )?;
@@ -148,143 +142,32 @@ fn encrypts_compact_dir_a128gcm_json() -> Result<(), JweError> {
 }
 
 #[test]
-#[cfg(feature = "conformance-vectors")]
-fn encrypts_and_decrypts_p256_ecdh_es_a128gcm_json() -> Result<(), JweError> {
-    let recipient_secret = private_scalar(5);
-    let ephemeral_secret = private_scalar(9);
-    let (recipient_public, recipient_private) =
-        reallyme_crypto::p256::generate_p256_keypair_from_secret_key(&recipient_secret)
-            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-    let nonce = [4u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let mut rng = FixedRandom::new(nonce);
-    let mut encryptor = P256EcdhEsJweKeyEncryptor::new_with_ephemeral_private_key(
-        &recipient_public,
-        &ephemeral_secret,
-    );
+fn direct_encryption_rejects_ecdh_party_info() -> Result<(), JweError> {
+    let key = [7u8; 16];
+    let mut rng = FixedRandom::new([9u8; 12]);
+    let mut encryptor = DirectJweKeyEncryptor::new(&key);
 
-    let compact = encrypt_compact_jwe_bytes(
-        &CompactJweEncryptRequest {
-            plaintext: payload,
-            enc: JweContentEncryptionAlgorithm::A128Gcm,
-            kid: Some("recipient-key-1"),
-            apu: Some(b"wallet"),
-            apv: Some(b"issuer"),
-            typ: None,
-            cty: None,
-        },
+    let err = require_jwe_error(encrypt_compact_jwe_bytes(
+        &CompactJweEncryptRequest::new(b"plaintext", JweContentEncryptionAlgorithm::A128Gcm)
+            .with_apu(b"sender"),
         &mut encryptor,
         &mut rng,
-    )?;
+    ))?;
 
-    let decoded: DirectPostPayload = decrypt_compact_jwe_json(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &P256EcdhEsJweKeyResolver::new(&recipient_private),
-    )?;
-
-    assert_eq!(
-        decoded,
-        DirectPostPayload {
-            vp_token: "presented".to_owned(),
-            state: "abc".to_owned(),
-        }
-    );
+    assert!(matches!(err, JweError::InvalidHeader));
     Ok(())
 }
 
-#[cfg(feature = "native")]
-#[cfg(feature = "conformance-vectors")]
 #[test]
-fn encrypts_and_decrypts_p384_ecdh_es_a192gcm_json() -> Result<(), JweError> {
-    let recipient_secret = private_scalar_with_len::<48>(7);
-    let ephemeral_secret = private_scalar_with_len::<48>(13);
-    let (recipient_public, recipient_private) =
-        reallyme_crypto::p384::generate_p384_keypair_from_secret_key(&recipient_secret)
-            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-    let nonce = [6u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let mut rng = FixedRandom::new(nonce);
-    let mut encryptor = P384EcdhEsJweKeyEncryptor::new_with_ephemeral_private_key(
-        &recipient_public,
-        &ephemeral_secret,
+fn prepared_ecdh_key_rejects_incomplete_ephemeral_jwk() {
+    let result = PreparedJweEncryptionKey::new(
+        JweKeyManagementAlgorithm::EcdhEs,
+        reallyme_jose::Zeroizing::new(vec![0u8; 16]),
+        Vec::new(),
+        Some(json!({"kty":"EC","crv":"P-256","x":"AA"})),
     );
 
-    let compact = encrypt_compact_jwe_bytes(
-        &CompactJweEncryptRequest {
-            plaintext: payload,
-            enc: JweContentEncryptionAlgorithm::A192Gcm,
-            kid: Some("recipient-key-p384"),
-            apu: Some(b"wallet"),
-            apv: Some(b"issuer"),
-            typ: None,
-            cty: None,
-        },
-        &mut encryptor,
-        &mut rng,
-    )?;
-
-    let decoded: DirectPostPayload = decrypt_compact_jwe_json(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &P384EcdhEsJweKeyResolver::new(&recipient_private),
-    )?;
-
-    assert_eq!(
-        decoded,
-        DirectPostPayload {
-            vp_token: "presented".to_owned(),
-            state: "abc".to_owned(),
-        }
-    );
-    Ok(())
-}
-
-#[cfg(feature = "native")]
-#[cfg(feature = "conformance-vectors")]
-#[test]
-fn encrypts_and_decrypts_p521_ecdh_es_a256gcm_json() -> Result<(), JweError> {
-    let recipient_secret = private_scalar_with_len::<66>(11);
-    let ephemeral_secret = private_scalar_with_len::<66>(17);
-    let (recipient_public, recipient_private) =
-        reallyme_crypto::p521::generate_p521_keypair_from_secret_key(&recipient_secret)
-            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-    let nonce = [8u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let mut rng = FixedRandom::new(nonce);
-    let mut encryptor = P521EcdhEsJweKeyEncryptor::new_with_ephemeral_private_key(
-        &recipient_public,
-        &ephemeral_secret,
-    );
-
-    let compact = encrypt_compact_jwe_bytes(
-        &CompactJweEncryptRequest {
-            plaintext: payload,
-            enc: JweContentEncryptionAlgorithm::A256Gcm,
-            kid: Some("recipient-key-p521"),
-            apu: Some(b"wallet"),
-            apv: Some(b"issuer"),
-            typ: None,
-            cty: None,
-        },
-        &mut encryptor,
-        &mut rng,
-    )?;
-
-    let decoded: DirectPostPayload = decrypt_compact_jwe_json(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &P521EcdhEsJweKeyResolver::new(&recipient_private),
-    )?;
-
-    assert_eq!(
-        decoded,
-        DirectPostPayload {
-            vp_token: "presented".to_owned(),
-            state: "abc".to_owned(),
-        }
-    );
-    Ok(())
+    assert!(matches!(result, Err(JweError::InvalidKeyAgreementKey)));
 }
 
 #[test]
@@ -299,15 +182,10 @@ fn encrypts_and_decrypts_p256_ecdh_es_with_fresh_ephemeral_key() -> Result<(), J
     let mut encryptor = P256EcdhEsJweKeyEncryptor::new(&recipient_public);
 
     let compact = encrypt_compact_jwe_bytes(
-        &CompactJweEncryptRequest {
-            plaintext: payload,
-            enc: JweContentEncryptionAlgorithm::A128Gcm,
-            kid: Some("recipient-key-1"),
-            apu: Some(b"wallet"),
-            apv: Some(b"issuer"),
-            typ: None,
-            cty: None,
-        },
+        &CompactJweEncryptRequest::new(payload, JweContentEncryptionAlgorithm::A128Gcm)
+            .with_kid("recipient-key-1")
+            .with_apu(b"wallet")
+            .with_apv(b"issuer"),
         &mut encryptor,
         &mut rng,
     )?;
@@ -329,47 +207,6 @@ fn encrypts_and_decrypts_p256_ecdh_es_with_fresh_ephemeral_key() -> Result<(), J
 }
 
 #[test]
-#[cfg(feature = "conformance-vectors")]
-fn ecdh_es_rejects_wrong_recipient_private_key() -> Result<(), JweError> {
-    let recipient_secret = private_scalar(5);
-    let wrong_recipient_secret = private_scalar(6);
-    let ephemeral_secret = private_scalar(9);
-    let (recipient_public, _recipient_private) =
-        reallyme_crypto::p256::generate_p256_keypair_from_secret_key(&recipient_secret)
-            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-    let (_wrong_public, wrong_private) =
-        reallyme_crypto::p256::generate_p256_keypair_from_secret_key(&wrong_recipient_secret)
-            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-    let mut rng = FixedRandom::new([4u8; 12]);
-    let mut encryptor = P256EcdhEsJweKeyEncryptor::new_with_ephemeral_private_key(
-        &recipient_public,
-        &ephemeral_secret,
-    );
-    let compact = encrypt_compact_jwe_bytes(
-        &CompactJweEncryptRequest {
-            plaintext: br#"{"vp_token":"presented","state":"abc"}"#,
-            enc: JweContentEncryptionAlgorithm::A128Gcm,
-            kid: None,
-            apu: None,
-            apv: None,
-            typ: None,
-            cty: None,
-        },
-        &mut encryptor,
-        &mut rng,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &P256EcdhEsJweKeyResolver::new(&wrong_private),
-    ))?;
-
-    assert!(matches!(err, JweError::Decrypt));
-    Ok(())
-}
-
-#[test]
 fn rejects_ecdh_es_epk_with_invalid_y_coordinate() -> Result<(), JweError> {
     let recipient_secret = private_scalar(5);
     let (recipient_public, recipient_private) =
@@ -378,15 +215,10 @@ fn rejects_ecdh_es_epk_with_invalid_y_coordinate() -> Result<(), JweError> {
     let mut rng = FixedRandom::new([4u8; 12]);
     let mut encryptor = P256EcdhEsJweKeyEncryptor::new(&recipient_public);
     let compact = encrypt_compact_jwe_bytes(
-        &CompactJweEncryptRequest {
-            plaintext: br#"{"vp_token":"presented","state":"abc"}"#,
-            enc: JweContentEncryptionAlgorithm::A128Gcm,
-            kid: None,
-            apu: None,
-            apv: None,
-            typ: None,
-            cty: None,
-        },
+        &CompactJweEncryptRequest::new(
+            br#"{"vp_token":"presented","state":"abc"}"#,
+            JweContentEncryptionAlgorithm::A128Gcm,
+        ),
         &mut encryptor,
         &mut rng,
     )?;
@@ -420,6 +252,51 @@ fn rejects_ecdh_es_epk_with_invalid_y_coordinate() -> Result<(), JweError> {
 }
 
 #[test]
+fn rejects_ecdh_es_epk_with_private_member() -> Result<(), JweError> {
+    let recipient_secret = private_scalar(5);
+    let (recipient_public, recipient_private) =
+        reallyme_crypto::p256::generate_p256_keypair_from_secret_key(&recipient_secret)
+            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+    let mut rng = FixedRandom::new([4u8; 12]);
+    let mut encryptor = P256EcdhEsJweKeyEncryptor::new(&recipient_public);
+    let compact = encrypt_compact_jwe_bytes(
+        &CompactJweEncryptRequest::new(
+            br#"{"vp_token":"presented","state":"abc"}"#,
+            JweContentEncryptionAlgorithm::A128Gcm,
+        ),
+        &mut encryptor,
+        &mut rng,
+    )?;
+    let mut parts: Vec<&str> = compact.split('.').collect();
+    assert_eq!(parts.len(), 5);
+    let mut protected_header: Value =
+        serde_json::from_slice(&base64url_to_bytes(parts[0]).map_err(|_| JweError::InvalidHeader)?)
+            .map_err(|_| JweError::InvalidHeader)?;
+    let epk = protected_header
+        .get_mut("epk")
+        .and_then(Value::as_object_mut)
+        .ok_or(JweError::InvalidKeyAgreementKey)?;
+    epk.insert(
+        "d".to_owned(),
+        Value::String(bytes_to_base64url(&[1u8; 32])),
+    );
+    let protected_header_json =
+        serde_json::to_vec(&protected_header).map_err(|_| JweError::InvalidHeader)?;
+    let modified_header = bytes_to_base64url(&protected_header_json);
+    parts[0] = modified_header.as_str();
+    let tampered = parts.join(".");
+
+    let err = require_jwe_error(decrypt_compact_jwe_bytes(
+        &tampered,
+        &CompactJwePolicy::openid4vp_direct_post_jwt(),
+        &P256EcdhEsJweKeyResolver::new(&recipient_private),
+    ))?;
+
+    assert!(matches!(err, JweError::InvalidHeader));
+    Ok(())
+}
+
+#[test]
 fn rejects_ecdh_es_unexpected_party_info() -> Result<(), JweError> {
     let recipient_secret = private_scalar(5);
     let (recipient_public, recipient_private) =
@@ -428,27 +305,21 @@ fn rejects_ecdh_es_unexpected_party_info() -> Result<(), JweError> {
     let mut rng = FixedRandom::new([4u8; 12]);
     let mut encryptor = P256EcdhEsJweKeyEncryptor::new(&recipient_public);
     let compact = encrypt_compact_jwe_bytes(
-        &CompactJweEncryptRequest {
-            plaintext: br#"{"vp_token":"presented","state":"abc"}"#,
-            enc: JweContentEncryptionAlgorithm::A128Gcm,
-            kid: None,
-            apu: Some(b"wallet"),
-            apv: Some(b"issuer"),
-            typ: None,
-            cty: None,
-        },
+        &CompactJweEncryptRequest::new(
+            br#"{"vp_token":"presented","state":"abc"}"#,
+            JweContentEncryptionAlgorithm::A128Gcm,
+        )
+        .with_apu(b"wallet")
+        .with_apv(b"issuer"),
         &mut encryptor,
         &mut rng,
     )?;
-    let policy = CompactJwePolicy {
-        allowed_key_management_algorithms: &[JweKeyManagementAlgorithm::EcdhEs],
-        allowed_content_encryption_algorithms: &[JweContentEncryptionAlgorithm::A128Gcm],
-        require_kid: false,
-        expected_typ: None,
-        expected_cty: None,
-        expected_apu: Some(b"wallet"),
-        expected_apv: Some(b"verifier"),
-    };
+    let policy = CompactJwePolicy::new(
+        &[JweKeyManagementAlgorithm::EcdhEs],
+        &[JweContentEncryptionAlgorithm::A128Gcm],
+    )
+    .with_expected_apu(b"wallet")
+    .with_expected_apv(b"verifier");
 
     let err = require_jwe_error(decrypt_compact_jwe_bytes(
         &compact,
@@ -456,7 +327,7 @@ fn rejects_ecdh_es_unexpected_party_info() -> Result<(), JweError> {
         &P256EcdhEsJweKeyResolver::new(&recipient_private),
     ))?;
 
-    assert!(matches!(err, JweError::HeaderPolicyMismatch));
+    assert!(matches!(err, JweError::ApvPolicyMismatch));
     Ok(())
 }
 
@@ -502,110 +373,6 @@ fn jwe_compact_vectors_decrypt_or_fail_closed() -> Result<(), JweError> {
 }
 
 #[test]
-#[cfg(feature = "conformance-vectors")]
-fn jwe_compact_vectors_encrypt_to_expected_compact() -> Result<(), JweError> {
-    let suite: JweVectorSuite =
-        serde_json::from_str(include_str!("../../conformance/vectors/jwe-compact.json"))
-            .map_err(|_| JweError::InvalidPayloadJson)?;
-
-    for case in suite.cases {
-        if case.expected_error.is_some() {
-            continue;
-        }
-        let Some(plaintext) = &case.plaintext_json_utf8 else {
-            continue;
-        };
-        let iv = hex_to_array::<12>(
-            case.iv_hex
-                .as_deref()
-                .ok_or(JweError::InvalidContentCipherInput)?,
-        )?;
-        let mut rng = FixedRandom::new(iv);
-        let enc = parse_vector_enc(&case.enc)?;
-        let kid = case.protected_header.get("kid").and_then(Value::as_str);
-        let apu = optional_protected_header_bytes(&case.protected_header, "apu")?;
-        let apv = optional_protected_header_bytes(&case.protected_header, "apv")?;
-        let request = CompactJweEncryptRequest {
-            plaintext: plaintext.as_bytes(),
-            enc,
-            kid,
-            apu: apu.as_deref(),
-            apv: apv.as_deref(),
-            typ: case.protected_header.get("typ").and_then(Value::as_str),
-            cty: case.protected_header.get("cty").and_then(Value::as_str),
-        };
-
-        let compact = match case.alg.as_str() {
-            "dir" => {
-                let key = hex_to_bytes(
-                    case.cek_hex
-                        .as_deref()
-                        .ok_or(JweError::InvalidContentEncryptionKey)?,
-                )?;
-                let mut encryptor = DirectJweKeyEncryptor::new(&key);
-                encrypt_compact_jwe_bytes(&request, &mut encryptor, &mut rng)?
-            }
-            "ECDH-ES" => {
-                let recipient_public_key = hex_to_bytes(
-                    case.recipient_public_key_sec1_hex
-                        .as_deref()
-                        .ok_or(JweError::InvalidKeyAgreementKey)?,
-                )?;
-                match vector_epk_crv(&case.protected_header)? {
-                    "P-256" => {
-                        let ephemeral_private_key = hex_to_array::<32>(
-                            case.ephemeral_private_key_hex
-                                .as_deref()
-                                .ok_or(JweError::InvalidKeyAgreementKey)?,
-                        )?;
-                        let mut encryptor =
-                            P256EcdhEsJweKeyEncryptor::new_with_ephemeral_private_key(
-                                &recipient_public_key,
-                                &ephemeral_private_key,
-                            );
-                        encrypt_compact_jwe_bytes(&request, &mut encryptor, &mut rng)?
-                    }
-                    #[cfg(feature = "native")]
-                    "P-384" => {
-                        let ephemeral_private_key = hex_to_array::<48>(
-                            case.ephemeral_private_key_hex
-                                .as_deref()
-                                .ok_or(JweError::InvalidKeyAgreementKey)?,
-                        )?;
-                        let mut encryptor =
-                            P384EcdhEsJweKeyEncryptor::new_with_ephemeral_private_key(
-                                &recipient_public_key,
-                                &ephemeral_private_key,
-                            );
-                        encrypt_compact_jwe_bytes(&request, &mut encryptor, &mut rng)?
-                    }
-                    #[cfg(feature = "native")]
-                    "P-521" => {
-                        let ephemeral_private_key = hex_to_array::<66>(
-                            case.ephemeral_private_key_hex
-                                .as_deref()
-                                .ok_or(JweError::InvalidKeyAgreementKey)?,
-                        )?;
-                        let mut encryptor =
-                            P521EcdhEsJweKeyEncryptor::new_with_ephemeral_private_key(
-                                &recipient_public_key,
-                                &ephemeral_private_key,
-                            );
-                        encrypt_compact_jwe_bytes(&request, &mut encryptor, &mut rng)?
-                    }
-                    _ => return Err(JweError::InvalidKeyAgreementKey),
-                }
-            }
-            _ => return Err(JweError::UnsupportedKeyManagementAlgorithm),
-        };
-
-        assert_eq!(compact, case.compact, "{}", case.id);
-    }
-
-    Ok(())
-}
-
-#[test]
 fn rejects_key_management_algorithm_outside_policy() -> Result<(), JweError> {
     let key = [7u8; 16];
     let nonce = [9u8; 12];
@@ -617,15 +384,10 @@ fn rejects_key_management_algorithm_outside_policy() -> Result<(), JweError> {
         payload,
         JweContentEncryptionAlgorithm::A128Gcm,
     )?;
-    let policy = CompactJwePolicy {
-        allowed_key_management_algorithms: &[reallyme_jose::jwe::JweKeyManagementAlgorithm::EcdhEs],
-        allowed_content_encryption_algorithms: &[JweContentEncryptionAlgorithm::A128Gcm],
-        require_kid: false,
-        expected_typ: None,
-        expected_cty: None,
-        expected_apu: None,
-        expected_apv: None,
-    };
+    let policy = CompactJwePolicy::new(
+        &[reallyme_jose::jwe::JweKeyManagementAlgorithm::EcdhEs],
+        &[JweContentEncryptionAlgorithm::A128Gcm],
+    );
 
     let err = require_jwe_error(decrypt_compact_jwe_bytes(
         &compact,
@@ -686,6 +448,58 @@ fn rejects_duplicate_protected_header_parameter() -> Result<(), JweError> {
     let payload = br#"{"vp_token":"presented","state":"abc"}"#;
     let compact = compact_jwe_with_protected_header_json(
         br#"{"alg":"dir","alg":"dir","enc":"A128GCM"}"#,
+        &key,
+        &nonce,
+        payload,
+        JweContentEncryptionAlgorithm::A128Gcm,
+    )?;
+
+    let err = require_jwe_error(decrypt_compact_jwe_bytes(
+        &compact,
+        &CompactJwePolicy::openid4vp_direct_post_jwt(),
+        &DirectJweKeyResolver::new(&key),
+    ))?;
+
+    assert!(matches!(err, JweError::InvalidHeader));
+    Ok(())
+}
+
+#[test]
+fn rejects_duplicate_epk_member() -> Result<(), JweError> {
+    let key = [7u8; 16];
+    let nonce = [9u8; 12];
+    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
+    let compact = compact_jwe_with_protected_header_json(
+        br#"{"alg":"ECDH-ES","enc":"A128GCM","epk":{"kty":"EC","crv":"P-256","x":"AA","x":"AQ","y":"AA"}}"#,
+        &key,
+        &nonce,
+        payload,
+        JweContentEncryptionAlgorithm::A128Gcm,
+    )?;
+
+    let err = require_jwe_error(decrypt_compact_jwe_bytes(
+        &compact,
+        &CompactJwePolicy::openid4vp_direct_post_jwt(),
+        &DirectJweKeyResolver::new(&key),
+    ))?;
+
+    assert!(matches!(err, JweError::InvalidHeader));
+    Ok(())
+}
+
+#[test]
+fn rejects_direct_jwe_with_ecdh_ephemeral_key_headers() -> Result<(), JweError> {
+    let key = [7u8; 16];
+    let nonce = [9u8; 12];
+    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
+    let compact = compact_jwe_with_header(
+        &json!({
+            "alg":"dir",
+            "enc":"A128GCM",
+            "epk":{"kty":"EC","crv":"P-256","x":"AA","y":"AA"},
+            "apu": bytes_to_base64url(b"sender"),
+            "apv": bytes_to_base64url(b"recipient")
+        }),
         &key,
         &nonce,
         payload,
@@ -943,6 +757,24 @@ fn rejects_wrong_direct_key() -> Result<(), JweError> {
     ))?;
 
     assert!(matches!(err, JweError::Decrypt));
+    Ok(())
+}
+
+#[test]
+fn rejects_invalid_ecdh_es_shared_secret_length_before_kdf() -> Result<(), JweError> {
+    let header = CompactJweProtectedHeader {
+        alg: JweKeyManagementAlgorithm::EcdhEs,
+        enc: JweContentEncryptionAlgorithm::A128Gcm,
+        kid: None,
+        apu: None,
+        apv: None,
+        epk: Some(json!({"kty":"EC","crv":"P-256","x":"AA","y":"AA"})),
+        typ: None,
+        cty: None,
+    };
+    let err = require_jwe_error(derive_ecdh_es_content_encryption_key(&[], &header))?;
+
+    assert!(matches!(err, JweError::InvalidSharedSecret));
     Ok(())
 }
 
@@ -1251,12 +1083,6 @@ fn hex_to_bytes(input: &str) -> Result<Vec<u8>, JweError> {
     Ok(out)
 }
 
-#[cfg(feature = "conformance-vectors")]
-fn hex_to_array<const N: usize>(input: &str) -> Result<[u8; N], JweError> {
-    let bytes = hex_to_bytes(input)?;
-    <[u8; N]>::try_from(bytes).map_err(|_| JweError::InvalidContentCipherInput)
-}
-
 fn hex_nibble(value: u8) -> Result<u8, JweError> {
     match value {
         b'0'..=b'9' => Ok(value - b'0'),
@@ -1264,39 +1090,6 @@ fn hex_nibble(value: u8) -> Result<u8, JweError> {
         b'A'..=b'F' => Ok(value - b'A' + 10),
         _ => Err(JweError::InvalidContentEncryptionKey),
     }
-}
-
-#[cfg(feature = "conformance-vectors")]
-fn parse_vector_enc(input: &str) -> Result<JweContentEncryptionAlgorithm, JweError> {
-    match input {
-        "A128GCM" => Ok(JweContentEncryptionAlgorithm::A128Gcm),
-        "A192GCM" => Ok(JweContentEncryptionAlgorithm::A192Gcm),
-        "A256GCM" => Ok(JweContentEncryptionAlgorithm::A256Gcm),
-        _ => Err(JweError::UnsupportedContentEncryptionAlgorithm),
-    }
-}
-
-#[cfg(feature = "conformance-vectors")]
-fn optional_protected_header_bytes(
-    protected_header: &Value,
-    name: &str,
-) -> Result<Option<Vec<u8>>, JweError> {
-    protected_header
-        .get(name)
-        .and_then(Value::as_str)
-        .map(base64url_to_bytes)
-        .transpose()
-        .map_err(|_| JweError::InvalidHeader)
-}
-
-#[cfg(feature = "conformance-vectors")]
-fn vector_epk_crv(protected_header: &Value) -> Result<&str, JweError> {
-    protected_header
-        .get("epk")
-        .and_then(Value::as_object)
-        .and_then(|epk| epk.get("crv"))
-        .and_then(Value::as_str)
-        .ok_or(JweError::InvalidKeyAgreementKey)
 }
 
 fn private_scalar(last_byte: u8) -> [u8; 32] {
@@ -1432,6 +1225,7 @@ fn compact_jwe_with_protected_header_json(
             })
             .map_err(|_| JweError::Decrypt)?
         }
+        _ => return Err(JweError::UnsupportedContentEncryptionAlgorithm),
     };
 
     let ciphertext_and_tag = ciphertext_with_tag.as_bytes();

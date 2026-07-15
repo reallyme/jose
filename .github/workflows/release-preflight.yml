@@ -30,13 +30,15 @@ jobs:
           node-version: '24'
 
       - name: Check workspace metadata
-        run: cargo metadata --format-version 1 --no-deps
+        run: cargo metadata --locked --format-version 1 --no-deps
 
       - name: Check release readiness contract
         run: node scripts/check_release_readiness.mjs
 
       - name: Inspect crate tarball and dry-run publish
         run: node scripts/publish_crates_in_order.mjs inspect
+        env:
+          CARGO_HOME: ${{ runner.temp }}/package-preflight-cargo-home
 
       - name: Check wasm32 lane
-        run: cargo check --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
+        run: cargo check --locked --workspace --no-default-features --features wasm --target wasm32-unknown-unknown

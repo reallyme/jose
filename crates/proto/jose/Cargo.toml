@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-jose-proto"
+version = "0.2.0"
+description = "ReallyMe JOSE protobuf boundary messages generated with Buffa."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation = "https://docs.rs/reallyme-jose-proto"
+categories = ["authentication", "cryptography", "encoding"]
+keywords = ["jose", "jwt", "jws", "jwe", "reallyme"]
+publish = true
+include = [
+    "/proto/**/*.proto",
+    "/src/**/*.rs",
+    "/tests/**/*.rs",
+    "/Cargo.toml",
+    "/README.md",
+    "/LICENSE",
+    "/NOTICE",
+]
+
+[features]
+default = ["generated"]
+generated = ["dep:buffa", "dep:serde"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[dependencies]
+buffa = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

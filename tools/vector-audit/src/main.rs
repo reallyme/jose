@@ -34,6 +34,7 @@ const JWS_FILE: &str = "conformance/vectors/jws-compact.json";
 const SIGNED_JWT_FILE: &str = "conformance/vectors/signed-jwt.json";
 const UNSIGNED_JWT_FILE: &str = "conformance/vectors/unsigned-jwt.json";
 const JWE_FILE: &str = "conformance/vectors/jwe-compact.json";
+const PANVA_FILE: &str = "conformance/vectors/panva-jose.json";
 
 #[derive(Debug, Error)]
 #[error("{context}: {reason}")]
@@ -233,12 +234,29 @@ struct JweCase {
     derived_cek_hex: Option<String>,
 }
 
+#[derive(Debug, Deserialize)]
+struct PanvaCase {
+    id: String,
+    format: String,
+    alg: String,
+    enc: Option<String>,
+    compact: String,
+    public_key_hex: Option<String>,
+    payload_utf8: Option<String>,
+    verification_jwk: Option<Value>,
+    expected_claims_json: Option<Value>,
+    protected_header: Option<Value>,
+    expected_plaintext_json: Option<Value>,
+    derived_cek_hex: Option<String>,
+}
+
 #[derive(Debug)]
 struct AuditSummary {
     jws_cases: usize,
     signed_jwt_cases: usize,
     unsigned_jwt_cases: usize,
     jwe_cases: usize,
+    panva_cases: usize,
 }
 
 #[derive(Debug)]
@@ -285,11 +303,12 @@ fn main() -> ExitCode {
     match run() {
         Ok(summary) => {
             println!(
-                "vector audit passed: {} JWS, {} signed JWT, {} unsigned JWT, {} JWE cases",
+                "vector audit passed: {} JWS, {} signed JWT, {} unsigned JWT, {} JWE, {} panva cases",
                 summary.jws_cases,
                 summary.signed_jwt_cases,
                 summary.unsigned_jwt_cases,
-                summary.jwe_cases
+                summary.jwe_cases,
+                summary.panva_cases
             );
             ExitCode::SUCCESS
         }
@@ -309,12 +328,14 @@ fn run() -> AuditResult<AuditSummary> {
     let unsigned_jwt: Suite<UnsignedJwtCase> =
         read_json(&repo_root, UNSIGNED_JWT_FILE, AuditContext::General)?;
     let jwe: Suite<JweCase> = read_json(&repo_root, JWE_FILE, AuditContext::General)?;
+    let panva: Suite<PanvaCase> = read_json(&repo_root, PANVA_FILE, AuditContext::General)?;
 
     audit_suite_header(&jws, "jws-compact")?;
     audit_suite_header(&signed_jwt, "signed-jwt")?;
     audit_suite_header(&unsigned_jwt, "unsigned-jwt")?;
     audit_suite_header(&jwe, "jwe-compact")?;
-    audit_manifest(&manifest, &jws, &signed_jwt, &unsigned_jwt, &jwe)?;
+    audit_suite_header(&panva, "panva-jose")?;
+    audit_manifest(&manifest, &jws, &signed_jwt, &unsigned_jwt, &jwe, &panva)?;
 
     let mut ids = HashSet::new();
     for case in &jws.cases {
@@ -333,12 +354,17 @@ fn run() -> AuditResult<AuditSummary> {
         audit_unique_id(&mut ids, &case.id)?;
         audit_jwe_case(case).map_err(|error| attach_case(error, &case.id))?;
     }
+    for case in &panva.cases {
+        audit_unique_id(&mut ids, &case.id)?;
+        audit_panva_case(case).map_err(|error| attach_case(error, &case.id))?;
+    }
 
     Ok(AuditSummary {
         jws_cases: jws.cases.len(),
         signed_jwt_cases: signed_jwt.cases.len(),
         unsigned_jwt_cases: unsigned_jwt.cases.len(),
         jwe_cases: jwe.cases.len(),
+        panva_cases: panva.cases.len(),
     })
 }
 
@@ -379,6 +405,7 @@ fn audit_manifest(
     signed_jwt: &Suite<SignedJwtCase>,
     unsigned_jwt: &Suite<UnsignedJwtCase>,
     jwe: &Suite<JweCase>,
+    panva: &Suite<PanvaCase>,
 ) -> AuditResult<()> {
     ensure(
         manifest.schema == "reallyme.jose.conformance.vector_manifest.v1",
@@ -395,6 +422,7 @@ fn audit_manifest(
             "signed-jwt" => ("signed-jwt.json", signed_jwt.cases.len()),
             "unsigned-jwt" => ("unsigned-jwt.json", unsigned_jwt.cases.len()),
             "jwe-compact" => ("jwe-compact.json", jwe.cases.len()),
+            "panva-jose" => ("panva-jose.json", panva.cases.len()),
             _ => return Err(manifest_error(AuditReason::UnknownManifestSuite)),
         };
         ensure(suite.path == expected_path, AuditReason::ManifestPath).map_err(|error| {
@@ -413,6 +441,56 @@ fn audit_manifest(
         })?;
     }
     Ok(())
+}
+
+fn audit_panva_case(case: &PanvaCase) -> AuditResult<()> {
+    match case.format.as_str() {
+        "jws-compact" => audit_jws_case(&JwsCase {
+            id: case.id.clone(),
+            alg: case.alg.clone(),
+            compact: case.compact.clone(),
+            public_key_hex: case
+                .public_key_hex
+                .clone()
+                .ok_or_else(|| general(AuditReason::MissingField))?,
+            payload_utf8: case.payload_utf8.clone(),
+            expected_valid: Some(true),
+            expected_error: None,
+        }),
+        "jwt-compact" => audit_signed_jwt_case(&SignedJwtCase {
+            id: case.id.clone(),
+            alg: case.alg.clone(),
+            compact: case.compact.clone(),
+            public_key_hex: case
+                .public_key_hex
+                .clone()
+                .ok_or_else(|| general(AuditReason::MissingField))?,
+            verification_jwk: case
+                .verification_jwk
+                .clone()
+                .ok_or_else(|| general(AuditReason::MissingField))?,
+            expected_claims_json: case.expected_claims_json.clone(),
+            expected_error: None,
+        }),
+        "jwe-compact" => audit_jwe_case(&JweCase {
+            id: case.id.clone(),
+            alg: case.alg.clone(),
+            enc: case
+                .enc
+                .clone()
+                .ok_or_else(|| general(AuditReason::MissingField))?,
+            cek_hex: None,
+            protected_header: case
+                .protected_header
+                .clone()
+                .ok_or_else(|| general(AuditReason::MissingField))?,
+            compact: case.compact.clone(),
+            expected_plaintext_json: case.expected_plaintext_json.clone(),
+            expected_error: None,
+            derived_cek_hex: case.derived_cek_hex.clone(),
+        }),
+        _ => Err(general(AuditReason::UnsupportedAlgorithm)),
+    }
 }
 
 fn audit_unique_id(ids: &mut HashSet<String>, id: &str) -> AuditResult<()> {
@@ -645,6 +723,21 @@ fn audit_ecdh_es_positive(
     ensure(
         valid_cek_len(&case.enc, derived_cek.len()),
         AuditReason::InvalidCekLength,
+    )?;
+    let plaintext = decrypt_jwe_with_cek(case, compact, &derived_cek)?;
+    assert_expected_plaintext(case, &plaintext)
+}
+
+fn assert_expected_plaintext(case: &JweCase, plaintext: &[u8]) -> AuditResult<()> {
+    let expected_plaintext = case
+        .expected_plaintext_json
+        .as_ref()
+        .ok_or_else(|| general(AuditReason::MissingField))?;
+    let decoded: Value =
+        serde_json::from_slice(plaintext).map_err(|_| general(AuditReason::PayloadJson))?;
+    ensure(
+        &decoded == expected_plaintext,
+        AuditReason::JwePlaintextMismatch,
     )
 }
 
@@ -670,6 +763,17 @@ fn audit_jwk_binding(case: &SignedJwtCase, protected: &Value) -> AuditResult<()>
             header_alg != jwk_alg,
             AuditReason::UnsupportedAlgorithmVectorInvalid,
         )
+    } else if case.expected_error.as_deref() == Some("KeyIdMismatch") {
+        let header_kid = protected
+            .get("kid")
+            .and_then(Value::as_str)
+            .ok_or_else(|| general(AuditReason::HeaderMismatch))?;
+        let jwk_kid = case
+            .verification_jwk
+            .get("kid")
+            .and_then(Value::as_str)
+            .ok_or_else(|| general(AuditReason::MissingField))?;
+        ensure(header_kid != jwk_kid, AuditReason::HeaderMismatch)
     } else {
         Ok(())
     }
@@ -706,6 +810,7 @@ fn audit_signed_jwt_negative(
         }
         "UnsupportedAlgorithm" => audit_unsupported_algorithm_header(protected),
         "AlgorithmMismatch" => Ok(()),
+        "KeyIdMismatch" | "PublicKeyMismatch" | "InvalidPublicKey" => Ok(()),
         "Expired"
         | "NotYetValid"
         | "IssuedAtInFuture"
@@ -824,6 +929,10 @@ fn decrypt_direct_jwe(case: &JweCase, compact: &CompactJwe) -> AuditResult<Vec<u
         .as_deref()
         .ok_or_else(|| general(AuditReason::MissingField))?;
     let cek = decode_hex(cek_hex)?;
+    decrypt_jwe_with_cek(case, compact, &cek)
+}
+
+fn decrypt_jwe_with_cek(case: &JweCase, compact: &CompactJwe, cek: &[u8]) -> AuditResult<Vec<u8>> {
     let iv = decode_base64url(&compact.iv)?;
     let ciphertext = decode_base64url(&compact.ciphertext)?;
     let tag = decode_base64url(&compact.tag)?;
@@ -849,7 +958,7 @@ fn decrypt_direct_jwe(case: &JweCase, compact: &CompactJwe) -> AuditResult<Vec<u
     match case.enc.as_str() {
         "A128GCM" => {
             ensure(cek.len() == 16, AuditReason::InvalidCekLength)?;
-            let cipher = Aes128Gcm::new_from_slice(&cek)
+            let cipher = Aes128Gcm::new_from_slice(cek)
                 .map_err(|_| general(AuditReason::InvalidCekLength))?;
             cipher
                 .decrypt(
@@ -863,7 +972,7 @@ fn decrypt_direct_jwe(case: &JweCase, compact: &CompactJwe) -> AuditResult<Vec<u
         }
         "A192GCM" => {
             ensure(cek.len() == 24, AuditReason::InvalidCekLength)?;
-            let cipher = AesGcm::<Aes192, U12>::new_from_slice(&cek)
+            let cipher = AesGcm::<Aes192, U12>::new_from_slice(cek)
                 .map_err(|_| general(AuditReason::InvalidCekLength))?;
             cipher
                 .decrypt(
@@ -877,7 +986,7 @@ fn decrypt_direct_jwe(case: &JweCase, compact: &CompactJwe) -> AuditResult<Vec<u
         }
         "A256GCM" => {
             ensure(cek.len() == 32, AuditReason::InvalidCekLength)?;
-            let cipher = Aes256Gcm::new_from_slice(&cek)
+            let cipher = Aes256Gcm::new_from_slice(cek)
                 .map_err(|_| general(AuditReason::InvalidCekLength))?;
             cipher
                 .decrypt(

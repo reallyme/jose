@@ -1,0 +1,361 @@
+// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package reallyme.jose.v1;
+
+option go_package = "github.com/reallyme/jose/gen/go/reallyme/jose/v1;josev1";
+option java_multiple_files = true;
+option java_outer_classname = "JoseProto";
+option java_package = "me.really.jose.v1";
+option swift_prefix = "ReallyMeProto";
+
+// JoseError is the public, non-PII error envelope for JOSE boundary failures.
+// The oneof keeps caller-owned input/primitive failures, provider availability
+// failures, and backend/internal failures distinct while JoseErrorReason keeps
+// the exact JOSE-specific reason stable end-to-end.
+message JoseError {
+  oneof error {
+    JosePrimitiveError primitive = 1;
+    JoseProviderError provider = 2;
+    JoseBackendError backend = 3;
+  }
+}
+
+// JosePrimitiveError describes compact serialization, protected-header policy,
+// key material, signature, authentication, claims, and payload failures.
+message JosePrimitiveError {
+  JoseErrorReason reason = 1;
+}
+
+// JoseProviderError describes unsupported algorithms, unavailable providers,
+// and platform randomness failures.
+message JoseProviderError {
+  JoseErrorReason reason = 1;
+}
+
+// JoseBackendError describes serialization, protobuf, dispatch, FFI, WASM, and
+// internal failures that are not safe to expose as backend exception text.
+message JoseBackendError {
+  JoseErrorReason reason = 1;
+}
+
+// JoseErrorReason is the component-owned reason-code enum for reallyme/jose.
+// Values are stable public boundary codes; internal Rust, Swift, Kotlin, and
+// TypeScript errors must map into one of these before crossing RPC, SDK, FFI,
+// storage, audit, or telemetry boundaries.
+enum JoseErrorReason {
+  JOSE_ERROR_REASON_UNSPECIFIED = 0;
+
+  // Compact JWS structure and parser policy.
+  JOSE_ERROR_REASON_JWS_INVALID_COMPACT = 1;
+  JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE = 2;
+  JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW = 3;
+  JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8 = 4;
+
+  // Compact JWS protected-header policy.
+  JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64 = 5;
+  JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8 = 6;
+  JOSE_ERROR_REASON_JWS_HEADER_MISMATCH = 7;
+
+  // Compact JWS signature encoding and verification.
+  JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64 = 11;
+  JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE = 12;
+  JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE = 13;
+
+  // Compact JWS signing.
+  JOSE_ERROR_REASON_JWS_SIGN_FAILED = 14;
+  JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE = 15;
+
+  // Compact JWE structure and segment encoding.
+  JOSE_ERROR_REASON_JWE_INVALID_COMPACT = 16;
+  JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE = 17;
+  JOSE_ERROR_REASON_JWE_INVALID_ENCODING = 18;
+
+  // Compact JWE protected-header policy.
+  JOSE_ERROR_REASON_JWE_INVALID_HEADER = 19;
+  JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM = 20;
+  JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM = 21;
+  JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER = 22;
+  JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH = 23;
+  JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH = 24;
+  JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH = 25;
+  JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH = 26;
+
+  // Compact JWE key-management and content-encryption failures.
+  JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY = 28;
+  JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY = 29;
+  JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT = 30;
+  JOSE_ERROR_REASON_JWE_DECRYPT_FAILED = 31;
+  JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED = 32;
+  JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY = 33;
+  JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW = 34;
+  JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET = 35;
+
+  // Compact JWE plaintext handling.
+  JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON = 36;
+
+  // JWT compact structure and encoding.
+  JOSE_ERROR_REASON_JWT_INVALID_COMPACT = 37;
+  JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE = 38;
+  JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED = 39;
+  JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW = 40;
+
+  // JWT JOSE-header policy and algorithm/key binding.
+  JOSE_ERROR_REASON_JWT_INVALID_HEADER = 41;
+  JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM = 42;
+  JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH = 43;
+  JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM = 44;
+  JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY = 45;
+  JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY = 46;
+  JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH = 47;
+  JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH = 49;
+  JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY = 50;
+  JOSE_ERROR_REASON_JWT_INVALID_JWK = 51;
+
+  // JWT signature and cryptographic failures.
+  JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE = 52;
+  JOSE_ERROR_REASON_JWT_CRYPTO_FAILED = 53;
+
+  // JWT claims and serialization failures.
+  JOSE_ERROR_REASON_JWT_INVALID_CLAIMS = 54;
+  JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED = 55;
+
+  // JWT temporal claim policy.
+  JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM = 56;
+  JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE = 57;
+  JOSE_ERROR_REASON_JWT_EXPIRED = 58;
+  JOSE_ERROR_REASON_JWT_NOT_YET_VALID = 59;
+  JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE = 60;
+  JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME = 61;
+  JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY = 62;
+  JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH = 63;
+
+  // Provider and backend boundary failures.
+  // Defined for service wrappers that own runtime provider selection. The
+  // current Rust process-proto adapter only emits unsupported-provider and
+  // randomness-unavailable provider failures directly.
+  JOSE_ERROR_REASON_PROVIDER_UNAVAILABLE = 64;
+  JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED = 65;
+  JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE = 66;
+  JOSE_ERROR_REASON_BACKEND_INTERNAL = 67;
+  JOSE_ERROR_REASON_BACKEND_MALFORMED_PROTOBUF = 68;
+  JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION = 69;
+  JOSE_ERROR_REASON_BACKEND_MALFORMED_JSON = 70;
+  JOSE_ERROR_REASON_BACKEND_MISSING_OPERATION = 71;
+  JOSE_ERROR_REASON_BACKEND_RESOURCE_LIMIT_EXCEEDED = 72;
+  JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED = 73;
+}
+
+enum JoseSignatureAlgorithm {
+  JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED = 0;
+  JOSE_SIGNATURE_ALGORITHM_ES256 = 1;
+  JOSE_SIGNATURE_ALGORITHM_EDDSA = 2;
+
+  // ES256K is supported by JWT through JWK algorithm binding, but it is not a
+  // JWS process-proto operation. Reserve the adjacent slot so that future JWS
+  // wire support is added deliberately rather than by accidental reuse.
+  reserved 3;
+  reserved "JOSE_SIGNATURE_ALGORITHM_ES256K";
+}
+
+enum JoseJweKeyManagementAlgorithm {
+  JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_UNSPECIFIED = 0;
+  JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT = 1;
+  JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P256 = 2;
+  JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P384 = 3;
+  JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P521 = 4;
+}
+
+enum JoseJweContentEncryptionAlgorithm {
+  JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_UNSPECIFIED = 0;
+  JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM = 1;
+  JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM = 2;
+  JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM = 3;
+}
+
+enum JoseProtoResultStatus {
+  JOSE_PROTO_RESULT_STATUS_UNSPECIFIED = 0;
+  JOSE_PROTO_RESULT_STATUS_RESULT = 1;
+  JOSE_PROTO_RESULT_STATUS_JOSE_ERROR = 2;
+}
+
+// JoseProtoResultEnvelope is the single bytes-out shape for process-proto
+// adapters. FFI and generated-SDK wrappers can preserve operation
+// results and structured JOSE errors without an out-of-band status channel.
+message JoseProtoResultEnvelope {
+  JoseProtoResultStatus status = 1;
+  // Operation-specific protobuf result bytes or JoseError protobuf bytes.
+  // Result bytes may contain decrypted plaintext or claims JSON and must be
+  // treated as sensitive by FFI, WASM, and generated-SDK adapters.
+  bytes payload = 2;
+}
+
+// JoseOperationRequest is the single executable protobuf entrypoint for
+// FFI, JNI, WASM, and other process-proto adapters. Native SDKs should keep
+// using typed methods; adapters can use this generated oneof to avoid
+// hand-rolled operation routing and error-envelope plumbing.
+message JoseOperationRequest {
+  oneof operation {
+    JoseJwsSignRequest jws_sign = 1;
+    JoseJwsVerifyRequest jws_verify = 2;
+    JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 3;
+    JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 4;
+    JoseJwtSignRequest jwt_sign = 5;
+    JoseJwtVerifyRequest jwt_verify = 6;
+    JoseJweEncryptRequest jwe_encrypt = 7;
+    JoseJweDecryptRequest jwe_decrypt = 8;
+  }
+}
+
+message JoseJwsSignRequest {
+  JoseSignatureAlgorithm algorithm = 1;
+  // Sensitive signing key bytes. Adapters must zeroize after dispatch and must
+  // not log, trace, or include this field in errors.
+  bytes private_key = 2;
+  // Payload bytes for compact JWS signing. The current native SDK facade signs
+  // UTF-8 payloads; non-UTF-8 wire payloads fail closed with
+  // JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8.
+  bytes payload = 3;
+}
+
+message JoseCompactResult {
+  string compact = 1;
+}
+
+message JoseJwsVerifyRequest {
+  JoseSignatureAlgorithm algorithm = 1;
+  string compact = 2;
+  // Public verification key bytes. Public material is still boundary data and
+  // must not be copied into errors or telemetry.
+  bytes public_key = 3;
+}
+
+// Empty success message. Verification success is represented by envelope
+// status = RESULT; verification failure is represented by a structured
+// JoseError envelope and must not be inferred from message fields.
+message JoseVerifyResult {}
+
+message JoseJwtEncodeUnsignedRequest {
+  // Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+  bytes claims_json = 1;
+}
+
+message JoseJwtDecodeUnsignedRequest {
+  string compact = 1;
+}
+
+message JoseJwtClaimsResult {
+  // Original claims JSON bytes preserved by the wire adapter. These bytes can
+  // contain PII and must be zeroized after use.
+  bytes claims_json = 1;
+}
+
+message JoseJwtSignRequest {
+  // Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+  bytes claims_json = 1;
+  // JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
+  // this as sensitive boundary input and avoid logging it.
+  bytes jwk_json = 2;
+  // Sensitive signing key bytes. Adapters must zeroize after dispatch and must
+  // not log, trace, or include this field in errors.
+  bytes private_key = 3;
+  // Optional protected-header typ. Empty means the native SDK default typ.
+  string typ = 4;
+}
+
+message JoseJwtVerifyRequest {
+  string compact = 1;
+  // JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
+  // this as sensitive boundary input and avoid logging it.
+  bytes jwk_json = 2;
+  // Public verification key bytes. Public material is still boundary data and
+  // must not be copied into errors or telemetry.
+  bytes public_key = 3;
+  // Presence-sensitive policy. If absent/unset, the standard JWT header policy
+  // is used. If present, every field is interpreted literally; in particular,
+  // an empty accepted_typ_values list means no present typ value is accepted.
+  JoseJwtHeaderValidationPolicy header_policy = 4;
+  // Presence-sensitive temporal policy. If absent/unset, signature-only
+  // verification is performed only when signature_only is true. If present,
+  // every boolean, skew, and timestamp field is interpreted literally.
+  JoseJwtTemporalValidationPolicy temporal_policy = 5;
+  // Required when temporal_policy is absent. This makes signature-only
+  // verification an explicit adapter choice rather than a proto3 default.
+  bool signature_only = 6;
+}
+
+message JoseJwtHeaderValidationPolicy {
+  bool allow_missing_typ = 1;
+  bool allow_embedded_key_header = 2;
+  repeated string accepted_typ_values = 3;
+}
+
+message JoseJwtTemporalValidationPolicy {
+  bool require_exp = 1;
+  bool require_nbf = 2;
+  bool require_iat = 3;
+  uint64 clock_skew_seconds = 4;
+  uint64 max_future_iat_skew_seconds = 5;
+  // Required to be nonzero. Zero is rejected at the wire boundary because
+  // proto3 otherwise makes an omitted timestamp indistinguishable from the Unix
+  // epoch, which would make expiration validation fail open.
+  uint64 now_unix = 6;
+}
+
+message JoseJweEncryptRequest {
+  JoseJweKeyManagementAlgorithm key_management_algorithm = 1;
+  JoseJweContentEncryptionAlgorithm content_encryption_algorithm = 2;
+  // Sensitive direct CEK or recipient public/agreement key bytes, depending on
+  // key_management_algorithm. Adapters must zeroize after dispatch.
+  bytes key = 3;
+  // Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
+  // not log, trace, or include this field in errors.
+  bytes plaintext = 4;
+  string kid = 5;
+  // Agreement PartyUInfo. This can be correlating protocol metadata and must
+  // not be copied into errors or telemetry.
+  bytes apu = 6;
+  // Agreement PartyVInfo. This can be correlating protocol metadata and must
+  // not be copied into errors or telemetry.
+  bytes apv = 7;
+  string typ = 8;
+  string cty = 9;
+}
+
+message JoseJweDecryptRequest {
+  string compact = 1;
+  JoseJweKeyManagementAlgorithm key_management_algorithm = 2;
+  JoseJweContentEncryptionAlgorithm content_encryption_algorithm = 3;
+  // Sensitive direct CEK or recipient private/agreement key bytes, depending on
+  // key_management_algorithm. Adapters must zeroize after dispatch.
+  bytes key = 4;
+  // Presence-sensitive protected-header validation policy. Absence means only
+  // algorithm binding and structural JOSE validation are enforced.
+  JoseJweHeaderValidationPolicy header_policy = 5;
+}
+
+message JoseExpectedString {
+  string value = 1;
+}
+
+message JoseExpectedBytes {
+  bytes value = 1;
+}
+
+message JoseJweHeaderValidationPolicy {
+  bool require_kid = 1;
+  JoseExpectedString expected_kid = 2;
+  JoseExpectedString expected_typ = 3;
+  JoseExpectedString expected_cty = 4;
+  JoseExpectedBytes expected_apu = 5;
+  JoseExpectedBytes expected_apv = 6;
+}
+
+message JoseJwePlaintextResult {
+  // Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
+  // must not log, trace, or include this field in errors.
+  bytes plaintext = 1;
+}

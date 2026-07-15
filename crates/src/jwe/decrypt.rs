@@ -2,10 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-use serde::de::DeserializeOwned;
-use zeroize::Zeroize;
-
 use reallyme_codec::base64url::base64url_to_bytes;
+use serde::de::DeserializeOwned;
 
 use crate::Zeroizing;
 
@@ -31,6 +29,7 @@ pub struct DirectJweKeyResolver<'a> {
 
 impl<'a> DirectJweKeyResolver<'a> {
     /// Builds a direct-key resolver over caller-owned CEK bytes.
+    #[must_use]
     pub const fn new(key: &'a [u8]) -> Self {
         Self { key }
     }
@@ -53,6 +52,13 @@ impl JweContentEncryptionKeyResolver for DirectJweKeyResolver<'_> {
 }
 
 /// Decrypts a compact JWE into plaintext bytes.
+///
+/// # Errors
+///
+/// Returns [`JweError`] for malformed compact input, invalid Base64URL or
+/// protected-header JSON, header policy failures, invalid key-management
+/// output, invalid IV/tag lengths, CEK resolution failures, or content
+/// authentication/decryption failure.
 pub fn decrypt_compact_jwe_bytes(
     compact_jwe: &str,
     policy: &CompactJwePolicy<'_>,
@@ -94,6 +100,11 @@ pub fn decrypt_compact_jwe_bytes(
 }
 
 /// Decrypts a compact JWE and decodes the plaintext as JSON.
+///
+/// # Errors
+///
+/// Returns [`JweError`] when compact decryption fails or the decrypted
+/// plaintext is not valid JSON for the requested type.
 pub fn decrypt_compact_jwe_json<T: DeserializeOwned>(
     compact_jwe: &str,
     policy: &CompactJwePolicy<'_>,
@@ -103,7 +114,7 @@ pub fn decrypt_compact_jwe_json<T: DeserializeOwned>(
     serde_json::from_slice(&plaintext).map_err(|_| JweError::InvalidPayloadJson)
 }
 
-fn require_empty_encrypted_key_for_direct_cek_alg(
+const fn require_empty_encrypted_key_for_direct_cek_alg(
     alg: JweKeyManagementAlgorithm,
     encrypted_key: &[u8],
 ) -> Result<(), JweError> {
@@ -157,9 +168,7 @@ fn decrypt_content(
                 },
             )
             .map_err(|_| JweError::Decrypt)?;
-            let output = Zeroizing::new(core::mem::take(&mut plaintext));
-            plaintext.zeroize();
-            Ok(output)
+            Ok(Zeroizing::new(core::mem::take(&mut plaintext)))
         }
         JweContentEncryptionAlgorithm::A192Gcm => {
             let key = reallyme_crypto::aes::Aes192GcmKey::from_slice(cek)
@@ -175,9 +184,7 @@ fn decrypt_content(
                 },
             )
             .map_err(|_| JweError::Decrypt)?;
-            let output = Zeroizing::new(core::mem::take(&mut plaintext));
-            plaintext.zeroize();
-            Ok(output)
+            Ok(Zeroizing::new(core::mem::take(&mut plaintext)))
         }
         JweContentEncryptionAlgorithm::A256Gcm => {
             let key = reallyme_crypto::aes::Aes256GcmKey::from_slice(cek)
@@ -192,9 +199,7 @@ fn decrypt_content(
                     ciphertext: &ciphertext,
                 })
                 .map_err(|_| JweError::Decrypt)?;
-            let output = Zeroizing::new(core::mem::take(&mut plaintext));
-            plaintext.zeroize();
-            Ok(output)
+            Ok(Zeroizing::new(core::mem::take(&mut plaintext)))
         }
     }
 }

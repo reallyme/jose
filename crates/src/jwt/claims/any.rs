@@ -17,6 +17,7 @@ pub struct AnyClaims(pub BTreeMap<String, JsonValue>);
 
 impl AnyClaims {
     /// Returns a claim value by key.
+    #[must_use]
     pub fn get(&self, key: &str) -> Option<&JsonValue> {
         self.0.get(key)
     }

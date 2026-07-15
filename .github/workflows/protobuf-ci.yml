@@ -1,0 +1,85 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Protobuf Checks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/protobuf-ci.yml"
+      - "buf.yaml"
+      - "buf.gen.yaml"
+      - "crates/proto/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/protobuf-ci.yml"
+      - "buf.yaml"
+      - "buf.gen.yaml"
+      - "crates/proto/**"
+
+permissions:
+  contents: read
+
+env:
+  BUFFA_VERSION: 0.8.1
+  BUF_VERSION: 1.71.0
+  BUF_LINUX_X86_64_SHA256: d3de2838c68a5759ca276884254bc70df4e4ad185d6ed5f65f327b6ce6363eab
+
+jobs:
+  protobuf:
+    name: lint and generated freshness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        with:
+          toolchain: 1.96.0
+          components: rustfmt
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      - name: Install buf
+        shell: bash
+        run: |
+          set -euo pipefail
+          install_dir="$RUNNER_TEMP/buf/bin"
+          mkdir -p "$install_dir"
+          curl --fail-with-body --location --proto '=https' --tlsv1.2 \
+            --retry 5 --retry-all-errors \
+            --output "$install_dir/buf" \
+            "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-Linux-x86_64"
+          printf '%s  %s\n' "$BUF_LINUX_X86_64_SHA256" "$install_dir/buf" \
+            | sha256sum --check --strict
+          chmod 0755 "$install_dir/buf"
+          printf '%s\n' "$install_dir" >> "$GITHUB_PATH"
+          "$install_dir/buf" --version
+
+      - name: Install pinned Buffa generators
+        run: |
+          cargo install protoc-gen-buffa --version "$BUFFA_VERSION" --locked
+          cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked
+
+      - name: Lint protobuf schema
+        run: buf lint
+
+      - name: Regenerate protobuf artifacts
+        run: buf generate
+
+      - name: Format generated Rust protobuf artifacts
+        run: cargo fmt --package reallyme-jose-proto
+
+      - name: Check generated artifacts are fresh
+        shell: bash
+        run: |
+          git diff --exit-code -- crates/proto/jose/proto crates/proto/jose/src
+          test -z "$(git status --porcelain -- crates/proto/jose/proto crates/proto/jose/src)"

@@ -6,6 +6,26 @@ name: Fuzz
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+  pull_request:
+    paths:
+      - ".github/workflows/fuzz.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/**"
+      - "fuzz/**"
+      - "crates/proto/jose/proto/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/fuzz.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/**"
+      - "fuzz/**"
+      - "crates/proto/jose/proto/**"
 
 permissions:
   contents: read
@@ -24,22 +44,25 @@ jobs:
           toolchain: nightly
 
       - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz --locked
+        run: cargo install cargo-fuzz --version 0.13.2 --locked
 
       - name: Build fuzz targets
         run: cargo +nightly fuzz build
 
   scheduled:
     name: fuzz run (${{ matrix.target }})
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         target:
           - compact_jwe
+          - compact_jwe_ecdh_es
           - compact_jws_es256
           - signed_jwt
           - unsigned_jwt
+          - wire_process
     steps:
       - name: Checkout
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
@@ -50,7 +73,7 @@ jobs:
           toolchain: nightly
 
       - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz --locked
+        run: cargo install cargo-fuzz --version 0.13.2 --locked
 
       - name: Run time-boxed fuzz target
         run: cargo +nightly fuzz run ${{ matrix.target }} -- -max_total_time=300 -rss_limit_mb=4096

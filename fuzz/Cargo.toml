@@ -19,13 +19,20 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-reallyme-jose = { path = "../crates", features = ["native"] }
+reallyme-jose = { path = "../crates", features = ["native", "wire"] }
 reallyme-crypto = { version = "0.1.6", default-features = false, features = ["jwk"] }
 serde_json = "1.0"
 
 [[bin]]
 name = "compact_jwe"
 path = "fuzz_targets/compact_jwe.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "compact_jwe_ecdh_es"
+path = "fuzz_targets/compact_jwe_ecdh_es.rs"
 test = false
 doc = false
 bench = false
@@ -47,6 +54,13 @@ bench = false
 [[bin]]
 name = "unsigned_jwt"
 path = "fuzz_targets/unsigned_jwt.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "wire_process"
+path = "fuzz_targets/wire_process.rs"
 test = false
 doc = false
 bench = false
