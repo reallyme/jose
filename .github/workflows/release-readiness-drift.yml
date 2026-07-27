@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Release Readiness Upstream Drift
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 4 * * 2"
+
+permissions:
+  contents: read
+
+jobs:
+  compare-upstream:
+    name: compare vendored release-readiness core
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout JOSE
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Checkout current release-readiness upstream
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: main
+          path: .release-readiness-upstream
+          persist-credentials: false
+      - name: Report vendored core drift
+        run: cmp --silent scripts/release-readiness/core.mjs .release-readiness-upstream/core.mjs

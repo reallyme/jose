@@ -19,8 +19,9 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-reallyme-jose = { path = "../crates", features = ["native", "wire"] }
-reallyme-crypto = { version = "0.1.6", default-features = false, features = ["jwk"] }
+reallyme-jose = { path = "../crates/jose", features = ["native", "wire"] }
+reallyme-jose-ffi = { path = "../crates/ffi" }
+reallyme-crypto = { version = "0.3.4", default-features = false, features = ["jwk"] }
 serde_json = "1.0"
 
 [[bin]]
@@ -33,6 +34,13 @@ bench = false
 [[bin]]
 name = "compact_jwe_ecdh_es"
 path = "fuzz_targets/compact_jwe_ecdh_es.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "parse_jwe_header"
+path = "fuzz_targets/parse_jwe_header.rs"
 test = false
 doc = false
 bench = false
@@ -52,6 +60,13 @@ doc = false
 bench = false
 
 [[bin]]
+name = "validate_jwt_temporal"
+path = "fuzz_targets/validate_jwt_temporal.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
 name = "unsigned_jwt"
 path = "fuzz_targets/unsigned_jwt.rs"
 test = false
@@ -59,8 +74,22 @@ doc = false
 bench = false
 
 [[bin]]
-name = "wire_process"
-path = "fuzz_targets/wire_process.rs"
+name = "operation_wire"
+path = "fuzz_targets/operation_wire.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "operation_response"
+path = "fuzz_targets/operation_response.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "ffi_operation"
+path = "fuzz_targets/ffi_operation.rs"
 test = false
 doc = false
 bench = false

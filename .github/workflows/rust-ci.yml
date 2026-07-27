@@ -27,8 +27,13 @@ permissions:
   contents: read
 
 env:
-  CARGO_AUDIT_VERSION: 0.22.1
-  CARGO_DENY_VERSION: 0.19.6
+  CARGO_AUDIT_VERSION: 0.22.2
+  CARGO_CHECK_EXTERNAL_TYPES_VERSION: 0.5.0
+  CARGO_DENY_VERSION: 0.20.2
+  CARGO_NEXTEST_VERSION: 0.9.140
+  EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20
+  WASM_BINDGEN_CLI_VERSION: 0.2.126
+  WASM_PACK_VERSION: 0.15.0
 
 jobs:
   rust:
@@ -36,31 +41,76 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
         with:
           toolchain: 1.96.0
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 
+      - name: Install pinned sanitizer toolchain
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
+        with:
+          toolchain: nightly-2026-07-01
+
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
 
       - name: Install nextest
-        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # nextest
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: cargo-nextest@${{ env.CARGO_NEXTEST_VERSION }}
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: cargo-deny@${{ env.CARGO_DENY_VERSION }}
+
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: cargo-audit@${{ env.CARGO_AUDIT_VERSION }}
+
+      - name: Install external-type checker
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: cargo-check-external-types@${{ env.CARGO_CHECK_EXTERNAL_TYPES_VERSION }}
+
+      - name: Install external-type checker toolchain
+        run: rustup toolchain install "$EXTERNAL_TYPES_NIGHTLY" --profile minimal
+
+      - name: Install wasm-bindgen test runner
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: wasm-pack@${{ env.WASM_PACK_VERSION }}
 
       - name: Install Node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
+          cache: npm
+          cache-dependency-path: packages/ts/package-lock.json
+
+      - name: Verify locked dependency graph
+        run: cargo metadata --locked --format-version 1 --no-deps
 
       - name: Format
         run: cargo fmt --check
 
       - name: Check all features
         run: cargo check --locked --workspace --all-features
+
+      - name: Check unwind-capable FFI release profile
+        run: cargo check --locked -p reallyme-jose-ffi --profile release-ffi
 
       - name: Check warnings as errors
         run: RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features
@@ -69,7 +119,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          output="$(cargo check --locked --workspace --no-default-features 2>&1)"
+          output="$(cargo check --locked -p reallyme-jose --no-default-features 2>&1)"
           status="$?"
           set -e
           test "$status" -ne 0
@@ -78,11 +128,37 @@ jobs:
       - name: Clippy
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
+      - name: Check public external-type provenance
+        run: >-
+          cargo +"${EXTERNAL_TYPES_NIGHTLY}" check-external-types
+          --manifest-path crates/jose/Cargo.toml --all-features
+
+      - name: Format vector audit tool
+        run: cargo fmt --manifest-path tools/vector-audit/Cargo.toml --check
+
+      - name: Clippy vector audit tool
+        run: >-
+          cargo clippy --locked --manifest-path tools/vector-audit/Cargo.toml
+          --all-targets -- -D warnings
+
       - name: Test native lane
         run: cargo nextest run --locked --workspace --no-default-features --features native
 
       - name: Test all features
         run: cargo nextest run --locked --workspace --all-features
+
+      # The workspace release profile intentionally aborts, while the FFI
+      # boundary requires release-ffi/unwind. Exercise only publishable Rust
+      # crates here; the FFI artifact has its dedicated release-profile gate.
+      - name: Test publishable crates in the release profile
+        run: >-
+          cargo nextest run --release --locked -p reallyme-jose
+          -p reallyme-jose-proto --all-features
+
+      - name: Independent vector audit
+        run: >-
+          cargo run --locked --manifest-path tools/vector-audit/Cargo.toml
+          --bin reallyme-jose-vector-audit -- .
 
       - name: Doc build
         run: cargo doc --locked --workspace --no-deps --all-features
@@ -92,26 +168,51 @@ jobs:
       - name: Doctests
         run: cargo test --locked --workspace --all-features --doc
 
+      - name: Install TypeScript package dependencies
+        run: npm ci --prefix packages/ts
+
+      - name: Test TypeScript package and WASM provider
+        run: npm --prefix packages/ts test
+
+      - name: Verify npm tarball and WASM surface
+        run: npm --prefix packages/ts run pack:check
+
       - name: Check native lane
         run: cargo check --locked --workspace --no-default-features --features native
 
       - name: Check wasm32 lane
         run: cargo check --locked --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
 
-      - name: Install cargo-deny
-        run: cargo install cargo-deny --version "$CARGO_DENY_VERSION" --locked
+      - name: Test wasm vector lane
+        env:
+          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER: wasm-bindgen-test-runner
+        run: >-
+          cargo test --locked -p reallyme-jose --no-default-features --features wasm
+          --target wasm32-unknown-unknown --test jws_vectors --test jwt_vectors
+          --test jwe_tests --test panva_vectors --test validate_jwe_epk
+
+      - name: Native ABI release artifact
+        run: scripts/test_ffi_abi_release_artifact.sh
+
+      - name: Native boundary sanitizers
+        run: scripts/test_native_sanitizers.sh
 
       - name: Dependency policy
         run: cargo deny check
 
-      - name: Install cargo-audit
-        run: cargo install cargo-audit --version "$CARGO_AUDIT_VERSION" --locked
-
       - name: Security advisory audit
-        run: cargo audit
+        run: cargo audit --deny warnings
 
-      - name: Release readiness contract
-        run: node scripts/check_release_readiness.mjs
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: f27973caf9d3a12847cac4032c361f5f553c97e9
+          path: .release-readiness
+          persist-credentials: false
+
+      - name: Release readiness
+        run: node .release-readiness/scripts/run-consumer-check.mjs --policy-only
 
       - name: Crates.io package preflight
         run: node scripts/publish_crates_in_order.mjs inspect

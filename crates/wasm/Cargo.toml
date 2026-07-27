@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-jose-wasm"
+version = "0.3.0"
+description = "WebAssembly adapter for the ReallyMe JOSE TypeScript package."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+js-sys = { workspace = true }
+reallyme-jose = { version = "=0.3.0", path = "../jose", default-features = false, features = ["wasm", "wire"] }
+reallyme-crypto = { workspace = true, features = ["csprng", "wasm"] }
+wasm-bindgen = { workspace = true }
+zeroize = { workspace = true }
+
+[lints]
+workspace = true

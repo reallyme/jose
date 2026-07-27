@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "reallyme-jose-ffi"
+version = "0.3.0"
+description = "ReallyMe JOSE native C ABI operation-contract adapter."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+crate-type = ["rlib", "staticlib", "cdylib"]
+
+[features]
+default = ["native"]
+native = ["reallyme-crypto/native", "reallyme-jose/native"]
+
+[dependencies]
+jni = { workspace = true }
+reallyme-crypto = { workspace = true, features = ["csprng"] }
+reallyme-jose = { version = "0.3.0", path = "../jose", default-features = false, features = ["wire"] }
+zeroize = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,76 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Android CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/android-ci.yml"
+      - "packages/kotlin-android/**"
+      - "packages/kotlin/**"
+      - "gen/java/**"
+      - "gen/kotlin/**"
+      - "crates/ffi/**"
+      - "scripts/build_android_native_resources.sh"
+      - "scripts/test_android_consumer_r8_runtime.sh"
+      - "scripts/write_native_manifest.mjs"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/android-ci.yml"
+      - "packages/kotlin-android/**"
+      - "packages/kotlin/**"
+      - "gen/java/**"
+      - "gen/kotlin/**"
+      - "crates/ffi/**"
+      - "scripts/build_android_native_resources.sh"
+      - "scripts/test_android_consumer_r8_runtime.sh"
+      - "scripts/write_native_manifest.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  android-release-runtime:
+    name: Android AAR and minified runtime
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate Gradle wrappers
+        uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - name: Install Java
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
+        with:
+          toolchain: 1.96.0
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Install pinned Android NDK
+        run: |
+          { yes 2>/dev/null || true; } | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.14206865"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
+      - name: Verify native manifest writer
+        run: node --test scripts/write_native_manifest.test.mjs
+      - name: Enable emulator KVM
+        run: |
+          test -e /dev/kvm
+          sudo chown "${USER}:${USER}" /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+      - name: Test minified Android consumer runtime
+        run: scripts/test_android_consumer_r8_runtime.sh
+        env:
+          REALLYME_JOSE_ANDROID_AVD: reallyme-jose-r8-gate

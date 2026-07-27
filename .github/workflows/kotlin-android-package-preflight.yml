@@ -1,0 +1,224 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Kotlin Android Package Preflight
+run-name: Kotlin Android package preflight ${{ inputs.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Optional exact main commit SHA to certify. Leave blank to use current origin/main.
+        required: false
+        type: string
+        default: ""
+      version:
+        description: Release version without leading v
+        required: true
+        type: string
+        default: 0.3.0
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kotlin-android-package-preflight-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  verify-source-sha:
+    name: verify source SHA
+    runs-on: ubuntu-24.04
+    outputs:
+      release_sha: ${{ steps.resolve.outputs.release_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - id: resolve
+        name: Resolve release SHA
+        env:
+          RELEASE_SHA_INPUT: ${{ inputs.release_sha }}
+        run: |
+          git fetch --no-tags origin main
+          if [ -n "${RELEASE_SHA_INPUT}" ]; then
+            if [[ ! "${RELEASE_SHA_INPUT}" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error::release_sha must be blank or a lowercase 40-character commit SHA"
+              exit 1
+            fi
+            release_sha="${RELEASE_SHA_INPUT}"
+          else
+            release_sha="$(git rev-parse origin/main)"
+          fi
+          if [ "$(git rev-parse origin/main)" != "${release_sha}" ]; then
+            echo "::error::resolved release SHA is not the current origin/main tip"
+            exit 1
+          fi
+          if [ "${GITHUB_SHA}" != "${release_sha}" ]; then
+            echo "::error::resolved release SHA does not match the workflow run head SHA"
+            exit 1
+          fi
+          git checkout --detach "${release_sha}"
+          echo "release_sha=${release_sha}" >> "${GITHUB_OUTPUT}"
+
+  jvm-native:
+    name: jvm native preflight ${{ matrix.platform }}
+    needs: verify-source-sha
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, platform: linux-x86_64 }
+          - { os: ubuntu-24.04-arm, platform: linux-aarch64 }
+          - { os: macos-15-intel, platform: macos-x86_64 }
+          - { os: macos-15, platform: macos-aarch64 }
+          - { os: windows-2025, platform: windows-x86_64 }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify-source-sha.outputs.release_sha }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
+        with:
+          toolchain: 1.96.0
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Build host JNI resource
+        shell: bash
+        run: scripts/build_kotlin_native_resource.sh build/kotlin-native-resources
+      - id: digest
+        name: Record producer digest outside artifact
+        shell: bash
+        env:
+          NATIVE_PLATFORM: ${{ matrix.platform }}
+        run: >-
+          node scripts/verify_native_artifact_handoff.mjs record
+          build/kotlin-native-resources build/kotlin-native-digests "${NATIVE_PLATFORM}"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: kotlin-native-${{ matrix.platform }}
+          path: build/kotlin-native-resources
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: kotlin-digest-${{ matrix.platform }}
+          path: build/kotlin-native-digests
+          if-no-files-found: error
+          retention-days: 7
+
+  package-artifacts:
+    name: JVM and Android package preflight
+    needs: [verify-source-sha, jvm-native]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify-source-sha.outputs.release_sha }}
+          persist-credentials: false
+      - uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+      - uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
+        with:
+          toolchain: 1.96.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: kotlin-native-*
+          path: build/kotlin-native-resources
+          merge-multiple: true
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: kotlin-digest-*
+          path: build/kotlin-native-digests
+          merge-multiple: true
+      - name: Verify cross-run native handoff
+        run: >-
+          node scripts/verify_native_artifact_handoff.mjs verify
+          build/kotlin-native-resources build/kotlin-native-digests
+      - name: Write JVM native integrity manifest
+        run: node scripts/write_native_manifest.mjs build/kotlin-native-resources/me/really/jose/native build/kotlin-native-resources/me/really/jose/native/native-manifest.json
+      - name: Install pinned Android NDK
+        run: |
+          { yes 2>/dev/null || true; } | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.14206865"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
+      - name: Build Android native resources
+        run: scripts/build_android_native_resources.sh build/android-jniLibs
+      - name: Write Android native integrity manifest
+        run: node scripts/write_native_manifest.mjs build/android-jniLibs build/android-native-assets/reallyme-jose/native-manifest.json
+      - name: Test and stage JVM publication
+        run: >-
+          packages/kotlin/gradlew --dependency-verification strict -p packages/kotlin
+          test verifyJarContainsNativeResources publishMavenPublicationToLocalReleaseRepository
+          -Preallyme.jose.nativeResourcesDir=${{ github.workspace }}/build/kotlin-native-resources
+          -Preallyme.jose.requireFullNativeResources=true
+          -Preallyme.maven.localReleaseRepositoryDir=${{ github.workspace }}/build/maven-release
+      - name: Test and stage Android publication
+        run: >-
+          packages/kotlin-android/gradlew --dependency-verification strict -p packages/kotlin-android
+          verifyAndroidJniLibs bundleReleaseAar verifyReleaseAarContainsJniLibs
+          publishReleasePublicationToLocalReleaseRepository
+          -Preallyme.jose.androidJniLibsDir=${{ github.workspace }}/build/android-jniLibs
+          -Preallyme.jose.androidNativeAssetsDir=${{ github.workspace }}/build/android-native-assets
+          -Preallyme.jose.requireAndroidJniLibs=true
+          -Preallyme.maven.localReleaseRepositoryDir=${{ github.workspace }}/build/maven-release
+      - name: Verify staged Maven repository
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          node scripts/verify_sdk_release_version.mjs "${RELEASE_VERSION}"
+          node --test scripts/promote_maven_release_repository.test.mjs scripts/verify_native_artifact_handoff.test.mjs scripts/verify_release_attestation.test.mjs scripts/verify_sdk_release_version.test.mjs
+          node scripts/verify_maven_release_repository.mjs build/maven-release "${RELEASE_VERSION}"
+          node scripts/run_pinned_release_readiness.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: maven-publications-${{ inputs.version }}-${{ needs.verify-source-sha.outputs.release_sha }}
+          path: build/maven-release
+          if-no-files-found: error
+          retention-days: 7
+
+  android-runtime:
+    name: minified Android runtime preflight
+    needs: verify-source-sha
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify-source-sha.outputs.release_sha }}
+          persist-credentials: false
+      - uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
+        with:
+          toolchain: 1.96.0
+      - name: Install pinned Android NDK
+        run: |
+          { yes 2>/dev/null || true; } | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.14206865"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
+      - name: Enable emulator KVM
+        run: |
+          test -e /dev/kvm
+          sudo chown "${USER}:${USER}" /dev/kvm
+      - name: Run minified Android consumer corpus
+        run: scripts/test_android_consumer_r8_runtime.sh
+        env:
+          REALLYME_JOSE_ANDROID_AVD: reallyme-jose-package-preflight

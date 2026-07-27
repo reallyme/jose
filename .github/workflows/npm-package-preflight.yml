@@ -1,0 +1,108 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: npm Package Preflight
+run-name: npm package preflight ${{ inputs.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Optional exact main commit SHA to certify. Leave blank to use current origin/main.
+        required: false
+        type: string
+        default: ""
+      version:
+        description: Release version without leading v
+        required: true
+        type: string
+        default: 0.3.0
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-package-preflight-${{ inputs.version }}
+  cancel-in-progress: false
+
+env:
+  WASM_BINDGEN_CLI_VERSION: 0.2.126
+  WASM_PACK_VERSION: 0.15.0
+
+jobs:
+  verify-source-sha:
+    name: verify source SHA
+    runs-on: ubuntu-24.04
+    outputs:
+      release_sha: ${{ steps.resolve.outputs.release_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - id: resolve
+        name: Resolve release SHA
+        env:
+          RELEASE_SHA_INPUT: ${{ inputs.release_sha }}
+        run: |
+          git fetch --no-tags origin main
+          if [ -n "${RELEASE_SHA_INPUT}" ]; then
+            if [[ ! "${RELEASE_SHA_INPUT}" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error::release_sha must be blank or a lowercase 40-character commit SHA"
+              exit 1
+            fi
+            release_sha="${RELEASE_SHA_INPUT}"
+          else
+            release_sha="$(git rev-parse origin/main)"
+          fi
+          if [ "$(git rev-parse origin/main)" != "${release_sha}" ]; then
+            echo "::error::resolved release SHA is not the current origin/main tip"
+            exit 1
+          fi
+          if [ "${GITHUB_SHA}" != "${release_sha}" ]; then
+            echo "::error::resolved release SHA does not match the workflow run head SHA"
+            exit 1
+          fi
+          git checkout --detach "${release_sha}"
+          echo "release_sha=${release_sha}" >> "${GITHUB_OUTPUT}"
+
+  npm-package:
+    name: npm package preflight
+    needs: verify-source-sha
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify-source-sha.outputs.release_sha }}
+          persist-credentials: false
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: packages/ts/package-lock.json
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
+        with:
+          toolchain: 1.96.0
+          targets: wasm32-unknown-unknown
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: wasm-pack@${{ env.WASM_PACK_VERSION }}
+      - name: Install wasm-bindgen-cli
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}
+      - name: Install TypeScript dependencies
+        run: npm ci --prefix packages/ts
+      - name: Verify release metadata
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/run_pinned_release_readiness.mjs --release-packages
+      - name: Test TypeScript package and WASM provider
+        run: npm --prefix packages/ts test
+      - name: Verify npm tarball and WASM surface
+        run: npm --prefix packages/ts run pack:check

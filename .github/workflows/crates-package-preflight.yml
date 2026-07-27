@@ -1,0 +1,250 @@
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Crates Package Preflight
+
+run-name: Crates package preflight ${{ inputs.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Optional exact main commit SHA to certify. Leave blank to use current origin/main.
+        required: false
+        type: string
+        default: ""
+      version:
+        description: Release version without leading v
+        required: true
+        type: string
+        default: 0.3.0
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crates-package-preflight-${{ inputs.version }}
+  cancel-in-progress: false
+
+env:
+  CARGO_AUDIT_VERSION: 0.22.2
+  CARGO_CHECK_EXTERNAL_TYPES_VERSION: 0.5.0
+  CARGO_DENY_VERSION: 0.20.2
+  CARGO_NEXTEST_VERSION: 0.9.140
+  CARGO_SEMVER_CHECKS_VERSION: 0.49.0
+  EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20
+  WASM_BINDGEN_CLI_VERSION: 0.2.126
+  BUFFA_VERSION: 0.9.1
+  BUF_VERSION: 1.71.0
+  BUF_LINUX_X86_64_SHA256: d3de2838c68a5759ca276884254bc70df4e4ad185d6ed5f65f327b6ce6363eab
+
+jobs:
+  verify-source-sha:
+    name: verify source SHA
+    runs-on: ubuntu-24.04
+    outputs:
+      release_sha: ${{ steps.resolve-release-sha.outputs.release_sha }}
+    steps:
+      - name: Checkout main for release SHA resolution
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve release SHA
+        id: resolve-release-sha
+        env:
+          RELEASE_SHA_INPUT: ${{ inputs.release_sha }}
+        run: |
+          git fetch --no-tags origin main
+          if [ -n "${RELEASE_SHA_INPUT}" ]; then
+            if [[ ! "${RELEASE_SHA_INPUT}" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error::release_sha must be blank or a lowercase 40-character commit SHA"
+              exit 1
+            fi
+            release_sha="${RELEASE_SHA_INPUT}"
+          else
+            release_sha="$(git rev-parse origin/main)"
+          fi
+          if [ "$(git rev-parse origin/main)" != "${release_sha}" ]; then
+            echo "::error::resolved release SHA is not the current origin/main tip"
+            exit 1
+          fi
+          if [ "${GITHUB_SHA}" != "${release_sha}" ]; then
+            echo "::error::resolved release SHA does not match the workflow run head SHA"
+            exit 1
+          fi
+          git checkout --detach "${release_sha}"
+          echo "release_sha=${release_sha}" >> "${GITHUB_OUTPUT}"
+
+  crates-package:
+    name: crates.io package preflight
+    needs: verify-source-sha
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify-source-sha.outputs.release_sha }}
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
+        with:
+          toolchain: 1.96.0
+          components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+
+      - name: Install nextest
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: cargo-nextest@${{ env.CARGO_NEXTEST_VERSION }}
+
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: cargo-deny@${{ env.CARGO_DENY_VERSION }}
+
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: cargo-audit@${{ env.CARGO_AUDIT_VERSION }}
+
+      - name: Install external-type checker
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: cargo-check-external-types@${{ env.CARGO_CHECK_EXTERNAL_TYPES_VERSION }}
+
+      - name: Install external-type checker toolchain
+        run: rustup toolchain install "$EXTERNAL_TYPES_NIGHTLY" --profile minimal
+
+      - name: Install wasm-bindgen test runner
+        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        with:
+          tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}
+
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+
+      - name: Checkout Rust semver baseline
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 66d54835235c414051009523670afb6bb3e51007
+          path: .semver-baseline
+          persist-credentials: false
+
+      - name: Prepare reproducible Rust semver baseline
+        run: node scripts/prepare_semver_baseline.mjs .semver-baseline
+
+      - name: Install cargo-semver-checks
+        run: cargo install cargo-semver-checks --version "$CARGO_SEMVER_CHECKS_VERSION" --locked
+
+      - name: Check public Rust API semver
+        run: >-
+          cargo semver-checks --workspace --exclude reallyme-jose-ffi
+          --baseline-root .semver-baseline
+
+      - name: Verify locked dependency graph
+        run: cargo metadata --locked --format-version 1 --no-deps
+
+      - name: Verify coordinated release version and tooling
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          node --test scripts/publish_crates_in_order.test.mjs scripts/verify_sdk_release_version.test.mjs
+          node scripts/verify_sdk_release_version.mjs "${RELEASE_VERSION}"
+
+      - name: Install buf
+        shell: bash
+        run: |
+          set -euo pipefail
+          install_dir="$RUNNER_TEMP/buf/bin"
+          mkdir -p "$install_dir"
+          curl --fail-with-body --location --proto '=https' --tlsv1.2 \
+            --retry 5 --retry-all-errors \
+            --output "$install_dir/buf" \
+            "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-Linux-x86_64"
+          printf '%s  %s\n' "$BUF_LINUX_X86_64_SHA256" "$install_dir/buf" \
+            | sha256sum --check --strict
+          chmod 0755 "$install_dir/buf"
+          printf '%s\n' "$install_dir" >> "$GITHUB_PATH"
+          "$install_dir/buf" --version
+
+      - name: Install pinned Buffa generators
+        run: |
+          cargo install protoc-gen-buffa --version "$BUFFA_VERSION" --locked
+          cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked
+
+      - name: Validate and regenerate protobuf artifacts
+        run: |
+          buf lint
+          buf generate
+          node scripts/harden-generated-jose-proto.mjs
+          node scripts/harden-generated-jose-proto.mjs --check-idempotent
+          node scripts/harden-generated-jose-jvm.mjs
+          node scripts/harden-generated-jose-jvm.mjs --check-idempotent
+          cargo fmt --package reallyme-jose-proto
+          git diff --exit-code -- crates/proto/proto crates/proto/src gen/swift gen/java gen/kotlin packages/ts/src/proto/generated
+          test -z "$(git status --porcelain -- crates/proto/proto crates/proto/src gen/swift gen/java gen/kotlin packages/ts/src/proto/generated)"
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Check warnings as errors
+        run: RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features
+
+      - name: Clippy
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+
+      - name: Check public external-type provenance
+        run: >-
+          cargo +"${EXTERNAL_TYPES_NIGHTLY}" check-external-types
+          --manifest-path crates/jose/Cargo.toml --all-features
+
+      - name: Test all features
+        run: cargo nextest run --locked --workspace --all-features
+
+      - name: Test publishable crates in the release profile
+        run: >-
+          cargo nextest run --release --locked -p reallyme-jose
+          -p reallyme-jose-proto --all-features
+
+      - name: Check wasm32 lane
+        run: cargo check --locked --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
+
+      - name: Test wasm vector lane
+        env:
+          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER: wasm-bindgen-test-runner
+        run: >-
+          cargo test --locked -p reallyme-jose --no-default-features --features wasm
+          --target wasm32-unknown-unknown --test jws_vectors --test jwt_vectors
+          --test jwe_tests --test panva_vectors --test validate_jwe_epk
+
+      - name: Dependency policy
+        run: cargo deny check
+
+      - name: Security advisory audit
+        run: cargo audit --deny warnings
+
+      - name: Check release readiness contract
+        run: node scripts/run_pinned_release_readiness.mjs
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+
+      - name: Check release version and publish order
+        run: node scripts/publish_crates_in_order.mjs order
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+
+      - name: Inspect publishable crate tarballs
+        run: node scripts/publish_crates_in_order.mjs inspect
+        env:
+          CARGO_HOME: ${{ runner.temp }}/package-preflight-cargo-home
+          RELEASE_VERSION: ${{ inputs.version }}

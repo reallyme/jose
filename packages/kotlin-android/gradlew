@@ -1,0 +1,9 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec "${SCRIPT_DIR}/../kotlin/gradlew" "$@"

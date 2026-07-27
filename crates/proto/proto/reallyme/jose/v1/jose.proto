@@ -1,0 +1,468 @@
+// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package reallyme.jose.v1;
+
+option go_package = "github.com/reallyme/jose/gen/go/reallyme/jose/v1;josev1";
+option java_multiple_files = true;
+option java_outer_classname = "JoseProto";
+option java_package = "me.really.jose.v1";
+option swift_prefix = "ReallyMeProto";
+
+// JoseError is the public, non-PII error envelope for JOSE boundary failures.
+// The oneof keeps caller-owned input/primitive failures, provider availability
+// failures, and backend/internal failures distinct while JoseErrorReason keeps
+// the exact JOSE-specific reason stable end-to-end.
+message JoseError {
+  oneof error {
+    JosePrimitiveError primitive = 1;
+    JoseProviderError provider = 2;
+    JoseBackendError backend = 3;
+  }
+}
+
+// JosePrimitiveError describes caller-owned protobuf/JSON input, compact
+// serialization, protected-header policy, key material, signature,
+// authentication, claims, and payload failures.
+message JosePrimitiveError {
+  JoseErrorReason reason = 1;
+}
+
+// JoseProviderError describes unsupported algorithms, unavailable providers,
+// and platform randomness failures.
+message JoseProviderError {
+  JoseErrorReason reason = 1;
+}
+
+// JoseBackendError describes output serialization, cryptographic backend, FFI,
+// WASM, and internal failures that are not safe to expose as backend exception
+// text. Malformed caller input does not belong to this branch.
+message JoseBackendError {
+  JoseErrorReason reason = 1;
+}
+
+// JoseErrorReason is the component-owned reason-code enum for reallyme/jose.
+// Values are stable public boundary codes; internal Rust, Swift, Kotlin, and
+// TypeScript errors must map into one of these before crossing RPC, SDK, FFI,
+// storage, audit, or telemetry boundaries.
+enum JoseErrorReason {
+  JOSE_ERROR_REASON_UNSPECIFIED = 0;
+  reserved 1 to 73;
+
+  // Compact JWS structure and parser policy: 100-119.
+  JOSE_ERROR_REASON_JWS_INVALID_COMPACT = 100;
+  JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE = 101;
+  JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW = 102;
+  JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8 = 103;
+  JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64 = 104;
+
+  // Compact JWS protected-header policy: 120-139.
+  JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64 = 120;
+  JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8 = 121;
+  JOSE_ERROR_REASON_JWS_HEADER_MISMATCH = 122;
+
+  // Compact JWS signature encoding and verification: 140-159.
+  JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64 = 140;
+  JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE = 141;
+  JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE = 142;
+
+  // Compact JWS signing: 160-179.
+  JOSE_ERROR_REASON_JWS_SIGN_FAILED = 160;
+  JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE = 161;
+
+  // Compact JWE structure and segment encoding: 200-219.
+  JOSE_ERROR_REASON_JWE_INVALID_COMPACT = 200;
+  JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE = 201;
+  JOSE_ERROR_REASON_JWE_INVALID_ENCODING = 202;
+
+  // Compact JWE protected-header policy: 220-239.
+  JOSE_ERROR_REASON_JWE_INVALID_HEADER = 220;
+  JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM = 221;
+  JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM = 222;
+  JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER = 223;
+  JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH = 224;
+  JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH = 225;
+  JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH = 226;
+  JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH = 227;
+
+  // Compact JWE key-management and content-encryption failures: 240-259.
+  JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY = 240;
+  JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY = 241;
+  JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT = 242;
+  JOSE_ERROR_REASON_JWE_DECRYPT_FAILED = 243;
+  JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED = 244;
+  JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY = 245;
+  JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW = 246;
+  JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET = 247;
+
+  // Compact JWE plaintext handling: 260-279.
+  JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON = 260;
+
+  // JWT compact structure and encoding: 300-319.
+  JOSE_ERROR_REASON_JWT_INVALID_COMPACT = 300;
+  JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE = 301;
+  JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED = 302;
+  JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW = 303;
+
+  // JWT JOSE-header policy and algorithm/key binding: 320-339.
+  JOSE_ERROR_REASON_JWT_INVALID_HEADER = 320;
+  JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM = 321;
+  JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH = 322;
+  JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM = 323;
+  JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY = 324;
+  JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY = 325;
+  JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH = 326;
+  JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH = 327;
+  JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY = 328;
+  JOSE_ERROR_REASON_JWT_INVALID_JWK = 329;
+
+  // JWT signature and cryptographic failures: 340-359.
+  JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE = 340;
+  JOSE_ERROR_REASON_JWT_CRYPTO_FAILED = 341;
+
+  // JWT claims and serialization failures: 360-379.
+  JOSE_ERROR_REASON_JWT_INVALID_CLAIMS = 360;
+  JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED = 361;
+
+  // JWT temporal claim policy: 380-399.
+  JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM = 380;
+  JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE = 381;
+  JOSE_ERROR_REASON_JWT_EXPIRED = 382;
+  JOSE_ERROR_REASON_JWT_NOT_YET_VALID = 383;
+  JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE = 384;
+  JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME = 385;
+  JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY = 386;
+  JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH = 387;
+  JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM = 388;
+  JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE = 389;
+  JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH = 390;
+  JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH = 391;
+  JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH = 392;
+
+  // Common operation execution boundary failures: 700-799.
+  JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF = 700;
+  JOSE_ERROR_REASON_COMMON_MALFORMED_JSON = 701;
+  JOSE_ERROR_REASON_COMMON_MISSING_OPERATION = 702;
+  JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED = 703;
+
+  // Provider failures: 800-899.
+  // Defined for service wrappers that own runtime provider selection. The
+  // current Rust operation adapter only emits unsupported-provider and
+  // randomness-unavailable provider failures directly.
+  JOSE_ERROR_REASON_PROVIDER_UNAVAILABLE = 800;
+  JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED = 801;
+  JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE = 802;
+
+  // Backend failures: 900-999.
+  JOSE_ERROR_REASON_BACKEND_INTERNAL = 900;
+  JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION = 901;
+  JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED = 902;
+}
+
+enum JoseSignatureAlgorithm {
+  JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED = 0;
+  reserved 1 to 3;
+  // EdDSA: 100-199; elliptic-curve signatures: 200-299.
+  JOSE_SIGNATURE_ALGORITHM_EDDSA = 100;
+  JOSE_SIGNATURE_ALGORITHM_ES256 = 200;
+
+  // ES256K is supported by JWT through JWK algorithm binding, but it is not a
+  // executable JWS operation. Reserve the adjacent slot so that future JWS
+  // wire support is added deliberately rather than by accidental reuse.
+  reserved "JOSE_SIGNATURE_ALGORITHM_ES256K";
+}
+
+enum JoseJweKeyManagementAlgorithm {
+  JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_UNSPECIFIED = 0;
+  reserved 1 to 4;
+  // Direct key use: 100-199; ECDH-ES: 200-299.
+  JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT = 100;
+  JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P256 = 200;
+  JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P384 = 210;
+  JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P521 = 220;
+}
+
+enum JoseJweContentEncryptionAlgorithm {
+  JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_UNSPECIFIED = 0;
+  reserved 1 to 3;
+  // AES-GCM content encryption: 100-199.
+  JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM = 100;
+  JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM = 110;
+  JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM = 120;
+}
+
+// JoseOperationContractVersion is validated exactly by every executable
+// response decoder. Unknown and unspecified versions fail closed.
+enum JoseOperationContractVersion {
+  JOSE_OPERATION_CONTRACT_VERSION_UNSPECIFIED = 0;
+  JOSE_OPERATION_CONTRACT_VERSION_V1 = 1;
+}
+
+// JoseOperationResponse is the canonical 0.3.0 executable response. The low
+// field-number range remains reserved so future revisions cannot reuse or
+// ambiguously reinterpret it. Boundary errors are limited to failures before
+// a trusted operation variant can be selected; operation failures remain
+// nested under the selected operation.
+message JoseOperationResponse {
+  reserved 1 to 9;
+  JoseOperationContractVersion contract_version = 10;
+  reserved 11 to 899;
+
+  oneof response {
+    JoseError boundary_error = 900;
+
+    // Compact JWS operations: 1000-1999.
+    JoseJwsSignResponse jws_sign = 1000;
+    JoseJwsVerifyResponse jws_verify = 1001;
+
+    // JWT operations: 2000-2999.
+    JoseJwtEncodeUnsignedResponse jwt_encode_unsigned = 2000;
+    JoseJwtDecodeUnsignedResponse jwt_decode_unsigned = 2001;
+    JoseJwtSignResponse jwt_sign = 2002;
+    JoseJwtVerifyResponse jwt_verify = 2003;
+
+    // Compact JWE operations: 3000-3999.
+    JoseJweEncryptResponse jwe_encrypt = 3000;
+    JoseJweDecryptResponse jwe_decrypt = 3001;
+  }
+}
+
+// JoseOperationRequest is the single executable protobuf entrypoint for
+// FFI, JNI, WASM, and other operation adapters. Native SDKs should keep
+// using typed methods; adapters can use this generated oneof to avoid
+// hand-rolled operation routing and error-envelope plumbing.
+message JoseOperationRequest {
+  reserved 1 to 8;
+
+  oneof operation {
+    // Compact JWS operations: 1000-1999.
+    JoseJwsSignRequest jws_sign = 1000;
+    JoseJwsVerifyRequest jws_verify = 1001;
+
+    // JWT operations: 2000-2999.
+    JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000;
+    JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001;
+    JoseJwtSignRequest jwt_sign = 2002;
+    JoseJwtVerifyRequest jwt_verify = 2003;
+
+    // Compact JWE operations: 3000-3999.
+    JoseJweEncryptRequest jwe_encrypt = 3000;
+    JoseJweDecryptRequest jwe_decrypt = 3001;
+  }
+}
+
+message JoseJwsSignRequest {
+  JoseSignatureAlgorithm algorithm = 1;
+  // Sensitive signing key bytes. Adapters must zeroize after dispatch and must
+  // not log, trace, or include this field in errors.
+  bytes private_key = 2;
+  // Payload bytes for compact JWS signing. The current native SDK facade signs
+  // UTF-8 payloads; non-UTF-8 wire payloads fail closed with
+  // JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8.
+  bytes payload = 3;
+}
+
+message JoseCompactResult {
+  string compact = 1;
+}
+
+message JoseJwsVerifyRequest {
+  JoseSignatureAlgorithm algorithm = 1;
+  string compact = 2;
+  // Public verification key bytes. Public material is still boundary data and
+  // must not be copied into errors or telemetry.
+  bytes public_key = 3;
+}
+
+// Empty success message. Verification success is represented by envelope
+// status = RESULT; verification failure is represented by a structured
+// JoseError envelope and must not be inferred from message fields.
+message JoseVerifyResult {}
+
+message JoseJwtEncodeUnsignedRequest {
+  // Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+  bytes claims_json = 1;
+}
+
+message JoseJwtDecodeUnsignedRequest {
+  string compact = 1;
+}
+
+message JoseJwtClaimsResult {
+  // Original claims JSON bytes preserved by the wire adapter. These bytes can
+  // contain PII and must be zeroized after use.
+  bytes claims_json = 1;
+}
+
+message JoseJwtSignRequest {
+  // Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+  bytes claims_json = 1;
+  // JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
+  // this as sensitive boundary input and avoid logging it.
+  bytes jwk_json = 2;
+  // Sensitive signing key bytes. Adapters must zeroize after dispatch and must
+  // not log, trace, or include this field in errors.
+  bytes private_key = 3;
+  // Optional protected-header typ. Empty means the native SDK default typ.
+  string typ = 4;
+}
+
+message JoseJwtVerifyRequest {
+  string compact = 1;
+  // JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
+  // this as sensitive boundary input and avoid logging it.
+  bytes jwk_json = 2;
+  // Public verification key bytes. Public material is still boundary data and
+  // must not be copied into errors or telemetry.
+  bytes public_key = 3;
+  // Presence-sensitive policy. If absent/unset, the standard JWT header policy
+  // is used. If present, every field is interpreted literally; in particular,
+  // an empty accepted_typ_values list means no present typ value is accepted.
+  JoseJwtHeaderValidationPolicy header_policy = 4;
+  // Presence-sensitive temporal policy. If absent/unset, signature-only
+  // verification is performed only when signature_only is true. If present,
+  // every boolean, skew, and timestamp field is interpreted literally.
+  JoseJwtTemporalValidationPolicy temporal_policy = 5;
+  // Required when temporal_policy is absent. This makes signature-only
+  // verification an explicit adapter choice rather than a proto3 default.
+  bool signature_only = 6;
+}
+
+message JoseJwtHeaderValidationPolicy {
+  bool allow_missing_typ = 1;
+  bool allow_embedded_key_header = 2;
+  repeated string accepted_typ_values = 3;
+}
+
+message JoseJwtTemporalValidationPolicy {
+  bool require_exp = 1;
+  bool require_nbf = 2;
+  bool require_iat = 3;
+  uint64 clock_skew_seconds = 4;
+  uint64 max_future_iat_skew_seconds = 5;
+  // Required to be nonzero. Zero is rejected at the wire boundary because
+  // proto3 otherwise makes an omitted timestamp indistinguishable from the Unix
+  // epoch, which would make expiration validation fail open.
+  uint64 now_unix = 6;
+  // Required recipient identifier. Temporal verification fails closed when
+  // this value is empty or the JWT aud claim does not contain it.
+  string expected_audience = 7;
+  // Optional exact issuer constraint. Empty means no issuer constraint.
+  string expected_issuer = 8;
+  // Optional exact subject constraint. Empty means no subject constraint.
+  string expected_subject = 9;
+}
+
+message JoseJweEncryptRequest {
+  JoseJweKeyManagementAlgorithm key_management_algorithm = 1;
+  JoseJweContentEncryptionAlgorithm content_encryption_algorithm = 2;
+  // Sensitive direct CEK or recipient public/agreement key bytes, depending on
+  // key_management_algorithm. Adapters must zeroize after dispatch.
+  bytes key = 3;
+  // Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
+  // not log, trace, or include this field in errors.
+  bytes plaintext = 4;
+  string kid = 5;
+  // Agreement PartyUInfo. This can be correlating protocol metadata and must
+  // not be copied into errors or telemetry.
+  bytes apu = 6;
+  // Agreement PartyVInfo. This can be correlating protocol metadata and must
+  // not be copied into errors or telemetry.
+  bytes apv = 7;
+  string typ = 8;
+  string cty = 9;
+}
+
+message JoseJweDecryptRequest {
+  string compact = 1;
+  JoseJweKeyManagementAlgorithm key_management_algorithm = 2;
+  JoseJweContentEncryptionAlgorithm content_encryption_algorithm = 3;
+  // Sensitive direct CEK or recipient private/agreement key bytes, depending on
+  // key_management_algorithm. Adapters must zeroize after dispatch.
+  bytes key = 4;
+  // Presence-sensitive protected-header validation policy. Absence means only
+  // algorithm binding and structural JOSE validation are enforced.
+  JoseJweHeaderValidationPolicy header_policy = 5;
+}
+
+message JoseExpectedString {
+  string value = 1;
+}
+
+message JoseExpectedBytes {
+  bytes value = 1;
+}
+
+message JoseJweHeaderValidationPolicy {
+  bool require_kid = 1;
+  JoseExpectedString expected_kid = 2;
+  JoseExpectedString expected_typ = 3;
+  JoseExpectedString expected_cty = 4;
+  JoseExpectedBytes expected_apu = 5;
+  JoseExpectedBytes expected_apv = 6;
+}
+
+message JoseJwePlaintextResult {
+  // Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
+  // must not log, trace, or include this field in errors.
+  bytes plaintext = 1;
+}
+
+message JoseJwsSignResponse {
+  oneof outcome {
+    JoseCompactResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJwsVerifyResponse {
+  oneof outcome {
+    JoseVerifyResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJwtEncodeUnsignedResponse {
+  oneof outcome {
+    JoseCompactResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJwtDecodeUnsignedResponse {
+  oneof outcome {
+    JoseJwtClaimsResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJwtSignResponse {
+  oneof outcome {
+    JoseCompactResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJwtVerifyResponse {
+  oneof outcome {
+    JoseJwtClaimsResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJweEncryptResponse {
+  oneof outcome {
+    JoseCompactResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJweDecryptResponse {
+  oneof outcome {
+    JoseJwePlaintextResult result = 1;
+    JoseError error = 2;
+  }
+}

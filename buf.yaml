@@ -4,7 +4,7 @@
 
 version: v2
 modules:
-  - path: crates/proto/jose/proto
+  - path: crates/proto/proto
 lint:
   use:
     - STANDARD

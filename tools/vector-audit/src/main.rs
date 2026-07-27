@@ -29,12 +29,12 @@ use thiserror::Error;
 
 const CASE_ID_BYTES: usize = 96;
 const CASE_ID_BYTES_U8: u8 = 96;
-const MANIFEST_FILE: &str = "conformance/vectors/manifest.json";
-const JWS_FILE: &str = "conformance/vectors/jws-compact.json";
-const SIGNED_JWT_FILE: &str = "conformance/vectors/signed-jwt.json";
-const UNSIGNED_JWT_FILE: &str = "conformance/vectors/unsigned-jwt.json";
-const JWE_FILE: &str = "conformance/vectors/jwe-compact.json";
-const PANVA_FILE: &str = "conformance/vectors/panva-jose.json";
+const MANIFEST_FILE: &str = "vectors/manifest.json";
+const JWS_FILE: &str = "vectors/jws-compact.json";
+const SIGNED_JWT_FILE: &str = "vectors/signed-jwt.json";
+const UNSIGNED_JWT_FILE: &str = "vectors/unsigned-jwt.json";
+const JWE_FILE: &str = "vectors/jwe-compact.json";
+const PANVA_FILE: &str = "vectors/panva-jose.json";
 
 #[derive(Debug, Error)]
 #[error("{context}: {reason}")]

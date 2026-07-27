@@ -32,6 +32,7 @@ target/
 /AGENTS.md
 /.claude/
 /.codex/
+/.release-readiness/
 
 # Generated artifacts
 /coverage/
@@ -41,12 +42,15 @@ target/
 proptest-regressions/
 
 # Generated Rust/source artifacts
+/proto/
 **/generated
 **/generated/**
 **/src/generated
 **/src/generated/**
-!crates/proto/jose/src/generated/
-!crates/proto/jose/src/generated/**
+!crates/proto/src/generated/
+!crates/proto/src/generated/**
+!packages/ts/src/proto/generated/
+!packages/ts/src/proto/generated/**
 **/src/pb
 **/src/pb/**
 **/src/prost
@@ -88,6 +92,7 @@ coverage/
 **/.build/
 .swiftpm/
 **/.swiftpm/
+.reallyme-jose-runtime-ffi
 
 # Swift/Xcode local state
 DerivedData/

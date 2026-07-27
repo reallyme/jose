@@ -7,8 +7,34 @@ plugins:
   # Rust Buffa message/view types. Jose checks in generated bindings instead
   # of using build.rs so downstream release builds are deterministic.
   - local: protoc-gen-buffa
-    out: crates/proto/jose/src/generated/buffa
+    out: crates/proto/src/generated/buffa
     opt: [views=true, json=true]
   - local: protoc-gen-buffa-packaging
-    out: crates/proto/jose/src/generated/buffa
+    out: crates/proto/src/generated/buffa
     strategy: all
+
+  # TypeScript types are checked in for deterministic npm builds. The typed
+  # facade consumes these generated messages rather than maintaining a second
+  # hand-written wire contract.
+  - remote: buf.build/bufbuild/es:v2.12.1
+    out: packages/ts/src/proto/generated
+    opt:
+      - target=ts
+
+  # SwiftProtobuf types are bundled behind the typed Swift SDK facade. Keep the
+  # generator version aligned with the package dependency and release policy.
+  - remote: buf.build/apple/swift:v1.38.1
+    out: gen/swift
+    opt:
+      - Visibility=Public
+
+  # Java Lite and Kotlin Lite bindings are implementation details of the
+  # typed JVM facade. Pin both generators to the matching runtime release.
+  - remote: buf.build/protocolbuffers/java:v35.1
+    out: gen/java
+    opt:
+      - lite
+  - remote: buf.build/protocolbuffers/kotlin:v35.1
+    out: gen/kotlin
+    opt:
+      - lite
