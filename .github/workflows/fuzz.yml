@@ -7,7 +7,7 @@ name: Fuzz
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 3 * * *"
+    - cron: "37 3 * * 1"
   pull_request:
     paths:
       - ".github/workflows/fuzz.yml"
@@ -15,7 +15,7 @@ on:
       - "Cargo.lock"
       - "crates/**"
       - "fuzz/**"
-      - "crates/proto/jose/proto/**"
+      - "crates/proto/proto/**"
   push:
     branches:
       - main
@@ -25,10 +25,15 @@ on:
       - "Cargo.lock"
       - "crates/**"
       - "fuzz/**"
-      - "crates/proto/jose/proto/**"
+      - "crates/proto/proto/**"
 
 permissions:
   contents: read
+
+env:
+  CARGO_FUZZ_VERSION: 0.13.2
+  NIGHTLY_TOOLCHAIN: nightly-2026-07-01
+  FUZZ_MAX_TOTAL_TIME_SECONDS: 900
 
 jobs:
   build:
@@ -36,21 +41,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
         with:
-          toolchain: nightly
+          toolchain: ${{ env.NIGHTLY_TOOLCHAIN }}
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
 
       - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz --version 0.13.2 --locked
+        run: cargo install cargo-fuzz --version "$CARGO_FUZZ_VERSION" --locked
+
+      - name: Verify fuzz lockfile is current
+        run: cargo metadata --manifest-path fuzz/Cargo.toml --locked --no-deps --format-version 1
 
       - name: Build fuzz targets
-        run: cargo +nightly fuzz build
+        run: cargo +nightly-2026-07-01 fuzz build
+
+      - name: Verify fuzz build did not rewrite the lockfile
+        run: git diff --exit-code -- fuzz/Cargo.lock
 
   scheduled:
-    name: fuzz run (${{ matrix.target }})
+    name: scheduled fuzz (${{ matrix.target }})
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
@@ -59,28 +75,50 @@ jobs:
         target:
           - compact_jwe
           - compact_jwe_ecdh_es
+          - parse_jwe_header
           - compact_jws_es256
           - signed_jwt
+          - validate_jwt_temporal
           - unsigned_jwt
-          - wire_process
+          - operation_wire
+          - operation_response
+          - ffi_operation
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
         with:
-          toolchain: nightly
+          toolchain: ${{ env.NIGHTLY_TOOLCHAIN }}
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
 
       - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz --version 0.13.2 --locked
+        run: cargo install cargo-fuzz --version "$CARGO_FUZZ_VERSION" --locked
+
+      - name: Verify fuzz lockfile is current
+        run: cargo metadata --manifest-path fuzz/Cargo.toml --locked --no-deps --format-version 1
+
+      - name: Restore and persist fuzz corpus
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: fuzz/corpus/${{ matrix.target }}
+          key: fuzz-corpus-v1-${{ runner.os }}-${{ matrix.target }}-${{ github.run_id }}
+          restore-keys: |
+            fuzz-corpus-v1-${{ runner.os }}-${{ matrix.target }}-
 
       - name: Run time-boxed fuzz target
-        run: cargo +nightly fuzz run ${{ matrix.target }} -- -max_total_time=300 -rss_limit_mb=4096
+        run: >-
+          cargo +nightly-2026-07-01 fuzz run ${{ matrix.target }} --
+          -max_total_time="$FUZZ_MAX_TOTAL_TIME_SECONDS" -rss_limit_mb=4096
 
       - name: Upload crash artifacts
         if: failure()
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: fuzz-artifacts-${{ matrix.target }}
           path: fuzz/artifacts/${{ matrix.target }}

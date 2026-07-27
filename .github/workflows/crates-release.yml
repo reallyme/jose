@@ -6,184 +6,167 @@ name: Crates.io Release
 
 on:
   workflow_dispatch:
-    inputs:
-      publish:
-        description: Publish reallyme-jose crates to crates.io after the dry run succeeds
-        required: true
-        type: boolean
-        default: false
 
 permissions:
   contents: read
 
-env:
-  CARGO_DENY_VERSION: 0.19.6
-  BUFFA_VERSION: 0.8.1
-  BUF_VERSION: 1.71.0
-  BUF_LINUX_X86_64_SHA256: d3de2838c68a5759ca276884254bc70df4e4ad185d6ed5f65f327b6ce6363eab
+concurrency:
+  group: crates-release-main
+  cancel-in-progress: false
 
 jobs:
-  dry-run:
-    name: crates.io publish preflight
-    runs-on: ubuntu-latest
-    outputs:
-      release_sha: ${{ steps.release-commit.outputs.sha }}
+  verify-release-sha:
+    name: Verify reviewed release SHA
+    runs-on: ubuntu-24.04
     permissions:
+      actions: read
       contents: read
+    outputs:
+      preflight_run_id: ${{ steps.attestation.outputs.preflight_run_id }}
+      release_sha: ${{ steps.resolve-release-sha.outputs.release_sha }}
+      release_version: ${{ steps.resolve-release-sha.outputs.release_version }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - name: Checkout main for release SHA resolution
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
 
-      - name: Record release commit
-        id: release-commit
-        shell: bash
+      - name: Resolve current release SHA and version
+        id: resolve-release-sha
         run: |
-          release_sha="$(git rev-parse HEAD)"
-          if [[ ! "$release_sha" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "checked-out release commit is not a full Git SHA" >&2
+          git fetch --no-tags origin main
+          release_sha="$(git rev-parse origin/main)"
+          if [ "${GITHUB_SHA}" != "${release_sha}" ]; then
+            echo "::error::resolved release SHA does not match the workflow run head SHA"
             exit 1
           fi
-          printf 'sha=%s\n' "$release_sha" >> "$GITHUB_OUTPUT"
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
-        with:
-          toolchain: 1.96.0
-          components: rustfmt, clippy
-          targets: wasm32-unknown-unknown
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-
-      - name: Install nextest
-        uses: taiki-e/install-action@c61310c7f42caf5b425e349b6742d93ca197327c # nextest
+          git checkout --detach "${release_sha}"
+          release_version="$(sed -n 's/^version = "\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)"$/\1/p' crates/jose/Cargo.toml | head -n 1)"
+          if [ -z "${release_version}" ]; then
+            echo "::error::could not derive release version from crates/jose/Cargo.toml"
+            exit 1
+          fi
+          echo "release_sha=${release_sha}" >> "${GITHUB_OUTPUT}"
+          echo "release_version=${release_version}" >> "${GITHUB_OUTPUT}"
 
       - name: Install Node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
 
-      - name: Install buf
-        shell: bash
-        run: |
-          set -euo pipefail
-          install_dir="$RUNNER_TEMP/buf/bin"
-          mkdir -p "$install_dir"
-          curl --fail-with-body --location --proto '=https' --tlsv1.2 \
-            --retry 5 --retry-all-errors \
-            --output "$install_dir/buf" \
-            "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-Linux-x86_64"
-          printf '%s  %s\n' "$BUF_LINUX_X86_64_SHA256" "$install_dir/buf" \
-            | sha256sum --check --strict
-          chmod 0755 "$install_dir/buf"
-          printf '%s\n' "$install_dir" >> "$GITHUB_PATH"
-          "$install_dir/buf" --version
+      - name: Verify coordinated release version
+        run: node scripts/verify_sdk_release_version.mjs "${{ steps.resolve-release-sha.outputs.release_version }}"
 
-      - name: Install pinned Buffa generators
-        run: |
-          cargo install protoc-gen-buffa --version "$BUFFA_VERSION" --locked
-          cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked
+      - name: Require current main and successful crates package checks
+        id: attestation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_SHA: ${{ steps.resolve-release-sha.outputs.release_sha }}
+          RELEASE_VERSION: ${{ steps.resolve-release-sha.outputs.release_version }}
+          RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW: crates-package-preflight.yml
+          RELEASE_ATTESTATION_WAIT_SECONDS: "3600"
+          RELEASE_ATTESTATION_POLL_SECONDS: "20"
+          RELEASE_ATTESTATION_WRITE_GITHUB_OUTPUT: "1"
+        run: node scripts/verify_release_attestation.mjs
 
-      - name: Validate and regenerate protobuf artifacts
-        run: |
-          buf lint
-          buf generate
-          cargo fmt --package reallyme-jose-proto
-          git diff --exit-code -- crates/proto/jose/proto crates/proto/jose/src
-          test -z "$(git status --porcelain -- crates/proto/jose/proto crates/proto/jose/src)"
+  dry-run:
+    name: crates.io publish preflight
+    needs: verify-release-sha
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify-release-sha.outputs.release_sha }}
+          persist-credentials: false
 
-      - name: Format
-        run: cargo fmt --check
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
+        with:
+          toolchain: 1.96.0
 
-      - name: Check warnings as errors
-        run: RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
 
-      - name: Clippy
-        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
 
-      - name: Test all features
-        run: cargo nextest run --locked --workspace --all-features
-
-      - name: Check wasm32 lane
-        run: cargo check --locked --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
-
-      - name: Install cargo-deny
-        run: cargo install cargo-deny --version "$CARGO_DENY_VERSION" --locked
-
-      - name: Dependency policy
-        run: cargo deny check
-
-      - name: Release readiness contract
-        run: node scripts/check_release_readiness.mjs
+      - name: Check crates.io publish order
+        run: node scripts/publish_crates_in_order.mjs order
+        env:
+          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}
 
       - name: Inspect publishable crate tarballs
         run: node scripts/publish_crates_in_order.mjs inspect
         env:
           CARGO_HOME: ${{ runner.temp }}/package-preflight-cargo-home
+          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}
 
   publish:
-    name: publish reallyme-jose crates
-    needs: dry-run
-    if: inputs.publish == true
-    runs-on: ubuntu-latest
+    name: Publish reallyme-jose crates
+    needs: [verify-release-sha, dry-run]
+    runs-on: ubuntu-24.04
     permissions:
-      contents: write
+      actions: read
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.dry-run.outputs.release_sha }}
+          ref: ${{ needs.verify-release-sha.outputs.release_sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
         with:
           toolchain: 1.96.0
 
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
-
       - name: Install Node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
 
-      - name: Publish reallyme-jose crates
-        run: node scripts/publish_crates_in_order.mjs publish
+      - name: Revalidate exact approved main commit
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-
-      - name: Tag published crate version
-        id: release-tag
-        shell: bash
+          RELEASE_SHA: ${{ needs.verify-release-sha.outputs.release_sha }}
         run: |
-          version="$(node -e 'const fs = require("node:fs"); const text = fs.readFileSync("crates/Cargo.toml", "utf8"); const match = /^version = "([^"]+)"$/m.exec(text); if (!match) process.exit(1); process.stdout.write(match[1]);')"
-          tag="reallyme-jose-v${version}"
-          head_sha="$(git rev-parse HEAD)"
-          git fetch --tags origin
-          existing_sha="$(git rev-list -n 1 "$tag" 2>/dev/null || true)"
-          if [[ -n "$existing_sha" && "$existing_sha" != "$head_sha" ]]; then
-            echo "$tag already exists at $existing_sha, not $head_sha" >&2
+          git fetch --no-tags origin main
+          if [ "$(git rev-parse HEAD)" != "${RELEASE_SHA}" ] || [ "$(git rev-parse origin/main)" != "${RELEASE_SHA}" ]; then
+            echo "::error::approved release SHA changed before publication"
             exit 1
           fi
-          git config user.name "reallyme-release-bot"
-          git config user.email "security@really.me"
-          if [[ -z "$existing_sha" ]]; then
-            git tag -a "$tag" -m "$tag"
-            git push origin "$tag"
-          fi
-          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
 
-      - name: Create GitHub release
-        shell: bash
+      - name: Verify attestation and publish crates in dependency order
         env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
           GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_SHA: ${{ needs.verify-release-sha.outputs.release_sha }}
+          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}
+          RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW: crates-package-preflight.yml
+          RELEASE_ATTESTATION_PREFLIGHT_RUN_ID: ${{ needs.verify-release-sha.outputs.preflight_run_id }}
         run: |
-          tag="${{ steps.release-tag.outputs.tag }}"
-          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            exit 0
+          if [ -z "${CARGO_REGISTRY_TOKEN}" ]; then
+            echo "::error::CARGO_REGISTRY_TOKEN is required"
+            exit 1
           fi
-          gh release create "$tag" \
-            --repo "$GITHUB_REPOSITORY" \
-            --verify-tag \
-            --title "$tag" \
-            --generate-notes
+          node scripts/verify_sdk_release_version.mjs "${RELEASE_VERSION}"
+          node scripts/verify_release_attestation.mjs
+          node scripts/publish_crates_in_order.mjs publish
+
+      - name: Summarize crates.io publication
+        env:
+          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}
+        run: |
+          {
+            echo '## crates.io publication completed'
+            echo
+            echo "- [reallyme-jose-proto ${RELEASE_VERSION}](https://crates.io/crates/reallyme-jose-proto/${RELEASE_VERSION})"
+            echo "- [reallyme-jose ${RELEASE_VERSION}](https://crates.io/crates/reallyme-jose/${RELEASE_VERSION})"
+          } >> "$GITHUB_STEP_SUMMARY"

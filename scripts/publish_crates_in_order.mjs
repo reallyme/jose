@@ -7,6 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const MODE_INSPECT = "inspect";
+const MODE_ORDER = "order";
 const MODE_PUBLISH = "publish";
 const MAX_PUBLISH_ATTEMPTS = 12;
 const CRATES_IO_DEFAULT_RATE_LIMIT_RETRY_MS = 60000;
@@ -17,9 +18,9 @@ const mode = args[0] ?? MODE_INSPECT;
 const allowDirty = args.includes("--allow-dirty");
 const unknownArgs = args.slice(1).filter((arg) => arg !== "--allow-dirty");
 
-if ((mode !== MODE_INSPECT && mode !== MODE_PUBLISH) || unknownArgs.length !== 0) {
+if (![MODE_INSPECT, MODE_ORDER, MODE_PUBLISH].includes(mode) || unknownArgs.length !== 0) {
   console.error(
-    `usage: node scripts/publish_crates_in_order.mjs ${MODE_INSPECT}|${MODE_PUBLISH} [--allow-dirty]`,
+    `usage: node scripts/publish_crates_in_order.mjs ${MODE_INSPECT}|${MODE_ORDER}|${MODE_PUBLISH} [--allow-dirty]`,
   );
   process.exit(2);
 }
@@ -232,6 +233,13 @@ ordered.forEach((pkg, index) => {
 
 checkRequiredPublishOrderEdges();
 
+// The order-only release gate deliberately stops before packaging or network
+// access. It proves workspace dependency ordering without duplicating the
+// more expensive archive inspection performed by the following workflow step.
+if (mode === MODE_ORDER) {
+  process.exit(0);
+}
+
 const unpackDirectory = path.join(packageDirectory, "release-preflight");
 
 if (mode === MODE_INSPECT) {
@@ -384,8 +392,10 @@ function publishPackage(pkg) {
 
     const combined = `${result.stdout}\n${result.stderr}`;
     if (combined.includes("already uploaded") || combined.includes("already exists")) {
-      console.log(`${pkg.name} ${pkg.version} is already published; continuing.`);
-      return;
+      console.error(
+        `${pkg.name} ${pkg.version} already exists; refusing to combine an unverified registry artifact with this release`,
+      );
+      process.exit(result.status ?? 1);
     }
 
     const lowerCombined = combined.toLowerCase();

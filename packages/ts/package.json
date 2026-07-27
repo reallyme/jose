@@ -1,0 +1,64 @@
+{
+  "name": "@reallyme/jose",
+  "version": "0.3.0",
+  "description": "Strict JOSE, JWT, JWS, and JWE for TypeScript through the canonical ReallyMe Rust/WASM operation contract.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reallyme/jose.git",
+    "directory": "packages/ts"
+  },
+  "homepage": "https://github.com/reallyme/jose#readme",
+  "bugs": {
+    "url": "https://github.com/reallyme/jose/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./proto": {
+      "types": "./dist/proto.d.ts",
+      "default": "./dist/proto.js"
+    },
+    "./wasm/reallyme_jose_wasm.js": {
+      "types": "./dist/wasmModuleTypes.d.ts",
+      "default": "./dist/wasm/reallyme_jose_wasm.js"
+    },
+    "./wasm/reallyme_jose_wasm_bg.wasm": {
+      "default": "./dist/wasm/reallyme_jose_wasm_bg.wasm"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/clean-dist.mjs && npm run build:wasm && tsc",
+    "build:ts": "tsc",
+    "build:wasm": "node scripts/build-wasm.mjs",
+    "pack:check": "node scripts/check-pack.mjs",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm test && npm run pack:check",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test \"test/*.test.mjs\""
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "2.12.1"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

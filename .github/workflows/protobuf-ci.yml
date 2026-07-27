@@ -11,7 +11,12 @@ on:
       - ".github/workflows/protobuf-ci.yml"
       - "buf.yaml"
       - "buf.gen.yaml"
+      - "scripts/check_release_readiness.mjs"
+      - "scripts/run_pinned_release_readiness.mjs"
+      - "scripts/release-readiness/core.mjs"
+      - "scripts/harden-generated-jose-proto.mjs"
       - "crates/proto/**"
+      - "packages/ts/src/proto/generated/**"
   push:
     branches:
       - main
@@ -19,13 +24,18 @@ on:
       - ".github/workflows/protobuf-ci.yml"
       - "buf.yaml"
       - "buf.gen.yaml"
+      - "scripts/check_release_readiness.mjs"
+      - "scripts/run_pinned_release_readiness.mjs"
+      - "scripts/release-readiness/core.mjs"
+      - "scripts/harden-generated-jose-proto.mjs"
       - "crates/proto/**"
+      - "packages/ts/src/proto/generated/**"
 
 permissions:
   contents: read
 
 env:
-  BUFFA_VERSION: 0.8.1
+  BUFFA_VERSION: 0.9.1
   BUF_VERSION: 1.71.0
   BUF_LINUX_X86_64_SHA256: d3de2838c68a5759ca276884254bc70df4e4ad185d6ed5f65f327b6ce6363eab
 
@@ -35,18 +45,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@fa04a1451ff1842e2626ccb99004d0195b455a88 # master
+        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
         with:
           toolchain: 1.96.0
           components: rustfmt
 
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
 
       - name: Install buf
         shell: bash
@@ -69,17 +85,13 @@ jobs:
           cargo install protoc-gen-buffa --version "$BUFFA_VERSION" --locked
           cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked
 
-      - name: Lint protobuf schema
-        run: buf lint
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: f27973caf9d3a12847cac4032c361f5f553c97e9
+          path: .release-readiness
+          persist-credentials: false
 
-      - name: Regenerate protobuf artifacts
-        run: buf generate
-
-      - name: Format generated Rust protobuf artifacts
-        run: cargo fmt --package reallyme-jose-proto
-
-      - name: Check generated artifacts are fresh
-        shell: bash
-        run: |
-          git diff --exit-code -- crates/proto/jose/proto crates/proto/jose/src
-          test -z "$(git status --porcelain -- crates/proto/jose/proto crates/proto/jose/src)"
+      - name: Check release readiness generated freshness
+        run: node .release-readiness/scripts/run-consumer-check.mjs --generated-freshness --policy-only

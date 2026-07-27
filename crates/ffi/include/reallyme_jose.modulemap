@@ -1,0 +1,8 @@
+// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
+//
+// SPDX-License-Identifier: Apache-2.0
+
+module ReallyMeJOSEFFI {
+  header "reallyme_jose.h"
+  export *
+}

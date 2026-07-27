@@ -21,10 +21,14 @@ compatible with the production crate's strict lint configuration.
 | --- | --- |
 | `compact_jwe` | compact JWE direct decryption parser and protected-header policy |
 | `compact_jwe_ecdh_es` | compact JWE ECDH-ES protected-header, `epk`, point validation, and Concat-KDF path |
+| `parse_jwe_header` | public compact-JWE protected-header deserialization, duplicate members, dangerous extensions, and minimal `epk` profile |
 | `compact_jws_es256` | compact JWS ES256 parser and protected-header policy |
 | `signed_jwt` | signed JWT parser, duplicate-header guard, and ES256 key binding |
+| `validate_jwt_temporal` | authenticated temporal-claim values, native verification time, and temporal-policy boundaries |
 | `unsigned_jwt` | unsigned JWT parser and `alg = "none"` policy |
-| `wire_process` | process-proto and JSON result-envelope dispatch boundaries |
+| `operation_wire` | canonical binary protobuf and generated ProtoJSON execution, including every operation-contract semantic adapter |
+| `operation_response` | untrusted canonical V1 response decoding, operation discrimination, nested outcome validation, and cross-operation rejection |
+| `ffi_operation` | C ABI request/output pointer, length, aliasing, ABI-version, capacity, panic-firewall, and cleanup boundary |
 
 Seed corpora live under `fuzz/corpus/<target>/`. The JOSE dictionary in
 `fuzz/dictionaries/jose.dict` gives libFuzzer compact-serialization and header
@@ -41,6 +45,9 @@ cargo +nightly fuzz build
 cargo +nightly fuzz run compact_jwe -- -max_total_time=60
 cargo +nightly fuzz run compact_jwe_ecdh_es -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
 cargo +nightly fuzz run signed_jwt -- -max_total_time=60
+cargo +nightly fuzz run operation_wire -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
+cargo +nightly fuzz run operation_response -- -max_total_time=60
+cargo +nightly fuzz run ffi_operation -- -max_total_time=60
 ```
 
 Reproduce a crash artifact with:

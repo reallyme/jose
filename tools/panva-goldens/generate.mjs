@@ -19,7 +19,7 @@ const claims = {
 };
 
 const root = resolve(fileURLToPath(new URL("../..", import.meta.url)));
-const outputPath = resolve(root, "conformance/vectors/panva-jose.json");
+const outputPath = resolve(root, "vectors/panva-jose.json");
 
 function base64url(bytes) {
   return Buffer.from(bytes).toString("base64url");
