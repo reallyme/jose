@@ -71,6 +71,23 @@ assembly. Every release rechecks the current `main` SHA, the requested package
 version, the latest successful preflight run, package metadata, native
 inventories, and signed-publication configuration immediately before upload.
 
+Maintainers can build the equivalent signed Central Portal deployment bundle
+locally. The script verifies one successful Kotlin/Android preflight for the
+exact current commit and package version, downloads and verifies all producer
+native digests, builds the Android libraries, tests both packages, and writes
+the repository-layout archive beneath `build/maven-central-upload/out`:
+
+```sh
+export MAVEN_SIGNING_KEY_ID='<long GPG key ID or fingerprint>'
+export MAVEN_SIGNING_PASSWORD='<GPG private-key passphrase>'
+export KOTLIN_NATIVE_RESOURCES_DIR="$PWD/build/kotlin-native-resources"
+export ANDROID_NDK_HOME="${ANDROID_HOME}/ndk/29.0.14206865"
+scripts/maven-central-bundle.local.sh
+```
+
+The current commit must be available on `main` before the script can dispatch a
+missing preflight. It never uploads the resulting bundle to Maven Central.
+
 The Rust SDK remains the primary application-facing API. The protobuf crate is
 published separately because Cargo requires optional normal dependencies to
 exist in the registry, but the `wire` feature is opt-in so native SDK users do
