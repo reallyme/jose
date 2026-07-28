@@ -1480,6 +1480,22 @@ assertContains(".github/workflows/kotlin-android-package-preflight.yml", "kotlin
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "build/kotlin-native-digests");
 assertNotContains(".github/workflows/kotlin-android-package-preflight.yml", "needs.jvm-native.outputs");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "test_android_consumer_r8_runtime.sh");
+for (const boundary of [
+  "MAVEN_SIGNING_KEY_ID",
+  "MAVEN_SIGNING_PASSWORD",
+  "kotlin-android-package-preflight.yml",
+  "kotlin-native-*",
+  "kotlin-digest-*",
+  "verify_native_artifact_handoff.mjs",
+  "verify_sdk_release_version.mjs",
+  "verify_maven_release_repository.mjs",
+  "publishMavenPublicationToLocalReleaseRepository",
+  "publishReleasePublicationToLocalReleaseRepository",
+  "reallyme-maven-central-${VERSION}.zip",
+]) {
+  assertContains("scripts/maven-central-bundle.local.sh", boundary);
+}
+assertContains("README.md", "scripts/maven-central-bundle.local.sh");
 assertContains(".github/workflows/kotlin-android-package-release.yml", "RELEASE_ATTESTATION_PREFLIGHT_RUN_ID");
 assertContains(".github/workflows/kotlin-android-package-release.yml", "Download attested Maven publication repository");
 assertContains(".github/workflows/kotlin-android-package-release.yml", "sign_maven_release_repository.mjs");
