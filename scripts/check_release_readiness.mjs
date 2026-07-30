@@ -43,7 +43,7 @@ const localCryptoVersion = "0.3.4";
 const codecVersion = "0.2.1";
 const npmPackageVersion = "0.3.0";
 const rustSemverBaselineCommit = "66d54835235c414051009523670afb6bb3e51007";
-const releaseReadinessCommit = "f27973caf9d3a12847cac4032c361f5f553c97e9";
+const releaseReadinessCommit = "44065b7488a8d3c77f66f530dff770fb39be9707";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -610,7 +610,7 @@ assertContains(
 );
 assertContains(
   "scripts/run_pinned_release_readiness.mjs",
-  '"70cc78721738cf352024938e8fc86e73380e71b2cdf7a9a733687543167cbaae"',
+  '"fcc0b725a85784617568c29f1aa3382a206faaddc3a22012e46f0e35303e4e6d"',
 );
 assertContains("scripts/run_pinned_release_readiness.mjs", "LOCAL_CHECKER_SHA256");
 assertContains("scripts/run_pinned_release_readiness.mjs", "MAX_CHECKER_BYTES = 524_288");
