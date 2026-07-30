@@ -11,7 +11,7 @@ import { spawnSync } from "node:child_process";
 // This module is intentionally written as a standalone, vendorable release
 // readiness core. Sister repositories should copy it byte-for-byte or consume a
 // pinned upstream revision so release-critical checks do not drift silently.
-export const RELEASE_READINESS_CORE_CONTRACT_VERSION = 8;
+export const RELEASE_READINESS_CORE_CONTRACT_VERSION = 9;
 
 const DEFAULT_FAILURE_PREFIX = "release readiness check failed";
 
@@ -1419,7 +1419,6 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
       "assertWorkflowPolicy",
       "runCommands",
       "assertProtoContract",
-      "assertReallyMeProtoBoundaryContract",
       "assertReallyMeOperationBoundaryContract",
       "assertWorkflowRunStep",
       "assertWorkflowUsesStep",
@@ -2345,181 +2344,6 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
     }
   };
 
-  const assertReallyMeProtoBoundaryContract = (policy) => {
-    const {
-      protoPath,
-      operationRequest,
-      resultEnvelope,
-      resultStatus,
-      payloadField = "payload",
-      protoReadme,
-      protoCargo,
-      wirePath,
-      codecPath = wirePath,
-      bufGen = "buf.gen.yaml",
-      processProtoNeedle = "pub fn process_proto(",
-      processProtoJsonNeedle = "pub fn process_proto_json(",
-      binaryEnvelopeNeedle = "encode_proto_result_envelope",
-      requiredCodecNeedles = [],
-      forbiddenCodecNeedles = [],
-      sdkAdapters = [],
-    } = policy ?? {};
-    for (const [name, value] of Object.entries({
-      protoPath,
-      protoReadme,
-      protoCargo,
-      wirePath,
-      codecPath,
-    })) {
-      if (typeof value !== "string" || value.length === 0) {
-        fail(`protobuf boundary policy ${name} must be a non-empty string`);
-      }
-    }
-    if (
-      !Array.isArray(requiredCodecNeedles) ||
-      requiredCodecNeedles.some((needle) => typeof needle !== "string" || needle.length === 0) ||
-      !Array.isArray(forbiddenCodecNeedles) ||
-      forbiddenCodecNeedles.some((needle) => typeof needle !== "string" || needle.length === 0)
-    ) {
-      fail("protobuf boundary codec needles must be arrays of non-empty strings");
-    }
-    if (
-      !Array.isArray(sdkAdapters) ||
-      sdkAdapters.some(
-        (adapter) =>
-          adapter === null ||
-          typeof adapter !== "object" ||
-          Array.isArray(adapter),
-      )
-    ) {
-      fail("protobuf boundary policy sdkAdapters must be an array of objects");
-    }
-    for (const [name, value] of Object.entries({
-      operationRequest,
-      resultEnvelope,
-      resultStatus,
-    })) {
-      if (
-        typeof value !== "string" ||
-        !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(value)
-      ) {
-        fail(`protobuf boundary policy ${name} must be a protobuf identifier`);
-      }
-    }
-
-    assertProtoContract(protoPath);
-    const proto = stripProtoLineComments(readText(protoPath));
-    if (extractProtoBlocks(proto, "service").length !== 0) {
-      fail(`${protoPath} must define messages only and no protobuf service`);
-    }
-    const operationBlock = extractProtoBlocks(proto, "message").find(
-      (block) => block.name === operationRequest,
-    );
-    if (operationBlock === undefined || !/\boneof\s+operation\s*\{/u.test(operationBlock.body)) {
-      fail(`${protoPath} ${operationRequest} must define oneof operation`);
-    }
-    const envelopeBlock = extractProtoBlocks(proto, "message").find(
-      (block) => block.name === resultEnvelope,
-    );
-    if (envelopeBlock === undefined) {
-      fail(`${protoPath} must define message ${resultEnvelope}`);
-    }
-    if (
-      !new RegExp(`^\\s*${resultStatus}\\s+status\\s*=\\s*1\\s*;`, "mu").test(
-        envelopeBlock.body,
-      ) ||
-      !new RegExp(`^\\s*bytes\\s+${payloadField}\\s*=\\s*2\\s*;`, "mu").test(
-        envelopeBlock.body,
-      )
-    ) {
-      fail(
-        `${protoPath} ${resultEnvelope} must contain status = 1 and bytes ${payloadField} = 2`,
-      );
-    }
-    if (
-      !extractProtoBlocks(proto, "enum").some((block) => block.name === resultStatus)
-    ) {
-      fail(`${protoPath} must define enum ${resultStatus}`);
-    }
-
-    assertContains(
-      protoReadme,
-      "This crate defines messages only; it intentionally declares no protobuf service.",
-    );
-    assertContains(
-      protoReadme,
-      "JSON is a generated ProtoJSON request convenience. Results remain a binary protobuf result envelope.",
-    );
-    assertContains(bufGen, "local: protoc-gen-buffa");
-    assertContains(bufGen, "views=true");
-    assertContains(bufGen, "json=true");
-    assertContains(protoCargo, '"buffa/json"');
-    assertContains(protoCargo, "zeroize");
-    assertContains(wirePath, operationRequest);
-    assertContains(wirePath, resultEnvelope);
-    assertContains(wirePath, "Zeroizing<Vec<u8>>");
-    assertContains(wirePath, processProtoNeedle);
-    assertContains(wirePath, processProtoJsonNeedle);
-    assertContains(codecPath, "DecodeOptions::new()");
-    assertContains(codecPath, binaryEnvelopeNeedle);
-    for (const needle of requiredCodecNeedles) {
-      assertContains(codecPath, needle);
-    }
-    for (const needle of forbiddenCodecNeedles) {
-      assertNotContains(codecPath, needle);
-    }
-    assertNotContains(wirePath, "pub fn process_json(");
-    assertNotContains(wirePath, "pub fn process_proto_with_operation");
-    assertNotContains(wirePath, "pub fn process_proto_operation");
-
-    for (const [index, adapter] of sdkAdapters.entries()) {
-      const {
-        path,
-        processProtoNeedle: adapterProcessProtoNeedle,
-        processProtoJsonNeedle: adapterProcessProtoJsonNeedle,
-        binaryEnvelopeNeedle: adapterBinaryEnvelopeNeedle = resultEnvelope,
-        requiredNeedles = [],
-        forbiddenNeedles = [],
-      } = adapter;
-      for (const [name, value] of Object.entries({
-        path,
-        processProtoNeedle: adapterProcessProtoNeedle,
-        processProtoJsonNeedle: adapterProcessProtoJsonNeedle,
-        binaryEnvelopeNeedle: adapterBinaryEnvelopeNeedle,
-      })) {
-        if (typeof value !== "string" || value.length === 0) {
-          fail(
-            `protobuf boundary sdkAdapters[${index}].${name} must be a non-empty string`,
-          );
-        }
-      }
-      for (const [name, needles] of Object.entries({
-        requiredNeedles,
-        forbiddenNeedles,
-      })) {
-        if (
-          !Array.isArray(needles) ||
-          needles.some(
-            (needle) => typeof needle !== "string" || needle.length === 0,
-          )
-        ) {
-          fail(
-            `protobuf boundary sdkAdapters[${index}].${name} must be an array of non-empty strings`,
-          );
-        }
-      }
-      assertContains(path, adapterProcessProtoNeedle);
-      assertContains(path, adapterProcessProtoJsonNeedle);
-      assertContains(path, adapterBinaryEnvelopeNeedle);
-      for (const needle of requiredNeedles) {
-        assertContains(path, needle);
-      }
-      for (const needle of forbiddenNeedles) {
-        assertNotContains(path, needle);
-      }
-    }
-  };
-
   const assertReallyMeOperationBoundaryContract = (policy) => {
     const {
       protoPath,
@@ -2738,7 +2562,6 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
     stripProtoLineComments,
     extractProtoBlocks,
     assertProtoContract,
-    assertReallyMeProtoBoundaryContract,
     assertReallyMeOperationBoundaryContract,
     assertSpdxHeaders,
   };
