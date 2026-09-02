@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # ReallyMe JOSE for Android
 
-`me.really:jose-android:0.3.0` is the Android AAR form of the typed Kotlin/JVM
+`me.really:jose-android:0.3.1` is the Android AAR form of the typed Kotlin/JVM
 JOSE facade. It packages the same Java/Kotlin API and Rust JNI boundary for
 API 24 or newer; application code never loads an arbitrary native path.
 
@@ -55,5 +55,5 @@ downloads every published file for byte verification. Remote publication
 requires an HTTPS repository, credentials, and in-memory signing material.
 
 The Android package launcher delegates to the repository's single pinned
-Gradle 9.6.1 wrapper, avoiding a second wrapper JAR and distribution checksum
+Gradle 9.7.1 wrapper, avoiding a second wrapper JAR and distribution checksum
 that could drift independently.

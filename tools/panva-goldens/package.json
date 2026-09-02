@@ -5,6 +5,6 @@
     "generate": "node generate.mjs"
   },
   "dependencies": {
-    "jose": "6.2.3"
+    "jose": "6.2.10"
   }
 }

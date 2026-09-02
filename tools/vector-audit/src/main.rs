@@ -948,12 +948,8 @@ fn decrypt_jwe_with_cek(case: &JweCase, compact: &CompactJwe, cek: &[u8]) -> Aud
     ciphertext_and_tag.extend_from_slice(&ciphertext);
     ciphertext_and_tag.extend_from_slice(&tag);
 
-    // aes-gcm 0.10 still exposes nonce construction through generic-array
-    // 0.14. Keep this allowance local so the rest of the tool remains warning
-    // clean and the audit can move to the non-deprecated constructor when the
-    // dependency does.
-    #[allow(deprecated)]
-    let nonce = Nonce::from_slice(&iv);
+    let nonce = <&Nonce<U12>>::try_from(iv.as_slice())
+        .map_err(|_| general(AuditReason::InvalidIvLength))?;
 
     match case.enc.as_str() {
         "A128GCM" => {

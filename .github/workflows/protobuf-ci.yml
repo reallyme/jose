@@ -36,8 +36,8 @@ permissions:
 
 env:
   BUFFA_VERSION: 0.9.1
-  BUF_VERSION: 1.71.0
-  BUF_LINUX_X86_64_SHA256: d3de2838c68a5759ca276884254bc70df4e4ad185d6ed5f65f327b6ce6363eab
+  BUF_VERSION: 1.72.0
+  BUF_LINUX_X86_64_SHA256: 8720830e26a733da55bb89bcd3cb44849c0965fc0c44fb5d691cccdc64dca5af
 
 jobs:
   protobuf:
@@ -51,7 +51,7 @@ jobs:
           persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
           toolchain: 1.96.0
           components: rustfmt
@@ -62,7 +62,7 @@ jobs:
           node-version: '24'
 
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
       - name: Install buf
         shell: bash

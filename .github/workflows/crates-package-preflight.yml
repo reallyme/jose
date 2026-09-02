@@ -18,7 +18,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.3.0
+        default: 0.3.1
 
 permissions:
   contents: read
@@ -31,13 +31,13 @@ env:
   CARGO_AUDIT_VERSION: 0.22.2
   CARGO_CHECK_EXTERNAL_TYPES_VERSION: 0.5.0
   CARGO_DENY_VERSION: 0.20.2
-  CARGO_NEXTEST_VERSION: 0.9.140
-  CARGO_SEMVER_CHECKS_VERSION: 0.49.0
+  CARGO_NEXTEST_VERSION: 0.9.143
+  CARGO_SEMVER_CHECKS_VERSION: 0.50.0
   EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20
-  WASM_BINDGEN_CLI_VERSION: 0.2.126
+  WASM_BINDGEN_CLI_VERSION: 0.2.127
   BUFFA_VERSION: 0.9.1
-  BUF_VERSION: 1.71.0
-  BUF_LINUX_X86_64_SHA256: d3de2838c68a5759ca276884254bc70df4e4ad185d6ed5f65f327b6ce6363eab
+  BUF_VERSION: 1.72.0
+  BUF_LINUX_X86_64_SHA256: 8720830e26a733da55bb89bcd3cb44849c0965fc0c44fb5d691cccdc64dca5af
 
 jobs:
   verify-source-sha:
@@ -91,32 +91,32 @@ jobs:
           persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@2c7215f132e9ebf062739d9130488b56d53c060c # master
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
           toolchain: 1.96.0
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
       - name: Install nextest
-        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
         with:
           tool: cargo-nextest@${{ env.CARGO_NEXTEST_VERSION }}
 
       - name: Install cargo-deny
-        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
         with:
           tool: cargo-deny@${{ env.CARGO_DENY_VERSION }}
 
       - name: Install cargo-audit
-        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
         with:
           tool: cargo-audit@${{ env.CARGO_AUDIT_VERSION }}
 
       - name: Install external-type checker
-        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
         with:
           tool: cargo-check-external-types@${{ env.CARGO_CHECK_EXTERNAL_TYPES_VERSION }}
 
@@ -124,7 +124,7 @@ jobs:
         run: rustup toolchain install "$EXTERNAL_TYPES_NIGHTLY" --profile minimal
 
       - name: Install wasm-bindgen test runner
-        uses: taiki-e/install-action@41049aa56687c35e0afa74eed4f09cec4f9afabf # v2.85.2
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
         with:
           tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}
 

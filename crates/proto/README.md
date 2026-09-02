@@ -93,7 +93,7 @@ cargo fmt --package reallyme-jose-proto
 
 ```toml
 [dependencies]
-reallyme-jose-proto = { version = "0.3.0", features = ["generated"] }
+reallyme-jose-proto = { version = "0.3.1", features = ["generated"] }
 ```
 
 ## License

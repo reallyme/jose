@@ -59,7 +59,7 @@ struct PanvaCase {
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn panva_jose_vectors_interoperate() -> Result<(), PanvaTestError> {
     let suite: PanvaSuite = serde_json::from_str(include_str!("../../../vectors/panva-jose.json"))?;
-    assert_eq!(suite.source, "panva/jose@6.2.3");
+    assert_eq!(suite.source, "panva/jose@6.2.10");
     assert_eq!(suite.cases.len(), 4);
 
     for case in suite.cases {
