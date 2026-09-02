@@ -1,6 +1,6 @@
 {
   "name": "@reallyme/jose",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Strict JOSE, JWT, JWS, and JWE for TypeScript through the canonical ReallyMe Rust/WASM operation contract.",
   "license": "Apache-2.0",
   "repository": {
@@ -53,10 +53,10 @@
     "test": "npm run build && node --test \"test/*.test.mjs\""
   },
   "dependencies": {
-    "@bufbuild/protobuf": "2.12.1"
+    "@bufbuild/protobuf": "2.14.1"
   },
   "devDependencies": {
-    "typescript": "5.8.3"
+    "typescript": "7.0.2"
   },
   "engines": {
     "node": ">=20.19.0"

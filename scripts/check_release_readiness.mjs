@@ -35,13 +35,12 @@ assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
 assertOperationContractArchitecture({ readText, listFiles, fail });
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 
-const crateVersion = "0.3.0";
-const protoCrateVersion = "0.3.0";
+const crateVersion = "0.3.1";
+const protoCrateVersion = "0.3.1";
 const buffaVersion = "0.9.1";
 const cryptoVersion = "0.3.4";
-const localCryptoVersion = "0.3.4";
 const codecVersion = "0.2.1";
-const npmPackageVersion = "0.3.0";
+const npmPackageVersion = "0.3.1";
 const rustSemverBaselineCommit = "66d54835235c414051009523670afb6bb3e51007";
 const releaseReadinessCommit = "44065b7488a8d3c77f66f530dff770fb39be9707";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
@@ -50,14 +49,12 @@ const releaseReadinessCheckoutRequired = [
   `ref: ${releaseReadinessCommit}`,
   "path: .release-readiness",
 ];
-const allowLocalCryptoAudit = process.env.REALLYME_JOSE_ALLOW_LOCAL_CRYPTO_AUDIT === "1";
-const allowLocalCodecAudit = process.env.REALLYME_JOSE_ALLOW_LOCAL_CODEC_AUDIT === "1";
 const generatedFreshnessMode = process.argv.includes("--generated-freshness");
 const policyOnlyMode = process.argv.includes("--policy-only");
 const releasePackagesMode = process.argv.includes("--release-packages");
 
 if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
-  fail("RELEASE_VERSION must match every 0.3.0 release package");
+  fail("RELEASE_VERSION must match every 0.3.1 release package");
 }
 
 assertNodeWorkflowJobsPinNode({ nodeVersion: "24" });
@@ -80,51 +77,30 @@ for (const lint of [
 ]) {
   assertContains("Cargo.toml", lint);
 }
-if (allowLocalCodecAudit) {
-  assertContains(
-    "Cargo.toml",
-    `reallyme-codec = { version = "${codecVersion}", path = "../codec/crates/codec", default-features = false }`,
-  );
-} else {
-  assertContains(
-    "Cargo.toml",
-    `reallyme-codec = { version = "${codecVersion}", default-features = false }`,
-  );
-}
+assertContains(
+  "Cargo.toml",
+  `reallyme-codec = { version = "${codecVersion}", default-features = false }`,
+);
 assertContains(
   "Cargo.toml",
   `reallyme-jose-proto = { version = "${protoCrateVersion}", path = "crates/proto", default-features = false }`,
 );
-if (allowLocalCryptoAudit) {
-  assertContains(
-    "Cargo.toml",
-    `reallyme-crypto = { version = "${localCryptoVersion}", path = "../crypto", default-features = false }`,
-  );
-  assertContains(
-    "fuzz/Cargo.toml",
-    `reallyme-crypto = { version = "${localCryptoVersion}", path = "../../crypto", default-features = false, features = ["jwk"] }`,
-  );
-} else {
-  assertContains(
-    "Cargo.toml",
-    `reallyme-crypto = { version = "${cryptoVersion}", default-features = false }`,
-  );
-  assertContains(
-    "fuzz/Cargo.toml",
-    `reallyme-crypto = { version = "${cryptoVersion}", default-features = false, features = ["jwk"] }`,
-  );
-}
-if (!allowLocalCodecAudit) {
-  assertNotContains("Cargo.toml", "reallyme-codec = { path");
-}
-if (!allowLocalCryptoAudit) {
-  assertNotContains("Cargo.toml", "reallyme-crypto = { path");
-}
+assertContains(
+  "Cargo.toml",
+  `reallyme-crypto = { version = "${cryptoVersion}", default-features = false }`,
+);
+assertContains(
+  "fuzz/Cargo.toml",
+  `reallyme-crypto = { version = "${cryptoVersion}", default-features = false, features = ["jwk"] }`,
+);
+assertNotContains("Cargo.toml", "reallyme-codec = { path");
+assertNotContains("Cargo.toml", "reallyme-crypto = { path");
+assertNotContains("fuzz/Cargo.toml", "reallyme-crypto = { path");
 assertNotContains("Cargo.toml", 'time = "');
 
 const ffiCargo = readText("crates/ffi/Cargo.toml");
 assertContains("crates/ffi/Cargo.toml", 'name = "reallyme-jose-ffi"');
-assertContains("crates/ffi/Cargo.toml", 'version = "0.3.0"');
+assertContains("crates/ffi/Cargo.toml", 'version = "0.3.1"');
 assertContains("crates/ffi/Cargo.toml", "publish = false");
 assertContains("crates/ffi/Cargo.toml", 'crate-type = ["rlib", "staticlib", "cdylib"]');
 assertContains("crates/ffi/Cargo.toml", 'default = ["native"]');
@@ -135,7 +111,7 @@ assertContains(
 assertContains("crates/ffi/Cargo.toml", 'features = ["csprng"]');
 assertContains(
   "crates/ffi/Cargo.toml",
-  'reallyme-jose = { version = "0.3.0", path = "../jose", default-features = false, features = ["wire"] }',
+  'reallyme-jose = { version = "0.3.1", path = "../jose", default-features = false, features = ["wire"] }',
 );
 assertContains("crates/ffi/Cargo.toml", "workspace = true");
 assertNotContains("crates/ffi/Cargo.toml", "publish = true");
@@ -208,7 +184,7 @@ assertContains("crates/proto/Cargo.toml", '"/tests/**/*.rs"');
 assertContains("crates/proto/Cargo.toml", '"/proto/**/*.proto"');
 assertContains(
   "crates/proto/README.md",
-  'reallyme-jose-proto = { version = "0.3.0", features = ["generated"] }',
+  'reallyme-jose-proto = { version = "0.3.1", features = ["generated"] }',
 );
 assertContains("crates/proto/README.md", "JoseOperationRequest");
 assertContains("crates/proto/README.md", "JoseOperationResponse");
@@ -245,9 +221,9 @@ if (npmPackage.name !== "@reallyme/jose" || npmPackage.version !== npmPackageVer
 if (npmPackage.publishConfig?.registry !== "https://registry.npmjs.org/") {
   fail("TypeScript package registry must be the public npm registry");
 }
-assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.12.1"');
+assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.14.1"');
 assertContains("packages/ts/package-lock.json", '"name": "@reallyme/jose"');
-assertContains("packages/ts/package-lock.json", '"version": "0.3.0"');
+assertContains("packages/ts/package-lock.json", '"version": "0.3.1"');
 assertContains("packages/ts/tsconfig.json", '"strict": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedLocals": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedParameters": true');
@@ -257,7 +233,7 @@ assertContains("packages/ts/src/errors.ts", "class ReallyMeJoseError extends Err
 assertContains("packages/ts/src/provider.ts", "installReallyMeJoseWasmProvider");
 assertContains("packages/ts/src/facade.ts", "export const ReallyMeJose = Object.freeze");
 assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_PACK_VERSION = "0.15.0"');
-assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_BINDGEN_VERSION = "0.2.126"');
+assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_BINDGEN_VERSION = "0.2.127"');
 assertContains("packages/ts/scripts/check-pack.mjs", "unreviewed semantic export");
 assertContains("packages/ts/test/vector-conformance.test.mjs", "all 96 cross-lane conformance vectors");
 assertContains("packages/ts/test/vector-conformance.test.mjs", "PROVIDER_UNSUPPORTED");
@@ -378,16 +354,8 @@ assertNotContains("crates/jose/src/lib.rs", "#![allow(missing_docs)]");
 
 const lock = readText("Cargo.lock");
 const cratesIo = "registry+https://github.com/rust-lang/crates.io-index";
-if (allowLocalCodecAudit) {
-  assertLockPackageVersion(lock, "reallyme-codec", codecVersion);
-} else {
-  assertLockPackageVersion(lock, "reallyme-codec", codecVersion, cratesIo);
-}
-if (allowLocalCryptoAudit) {
-  assertLockPackageVersion(lock, "reallyme-crypto", localCryptoVersion);
-} else {
-  assertLockPackageVersion(lock, "reallyme-crypto", cryptoVersion, cratesIo);
-}
+assertLockPackageVersion(lock, "reallyme-codec", codecVersion, cratesIo);
+assertLockPackageVersion(lock, "reallyme-crypto", cryptoVersion, cratesIo);
 assertLockPackageVersion(lock, "reallyme-jose-proto", protoCrateVersion);
 
 assertContains("README.md", "actions/workflows/rust-ci.yml/badge.svg");
@@ -465,12 +433,12 @@ assertContains("vectors/manifest.json", "reallyme.jose.conformance.vector_manife
 assertContains("vectors/manifest.json", '"id": "panva-jose"');
 assertContains("vectors/manifest.json", '"case_count": 4');
 assertContains("vectors/panva-jose.json", '"suite": "panva-jose"');
-assertContains("vectors/panva-jose.json", '"source": "panva/jose@6.2.3"');
+assertContains("vectors/panva-jose.json", '"source": "panva/jose@6.2.10"');
 assertContains("vectors/panva-jose.json", "panva-jose/jwe-ecdh-es-p256-a128gcm");
 assertContains("vectors/panva-jose.json", "not a full algorithm matrix");
 assertContains("vectors/panva-jose.json", "deterministic low scalars");
 assertContains("vectors/README.md", "`tools/panva-goldens`");
-assertContains("vectors/README.md", "`panva/jose@6.2.3`");
+assertContains("vectors/README.md", "`panva/jose@6.2.10`");
 assertContains("vectors/README.md", "native Rust, Swift, Kotlin/JVM, and minified Android emulator lanes");
 assertContains("vectors/README.md", "WASM lane executes all 94 applicable cases");
 assertContains("vectors/README.md", "not a curve-by-content-encryption matrix");
@@ -480,8 +448,8 @@ assertContains("vectors/README.md", "does not add a JOSE-specific low-S normaliz
 assertContains("vectors/README.md", "Face ID or Secure Enclave protected P-256 key");
 assertContains("vectors/signed-jwt.json", "reallyme-jwt/kid-mismatch");
 assertContains("README.md", "small native and WASM interop anchor");
-assertContains("tools/panva-goldens/package.json", '"jose": "6.2.3"');
-assertContains("tools/panva-goldens/package-lock.json", '"version": "6.2.3"');
+assertContains("tools/panva-goldens/package.json", '"jose": "6.2.10"');
+assertContains("tools/panva-goldens/package-lock.json", '"version": "6.2.10"');
 assertContains("tools/panva-goldens/generate.mjs", "setKeyManagementParameters");
 assertContains("tools/vector-audit/Cargo.toml", 'name = "reallyme-jose-vector-audit"');
 assertContains("tools/vector-audit/src/main.rs", "PANVA_FILE");
@@ -580,11 +548,11 @@ assertContains("buf.gen.yaml", "protoc-gen-buffa-packaging");
 assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.38.1");
 assertContains("buf.gen.yaml", "out: gen/swift");
 assertContains("buf.gen.yaml", "Visibility=Public");
-assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v35.1");
-assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v35.1");
+assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v36.1");
+assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v36.1");
 assertContains("buf.gen.yaml", "out: gen/java");
 assertContains("buf.gen.yaml", "out: gen/kotlin");
-assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.12.1");
+assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.14.1");
 assertContains("buf.gen.yaml", "out: packages/ts/src/proto/generated");
 assertContains(".gitignore", "!crates/proto/src/generated/");
 assertContains(".gitignore", "!crates/proto/src/generated/**");
@@ -647,6 +615,7 @@ assertContains("scripts/harden-generated-jose-proto.mjs", "generatedModulePath")
 assertContains("scripts/harden-generated-jose-proto.mjs", "expectedAllowAttributeCount = 4");
 assertContains("crates/proto/Cargo.toml", 'zeroize = { workspace = true, optional = true }');
 assertReallyMeProtobufReleasePolicy({
+  bufVersion: "1.72.0",
   buffaVersion,
   generatedFreshnessMode,
   workflowMode: "delegated",
@@ -1001,8 +970,8 @@ assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "--manifest-path crates/jose/Cargo.toml --all-features",
 );
-assertContains(".github/workflows/rust-ci.yml", "CARGO_NEXTEST_VERSION: 0.9.140");
-assertContains(".github/workflows/crates-package-preflight.yml", "CARGO_NEXTEST_VERSION: 0.9.140");
+assertContains(".github/workflows/rust-ci.yml", "CARGO_NEXTEST_VERSION: 0.9.143");
+assertContains(".github/workflows/crates-package-preflight.yml", "CARGO_NEXTEST_VERSION: 0.9.143");
 assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "cargo-deny@${{ env.CARGO_DENY_VERSION }}",
@@ -1108,7 +1077,7 @@ assertContains("Package.swift", '.iOS(.v16)');
 assertContains("Package.swift", 'name: "ReallyMeJOSE"');
 assertContains("Package.swift", 'exact: "1.38.1"');
 assertContains("Package.swift", 'path: "gen/swift"');
-assertContains("Package.swift", 'ffiArtifactVersion = "0.3.0"');
+assertContains("Package.swift", 'ffiArtifactVersion = "0.3.1"');
 assertContains("Package.swift", 'ffiArtifactLocalPathOverride = ""');
 assertNotContains("Package.swift", "0000000000000000000000000000000000000000000000000000000000000000");
 assertContains("Package.swift", "REALLYME_JOSE_SWIFTPM_RUNTIME_FFI");
@@ -1350,10 +1319,10 @@ assertContains("crates/ffi/src/lib.rs", "pub mod kotlin;");
 assertContains("crates/ffi/src/kotlin.rs", "Java_me_really_jose_ReallyMeJoseNative_executeOperationNative");
 assertContains("crates/ffi/src/kotlin.rs", "rm_jose_execute_operation_v1");
 assertContains("crates/ffi/src/kotlin.rs", "Zeroizing<Vec<u8>>");
-assertContains("packages/kotlin/build.gradle.kts", 'kotlin("jvm") version "2.4.0"');
+assertContains("packages/kotlin/build.gradle.kts", 'kotlin("jvm") version "2.4.10"');
 assertContains("packages/kotlin/build.gradle.kts", "jvmToolchain(21)");
 assertContains("packages/kotlin/build.gradle.kts", "lockAllConfigurations()");
-assertContains("packages/kotlin/build.gradle.kts", 'api("com.google.protobuf:protobuf-javalite:4.35.1")');
+assertContains("packages/kotlin/build.gradle.kts", 'api("com.google.protobuf:protobuf-javalite:4.36.1")');
 assertContains("packages/kotlin/build.gradle.kts", "verifyJarContainsNativeResources");
 assertContains("packages/kotlin/build.gradle.kts", "verifyJvmNativeManifest(");
 assertContains("packages/kotlin/build.gradle.kts", "JVM native manifest source SHA does not match the checkout");
@@ -1419,7 +1388,7 @@ assertContains("scripts/verify_native_artifact_handoff.mjs", "exact expected fil
 assertContains("scripts/verify_maven_release_repository.mjs", "Selected Maven publication artifacts");
 assertContains("scripts/verify_maven_release_repository.mjs", "native manifest is not bound to the release source SHA");
 
-assertContains("packages/kotlin-android/build.gradle.kts", 'id("com.android.library") version "9.3.0"');
+assertContains("packages/kotlin-android/build.gradle.kts", 'id("com.android.library") version "9.4.0"');
 assertContains("packages/kotlin-android/build.gradle.kts", "compileSdk = 36");
 assertContains("packages/kotlin-android/build.gradle.kts", "minSdk = 24");
 assertContains("packages/kotlin-android/build.gradle.kts", 'artifactId = "jose-android"');
@@ -1764,12 +1733,12 @@ for (const workflow of [
 }
 
 const pinnedBufDigest =
-  "BUF_LINUX_X86_64_SHA256: d3de2838c68a5759ca276884254bc70df4e4ad185d6ed5f65f327b6ce6363eab";
+  "BUF_LINUX_X86_64_SHA256: 8720830e26a733da55bb89bcd3cb44849c0965fc0c44fb5d691cccdc64dca5af";
 for (const workflow of [
   ".github/workflows/crates-package-preflight.yml",
   ".github/workflows/protobuf-ci.yml",
 ]) {
-  assertContains(workflow, "BUF_VERSION: 1.71.0");
+  assertContains(workflow, "BUF_VERSION: 1.72.0");
   assertContains(workflow, pinnedBufDigest);
   assertContains(workflow, "--proto '=https' --tlsv1.2");
   assertContains(workflow, "sha256sum --check --strict");

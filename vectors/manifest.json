@@ -27,7 +27,7 @@
     },
     {
       "id": "panva-jose",
-      "source": "panva/jose@6.2.3 independent positive interop fixtures",
+      "source": "panva/jose@6.2.10 independent positive interop fixtures",
       "path": "panva-jose.json",
       "case_count": 4
     }

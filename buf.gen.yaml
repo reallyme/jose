@@ -16,7 +16,7 @@ plugins:
   # TypeScript types are checked in for deterministic npm builds. The typed
   # facade consumes these generated messages rather than maintaining a second
   # hand-written wire contract.
-  - remote: buf.build/bufbuild/es:v2.12.1
+  - remote: buf.build/bufbuild/es:v2.14.1
     out: packages/ts/src/proto/generated
     opt:
       - target=ts
@@ -30,11 +30,11 @@ plugins:
 
   # Java Lite and Kotlin Lite bindings are implementation details of the
   # typed JVM facade. Pin both generators to the matching runtime release.
-  - remote: buf.build/protocolbuffers/java:v35.1
+  - remote: buf.build/protocolbuffers/java:v36.1
     out: gen/java
     opt:
       - lite
-  - remote: buf.build/protocolbuffers/kotlin:v35.1
+  - remote: buf.build/protocolbuffers/kotlin:v36.1
     out: gen/kotlin
     opt:
       - lite
