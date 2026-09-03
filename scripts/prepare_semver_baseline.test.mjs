@@ -13,20 +13,20 @@ import { prepareSemverBaseline, SemverBaselineError } from "./prepare_semver_bas
 
 const releases = Object.freeze({
   "reallyme-codec": Object.freeze({
-    version: "0.1.20",
-    checksum: "c325178f3265f5473b077e65f8dbc28f0b837066668ede3fabbdc27bbac28244",
+    version: "0.2.1",
+    checksum: "022909fcbf0d6cbd873b83cc6332934bc0d2566e7b611eb60e8d35eae8fbc9b3",
   }),
   "reallyme-codec-base64": Object.freeze({
-    version: "0.1.20",
-    checksum: "82c020399aa75b68bfd3e800cc4888ee422ceb39134be79297c785763120d116",
+    version: "0.2.1",
+    checksum: "cba709377618821186e51751683e7e455ba85045303f81485f50826e2c4dcc8a",
   }),
   "reallyme-crypto": Object.freeze({
-    version: "0.1.6",
-    checksum: "ed3fd5abf6acbc465ed1dea322b4e984935b6ea5179882c1516d4df471845765",
+    version: "0.3.4",
+    checksum: "6d9d1201e1a02e0be139b8a9c7b1d4c4bc2efbe1dd18f38bd207d0fbdac2628b",
   }),
   "reallyme-crypto-core": Object.freeze({
-    version: "0.1.2",
-    checksum: "3d5ef8109af8ad6268bd322c4f3adb15f6d05b209907ebf1b49fc2b11e7dd576",
+    version: "0.3.4",
+    checksum: "6cf1bb671a7b2549d0189a9213d2bdaed24bf13772070288102f3f37e27e9049",
   }),
 });
 
@@ -48,8 +48,9 @@ const fixture = () => {
     .join("\n");
   writeFileSync(join(root, "Cargo.lock"), lockfile, "utf8");
   mkdirSync(join(root, "crates"));
+  mkdirSync(join(root, "crates/jose"));
   writeFileSync(
-    join(root, "crates/Cargo.toml"),
+    join(root, "crates/jose/Cargo.toml"),
     `[dependencies]\n\n[target.'cfg(target_arch = "wasm32")'.dependencies]\n`,
     "utf8",
   );
@@ -63,16 +64,16 @@ test("freezes reviewed baseline dependencies to their lockfile versions", () => 
   const { root, lockfileSha256 } = fixture();
   prepareSemverBaseline(root, lockfileSha256);
   const manifest = readFileSync(join(root, "Cargo.toml"), "utf8");
-  assert.match(manifest, /reallyme-codec = \{ version = "=0[.]1[.]20"/u);
-  assert.match(manifest, /reallyme-crypto = \{ version = "=0[.]1[.]6"/u);
-  const crateManifest = readFileSync(join(root, "crates/Cargo.toml"), "utf8");
+  assert.match(manifest, /reallyme-codec = \{ version = "=0[.]2[.]1"/u);
+  assert.match(manifest, /reallyme-crypto = \{ version = "=0[.]3[.]4"/u);
+  const crateManifest = readFileSync(join(root, "crates/jose/Cargo.toml"), "utf8");
   assert.match(
     crateManifest,
-    /semver-baseline-codec-base64 = \{ package = "reallyme-codec-base64", version = "=0[.]1[.]20" \}/u,
+    /semver-baseline-codec-base64 = \{ package = "reallyme-codec-base64", version = "=0[.]2[.]1" \}/u,
   );
   assert.match(
     crateManifest,
-    /semver-baseline-crypto-core = \{ package = "reallyme-crypto-core", version = "=0[.]1[.]2" \}/u,
+    /semver-baseline-crypto-core = \{ package = "reallyme-crypto-core", version = "=0[.]3[.]4" \}/u,
   );
 });
 
@@ -94,7 +95,7 @@ test("rejects dependency drift and repeated preparation", () => {
   const manifestPath = join(root, "Cargo.toml");
   writeFileSync(
     manifestPath,
-    readFileSync(manifestPath, "utf8").replace('version = "0.1.20"', 'version = "0.1.21"'),
+    readFileSync(manifestPath, "utf8").replace('version = "0.2.1"', 'version = "0.2.2"'),
   );
   assert.throws(
     () => prepareSemverBaseline(root, lockfileSha256),

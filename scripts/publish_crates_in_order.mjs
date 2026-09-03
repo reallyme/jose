@@ -289,11 +289,12 @@ function isEarlierWorkspaceDependency(pkg, depName) {
 }
 
 function inspectPackage(pkg) {
-  const listArgs = ["package", "-p", pkg.name, "--list", "--locked"];
-  if (allowDirty) {
-    listArgs.push("--allow-dirty");
-  }
-  const listResult = run("cargo", listArgs);
+  const archive = path.join(packageDirectory, `${pkg.name}-${pkg.version}.crate`);
+  // Inspect the archive Cargo already produced instead of asking `cargo
+  // package --list` to resolve the package again. The latter consults the
+  // registry and fails legitimately when an earlier workspace dependency in
+  // the release order has not been published yet.
+  const listResult = run("tar", ["-tzf", archive]);
   if (listResult.status !== 0) {
     process.exit(listResult.status ?? 1);
   }

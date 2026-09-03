@@ -10,11 +10,11 @@ import { spawnSync } from "node:child_process";
 // The vendored upstream core and repository-specific checker are both pinned
 // locally. Release gates must not depend on a live network fetch whose bytes
 // are not executed; scheduled CI separately reports upstream drift.
-const RELEASE_READINESS_COMMIT = "44065b7488a8d3c77f66f530dff770fb39be9707";
+const RELEASE_READINESS_COMMIT = "8abe3caf02676c6852edf6aab36e01552872105b";
 const RELEASE_READINESS_CORE_SHA256 =
-  "fcc0b725a85784617568c29f1aa3382a206faaddc3a22012e46f0e35303e4e6d";
+  "ca71a25a0f8cce2eb72ac490086afc95acd0cbef01cc33fc25471ef29e88b8f4";
 const LOCAL_CHECKER_SHA256 =
-  "b2619d2737cabf04f62495c0e51e283797429d1c1f4cc4ce8c9ecc001ef18a43";
+  "d72ff385f6f1421b9ae3cab4aa32e64f9504a9921fdbe911fe2a39f4fae6c22a";
 const VENDORED_CORE_PATH = "scripts/release-readiness/core.mjs";
 const LOCAL_CHECKER_PATH = "scripts/check_release_readiness.mjs";
 const MAX_CORE_BYTES = 262_144;

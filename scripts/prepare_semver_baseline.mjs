@@ -9,25 +9,25 @@ import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-export const RUST_SEMVER_BASELINE_COMMIT = "66d54835235c414051009523670afb6bb3e51007";
+export const RUST_SEMVER_BASELINE_COMMIT = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
 
 const MAX_MANIFEST_BYTES = 65_536;
 const MAX_LOCKFILE_BYTES = 524_288;
 const BASELINE_LOCKFILE_SHA256 =
-  "60cdf733148731461d0f13503a4b2c839eeaa9131c74e8004fb12fe7add5741c";
+  "9a89a83fd6566fc68eb7005e4c08b0a34bc4b95b0d139c3263c28ccc0323e8e8";
 const CRATE_DEPENDENCY_MARKER = "\n[target.'cfg(target_arch = \"wasm32\")'.dependencies]\n";
 
-// Freeze direct ReallyMe dependencies at the versions reviewed with the 0.2.0
+// Freeze direct ReallyMe dependencies at the versions reviewed with the 0.3.1
 // release. Without exact requirements, Cargo may resolve newer 0.x releases
 // while rustdoc is constructing the historical API baseline.
 const BASELINE_DEPENDENCIES = Object.freeze([
   Object.freeze({
     packageName: "reallyme-codec",
-    version: "0.1.20",
+    version: "0.2.1",
   }),
   Object.freeze({
     packageName: "reallyme-crypto",
-    version: "0.1.6",
+    version: "0.3.4",
   }),
 ]);
 
@@ -124,7 +124,7 @@ export const prepareSemverBaseline = (
     }
     manifest = manifest.replace(oldNeedle, frozenNeedle);
   }
-  const crateManifestPath = resolve(root, "crates/Cargo.toml");
+  const crateManifestPath = resolve(root, "crates/jose/Cargo.toml");
   let crateManifest = readRegularFile(crateManifestPath, MAX_MANIFEST_BYTES);
   if (crateManifest.split(CRATE_DEPENDENCY_MARKER).length !== 2) {
     fail("INVALID_DEPENDENCY");

@@ -18,7 +18,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.3.1
+        default: 0.3.2
 
 permissions:
   contents: read
@@ -93,7 +93,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.96.0
+          toolchain: 1.98.1
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 
@@ -136,7 +136,7 @@ jobs:
       - name: Checkout Rust semver baseline
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: 66d54835235c414051009523670afb6bb3e51007
+          ref: cc7870f049eeef3ab09699797d2fa78b5c17dbcf
           path: .semver-baseline
           persist-credentials: false
 

@@ -27,7 +27,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.96.0
+          toolchain: 1.98.1
           components: rustfmt, clippy
 
       - name: Cache Cargo
@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 44065b7488a8d3c77f66f530dff770fb39be9707
+          ref: 8abe3caf02676c6852edf6aab36e01552872105b
           path: .release-readiness
           persist-credentials: false
 
