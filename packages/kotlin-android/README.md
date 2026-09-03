@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # ReallyMe JOSE for Android
 
-`me.really:jose-android:0.3.1` is the Android AAR form of the typed Kotlin/JVM
+`me.really:jose-android:0.3.2` is the Android AAR form of the typed Kotlin/JVM
 JOSE facade. It packages the same Java/Kotlin API and Rust JNI boundary for
 API 24 or newer; application code never loads an arbitrary native path.
 

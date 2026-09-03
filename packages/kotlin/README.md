@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # ReallyMe JOSE for Kotlin/JVM
 
-`me.really:jose:0.3.1` is the typed Java and Kotlin/JVM facade for the canonical
+`me.really:jose:0.3.2` is the typed Java and Kotlin/JVM facade for the canonical
 ReallyMe Rust JOSE implementation. Generated protobuf classes are packaged as
 implementation detail and are not the normal SDK surface.
 

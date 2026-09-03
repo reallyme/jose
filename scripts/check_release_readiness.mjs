@@ -35,14 +35,14 @@ assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
 assertOperationContractArchitecture({ readText, listFiles, fail });
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 
-const crateVersion = "0.3.1";
-const protoCrateVersion = "0.3.1";
+const crateVersion = "0.3.2";
+const protoCrateVersion = "0.3.2";
 const buffaVersion = "0.9.1";
-const cryptoVersion = "0.3.4";
-const codecVersion = "0.2.1";
-const npmPackageVersion = "0.3.1";
-const rustSemverBaselineCommit = "66d54835235c414051009523670afb6bb3e51007";
-const releaseReadinessCommit = "44065b7488a8d3c77f66f530dff770fb39be9707";
+const cryptoVersion = "0.3.6";
+const codecVersion = "0.2.2";
+const npmPackageVersion = "0.3.2";
+const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
+const releaseReadinessCommit = "8abe3caf02676c6852edf6aab36e01552872105b";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -54,7 +54,7 @@ const policyOnlyMode = process.argv.includes("--policy-only");
 const releasePackagesMode = process.argv.includes("--release-packages");
 
 if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
-  fail("RELEASE_VERSION must match every 0.3.1 release package");
+  fail("RELEASE_VERSION must match every 0.3.2 release package");
 }
 
 assertNodeWorkflowJobsPinNode({ nodeVersion: "24" });
@@ -100,7 +100,7 @@ assertNotContains("Cargo.toml", 'time = "');
 
 const ffiCargo = readText("crates/ffi/Cargo.toml");
 assertContains("crates/ffi/Cargo.toml", 'name = "reallyme-jose-ffi"');
-assertContains("crates/ffi/Cargo.toml", 'version = "0.3.1"');
+assertContains("crates/ffi/Cargo.toml", 'version = "0.3.2"');
 assertContains("crates/ffi/Cargo.toml", "publish = false");
 assertContains("crates/ffi/Cargo.toml", 'crate-type = ["rlib", "staticlib", "cdylib"]');
 assertContains("crates/ffi/Cargo.toml", 'default = ["native"]');
@@ -111,7 +111,7 @@ assertContains(
 assertContains("crates/ffi/Cargo.toml", 'features = ["csprng"]');
 assertContains(
   "crates/ffi/Cargo.toml",
-  'reallyme-jose = { version = "0.3.1", path = "../jose", default-features = false, features = ["wire"] }',
+  'reallyme-jose = { version = "0.3.2", path = "../jose", default-features = false, features = ["wire"] }',
 );
 assertContains("crates/ffi/Cargo.toml", "workspace = true");
 assertNotContains("crates/ffi/Cargo.toml", "publish = true");
@@ -184,7 +184,7 @@ assertContains("crates/proto/Cargo.toml", '"/tests/**/*.rs"');
 assertContains("crates/proto/Cargo.toml", '"/proto/**/*.proto"');
 assertContains(
   "crates/proto/README.md",
-  'reallyme-jose-proto = { version = "0.3.1", features = ["generated"] }',
+  'reallyme-jose-proto = { version = "0.3.2", features = ["generated"] }',
 );
 assertContains("crates/proto/README.md", "JoseOperationRequest");
 assertContains("crates/proto/README.md", "JoseOperationResponse");
@@ -223,7 +223,7 @@ if (npmPackage.publishConfig?.registry !== "https://registry.npmjs.org/") {
 }
 assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.14.1"');
 assertContains("packages/ts/package-lock.json", '"name": "@reallyme/jose"');
-assertContains("packages/ts/package-lock.json", '"version": "0.3.1"');
+assertContains("packages/ts/package-lock.json", '"version": "0.3.2"');
 assertContains("packages/ts/tsconfig.json", '"strict": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedLocals": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedParameters": true');
@@ -471,6 +471,7 @@ assertContains(
   "scripts/prepare_semver_baseline.mjs",
   `RUST_SEMVER_BASELINE_COMMIT = "${rustSemverBaselineCommit}"`,
 );
+assertContains("scripts/prepare_semver_baseline.mjs", 'resolve(root, "crates/jose/Cargo.toml")');
 assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "cargo install cargo-semver-checks --version \"$CARGO_SEMVER_CHECKS_VERSION\" --locked",
@@ -578,7 +579,7 @@ assertContains(
 );
 assertContains(
   "scripts/run_pinned_release_readiness.mjs",
-  '"fcc0b725a85784617568c29f1aa3382a206faaddc3a22012e46f0e35303e4e6d"',
+  '"ca71a25a0f8cce2eb72ac490086afc95acd0cbef01cc33fc25471ef29e88b8f4"',
 );
 assertContains("scripts/run_pinned_release_readiness.mjs", "LOCAL_CHECKER_SHA256");
 assertContains("scripts/run_pinned_release_readiness.mjs", "MAX_CHECKER_BYTES = 524_288");
@@ -1077,7 +1078,7 @@ assertContains("Package.swift", '.iOS(.v16)');
 assertContains("Package.swift", 'name: "ReallyMeJOSE"');
 assertContains("Package.swift", 'exact: "1.38.1"');
 assertContains("Package.swift", 'path: "gen/swift"');
-assertContains("Package.swift", 'ffiArtifactVersion = "0.3.1"');
+assertContains("Package.swift", 'ffiArtifactVersion = "0.3.2"');
 assertContains("Package.swift", 'ffiArtifactLocalPathOverride = ""');
 assertNotContains("Package.swift", "0000000000000000000000000000000000000000000000000000000000000000");
 assertContains("Package.swift", "REALLYME_JOSE_SWIFTPM_RUNTIME_FFI");
@@ -1152,18 +1153,28 @@ assertContains("scripts/build_swift_xcframework.sh", "swift package compute-chec
 assertContains("scripts/verify_swift_release_artifact.mjs", "archive and sidecar checksums differ");
 assertContains("scripts/verify_swift_release_artifact.mjs", "requiredSymbols");
 assertContains("scripts/verify_swift_release_artifact.mjs", "Rust LLVM symbol inspector");
+assertContains("Cargo.toml", 'rust-version = "1.96"');
+assertContains("rust-toolchain.toml", 'channel = "1.98.1"');
+assertContains("rust-toolchain.toml", 'components = ["clippy", "llvm-tools-preview", "rustfmt"]');
 assertContains("scripts/prepare_swift_binary_manifest.mjs", "invalid-local-artifact-path");
 assertContains("scripts/prepare_swift_release_candidate.sh", "scripts/build_swift_xcframework.sh");
 assertContains(".github/workflows/swift-ci.yml", "runs-on: macos-26");
 assertContains(".github/workflows/swift-ci.yml", "Select Xcode 26.6");
+assertContains(".github/workflows/swift-ci.yml", "components: llvm-tools-preview");
 assertContains(".github/workflows/swift-ci.yml", "scripts/build_swift_xcframework.sh");
 assertContains(".github/workflows/swift-ci.yml", ".reallyme-jose-runtime-ffi");
 assertContains(".github/workflows/swift-package-preflight.yml", "Upload Swift release candidate");
 assertContains(".github/workflows/swift-package-preflight.yml", "macos-26");
 assertContains(".github/workflows/swift-package-preflight.yml", "Select Xcode 26.6");
+assertContains(".github/workflows/swift-package-preflight.yml", "components: llvm-tools-preview");
 assertContains(".github/workflows/swift-package-preflight.yml", "verify_swift_release_artifact.test.mjs");
 assertContains(".github/workflows/swift-package-preflight.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
 assertContains(".github/workflows/rust-ci.yml", "--profile release-ffi");
+assertContains(".github/workflows/rust-ci.yml", "name: MSRV 1.96");
+assertContains(
+  ".github/workflows/rust-ci.yml",
+  "cargo +1.96.0 check --locked --workspace --all-features",
+);
 const swiftPreflightSource = readText(".github/workflows/swift-package-preflight.yml");
 if (
   swiftPreflightSource.indexOf("Upload Swift release candidate") >=
@@ -1173,6 +1184,7 @@ if (
 }
 const swiftReleaseWorkflow = ".github/workflows/swift-package-release.yml";
 assertContains(swiftReleaseWorkflow, "SwiftPM artifact verification");
+assertContains(swiftReleaseWorkflow, "components: llvm-tools-preview");
 assertContains(swiftReleaseWorkflow, "Download attested Swift artifact");
 assertContains(swiftReleaseWorkflow, "Bind manifest to attested Swift artifact");
 assertContains(swiftReleaseWorkflow, "Verify SwiftPM manifest and downloaded artifact");

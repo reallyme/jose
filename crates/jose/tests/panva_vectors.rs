@@ -183,7 +183,7 @@ fn hex_to_bytes(input: &str) -> Result<Vec<u8>, PanvaTestError> {
     }
 
     let mut out = Vec::with_capacity(input.len() / 2);
-    for pair in input.as_bytes().chunks_exact(2) {
+    for pair in input.as_bytes().as_chunks::<2>().0 {
         let high = hex_nibble(pair[0])?;
         let low = hex_nibble(pair[1])?;
         out.push((high << 4) | low);

@@ -14,6 +14,14 @@ import { spawnSync } from "node:child_process";
 export const RELEASE_READINESS_CORE_CONTRACT_VERSION = 9;
 
 const DEFAULT_FAILURE_PREFIX = "release readiness check failed";
+const DEFAULT_REALLYME_LATEST_STABLE_DEPENDENCIES = [
+  "reallyme-crypto",
+  "reallyme-codec",
+  "reallyme-jose",
+  "reallyme-cose",
+];
+
+const escapeRegExpLiteral = (value) => value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 
 const scrubProtoCommentsAndStrings = (source) => {
   let output = "";
@@ -546,8 +554,98 @@ export function createReleaseReadinessContext(options) {
     }
   };
 
+  const validateLatestStableVersions = (versions = {}) => {
+    if (versions === null || typeof versions !== "object" || Array.isArray(versions)) {
+      fail("latest stable version overrides must be an explicit mapping");
+    }
+    const parsed = new Map();
+    for (const [crateName, version] of Object.entries(versions)) {
+      if (!/^[a-z][a-z0-9_-]*$/u.test(crateName)) {
+        fail("latest stable version override names must be crate identifiers");
+      }
+      if (typeof version !== "string" || !/^\d+\.\d+\.\d+$/u.test(version)) {
+        fail(`${crateName} latest stable override must be an exact stable version`);
+      }
+      parsed.set(crateName, version);
+    }
+    return parsed;
+  };
+
+  const loadLatestCargoRegistryVersion = (crateName, latestStableVersions) => {
+    if (!/^[a-z][a-z0-9_-]*$/u.test(crateName)) {
+      fail("latest Cargo registry version lookup requires a crate identifier");
+    }
+    const overriddenVersion = latestStableVersions.get(crateName);
+    if (overriddenVersion !== undefined) {
+      return overriddenVersion;
+    }
+    const result = run("cargo", ["search", crateName, "--limit", "20"], {
+      capture: true,
+    });
+    const match = new RegExp(
+      `^${escapeRegExpLiteral(crateName)}\\s*=\\s*"([^"]+)"`,
+      "mu",
+    ).exec(result.stdout);
+    if (match === null) {
+      fail(`cargo search did not return ${crateName}`);
+    }
+    if (!/^\d+\.\d+\.\d+$/u.test(match[1])) {
+      fail(`${crateName} latest Cargo registry version is not stable`);
+    }
+    return match[1];
+  };
+
+  const expectedLatestCargoRequirement = (
+    crateName,
+    requirementStyle,
+    latestStableVersions,
+  ) => {
+    if (!["caret", "exact"].includes(requirementStyle)) {
+      fail(`${crateName} latest stable requirement policy is invalid`);
+    }
+    const version = loadLatestCargoRegistryVersion(crateName, latestStableVersions);
+    return requirementStyle === "caret" ? `^${version}` : version;
+  };
+
+  const normalizeLatestStableDependencyPolicy = (policy) => {
+    if (policy === undefined || policy === false) {
+      return null;
+    }
+    if (policy === true) {
+      return {
+        names: DEFAULT_REALLYME_LATEST_STABLE_DEPENDENCIES,
+        requirement: "caret",
+      };
+    }
+    if (
+      policy === null ||
+      typeof policy !== "object" ||
+      Array.isArray(policy) ||
+      !Object.keys(policy).every((key) => ["names", "requirement"].includes(key))
+    ) {
+      fail("latest stable dependency policy must be true or an explicit mapping");
+    }
+    const names = policy.names ?? DEFAULT_REALLYME_LATEST_STABLE_DEPENDENCIES;
+    const requirement = policy.requirement ?? "caret";
+    if (
+      !Array.isArray(names) ||
+      names.length === 0 ||
+      names.some((name) => typeof name !== "string" || !/^[a-z][a-z0-9_-]*$/u.test(name))
+    ) {
+      fail("latest stable dependency policy names must be crate identifiers");
+    }
+    if (!["caret", "exact"].includes(requirement)) {
+      fail("latest stable dependency policy requirement must be caret or exact");
+    }
+    return { names, requirement };
+  };
+
   const assertCargoMetadataDocument = (metadata, policy) => {
     const packages = policy?.packages ?? [];
+    const latestStableVersions = validateLatestStableVersions(policy?.latestStableVersions);
+    const latestStableDependencyPolicy = normalizeLatestStableDependencyPolicy(
+      policy?.reallyMeLatestStableDependencies,
+    );
     if (
       metadata === null ||
       typeof metadata !== "object" ||
@@ -555,7 +653,10 @@ export function createReleaseReadinessContext(options) {
     ) {
       fail("cargo metadata did not return a packages array");
     }
-    if (!Array.isArray(packages) || packages.length === 0) {
+    if (
+      !Array.isArray(packages) ||
+      (packages.length === 0 && latestStableDependencyPolicy === null)
+    ) {
       fail("cargo metadata policy requires at least one package");
     }
 
@@ -627,9 +728,25 @@ export function createReleaseReadinessContext(options) {
           kind,
           target,
           rename,
+          latestStable = false,
         } = dependencyPolicy ?? {};
         if (typeof dependencyName !== "string" || dependencyName.length === 0) {
           fail(`${name} dependency policy requires a name`);
+        }
+        if (
+          !(
+            latestStable === false ||
+            latestStable === true ||
+            latestStable === "caret" ||
+            latestStable === "exact"
+          )
+        ) {
+          fail(`${name} dependency ${dependencyName} latest stable policy is invalid`);
+        }
+        if (requirement !== undefined && latestStable !== false) {
+          fail(
+            `${name} dependency ${dependencyName} must configure either an exact requirement or latest stable policy`,
+          );
         }
         const candidates = cargoPackage.dependencies.filter(
           (candidate) =>
@@ -647,9 +764,17 @@ export function createReleaseReadinessContext(options) {
           );
         }
         const [dependency] = candidates;
-        if (requirement !== undefined && dependency.req !== requirement) {
+        const expectedRequirement =
+          latestStable === false
+            ? requirement
+            : expectedLatestCargoRequirement(
+                dependencyName,
+                latestStable === true ? "caret" : latestStable,
+                latestStableVersions,
+              );
+        if (expectedRequirement !== undefined && dependency.req !== expectedRequirement) {
           fail(
-            `${name} dependency ${dependencyName} requirement is ${dependency.req}, expected ${requirement}`,
+            `${name} dependency ${dependencyName} requirement is ${dependency.req}, expected ${expectedRequirement}`,
           );
         }
         if (
@@ -691,6 +816,48 @@ export function createReleaseReadinessContext(options) {
 
       if (packageFiles.length > 0) {
         assertPackageFiles(name, packageFiles);
+      }
+    }
+
+    if (latestStableDependencyPolicy !== null) {
+      const dependencyNames = new Set(latestStableDependencyPolicy.names);
+      for (const cargoPackage of metadata.packages) {
+        if (
+          cargoPackage === null ||
+          typeof cargoPackage !== "object" ||
+          typeof cargoPackage.name !== "string" ||
+          !Array.isArray(cargoPackage.dependencies)
+        ) {
+          continue;
+        }
+        for (const dependency of cargoPackage.dependencies) {
+          if (
+            dependency === null ||
+            typeof dependency !== "object" ||
+            typeof dependency.name !== "string" ||
+            !dependencyNames.has(dependency.name)
+          ) {
+            continue;
+          }
+          if (
+            typeof dependency.source !== "string" ||
+            !dependency.source.startsWith("registry+")
+          ) {
+            fail(
+              `${cargoPackage.name} dependency ${dependency.name} must use a registry source for latest stable enforcement`,
+            );
+          }
+          const expectedRequirement = expectedLatestCargoRequirement(
+            dependency.name,
+            latestStableDependencyPolicy.requirement,
+            latestStableVersions,
+          );
+          if (dependency.req !== expectedRequirement) {
+            fail(
+              `${cargoPackage.name} dependency ${dependency.name} requirement is ${dependency.req}, expected latest stable ${expectedRequirement}`,
+            );
+          }
+        }
       }
     }
 
@@ -1317,8 +1484,8 @@ export function createReleaseReadinessContext(options) {
     const {
       workflow = ".github/workflows/protobuf-ci.yml",
       corePath = "scripts/release-readiness/core.mjs",
-      bufVersion = "1.71.0",
-      buffaVersion = "0.8.1",
+      bufVersion = "1.72.0",
+      buffaVersion = "0.9.1",
       installBufStepName = "Install buf",
       installBufUses = null,
       installBufRun = null,

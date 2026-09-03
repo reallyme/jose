@@ -4,7 +4,7 @@
 
 [package]
 name = "reallyme-jose"
-version = "0.3.1"
+version = "0.3.2"
 description = "JOSE, JWT, JWS, and JWE helpers for ReallyMe identity."
 edition.workspace = true
 rust-version.workspace = true
