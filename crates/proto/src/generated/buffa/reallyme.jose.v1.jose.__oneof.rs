@@ -42,22 +42,22 @@ pub mod jose_error {
             Self::Some(Error::from(v))
         }
     }
-    impl serde::Serialize for Error {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Error {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Primitive(v) => {
-                    map.serialize_entry("primitive", v)?;
+                    map.serialize_entry("primitive", &**v)?;
                 }
                 Self::Provider(v) => {
-                    map.serialize_entry("provider", v)?;
+                    map.serialize_entry("provider", &**v)?;
                 }
                 Self::Backend(v) => {
-                    map.serialize_entry("backend", v)?;
+                    map.serialize_entry("backend", &**v)?;
                 }
             }
             map.end()
@@ -194,40 +194,40 @@ pub mod jose_operation_response {
             Self::Some(Response::from(v))
         }
     }
-    impl serde::Serialize for Response {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Response {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::BoundaryError(v) => {
-                    map.serialize_entry("boundaryError", v)?;
+                    map.serialize_entry("boundaryError", &**v)?;
                 }
                 Self::JwsSign(v) => {
-                    map.serialize_entry("jwsSign", v)?;
+                    map.serialize_entry("jwsSign", &**v)?;
                 }
                 Self::JwsVerify(v) => {
-                    map.serialize_entry("jwsVerify", v)?;
+                    map.serialize_entry("jwsVerify", &**v)?;
                 }
                 Self::JwtEncodeUnsigned(v) => {
-                    map.serialize_entry("jwtEncodeUnsigned", v)?;
+                    map.serialize_entry("jwtEncodeUnsigned", &**v)?;
                 }
                 Self::JwtDecodeUnsigned(v) => {
-                    map.serialize_entry("jwtDecodeUnsigned", v)?;
+                    map.serialize_entry("jwtDecodeUnsigned", &**v)?;
                 }
                 Self::JwtSign(v) => {
-                    map.serialize_entry("jwtSign", v)?;
+                    map.serialize_entry("jwtSign", &**v)?;
                 }
                 Self::JwtVerify(v) => {
-                    map.serialize_entry("jwtVerify", v)?;
+                    map.serialize_entry("jwtVerify", &**v)?;
                 }
                 Self::JweEncrypt(v) => {
-                    map.serialize_entry("jweEncrypt", v)?;
+                    map.serialize_entry("jweEncrypt", &**v)?;
                 }
                 Self::JweDecrypt(v) => {
-                    map.serialize_entry("jweDecrypt", v)?;
+                    map.serialize_entry("jweDecrypt", &**v)?;
                 }
             }
             map.end()
@@ -345,37 +345,37 @@ pub mod jose_operation_request {
             Self::Some(Operation::from(v))
         }
     }
-    impl serde::Serialize for Operation {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Operation {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::JwsSign(v) => {
-                    map.serialize_entry("jwsSign", v)?;
+                    map.serialize_entry("jwsSign", &**v)?;
                 }
                 Self::JwsVerify(v) => {
-                    map.serialize_entry("jwsVerify", v)?;
+                    map.serialize_entry("jwsVerify", &**v)?;
                 }
                 Self::JwtEncodeUnsigned(v) => {
-                    map.serialize_entry("jwtEncodeUnsigned", v)?;
+                    map.serialize_entry("jwtEncodeUnsigned", &**v)?;
                 }
                 Self::JwtDecodeUnsigned(v) => {
-                    map.serialize_entry("jwtDecodeUnsigned", v)?;
+                    map.serialize_entry("jwtDecodeUnsigned", &**v)?;
                 }
                 Self::JwtSign(v) => {
-                    map.serialize_entry("jwtSign", v)?;
+                    map.serialize_entry("jwtSign", &**v)?;
                 }
                 Self::JwtVerify(v) => {
-                    map.serialize_entry("jwtVerify", v)?;
+                    map.serialize_entry("jwtVerify", &**v)?;
                 }
                 Self::JweEncrypt(v) => {
-                    map.serialize_entry("jweEncrypt", v)?;
+                    map.serialize_entry("jweEncrypt", &**v)?;
                 }
                 Self::JweDecrypt(v) => {
-                    map.serialize_entry("jweDecrypt", v)?;
+                    map.serialize_entry("jweDecrypt", &**v)?;
                 }
             }
             map.end()
@@ -412,19 +412,19 @@ pub mod jose_jws_sign_response {
             Self::Some(Outcome::from(v))
         }
     }
-    impl serde::Serialize for Outcome {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Outcome {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Result(v) => {
-                    map.serialize_entry("result", v)?;
+                    map.serialize_entry("result", &**v)?;
                 }
                 Self::Error(v) => {
-                    map.serialize_entry("error", v)?;
+                    map.serialize_entry("error", &**v)?;
                 }
             }
             map.end()
@@ -461,19 +461,19 @@ pub mod jose_jws_verify_response {
             Self::Some(Outcome::from(v))
         }
     }
-    impl serde::Serialize for Outcome {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Outcome {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Result(v) => {
-                    map.serialize_entry("result", v)?;
+                    map.serialize_entry("result", &**v)?;
                 }
                 Self::Error(v) => {
-                    map.serialize_entry("error", v)?;
+                    map.serialize_entry("error", &**v)?;
                 }
             }
             map.end()
@@ -510,19 +510,19 @@ pub mod jose_jwt_encode_unsigned_response {
             Self::Some(Outcome::from(v))
         }
     }
-    impl serde::Serialize for Outcome {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Outcome {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Result(v) => {
-                    map.serialize_entry("result", v)?;
+                    map.serialize_entry("result", &**v)?;
                 }
                 Self::Error(v) => {
-                    map.serialize_entry("error", v)?;
+                    map.serialize_entry("error", &**v)?;
                 }
             }
             map.end()
@@ -559,19 +559,19 @@ pub mod jose_jwt_decode_unsigned_response {
             Self::Some(Outcome::from(v))
         }
     }
-    impl serde::Serialize for Outcome {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Outcome {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Result(v) => {
-                    map.serialize_entry("result", v)?;
+                    map.serialize_entry("result", &**v)?;
                 }
                 Self::Error(v) => {
-                    map.serialize_entry("error", v)?;
+                    map.serialize_entry("error", &**v)?;
                 }
             }
             map.end()
@@ -608,19 +608,19 @@ pub mod jose_jwt_sign_response {
             Self::Some(Outcome::from(v))
         }
     }
-    impl serde::Serialize for Outcome {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Outcome {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Result(v) => {
-                    map.serialize_entry("result", v)?;
+                    map.serialize_entry("result", &**v)?;
                 }
                 Self::Error(v) => {
-                    map.serialize_entry("error", v)?;
+                    map.serialize_entry("error", &**v)?;
                 }
             }
             map.end()
@@ -657,19 +657,19 @@ pub mod jose_jwt_verify_response {
             Self::Some(Outcome::from(v))
         }
     }
-    impl serde::Serialize for Outcome {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Outcome {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Result(v) => {
-                    map.serialize_entry("result", v)?;
+                    map.serialize_entry("result", &**v)?;
                 }
                 Self::Error(v) => {
-                    map.serialize_entry("error", v)?;
+                    map.serialize_entry("error", &**v)?;
                 }
             }
             map.end()
@@ -706,19 +706,19 @@ pub mod jose_jwe_encrypt_response {
             Self::Some(Outcome::from(v))
         }
     }
-    impl serde::Serialize for Outcome {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Outcome {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Result(v) => {
-                    map.serialize_entry("result", v)?;
+                    map.serialize_entry("result", &**v)?;
                 }
                 Self::Error(v) => {
-                    map.serialize_entry("error", v)?;
+                    map.serialize_entry("error", &**v)?;
                 }
             }
             map.end()
@@ -755,19 +755,19 @@ pub mod jose_jwe_decrypt_response {
             Self::Some(Outcome::from(v))
         }
     }
-    impl serde::Serialize for Outcome {
-        fn serialize<S: serde::Serializer>(
+    impl ::serde::Serialize for Outcome {
+        fn serialize<S: ::serde::Serializer>(
             &self,
             s: S,
         ) -> ::core::result::Result<S::Ok, S::Error> {
-            use serde::ser::SerializeMap;
+            use ::serde::ser::SerializeMap;
             let mut map = s.serialize_map(Some(1))?;
             match self {
                 Self::Result(v) => {
-                    map.serialize_entry("result", v)?;
+                    map.serialize_entry("result", &**v)?;
                 }
                 Self::Error(v) => {
-                    map.serialize_entry("error", v)?;
+                    map.serialize_entry("error", &**v)?;
                 }
             }
             map.end()

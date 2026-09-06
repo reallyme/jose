@@ -1,7 +1,6 @@
 /*
  * SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
  *
- * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef REALLYME_JOSE_H

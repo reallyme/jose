@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
 
 export { executeOperation, executeOperationJson } from "./boundary.js";
 export { ReallyMeJoseError } from "./errors.js";

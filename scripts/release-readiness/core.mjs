@@ -11,7 +11,7 @@ import { spawnSync } from "node:child_process";
 // This module is intentionally written as a standalone, vendorable release
 // readiness core. Sister repositories should copy it byte-for-byte or consume a
 // pinned upstream revision so release-critical checks do not drift silently.
-export const RELEASE_READINESS_CORE_CONTRACT_VERSION = 9;
+export const RELEASE_READINESS_CORE_CONTRACT_VERSION = 10;
 
 const DEFAULT_FAILURE_PREFIX = "release readiness check failed";
 const DEFAULT_REALLYME_LATEST_STABLE_DEPENDENCIES = [
@@ -306,6 +306,42 @@ export function createReleaseReadinessContext(options) {
     resolveRepositoryPath(path);
     if (!loadTrackedFiles().has(path)) {
       fail(`${path} is not tracked by Git`);
+    }
+  };
+
+  const assertPathsAbsent = (paths) => {
+    if (
+      !Array.isArray(paths) ||
+      paths.some((path) => typeof path !== "string" || path.length === 0)
+    ) {
+      fail("absent path policy must be an array of non-empty strings");
+    }
+    for (const path of paths) {
+      const absolute = resolveRepositoryPath(path);
+      try {
+        // lstat observes broken symlinks as well as live files and directories.
+        // existsSync would silently treat a broken compatibility symlink as
+        // absent, leaving a retired entry in release artifacts.
+        lstatSync(absolute);
+        fail(`${path} must not exist`);
+      } catch (error) {
+        if (
+          error === null ||
+          typeof error !== "object" ||
+          !("code" in error) ||
+          error.code !== "ENOENT"
+        ) {
+          fail(`${path} absence could not be verified`);
+        }
+      }
+      if (
+        requireTrackedFiles &&
+        [...loadTrackedFiles()].some(
+          (trackedPath) => trackedPath === path || trackedPath.startsWith(`${path}/`),
+        )
+      ) {
+        fail(`${path} must not remain tracked by Git`);
+      }
     }
   };
 
@@ -1485,7 +1521,7 @@ export function createReleaseReadinessContext(options) {
       workflow = ".github/workflows/protobuf-ci.yml",
       corePath = "scripts/release-readiness/core.mjs",
       bufVersion = "1.72.0",
-      buffaVersion = "0.9.1",
+      buffaVersion = "0.9.2",
       installBufStepName = "Install buf",
       installBufUses = null,
       installBufRun = null,
@@ -2261,10 +2297,12 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
       cargoWorkspace = {},
       spdx = {},
       protobufBoundary,
+      granularProviderBoundary,
       protobufRelease,
       cargoMetadata,
       text,
       workflows = [],
+      retiredPaths = [],
     } = policy;
     if (typeof generatedFreshnessMode !== "boolean") {
       fail("ReallyMe Rust protobuf repository policy requires generatedFreshnessMode");
@@ -2290,6 +2328,14 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
         Array.isArray(cargoMetadata))
     ) {
       fail("ReallyMe Rust protobuf repository policy cargoMetadata must be an object");
+    }
+    if (
+      granularProviderBoundary !== undefined &&
+      (granularProviderBoundary === null ||
+        typeof granularProviderBoundary !== "object" ||
+        Array.isArray(granularProviderBoundary))
+    ) {
+      fail("ReallyMe Rust protobuf repository policy granularProviderBoundary must be an object");
     }
     if (
       text !== undefined &&
@@ -2326,6 +2372,10 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
     assertCargoWorkspacePolicy(cargoWorkspace);
     assertSpdxHeaders(spdx);
     assertReallyMeOperationBoundaryContract(protobufBoundary);
+    if (granularProviderBoundary !== undefined) {
+      assertGranularProviderBoundary(granularProviderBoundary);
+    }
+    assertPathsAbsent(retiredPaths);
     assertReallyMeProtobufReleasePolicy({
       ...protobufRelease,
       generatedFreshnessMode,
@@ -2686,6 +2736,263 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
     }
   };
 
+  const assertGranularProviderBoundary = (policy) => {
+    const {
+      protoPath,
+      descriptorMessage = "IdentityProviderDescriptor",
+      protocolVersionType = "IdentityProtocolVersion",
+      capabilityType = "IdentityProviderCapability",
+      requestMessage = "IdentityProviderRequest",
+      resultMessage = "IdentityProviderResult",
+      errorMessage = "IdentityProviderError",
+      errorReasonType = "IdentityProviderErrorReason",
+      responseMessage = "IdentityProviderResponse",
+      allowServices = false,
+      codecPath,
+      runtimePath,
+      requiredCodecNeedles = [],
+      requiredRuntimeNeedles = [],
+      operations,
+      adapters = [],
+      retiredPaths = [],
+    } = policy ?? {};
+    for (const [name, value] of Object.entries({ protoPath, codecPath, runtimePath })) {
+      if (typeof value !== "string" || value.length === 0) {
+        fail(`granular provider boundary policy ${name} must be a non-empty string`);
+      }
+    }
+    for (const [name, value] of Object.entries({
+      descriptorMessage,
+      requestMessage,
+      resultMessage,
+      errorMessage,
+      responseMessage,
+    })) {
+      if (typeof value !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(value)) {
+        fail(`granular provider boundary policy ${name} must be a protobuf identifier`);
+      }
+    }
+    for (const [name, value] of Object.entries({
+      protocolVersionType,
+      capabilityType,
+      errorReasonType,
+    })) {
+      if (typeof value !== "string" || !/^\.?[A-Za-z_][A-Za-z0-9_.]*$/u.test(value)) {
+        fail(`granular provider boundary policy ${name} must be a protobuf type name`);
+      }
+    }
+    if (typeof allowServices !== "boolean") {
+      fail("granular provider boundary allowServices must be a boolean");
+    }
+    for (const [name, needles] of Object.entries({
+      requiredCodecNeedles,
+      requiredRuntimeNeedles,
+    })) {
+      if (
+        !Array.isArray(needles) ||
+        needles.some((needle) => typeof needle !== "string" || needle.length === 0)
+      ) {
+        fail(`granular provider boundary ${name} must be an array of non-empty strings`);
+      }
+    }
+    if (!Array.isArray(operations) || operations.length === 0) {
+      fail("granular provider boundary operations must be a non-empty array");
+    }
+    const operationFieldNames = new Set();
+    const operationNumbers = new Set();
+    for (const [index, operation] of operations.entries()) {
+      if (operation === null || typeof operation !== "object" || Array.isArray(operation)) {
+        fail(`granular provider boundary operations[${index}] must be an object`);
+      }
+      const { fieldName, requestType, resultType, number } = operation;
+      for (const [name, value] of Object.entries({ fieldName, requestType, resultType })) {
+        if (typeof value !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(value)) {
+          fail(`granular provider boundary operations[${index}].${name} must be a protobuf identifier`);
+        }
+      }
+      if (!Number.isSafeInteger(number) || number < 1 || number > 536_870_911) {
+        fail(`granular provider boundary operations[${index}].number must be a protobuf field number`);
+      }
+      if (operationFieldNames.has(fieldName)) {
+        fail(`granular provider boundary operation field ${fieldName} is duplicated`);
+      }
+      if (operationNumbers.has(number)) {
+        fail(`granular provider boundary operation field number ${number} is duplicated`);
+      }
+      operationFieldNames.add(fieldName);
+      operationNumbers.add(number);
+    }
+    if (
+      !Array.isArray(adapters) ||
+      adapters.some(
+        (adapter) =>
+          adapter === null || typeof adapter !== "object" || Array.isArray(adapter),
+      )
+    ) {
+      fail("granular provider boundary adapters must be an array of objects");
+    }
+
+    assertProtoContract(protoPath);
+    const proto = stripProtoLineComments(readText(protoPath));
+    if (!allowServices && extractProtoBlocks(proto, "service").length !== 0) {
+      fail(`${protoPath} must define provider messages without protobuf services`);
+    }
+    const messages = new Map(
+      extractProtoBlocks(proto, "message").map((block) => [block.name, block.body]),
+    );
+    const parseProtoFields = (body) =>
+      [...body.matchAll(
+        /^\s*(?:(optional|required|repeated)\s+)?((?:\.?[A-Za-z_][A-Za-z0-9_.]*)|(?:map\s*<\s*[A-Za-z_][A-Za-z0-9_.]*\s*,\s*\.?[A-Za-z_][A-Za-z0-9_.]*\s*>))\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(\d+)\s*(?:\[[^\]]*\])?\s*;/gmu,
+      )].map((match) => ({
+        label: match[1] ?? null,
+        type: match[2],
+        name: match[3],
+        number: Number.parseInt(match[4], 10),
+      }));
+    const hasExactField = (fields, expected) =>
+      fields.some(
+        (field) =>
+          field.label === expected.label &&
+          field.type === expected.type &&
+          field.name === expected.name &&
+          field.number === expected.number,
+      );
+    const descriptor = messages.get(descriptorMessage);
+    const descriptorFields = descriptor === undefined ? [] : parseProtoFields(descriptor);
+    if (
+      descriptor === undefined ||
+      descriptorFields.length !== 3 ||
+      !hasExactField(descriptorFields, {
+        label: null,
+        type: protocolVersionType,
+        name: "protocol_version",
+        number: 1,
+      }) ||
+      !hasExactField(descriptorFields, {
+        label: "repeated",
+        type: capabilityType,
+        name: "capabilities",
+        number: 2,
+      }) ||
+      !hasExactField(descriptorFields, {
+        label: null,
+        type: "uint32",
+        name: "max_response_bytes",
+        number: 3,
+      })
+    ) {
+      fail(`${protoPath} ${descriptorMessage} must define version, capabilities, and response bound`);
+    }
+    const request = messages.get(requestMessage);
+    const operationOneof =
+      request === undefined
+        ? undefined
+        : extractProtoBlocks(request, "oneof").find((block) => block.name === "operation");
+    if (
+      request === undefined ||
+      parseProtoFields(request).length !== operations.length + 2 ||
+      !/^\s*uint64\s+executor_id\s*=\s*1\s*;/mu.test(request) ||
+      !/^\s*uint64\s+sequence\s*=\s*2\s*;/mu.test(request) ||
+      operationOneof === undefined
+    ) {
+      fail(`${protoPath} ${requestMessage} must define correlated granular operations`);
+    }
+    const result = messages.get(resultMessage);
+    const resultOneof =
+      result === undefined
+        ? undefined
+        : extractProtoBlocks(result, "oneof").find((block) => block.name === "result");
+    if (result === undefined || resultOneof === undefined) {
+      fail(`${protoPath} ${resultMessage} must define oneof result`);
+    }
+    const requestFields = parseProtoFields(operationOneof.body);
+    const resultFields = parseProtoFields(resultOneof.body);
+    if (requestFields.length !== operations.length || resultFields.length !== operations.length) {
+      fail(`${protoPath} provider request and result oneofs must contain only declared granular operations`);
+    }
+    for (const operation of operations) {
+      const requestField = requestFields.find((field) => field.name === operation.fieldName);
+      const resultField = resultFields.find((field) => field.name === operation.fieldName);
+      if (
+        requestField === undefined ||
+        requestField.type !== operation.requestType ||
+        requestField.number !== operation.number ||
+        resultField === undefined ||
+        resultField.type !== operation.resultType ||
+        resultField.number !== operation.number
+      ) {
+        fail(`${protoPath} provider operation ${operation.fieldName} must match its declared request, result, and field number`);
+      }
+    }
+    const providerError = messages.get(errorMessage);
+    const providerErrorFields =
+      providerError === undefined ? [] : parseProtoFields(providerError);
+    if (
+      providerError === undefined ||
+      providerErrorFields.length !== 1 ||
+      !hasExactField(providerErrorFields, {
+        label: null,
+        type: errorReasonType,
+        name: "reason",
+        number: 1,
+      })
+    ) {
+      fail(`${protoPath} ${errorMessage} must define one typed reason field`);
+    }
+    const response = messages.get(responseMessage);
+    const outcomeOneof =
+      response === undefined
+        ? undefined
+        : extractProtoBlocks(response, "oneof").find((block) => block.name === "outcome");
+    const outcomeFields = outcomeOneof === undefined ? [] : parseProtoFields(outcomeOneof.body);
+    if (
+      response === undefined ||
+      parseProtoFields(response).length !== 4 ||
+      !/^\s*uint64\s+executor_id\s*=\s*1\s*;/mu.test(response) ||
+      !/^\s*uint64\s+sequence\s*=\s*2\s*;/mu.test(response) ||
+      outcomeOneof === undefined ||
+      outcomeFields.length !== 2 ||
+      !new RegExp(`^\\s*${resultMessage}\\s+result\\s*=\\s*3\\s*;`, "mu").test(
+        response,
+      ) ||
+      !new RegExp(`^\\s*${errorMessage}\\s+error\\s*=\\s*4\\s*;`, "mu").test(
+        response,
+      )
+    ) {
+      fail(`${protoPath} ${responseMessage} must echo correlation and define typed outcomes`);
+    }
+
+    for (const needle of requiredCodecNeedles) {
+      assertContains(codecPath, needle);
+    }
+    for (const needle of requiredRuntimeNeedles) {
+      assertContains(runtimePath, needle);
+    }
+    for (const [index, adapter] of adapters.entries()) {
+      const { path, requiredNeedles = [], forbiddenNeedles = [] } = adapter;
+      if (typeof path !== "string" || path.length === 0) {
+        fail(`granular provider boundary adapters[${index}].path must be a non-empty string`);
+      }
+      for (const [name, needles] of Object.entries({ requiredNeedles, forbiddenNeedles })) {
+        if (
+          !Array.isArray(needles) ||
+          needles.some((needle) => typeof needle !== "string" || needle.length === 0)
+        ) {
+          fail(
+            `granular provider boundary adapters[${index}].${name} must be an array of non-empty strings`,
+          );
+        }
+      }
+      for (const needle of requiredNeedles) {
+        assertContains(path, needle);
+      }
+      for (const needle of forbiddenNeedles) {
+        assertNotContains(path, needle);
+      }
+    }
+    assertPathsAbsent(retiredPaths);
+  };
+
   return {
     root,
     fail,
@@ -2693,6 +3000,7 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
     readJson,
     listFiles,
     requireTracked,
+    assertPathsAbsent,
     loadTrackedFiles,
     assertContains,
     assertNotContains,
@@ -2730,6 +3038,7 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
     extractProtoBlocks,
     assertProtoContract,
     assertReallyMeOperationBoundaryContract,
+    assertGranularProviderBoundary,
     assertSpdxHeaders,
   };
 }

@@ -25,6 +25,7 @@ fn __reallyme_zeroize_unknown_field_data(data: &mut ::buffa::UnknownFieldData) {
 /// Values are stable public boundary codes; internal Rust, Swift, Kotlin, and
 /// TypeScript errors must map into one of these before crossing RPC, SDK, FFI,
 /// storage, audit, or telemetry boundaries.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum JoseErrorReason {
@@ -1404,6 +1405,7 @@ impl ::buffa::Enumeration for JoseErrorReason {
         ]
     }
 }
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum JoseSignatureAlgorithm {
@@ -1554,6 +1556,7 @@ impl ::buffa::Enumeration for JoseSignatureAlgorithm {
         ]
     }
 }
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum JoseJweKeyManagementAlgorithm {
@@ -1762,6 +1765,7 @@ impl ::buffa::Enumeration for JoseJweKeyManagementAlgorithm {
         ]
     }
 }
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum JoseJweContentEncryptionAlgorithm {
@@ -1958,6 +1962,7 @@ impl ::buffa::Enumeration for JoseJweContentEncryptionAlgorithm {
 }
 /// JoseOperationContractVersion is validated exactly by every executable
 /// response decoder. Unknown and unspecified versions fail closed.
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(i32)]
 pub enum JoseOperationContractVersion {
@@ -2313,18 +2318,21 @@ impl ::buffa::ExtensionSet for JoseError {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseError {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseError {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseError;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseError")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseError, A::Error> {
@@ -2345,7 +2353,7 @@ impl<'de> serde::Deserialize<'de> for JoseError {
                             if let Some(v) = v {
                                 if __oneof_error.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'error'",
                                         ),
                                     );
@@ -2369,7 +2377,7 @@ impl<'de> serde::Deserialize<'de> for JoseError {
                             if let Some(v) = v {
                                 if __oneof_error.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'error'",
                                         ),
                                     );
@@ -2393,7 +2401,7 @@ impl<'de> serde::Deserialize<'de> for JoseError {
                             if let Some(v) = v {
                                 if __oneof_error.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'error'",
                                         ),
                                     );
@@ -2406,7 +2414,7 @@ impl<'de> serde::Deserialize<'de> for JoseError {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
@@ -3340,18 +3348,21 @@ impl ::buffa::ExtensionSet for JoseOperationResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseOperationResponse {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseOperationResponse;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseOperationResponse")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseOperationResponse, A::Error> {
@@ -3366,11 +3377,11 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                         "contractVersion" | "contract_version" => {
                             __f_contract_version = Some({
                                 struct _S;
-                                impl<'de> serde::de::DeserializeSeed<'de> for _S {
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
                                     type Value = ::buffa::EnumValue<
                                         JoseOperationContractVersion,
                                     >;
-                                    fn deserialize<D: serde::Deserializer<'de>>(
+                                    fn deserialize<D: ::serde::Deserializer<'de>>(
                                         self,
                                         d: D,
                                     ) -> ::core::result::Result<
@@ -3395,7 +3406,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_response.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'response'",
                                         ),
                                     );
@@ -3419,7 +3430,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_response.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'response'",
                                         ),
                                     );
@@ -3443,7 +3454,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_response.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'response'",
                                         ),
                                     );
@@ -3469,7 +3480,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_response.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'response'",
                                         ),
                                     );
@@ -3495,7 +3506,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_response.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'response'",
                                         ),
                                     );
@@ -3519,7 +3530,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_response.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'response'",
                                         ),
                                     );
@@ -3543,7 +3554,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_response.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'response'",
                                         ),
                                     );
@@ -3567,7 +3578,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_response.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'response'",
                                         ),
                                     );
@@ -3591,7 +3602,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                             if let Some(v) = v {
                                 if __oneof_response.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'response'",
                                         ),
                                     );
@@ -3604,7 +3615,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationResponse {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
@@ -4067,18 +4078,21 @@ impl ::buffa::ExtensionSet for JoseOperationRequest {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseOperationRequest {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseOperationRequest {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseOperationRequest;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseOperationRequest")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseOperationRequest, A::Error> {
@@ -4099,7 +4113,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -4123,7 +4137,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -4149,7 +4163,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -4175,7 +4189,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -4199,7 +4213,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -4223,7 +4237,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -4247,7 +4261,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -4271,7 +4285,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationRequest {
                             if let Some(v) = v {
                                 if __oneof_operation.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'operation'",
                                         ),
                                     );
@@ -4284,7 +4298,7 @@ impl<'de> serde::Deserialize<'de> for JoseOperationRequest {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
@@ -8475,18 +8489,21 @@ impl ::buffa::ExtensionSet for JoseJwsSignResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseJwsSignResponse {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseJwsSignResponse {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseJwsSignResponse;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseJwsSignResponse")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseJwsSignResponse, A::Error> {
@@ -8507,7 +8524,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwsSignResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -8531,7 +8548,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwsSignResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -8544,7 +8561,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwsSignResponse {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
@@ -8762,18 +8779,21 @@ impl ::buffa::ExtensionSet for JoseJwsVerifyResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseJwsVerifyResponse {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseJwsVerifyResponse {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseJwsVerifyResponse;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseJwsVerifyResponse")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseJwsVerifyResponse, A::Error> {
@@ -8794,7 +8814,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwsVerifyResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -8818,7 +8838,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwsVerifyResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -8831,7 +8851,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwsVerifyResponse {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
@@ -9055,18 +9075,21 @@ impl ::buffa::ExtensionSet for JoseJwtEncodeUnsignedResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseJwtEncodeUnsignedResponse {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseJwtEncodeUnsignedResponse {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseJwtEncodeUnsignedResponse;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseJwtEncodeUnsignedResponse")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseJwtEncodeUnsignedResponse, A::Error> {
@@ -9087,7 +9110,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtEncodeUnsignedResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -9111,7 +9134,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtEncodeUnsignedResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -9124,7 +9147,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtEncodeUnsignedResponse {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
@@ -9348,18 +9371,21 @@ impl ::buffa::ExtensionSet for JoseJwtDecodeUnsignedResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseJwtDecodeUnsignedResponse {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseJwtDecodeUnsignedResponse {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseJwtDecodeUnsignedResponse;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseJwtDecodeUnsignedResponse")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseJwtDecodeUnsignedResponse, A::Error> {
@@ -9380,7 +9406,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtDecodeUnsignedResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -9404,7 +9430,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtDecodeUnsignedResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -9417,7 +9443,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtDecodeUnsignedResponse {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
@@ -9633,18 +9659,21 @@ impl ::buffa::ExtensionSet for JoseJwtSignResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseJwtSignResponse {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseJwtSignResponse {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseJwtSignResponse;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseJwtSignResponse")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseJwtSignResponse, A::Error> {
@@ -9665,7 +9694,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtSignResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -9689,7 +9718,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtSignResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -9702,7 +9731,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtSignResponse {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
@@ -9920,18 +9949,21 @@ impl ::buffa::ExtensionSet for JoseJwtVerifyResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseJwtVerifyResponse {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseJwtVerifyResponse {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseJwtVerifyResponse;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseJwtVerifyResponse")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseJwtVerifyResponse, A::Error> {
@@ -9952,7 +9984,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtVerifyResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -9976,7 +10008,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtVerifyResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -9989,7 +10021,7 @@ impl<'de> serde::Deserialize<'de> for JoseJwtVerifyResponse {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
@@ -10207,18 +10239,21 @@ impl ::buffa::ExtensionSet for JoseJweEncryptResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseJweEncryptResponse {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseJweEncryptResponse {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseJweEncryptResponse;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseJweEncryptResponse")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseJweEncryptResponse, A::Error> {
@@ -10239,7 +10274,7 @@ impl<'de> serde::Deserialize<'de> for JoseJweEncryptResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -10263,7 +10298,7 @@ impl<'de> serde::Deserialize<'de> for JoseJweEncryptResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -10276,7 +10311,7 @@ impl<'de> serde::Deserialize<'de> for JoseJweEncryptResponse {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
@@ -10494,18 +10529,21 @@ impl ::buffa::ExtensionSet for JoseJweDecryptResponse {
         &mut self.__buffa_unknown_fields
     }
 }
-impl<'de> serde::Deserialize<'de> for JoseJweDecryptResponse {
-    fn deserialize<D: serde::Deserializer<'de>>(
+impl<'de> ::serde::Deserialize<'de> for JoseJweDecryptResponse {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
         d: D,
     ) -> ::core::result::Result<Self, D::Error> {
         struct _V;
-        impl<'de> serde::de::Visitor<'de> for _V {
+        impl<'de> ::serde::de::Visitor<'de> for _V {
             type Value = JoseJweDecryptResponse;
-            fn expecting(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
                 f.write_str("struct JoseJweDecryptResponse")
             }
             #[allow(clippy::field_reassign_with_default)]
-            fn visit_map<A: serde::de::MapAccess<'de>>(
+            fn visit_map<A: ::serde::de::MapAccess<'de>>(
                 self,
                 mut map: A,
             ) -> ::core::result::Result<JoseJweDecryptResponse, A::Error> {
@@ -10526,7 +10564,7 @@ impl<'de> serde::Deserialize<'de> for JoseJweDecryptResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -10550,7 +10588,7 @@ impl<'de> serde::Deserialize<'de> for JoseJweDecryptResponse {
                             if let Some(v) = v {
                                 if __oneof_outcome.is_some() {
                                     return Err(
-                                        serde::de::Error::custom(
+                                        ::serde::de::Error::custom(
                                             "multiple oneof fields set for 'outcome'",
                                         ),
                                     );
@@ -10563,7 +10601,7 @@ impl<'de> serde::Deserialize<'de> for JoseJweDecryptResponse {
                             }
                         }
                         _ => {
-                            return Err(serde::de::Error::custom("unknown field"));
+                            return Err(::serde::de::Error::custom("unknown field"));
                         }
                     }
                 }
