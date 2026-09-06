@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
 
 package me.really.jose
 
@@ -264,6 +263,9 @@ public object ReallyMeJose {
     public fun executeWireJsonRequest(request: ByteArray): ByteArray = executeOwned(request, true)
 
     private fun execute(request: JoseOperationRequest): JoseOperationResponse {
+        if (request.serializedSize > ReallyMeJoseRustNativeProvider.binaryRequestLimit()) {
+            throw resourceLimit()
+        }
         val requestBytes = request.toByteArray()
         val responseBytes = try {
             ReallyMeJoseRustNativeProvider.requireLoaded()
@@ -292,15 +294,14 @@ public object ReallyMeJose {
     }
 
     private fun executeOwned(request: ByteArray, json: Boolean): ByteArray {
+        val limit = if (json) {
+            ReallyMeJoseRustNativeProvider.jsonRequestLimit()
+        } else {
+            ReallyMeJoseRustNativeProvider.binaryRequestLimit()
+        }
+        if (request.size > limit) throw resourceLimit()
         val owned = request.copyOf()
         try {
-            ReallyMeJoseRustNativeProvider.requireLoaded()
-            val limit = if (json) {
-                ReallyMeJoseRustNativeProvider.jsonRequestLimit()
-            } else {
-                ReallyMeJoseRustNativeProvider.binaryRequestLimit()
-            }
-            if (owned.size > limit) throw resourceLimit()
             return if (json) {
                 ReallyMeJoseNative.executeOperationJsonNative(owned)
             } else {
@@ -326,8 +327,15 @@ public object ReallyMeJose {
 }
 
 private inline fun <T> withOwned(vararg values: ByteArray, action: (List<ByteArray>) -> T): T {
-    val owned = values.map { it.copyOf() }
+    val maximum = ReallyMeJoseRustNativeProvider.binaryRequestLimit()
+    var remaining = maximum
+    for (value in values) {
+        if (value.size > remaining) throw resourceLimit()
+        remaining -= value.size
+    }
+    val owned = ArrayList<ByteArray>(values.size)
     return try {
+        for (value in values) owned.add(value.copyOf())
         action(owned)
     } finally {
         owned.forEach { it.fill(0) }
@@ -337,12 +345,33 @@ private inline fun <T> withOwned(vararg values: ByteArray, action: (List<ByteArr
 private fun wrap(value: ByteArray): ByteString = UnsafeByteOperations.unsafeWrap(value)
 
 private fun utf8Length(value: String): Int {
-    val bytes = value.toByteArray(Charsets.UTF_8)
-    return try {
-        bytes.size
-    } finally {
-        bytes.fill(0)
+    // Encoding to a temporary array both copies metadata and silently replaces
+    // unpaired surrogates. Count valid code points before protobuf sees them.
+    var length = 0
+    var index = 0
+    while (index < value.length) {
+        val codeUnit = value[index]
+        val width = when {
+            codeUnit <= '\u007f' -> 1
+            codeUnit <= '\u07ff' -> 2
+            Character.isHighSurrogate(codeUnit) -> {
+                index = Math.addExact(index, 1)
+                if (index >= value.length || !Character.isLowSurrogate(value[index])) {
+                    throw ReallyMeJoseException.InvalidInput()
+                }
+                4
+            }
+            Character.isLowSurrogate(codeUnit) -> throw ReallyMeJoseException.InvalidInput()
+            else -> 3
+        }
+        length = try {
+            Math.addExact(length, width)
+        } catch (_: ArithmeticException) {
+            throw resourceLimit()
+        }
+        index = Math.addExact(index, 1)
     }
+    return length
 }
 
 private fun compact(result: JoseCompactResult): String {
@@ -373,6 +402,12 @@ private fun sdkError(error: JoseError): ReallyMeJoseException.JoseFailure {
         else -> malformed()
     }
     val reason = ReallyMeJoseErrorReason.fromCode(reasonCode) ?: malformed()
+    val validBranch = when (branch) {
+        ReallyMeJoseErrorBranch.PRIMITIVE -> reasonCode in 100..399 || reasonCode in 700..703
+        ReallyMeJoseErrorBranch.PROVIDER -> reasonCode in 800..802
+        ReallyMeJoseErrorBranch.BACKEND -> reasonCode in 900..902
+    }
+    if (!validBranch) malformed()
     return ReallyMeJoseException.JoseFailure(branch, reason)
 }
 
@@ -428,15 +463,34 @@ private fun protoContentEncryptionAlgorithm(
     ReallyMeJoseJweContentEncryptionAlgorithm.A256_GCM -> JoseJweContentEncryptionAlgorithm.JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM
 }
 
-private fun protoJwtHeaderPolicy(value: ReallyMeJoseJwtHeaderPolicy): JoseJwtHeaderValidationPolicy =
-    JoseJwtHeaderValidationPolicy.newBuilder()
+private fun protoJwtHeaderPolicy(value: ReallyMeJoseJwtHeaderPolicy): JoseJwtHeaderValidationPolicy {
+    for (type in value.acceptedTypeValues) utf8Length(type)
+    return JoseJwtHeaderValidationPolicy.newBuilder()
         .setAllowMissingTyp(value.allowMissingType)
         .setAllowEmbeddedKeyHeader(value.allowEmbeddedKeyHeader)
         .addAllAcceptedTypValues(value.acceptedTypeValues)
         .build()
+}
 
-private fun protoJwtTemporalPolicy(value: ReallyMeJoseJwtTemporalPolicy): JoseJwtTemporalValidationPolicy =
-    JoseJwtTemporalValidationPolicy.newBuilder()
+private fun protoJwtTemporalPolicy(value: ReallyMeJoseJwtTemporalPolicy): JoseJwtTemporalValidationPolicy {
+    // Protobuf uint64 setters accept signed Long bit patterns. Reject negative
+    // times before serialization can reinterpret them as far-future dates.
+    if (value.nowUnix <= 0) {
+        throw ReallyMeJoseException.JoseFailure(
+            ReallyMeJoseErrorBranch.PRIMITIVE,
+            ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_TIME,
+        )
+    }
+    if (value.clockSkewSeconds < 0 || value.maximumFutureIssuedAtSkewSeconds < 0) {
+        throw ReallyMeJoseException.JoseFailure(
+            ReallyMeJoseErrorBranch.PRIMITIVE,
+            ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_POLICY,
+        )
+    }
+    utf8Length(value.expectedAudience)
+    value.expectedIssuer?.let { utf8Length(it) }
+    value.expectedSubject?.let { utf8Length(it) }
+    return JoseJwtTemporalValidationPolicy.newBuilder()
         .setRequireExp(value.requireExpiration)
         .setRequireNbf(value.requireNotBefore)
         .setRequireIat(value.requireIssuedAt)
@@ -447,11 +501,15 @@ private fun protoJwtTemporalPolicy(value: ReallyMeJoseJwtTemporalPolicy): JoseJw
         .setExpectedIssuer(value.expectedIssuer ?: "")
         .setExpectedSubject(value.expectedSubject ?: "")
         .build()
+}
 
 private fun protoJweHeaderPolicy(
     value: ReallyMeJoseJweHeaderPolicy,
     owned: MutableList<ByteArray>,
 ): JoseJweHeaderValidationPolicy {
+    value.expectedKeyIdentifier?.let { utf8Length(it) }
+    value.expectedType?.let { utf8Length(it) }
+    value.expectedContentType?.let { utf8Length(it) }
     val builder = JoseJweHeaderValidationPolicy.newBuilder().setRequireKid(value.requireKeyIdentifier)
     if (value.expectedKeyIdentifier != null) {
         builder.setExpectedKid(JoseExpectedString.newBuilder().setValue(value.expectedKeyIdentifier).build())

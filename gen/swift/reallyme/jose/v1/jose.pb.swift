@@ -9,8 +9,6 @@
 //   https://github.com/apple/swift-protobuf/
 
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-//
-// SPDX-License-Identifier: Apache-2.0
 
 #if canImport(FoundationEssentials)
 import FoundationEssentials

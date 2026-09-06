@@ -1,9 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 # reallyme-jose
 
 `reallyme-jose` provides compact JOSE, JWT, JWS, and JWE helpers for ReallyMe
@@ -28,7 +22,7 @@ protobuf code by default.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.2.0"
+reallyme-jose = "0.3.3"
 ```
 
 ## Security Model
@@ -47,8 +41,10 @@ reallyme-jose = "0.2.0"
 - Unsigned JWT parsing and verified claims JSON also reject duplicate object
   members so mixed deployments cannot disagree on first-wins versus last-wins
   claim interpretation.
-- `crit`, `zip`, `jku`, embedded `jwk`, `x5u`, and `x5c` protected-header
-  parameters are not supported and fail closed.
+- `b64`, `crit`, `zip`, `jku`, and `x5u` protected-header parameters fail closed.
+  Embedded `jwk` and `x5c` headers are rejected by default. An explicit signed-JWT
+  header policy can allow their presence, but their contents are ignored; the
+  supplied JWK and public key remain authoritative. JWS and JWE reject them.
 - ES256 verification accepts otherwise valid high-S signatures as RFC 7515
   permits; applications should not use compact-token byte equality as an
   issuer-independent uniqueness guarantee. Face ID and Secure Enclave protected
@@ -102,8 +98,8 @@ response selects the same operation and then exactly one generated `result` or
 `error` outcome. Failures before a trusted request operation exists use
 `boundary_error`; later failures remain under the selected operation.
 
-Pre-0.3 opaque response helpers have been removed. The versioned entrypoints
-above are the only executable wire contract, preventing adapters from inferring
+The versioned entrypoints above are the only executable wire contract,
+preventing adapters from inferring
 an operation or error branch from untyped payload bytes.
 
 The `wire` module deliberately exposes `reallyme-jose-proto` generated message
@@ -145,7 +141,8 @@ transport concerns and delegate operation execution to the canonical wire lane.
 
 ## License
 
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) and
+Licensed under either the MIT License or the Apache License, Version 2.0, at your
+option. See [LICENSE](LICENSE) and
 [NOTICE](NOTICE).
 
 ## Copyright And Trademarks

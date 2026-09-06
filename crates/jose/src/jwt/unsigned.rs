@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use std::collections::BTreeSet;
 use std::fmt::Formatter;
@@ -16,6 +16,7 @@ use super::{
     strict_json::reject_duplicate_object_members,
     JwtError,
 };
+use crate::measure_encoding::base64url_len;
 use crate::Zeroizing;
 
 /// Standard unsigned JWT header.
@@ -109,6 +110,9 @@ pub fn encode_unsigned_jwt<Claims: Serialize>(claims: &Claims) -> Result<String,
 }
 
 pub(crate) fn encode_unsigned_jwt_claims_json_core(claims_json: &[u8]) -> Result<String, JwtError> {
+    if claims_json.len() > MAX_COMPACT_JWT_BYTES {
+        return Err(JwtError::InputTooLarge);
+    }
     reject_duplicate_object_members(claims_json)?;
     let mut deserializer = serde_json::Deserializer::from_slice(claims_json);
     let _ = IgnoredAny::deserialize(&mut deserializer).map_err(|_| JwtError::InvalidClaims)?;
@@ -118,17 +122,15 @@ pub(crate) fn encode_unsigned_jwt_claims_json_core(claims_json: &[u8]) -> Result
     let header_json =
         Zeroizing::new(serde_json::to_vec(&header).map_err(|_| JwtError::Serialization)?);
 
-    let header_b64 = bytes_to_base64url(&header_json);
-    let payload_b64 = bytes_to_base64url(claims_json);
-    let len = header_b64
-        .len()
-        .checked_add(1)
-        .and_then(|with_separator| with_separator.checked_add(payload_b64.len()))
-        .and_then(|with_payload| with_payload.checked_add(1))
+    let len = base64url_len(header_json.len())
+        .and_then(|length| length.checked_add(base64url_len(claims_json.len())?))
+        .and_then(|length| length.checked_add(2))
         .ok_or(JwtError::LengthOverflow)?;
     if len > MAX_COMPACT_JWT_BYTES {
         return Err(JwtError::InputTooLarge);
     }
+    let header_b64 = bytes_to_base64url(&header_json);
+    let payload_b64 = Zeroizing::new(bytes_to_base64url(claims_json));
 
     let mut jwt = String::with_capacity(len);
     jwt.push_str(&header_b64);

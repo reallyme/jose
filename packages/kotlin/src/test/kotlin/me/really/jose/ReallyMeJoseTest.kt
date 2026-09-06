@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
 
 package me.really.jose
 
@@ -82,6 +81,155 @@ class ReallyMeJoseTest {
             ),
         )
         assertContentEquals(plaintext, decrypted)
+    }
+
+    @Test
+    fun signedLongTimesCannotBecomeUnsignedFarFutureTimes() {
+        val jwk =
+            """{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","x":"_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg"}"""
+                .toByteArray()
+        val privateKey = decodeHex(PRIVATE_KEY_HEX)
+        val publicKey = decodeHex(PUBLIC_KEY_HEX)
+        val claims = """{"aud":"test","nbf":1000}""".toByteArray()
+        try {
+            val token = ReallyMeJose.signJwt(claims, jwk, privateKey)
+            for (now in listOf(-1L, Long.MIN_VALUE, 0L)) {
+                val failure = assertFailsWith<ReallyMeJoseException.JoseFailure> {
+                    ReallyMeJose.verifyJwt(
+                        token, jwk, publicKey,
+                        temporalPolicy = ReallyMeJoseJwtTemporalPolicy(
+                            false, false, false, 0, 0, now, "test",
+                        ),
+                    )
+                }
+                assertEquals(ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_TIME, failure.reason)
+            }
+            for ((clockSkew, issuedAtSkew) in listOf(-1L to 0L, 0L to -1L)) {
+                val failure = assertFailsWith<ReallyMeJoseException.JoseFailure> {
+                    ReallyMeJose.verifyJwt(
+                        token, jwk, publicKey,
+                        temporalPolicy = ReallyMeJoseJwtTemporalPolicy(
+                            false, false, false, clockSkew, issuedAtSkew, 1000, "test",
+                        ),
+                    )
+                }
+                assertEquals(ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_POLICY, failure.reason)
+            }
+            val future = ReallyMeJose.verifyJwt(
+                token, jwk, publicKey,
+                temporalPolicy = ReallyMeJoseJwtTemporalPolicy(
+                    false, false, false, 0, 0, 1000, "test",
+                ),
+            )
+            assertContentEquals(claims, future)
+            future.fill(0)
+        } finally {
+            privateKey.fill(0)
+            claims.fill(0)
+            jwk.fill(0)
+        }
+    }
+
+    @Test
+    fun malformedUtf16CannotBeReplacedInProtectedMetadata() {
+        val key = ByteArray(16) { 8 }
+        try {
+            for (metadata in listOf("\ud800", "\udc00", "a\ud800z")) {
+                assertFailsWith<ReallyMeJoseException.InvalidInput> {
+                    ReallyMeJose.encryptJwe(
+                        ReallyMeJoseJweKeyManagementAlgorithm.DIRECT,
+                        ReallyMeJoseJweContentEncryptionAlgorithm.A128_GCM,
+                        key, ByteArray(0), keyIdentifier = metadata,
+                    )
+                }
+            }
+            // An ill-formed expected identifier must not match a real "?"
+            // identifier after the protobuf encoder replaces its surrogate.
+            val replacementToken = ReallyMeJose.encryptJwe(
+                ReallyMeJoseJweKeyManagementAlgorithm.DIRECT,
+                ReallyMeJoseJweContentEncryptionAlgorithm.A128_GCM,
+                key, ByteArray(0), keyIdentifier = "?",
+            )
+            assertFailsWith<ReallyMeJoseException.InvalidInput> {
+                ReallyMeJose.decryptJwe(
+                    replacementToken, ReallyMeJoseJweKeyManagementAlgorithm.DIRECT,
+                    ReallyMeJoseJweContentEncryptionAlgorithm.A128_GCM,
+                    key, ReallyMeJoseJweHeaderPolicy(expectedKeyIdentifier = "\ud800"),
+                )
+            }
+            val valid = "\ud83d\udd10"
+            val token = ReallyMeJose.encryptJwe(
+                ReallyMeJoseJweKeyManagementAlgorithm.DIRECT,
+                ReallyMeJoseJweContentEncryptionAlgorithm.A128_GCM,
+                key, ByteArray(0), keyIdentifier = valid,
+            )
+            assertContentEquals(ByteArray(0), ReallyMeJose.decryptJwe(
+                token, ReallyMeJoseJweKeyManagementAlgorithm.DIRECT,
+                ReallyMeJoseJweContentEncryptionAlgorithm.A128_GCM,
+                key, ReallyMeJoseJweHeaderPolicy(expectedKeyIdentifier = valid),
+            ))
+        } finally {
+            key.fill(0)
+        }
+    }
+
+    @Test
+    fun everyKnownErrorReasonMustMatchItsBranch() {
+        // Exercise the private decoder directly without widening the production
+        // API or substituting a process-global JNI provider.
+        val decode = Class.forName("me.really.jose.ReallyMeJoseKt")
+            .getDeclaredMethod("sdkError", me.really.jose.v1.JoseError::class.java)
+        decode.isAccessible = true
+        for (reason in ReallyMeJoseErrorReason.entries) {
+            val expected = when (reason.code) {
+                in 800..802 -> ReallyMeJoseErrorBranch.PROVIDER
+                in 900..902 -> ReallyMeJoseErrorBranch.BACKEND
+                else -> ReallyMeJoseErrorBranch.PRIMITIVE
+            }
+            for (branch in ReallyMeJoseErrorBranch.entries) {
+                val error = me.really.jose.v1.JoseError.newBuilder()
+                when (branch) {
+                    ReallyMeJoseErrorBranch.PRIMITIVE -> error.setPrimitive(
+                        me.really.jose.v1.JosePrimitiveError.newBuilder().setReasonValue(reason.code),
+                    )
+                    ReallyMeJoseErrorBranch.PROVIDER -> error.setProvider(
+                        me.really.jose.v1.JoseProviderError.newBuilder().setReasonValue(reason.code),
+                    )
+                    ReallyMeJoseErrorBranch.BACKEND -> error.setBackend(
+                        me.really.jose.v1.JoseBackendError.newBuilder().setReasonValue(reason.code),
+                    )
+                }
+                if (branch == expected) {
+                    val actual = kotlin.test.assertIs<ReallyMeJoseException.JoseFailure>(
+                        decode.invoke(null, error.build()),
+                    )
+                    assertEquals(branch, actual.branch)
+                    assertEquals(reason, actual.reason)
+                } else {
+                    val failure = assertFailsWith<java.lang.reflect.InvocationTargetException> {
+                        decode.invoke(null, error.build())
+                    }
+                    kotlin.test.assertIs<ReallyMeJoseException.MalformedProviderResponse>(failure.cause)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun utf8LengthMatchesJdkForEveryUnicodeScalar() {
+        val measure = Class.forName("me.really.jose.ReallyMeJoseKt")
+            .getDeclaredMethod("utf8Length", String::class.java)
+        measure.isAccessible = true
+        // Group scalars to test transitions between UTF-8 widths and surrogate
+        // pairs without a million reflective calls.
+        for (start in 0..0x10ffff step 1024) {
+            val value = buildString {
+                for (scalar in start..minOf(start + 1023, 0x10ffff)) {
+                    if (scalar !in 0xd800..0xdfff) appendCodePoint(scalar)
+                }
+            }
+            assertEquals(value.toByteArray(Charsets.UTF_8).size, measure.invoke(null, value))
+        }
     }
 
     @Test

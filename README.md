@@ -1,9 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 # reallyme-jose
 
 [![Rust CI](https://github.com/reallyme/jose/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/reallyme/jose/actions/workflows/rust-ci.yml)
@@ -11,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 [![Maven Central](https://img.shields.io/maven-central/v/me.really/jose?label=maven)](https://central.sonatype.com/artifact/me.really/jose)
 [![npm](https://img.shields.io/npm/v/@reallyme/jose?label=npm&color=2563eb)](https://www.npmjs.com/package/@reallyme/jose)
 [![Security Policy](https://img.shields.io/badge/security-policy-0f766e)](SECURITY.md)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE)
 
 `reallyme-jose` is a focused JOSE layer for identity systems that need compact
 JWS, JWT, and JWE handling without broad algorithm negotiation. It builds on
@@ -57,7 +51,7 @@ package zeroizes its owned copies of keys, plaintext, claims, and wire buffers.
 
 Swift, Kotlin/JVM, the minified Android consumer, and TypeScript/WASM execute
 the same 96 checked-in JWS, JWT, JWE, and panva conformance cases as Rust. Their
-wire escape hatches additionally prove byte-identical binary
+wire APIs additionally test byte-identical binary
 protobuf/ProtoJSON responses and exact typed negative mappings.
 
 The TypeScript/WASM lane implements 94 of those cases. The P-384 and P-521
@@ -77,9 +71,12 @@ exact current commit and package version, downloads and verifies all producer
 native digests, builds the Android libraries, tests both packages, and writes
 the repository-layout archive beneath `build/maven-central-upload/out`:
 
+Provide `MAVEN_SIGNING_PASSWORD` through a secret manager or a concealed shell
+prompt before running these commands.
+
 ```sh
 export MAVEN_SIGNING_KEY_ID='<long GPG key ID or fingerprint>'
-export MAVEN_SIGNING_PASSWORD='<GPG private-key passphrase>'
+export MAVEN_SIGNING_PASSWORD
 export KOTLIN_NATIVE_RESOURCES_DIR="$PWD/build/kotlin-native-resources"
 export ANDROID_NDK_HOME="${ANDROID_HOME}/ndk/29.0.14206865"
 scripts/maven-central-bundle.local.sh
@@ -102,7 +99,7 @@ node scripts/run_pinned_release_readiness.mjs
 
 Release readiness requires the declared crates.io versions and rejects path or
 Git overrides. Local sibling dependency substitutions must be removed before
-running the release contract so the audited graph is exactly the graph that
+running the release contract so the checked graph matches the dependencies that
 consumers receive.
 
 The protobuf boundary exists so FFI, WASM, Swift, Kotlin, TypeScript, and
@@ -115,11 +112,11 @@ service-discovery model. Those concerns belong to the embedding application.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.3.2"
+reallyme-jose = "0.3.3"
 ```
 
 ```sh
-npm install @reallyme/jose@0.3.2
+npm install @reallyme/jose@0.3.3
 ```
 
 ## Supported JOSE Surface
@@ -127,7 +124,8 @@ npm install @reallyme/jose@0.3.2
 `reallyme-jose` supports a deliberately small JOSE profile:
 
 - compact JWS for `ES256` and `EdDSA`;
-- signed and unsigned JWT parsing with algorithm/key binding, temporal policy, and `typ` policy;
+- unsigned JWT parsing, plus signed JWT verification with algorithm/key binding,
+  temporal policy, and `typ` policy;
 - JWT signing and verification for `ES256`, `ES256K`, and `EdDSA`; `ES256K`
   is JWT-only and uses the low-S secp256k1 policy enforced by
   `reallyme-crypto`;
@@ -138,8 +136,8 @@ npm install @reallyme/jose@0.3.2
 The profile follows RFC 7515, RFC 7516, RFC 7518, RFC 7519, RFC 8725, and
 RFC 9864. Algorithm identifiers map explicitly to ReallyMe crypto primitives;
 caller-supplied JOSE headers never select arbitrary algorithms or keys. `EdDSA`
-is accepted only with an Ed25519 JWK binding until the product adopts a fully
-specified JOSE identifier from RFC 9864.
+identifies Ed25519 only; signed JWT verification checks the JWK algorithm and
+curve binding.
 
 Unsigned JWT decoding is parsing only. It enforces the `alg = "none"` compact
 shape but does not authenticate the sender, so verifier-grade paths must use
@@ -164,7 +162,8 @@ enforces low-S and rejects otherwise valid high-S signatures.
 Signed JWT temporal validation accepts only positive, integral NumericDate
 seconds. Fractional, negative, and zero values fail closed even though RFC
 7519's NumericDate syntax is broader. Expiration remains exclusive after clock
-skew is applied: a token is expired when `now - skew >= exp`.
+skew is applied: a token is expired when `now - skew >= exp`. Verification
+time must be positive, and clock/issued-at skew may not exceed 300 seconds.
 
 Direct-key JWE encryption generates a fresh 96-bit IV for every message, but a
 stateless encryptor cannot count all uses of a caller-owned CEK. Applications
@@ -195,8 +194,12 @@ The following JOSE features are not part of this profile and fail closed:
 - RSA JWS and RSA JWE algorithms;
 - AES Key Wrap and PBES2 key management;
 - JWE JSON serialization;
-- `b64`, `crit`, `zip`, `jku`, embedded `jwk`, `x5u`, and `x5c`
-  protected-header parameters.
+- `b64`, `crit`, `zip`, `jku`, and `x5u` protected-header parameters.
+
+Embedded `jwk` and `x5c` headers are rejected by default. An explicit signed-JWT
+header policy can tolerate their presence, but ignores their contents: key
+selection and verification still use the caller-supplied JWK and public key.
+JWS and JWE do not provide this exception.
 
 ## Wire Boundary
 
@@ -216,8 +219,8 @@ operation, so callers never infer result meaning from opaque bytes. The
 the same binary `JoseOperationResponse` as `execute_operation_v1`.
 
 The canonical versioned entrypoints are the only executable wire surface.
-Pre-0.3 opaque response compatibility APIs have been removed; FFI, JNI, Swift,
-Kotlin, and Android adapters all consume the same generated V1 response.
+FFI, JNI, Swift, Kotlin, Android, and TypeScript/WASM adapters consume the same
+generated V1 response.
 
 Wire errors preserve both the branch (`primitive`, `provider`, or `backend`) and
 the exact `JoseErrorReason`. Malformed protobuf, malformed JSON, unsupported
@@ -243,7 +246,11 @@ Owned wire output buffers use `Zeroizing<Vec<u8>>`. Responses can carry claims
 JSON or decrypted plaintext, so adapters must treat returned bytes as sensitive
 until they are handed to the next owner or destroyed.
 
-The JSON adapter has a representation-specific text limit and, after decoding,
+Compact JOSE tokens are limited to 1 MiB. Binary operation requests, including
+protobuf overhead, are also limited to 1 MiB, so usable payload space depends
+on headers, keys, and encoding expansion.
+
+The JSON adapter has a 1.5 MiB text limit and, after decoding,
 also rejects any message whose protobuf encoding would exceed the binary message
 limit. This prevents JSON expansion from bypassing the binary resource budget;
 the binary lane avoids JSON escaping and base64 expansion for large byte fields.
@@ -254,6 +261,8 @@ The canonical schema is shipped by `reallyme-jose-proto` under
 
 ```sh
 buf generate
+node scripts/harden-generated-jose-proto.mjs
+node scripts/harden-generated-jose-jvm.mjs
 cargo fmt --package reallyme-jose-proto
 ```
 
@@ -285,8 +294,10 @@ boundaries plus the protobuf/JSON process boundary.
 Committed conformance vectors are checked by `tools/vector-audit`, a standalone
 Rust binary that does not depend on `reallyme-jose`, `reallyme-crypto`, or
 `reallyme-codec`. It validates the vector manifest, compact JOSE structure,
-JWS/JWT signatures, unsigned JWT claims, and direct JWE AES-GCM fixtures with
-independent crates.
+JWS/JWT signatures, unsigned JWT claims, and JWE AES-GCM fixtures with
+independent crates. For ECDH-ES fixtures it checks decryption using the recorded
+derived CEK; it does not independently recompute ECDH or Concat-KDF. The panva
+fixtures provide a separate implementation anchor for that agreement path.
 
 The `panva-jose` vectors add a small native and WASM interop anchor for ES256,
 EdDSA, ES256 JWT, and ECDH-ES P-256/A128GCM. They are not intended to replace
@@ -303,8 +314,10 @@ the broader local negative and round-trip corpus.
 
 ## License
 
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) and
-[NOTICE](NOTICE).
+Licensed under either the MIT License or the Apache License, Version 2.0, at your
+option. See [LICENSE](LICENSE) and
+[NOTICE](NOTICE). Vendored components, including the pinned
+release-readiness core, retain their original license notices.
 
 ## Copyright And Trademarks
 

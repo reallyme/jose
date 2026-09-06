@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { createReleaseReadinessContext } from "./release-readiness/core.mjs";
 import { assertOperationContractArchitecture } from "./operation-contract-readiness.mjs";
@@ -35,14 +35,14 @@ assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
 assertOperationContractArchitecture({ readText, listFiles, fail });
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 
-const crateVersion = "0.3.2";
-const protoCrateVersion = "0.3.2";
-const buffaVersion = "0.9.1";
-const cryptoVersion = "0.3.6";
-const codecVersion = "0.2.2";
-const npmPackageVersion = "0.3.2";
+const crateVersion = "0.3.3";
+const protoCrateVersion = "0.3.3";
+const buffaVersion = "0.9.2";
+const cryptoVersion = "0.3.7";
+const codecVersion = "0.2.3";
+const npmPackageVersion = "0.3.3";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
-const releaseReadinessCommit = "8abe3caf02676c6852edf6aab36e01552872105b";
+const releaseReadinessCommit = "304bc55cdca3c53bf66218982d51188f341806ed";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -54,12 +54,30 @@ const policyOnlyMode = process.argv.includes("--policy-only");
 const releasePackagesMode = process.argv.includes("--release-packages");
 
 if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
-  fail("RELEASE_VERSION must match every 0.3.2 release package");
+  fail("RELEASE_VERSION must match every 0.3.3 release package");
 }
 
 assertNodeWorkflowJobsPinNode({ nodeVersion: "24" });
 
 const rootCargo = readText("Cargo.toml");
+const projectLicense = "MIT OR Apache-2.0";
+assertContains("Cargo.toml", `license = "${projectLicense}"`);
+for (const manifest of ["packages/ts/package.json", "tools/panva-goldens/package.json"]) {
+  if (readJson(manifest).license !== projectLicense) fail(`${manifest} has stale project licensing`);
+}
+const projectLicenseText = readText("LICENSE");
+assertNotContains("LICENSE", "SPDX-License-Identifier:");
+assertContains("LICENSE", "Permission is hereby granted, free of charge");
+assertContains("LICENSE", "TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION");
+for (const copy of ["crates/jose/LICENSE", "crates/proto/LICENSE", "crates/wasm/LICENSE", "packages/ts/LICENSE"]) {
+  if (readText(copy) !== projectLicenseText) fail(`${copy} differs from the project license`);
+}
+for (const build of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android/build.gradle.kts"]) {
+  assertContains(build, 'name.set("MIT License")');
+  assertContains(build, 'name.set("Apache License, Version 2.0")');
+  assertContains(build, "Licensed under MIT OR Apache-2.0, at your option.");
+}
+
 assertContains("Cargo.toml", 'members = ["crates/jose", "crates/ffi", "crates/proto", "crates/wasm"]');
 assertContains("Cargo.toml", 'exclude = ["fuzz"]');
 assertContains("Cargo.toml", "overflow-checks = true");
@@ -100,7 +118,7 @@ assertNotContains("Cargo.toml", 'time = "');
 
 const ffiCargo = readText("crates/ffi/Cargo.toml");
 assertContains("crates/ffi/Cargo.toml", 'name = "reallyme-jose-ffi"');
-assertContains("crates/ffi/Cargo.toml", 'version = "0.3.2"');
+assertContains("crates/ffi/Cargo.toml", 'version = "0.3.3"');
 assertContains("crates/ffi/Cargo.toml", "publish = false");
 assertContains("crates/ffi/Cargo.toml", 'crate-type = ["rlib", "staticlib", "cdylib"]');
 assertContains("crates/ffi/Cargo.toml", 'default = ["native"]');
@@ -111,7 +129,7 @@ assertContains(
 assertContains("crates/ffi/Cargo.toml", 'features = ["csprng"]');
 assertContains(
   "crates/ffi/Cargo.toml",
-  'reallyme-jose = { version = "0.3.2", path = "../jose", default-features = false, features = ["wire"] }',
+  'reallyme-jose = { version = "0.3.3", path = "../jose", default-features = false, features = ["wire"] }',
 );
 assertContains("crates/ffi/Cargo.toml", "workspace = true");
 assertNotContains("crates/ffi/Cargo.toml", "publish = true");
@@ -184,7 +202,7 @@ assertContains("crates/proto/Cargo.toml", '"/tests/**/*.rs"');
 assertContains("crates/proto/Cargo.toml", '"/proto/**/*.proto"');
 assertContains(
   "crates/proto/README.md",
-  'reallyme-jose-proto = { version = "0.3.2", features = ["generated"] }',
+  'reallyme-jose-proto = { version = "0.3.3", features = ["generated"] }',
 );
 assertContains("crates/proto/README.md", "JoseOperationRequest");
 assertContains("crates/proto/README.md", "JoseOperationResponse");
@@ -223,7 +241,7 @@ if (npmPackage.publishConfig?.registry !== "https://registry.npmjs.org/") {
 }
 assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.14.1"');
 assertContains("packages/ts/package-lock.json", '"name": "@reallyme/jose"');
-assertContains("packages/ts/package-lock.json", '"version": "0.3.2"');
+assertContains("packages/ts/package-lock.json", '"version": "0.3.3"');
 assertContains("packages/ts/tsconfig.json", '"strict": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedLocals": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedParameters": true');
@@ -579,7 +597,7 @@ assertContains(
 );
 assertContains(
   "scripts/run_pinned_release_readiness.mjs",
-  '"ca71a25a0f8cce2eb72ac490086afc95acd0cbef01cc33fc25471ef29e88b8f4"',
+  '"0a33532aa595871c1beefb1ad1d3930f1a51675b236a73e8bf93ad5d7ccdbae4"',
 );
 assertContains("scripts/run_pinned_release_readiness.mjs", "LOCAL_CHECKER_SHA256");
 assertContains("scripts/run_pinned_release_readiness.mjs", "MAX_CHECKER_BYTES = 524_288");
@@ -932,7 +950,7 @@ assertContains(".github/workflows/rust-ci.yml", "cargo nextest run --release --l
 assertContains(".github/workflows/rust-ci.yml", "Format vector audit tool");
 assertContains(".github/workflows/rust-ci.yml", "Independent vector audit");
 assertContains(".github/workflows/rust-ci.yml", "--bin reallyme-jose-vector-audit -- .");
-assertContains(".github/workflows/rust-ci.yml", "cargo audit --deny warnings");
+assertContains(".github/workflows/rust-ci.yml", "scripts/audit_committed_lockfiles.sh");
 assertContains(
   ".github/workflows/rust-ci.yml",
   `${releaseReadinessCommand} --policy-only`,
@@ -962,7 +980,7 @@ assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "Test publishable crates in the release profile",
 );
-assertContains(".github/workflows/crates-package-preflight.yml", "cargo audit --deny warnings");
+assertContains(".github/workflows/crates-package-preflight.yml", "scripts/audit_committed_lockfiles.sh");
 assertContains(
   ".github/workflows/crates-package-preflight.yml",
   'cargo +"${EXTERNAL_TYPES_NIGHTLY}" check-external-types',
@@ -1078,7 +1096,7 @@ assertContains("Package.swift", '.iOS(.v16)');
 assertContains("Package.swift", 'name: "ReallyMeJOSE"');
 assertContains("Package.swift", 'exact: "1.38.1"');
 assertContains("Package.swift", 'path: "gen/swift"');
-assertContains("Package.swift", 'ffiArtifactVersion = "0.3.2"');
+assertContains("Package.swift", 'ffiArtifactVersion = "0.3.3"');
 assertContains("Package.swift", 'ffiArtifactLocalPathOverride = ""');
 assertNotContains("Package.swift", "0000000000000000000000000000000000000000000000000000000000000000");
 assertContains("Package.swift", "REALLYME_JOSE_SWIFTPM_RUNTIME_FFI");
@@ -1201,6 +1219,23 @@ assertContains(
   'Git tag v${RELEASE_VERSION} already targets a different commit',
 );
 assertContains(swiftReleaseWorkflow, "gh release create");
+assertContains(swiftReleaseWorkflow, "--notes-file -");
+assertContains(swiftReleaseWorkflow, "- update to buffa 0.9.2");
+assertContains(swiftReleaseWorkflow, "- update to reallyme/codec 0.2.3");
+assertContains(swiftReleaseWorkflow, "- update to reallyme/crypto 0.3.7");
+assertContains(swiftReleaseWorkflow, "- add dual licensing under MIT OR Apache-2.0");
+assertContains(
+  swiftReleaseWorkflow,
+  "- harden compact JWS, JWT, and JWE size checks before signing, key agreement, randomness, or encoding work",
+);
+assertContains(
+  swiftReleaseWorkflow,
+  "- tighten Swift, Kotlin, and TypeScript SDK validation for malformed provider responses",
+);
+assertContains(
+  swiftReleaseWorkflow,
+  "- strengthen release readiness checks for license metadata, committed lockfile audits, and generated code freshness",
+);
 assertContains(swiftReleaseWorkflow, 'git tag "v${RELEASE_VERSION}" "${tag_target}"');
 assertContains(swiftReleaseWorkflow, "--verify-tag");
 assertContains(swiftReleaseWorkflow, "node scripts/run_pinned_release_readiness.mjs");
@@ -1342,6 +1377,9 @@ assertContains("packages/kotlin/build.gradle.kts", "verifyRemoteMavenPublishingC
 assertNotContains("packages/kotlin/build.gradle.kts", "if (signingKeyValue != null)");
 assertContains("packages/kotlin/gradle.properties", "org.gradle.dependency.verification=strict");
 assertContains("packages/kotlin/gradle/wrapper/gradle-wrapper.properties", "distributionSha256Sum=");
+assertContains("packages/kotlin/gradle/wrapper/gradle-wrapper.properties", "networkTimeout=30000");
+assertContains("packages/kotlin/gradle/wrapper/gradle-wrapper.properties", "retries=3");
+assertContains("packages/kotlin/gradle/wrapper/gradle-wrapper.properties", "retryBackOffMs=1000");
 assertContains("packages/kotlin/gradle/verification-metadata.xml", "<sha256 value=");
 for (const method of [
   "signJws(",
@@ -1533,8 +1571,10 @@ for (const file of listFiles("crates/ffi/src").filter((path) => path.endsWith(".
 }
 
 const explicitlyTestOnlyRustFiles = new Set([
+  "crates/jose/src/measure_encoding_tests.rs",
   "crates/jose/src/operation_contract/jws/verify_tests.rs",
 ]);
+assertContains("crates/jose/src/lib.rs", "#[cfg(test)]\nmod measure_encoding_tests;");
 assertContains(
   "crates/jose/src/operation_contract/jws/mod.rs",
   "#[cfg(test)]\nmod verify_tests;",
@@ -1611,7 +1651,7 @@ const requiredWorkflows = [
   ".github/workflows/npm-package-release.yml",
 ];
 for (const workflow of requiredWorkflows) {
-  assertContains(workflow, "SPDX-License-Identifier: Apache-2.0");
+  assertNotContains(workflow, "SPDX-License-Identifier:");
 }
 
 const fuzzCargo = readText("fuzz/Cargo.toml");
@@ -1795,6 +1835,7 @@ if (!rootCargo.includes("[workspace.lints.clippy]")) {
 
 if (!policyOnlyMode) {
   run(process.execPath, ["--test", "scripts/tests/operation-contract-readiness.test.mjs"]);
+  run(process.execPath, ["--test", "scripts/tests/shell-tools.test.mjs"]);
   run("cargo", ["fmt", "--manifest-path", "tools/vector-audit/Cargo.toml", "--check"]);
   run("cargo", [
     "clippy",

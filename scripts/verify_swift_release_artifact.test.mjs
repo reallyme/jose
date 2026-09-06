@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
@@ -11,6 +11,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -32,7 +33,7 @@ const writeExecutable = (path, source) => {
   chmodSync(path, 0o700);
 };
 
-const writeFixture = (root, { bound = true, forgedSidecar = false, omitSymbol = false } = {}) => {
+const writeFixture = (root, { bound = true, forgedSidecar = false, omitSymbol = false, undefinedSymbol = false } = {}) => {
   const payload = join(root, "payload");
   const framework = join(payload, "ReallyMeJOSEFFI.xcframework");
   const slices = [
@@ -89,7 +90,9 @@ let ffiArtifactLocalPathOverride = ""
   const symbols = omitSymbol ? requiredSymbols.slice(1) : requiredSymbols;
   writeExecutable(
     join(llvmBin, "llvm-nm"),
-    `#!/bin/sh\nprintf '%s\\n' ${symbols.map((symbol) => `'_${symbol}'`).join(" ")}\n`,
+    `#!/bin/sh\nprintf '%s\\n' ${symbols.map((symbol, index) =>
+      `'00000000 ${undefinedSymbol && index === 0 ? "U" : "T"} _${symbol}'`
+    ).join(" ")}\n`,
   );
   return {
     archive,
@@ -137,6 +140,22 @@ test("rejects an archive whose native slices omit a required ABI symbol", () => 
   const root = mkdtempSync(join(tmpdir(), "reallyme-jose-swift-release-"));
   try {
     assert.throws(() => runVerifier(writeFixture(root, { omitSymbol: true })));
+  } finally {
+    rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("rejects undefined ABI references and cleans up extracted slices on failure", () => {
+  const root = mkdtempSync(join(tmpdir(), "reallyme-jose-swift-release-"));
+  try {
+    const fixture = writeFixture(root, { undefinedSymbol: true });
+    const scratch = join(root, "scratch");
+    mkdirSync(scratch);
+    fixture.env.TMPDIR = scratch;
+    fixture.env.TMP = scratch;
+    fixture.env.TEMP = scratch;
+    assert.throws(() => runVerifier(fixture));
+    assert.deepEqual(readdirSync(scratch), []);
   } finally {
     rmSync(root, { force: true, recursive: true });
   }

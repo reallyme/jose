@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
 
 import { create, fromBinary, toBinary } from "@bufbuild/protobuf";
+import type { Message } from "@bufbuild/protobuf";
 import { executeOperation } from "./boundary.js";
 import { ReallyMeJoseError } from "./errors.js";
 import type { ReallyMeJoseErrorBranch } from "./errors.js";
@@ -28,6 +28,7 @@ import {
   ensureAggregateLength,
   ensureBoolean,
   ensureBytes,
+  ensureObject,
   ensureString,
   ensureUint64,
   invalidInput,
@@ -116,9 +117,20 @@ const malformedProviderResponse = (): never => {
   throw new ReallyMeJoseError("malformed-provider-response");
 };
 
-const ownedBytes = (value: Uint8Array): Uint8Array => {
+const requireClean = (message: Message): void => {
+  if (message.$unknown !== undefined && message.$unknown.length !== 0) {
+    malformedProviderResponse();
+  }
+};
+
+const ownedBytes = (value: Uint8Array, owners: Uint8Array[]): Uint8Array => {
   ensureBytes(value);
-  return value.slice();
+  ensureAggregateLength(value.length);
+  // Buffer.slice() aliases its input. Always construct a plain Uint8Array so
+  // cleanup cannot erase caller storage, including Node.js Buffer inputs.
+  const owned = new Uint8Array(value);
+  owners.push(owned);
+  return owned;
 };
 
 const optionalString = (value: string | undefined): string => {
@@ -144,6 +156,8 @@ const validateAlgorithm = (value: number, allowed: ReadonlyArray<number>): void 
 };
 
 const throwJoseError = (error: JoseError): never => {
+  requireClean(error);
+  if (error.error.case !== undefined) requireClean(error.error.value);
   const branch = error.error.case;
   const failWithReason = (
     publicBranch: ReallyMeJoseErrorBranch,
@@ -190,10 +204,12 @@ const withResponse = <T>(
   try {
     responseBytes = executeOperation(requestBytes);
     const response = decodeResponse(responseBytes);
+    requireClean(response);
     if (response.contractVersion !== JoseOperationContractVersion.V1) {
       malformedProviderResponse();
     }
-    if (response.response.case === undefined) malformedProviderResponse();
+    if (response.response.case === undefined) return malformedProviderResponse();
+    requireClean(response.response.value);
     if (response.response.case === "boundaryError") {
       throwJoseError(response.response.value);
     }
@@ -209,6 +225,7 @@ type CompactOutcome = JoseJwsSignResponse["outcome"];
 const compactOutcome = (outcome: CompactOutcome): string => {
   if (outcome.case === "error") return throwJoseError(outcome.value);
   if (outcome.case === "result") {
+    requireClean(outcome.value);
     ensureString(outcome.value.compact);
     if (outcome.value.compact.length === 0) return malformedProviderResponse();
     return outcome.value.compact;
@@ -218,29 +235,38 @@ const compactOutcome = (outcome: CompactOutcome): string => {
 
 const claimsOutcome = (outcome: JoseJwtDecodeUnsignedResponse["outcome"]): Uint8Array => {
   if (outcome.case === "error") return throwJoseError(outcome.value);
-  if (outcome.case === "result") return outcome.value.claimsJson.slice();
+  if (outcome.case === "result") {
+    requireClean(outcome.value);
+    return new Uint8Array(outcome.value.claimsJson);
+  }
   return malformedProviderResponse();
 };
 
 const verifyOutcome = (outcome: JoseJwsVerifyResponse["outcome"]): void => {
   if (outcome.case === "error") return throwJoseError(outcome.value);
   if (outcome.case !== "result") return malformedProviderResponse();
+  requireClean(outcome.value);
 };
 
 const plaintextOutcome = (outcome: JoseJweDecryptResponse["outcome"]): Uint8Array => {
   if (outcome.case === "error") return throwJoseError(outcome.value);
-  if (outcome.case === "result") return outcome.value.plaintext.slice();
+  if (outcome.case === "result") {
+    requireClean(outcome.value);
+    return new Uint8Array(outcome.value.plaintext);
+  }
   return malformedProviderResponse();
 };
 
 const jwtHeaderPolicy = (policy: ReallyMeJoseJwtHeaderPolicy | undefined) => {
   if (policy === undefined) return undefined;
+  ensureObject(policy);
   if (
     policy.acceptedTypes !== undefined &&
     policy.acceptedTypes.length > MAX_JWT_ACCEPTED_TYPE_VALUES
   ) {
     invalidInput();
   }
+  if (policy.acceptedTypes !== undefined && !Array.isArray(policy.acceptedTypes)) invalidInput();
   const acceptedTypes = policy.acceptedTypes === undefined ? [] : [...policy.acceptedTypes];
   for (const value of acceptedTypes) ensureString(value);
   return {
@@ -274,6 +300,7 @@ const jwtTemporalPolicyLength = (
 
 const jwtTemporalPolicy = (policy: ReallyMeJoseJwtTemporalPolicy | undefined) => {
   if (policy === undefined) return undefined;
+  ensureObject(policy);
   ensureUint64(policy.verificationTimeUnixSeconds);
   if (policy.verificationTimeUnixSeconds === 0n) invalidInput();
   ensureString(policy.expectedAudience);
@@ -297,6 +324,7 @@ const jweHeaderPolicy = (
   ownedApv: Uint8Array | undefined,
 ) => {
   if (policy === undefined) return undefined;
+  ensureObject(policy);
   return {
     requireKid: optionalBoolean(policy.requireKeyIdentifier, false),
     expectedKid: policy.expectedKeyIdentifier === undefined
@@ -315,10 +343,12 @@ const jweHeaderPolicy = (
 
 export const ReallyMeJose = Object.freeze({
   signJws(options: ReallyMeJoseSignJwsOptions): string {
+    ensureObject(options);
     validateAlgorithm(options.algorithm, [JoseSignatureAlgorithm.EDDSA, JoseSignatureAlgorithm.ES256]);
-    const privateKey = ownedBytes(options.privateKey);
-    const payload = ownedBytes(options.payload);
+    const owners: Uint8Array[] = [];
     try {
+      const privateKey = ownedBytes(options.privateKey, owners);
+      const payload = ownedBytes(options.payload, owners);
       ensureAggregateLength(privateKey.length, payload.length);
       const request = create(JoseOperationRequestSchema, {
         operation: { case: "jwsSign", value: { algorithm: options.algorithm, privateKey, payload } },
@@ -329,16 +359,17 @@ export const ReallyMeJose = Object.freeze({
         return malformedProviderResponse();
       });
     } finally {
-      privateKey.fill(0);
-      payload.fill(0);
+      for (const owned of owners) owned.fill(0);
     }
   },
 
   verifyJws(options: ReallyMeJoseVerifyJwsOptions): void {
+    ensureObject(options);
     validateAlgorithm(options.algorithm, [JoseSignatureAlgorithm.EDDSA, JoseSignatureAlgorithm.ES256]);
     ensureString(options.compact);
-    const publicKey = ownedBytes(options.publicKey);
+    const owners: Uint8Array[] = [];
     try {
+      const publicKey = ownedBytes(options.publicKey, owners);
       ensureAggregateLength(utf8Length(options.compact), publicKey.length);
       const request = create(JoseOperationRequestSchema, {
         operation: {
@@ -352,13 +383,14 @@ export const ReallyMeJose = Object.freeze({
         return malformedProviderResponse();
       });
     } finally {
-      publicKey.fill(0);
+      for (const owned of owners) owned.fill(0);
     }
   },
 
   encodeUnsignedJwt(claimsJson: Uint8Array): string {
-    const claims = ownedBytes(claimsJson);
+    const owners: Uint8Array[] = [];
     try {
+      const claims = ownedBytes(claimsJson, owners);
       ensureAggregateLength(claims.length);
       const request = create(JoseOperationRequestSchema, {
         operation: { case: "jwtEncodeUnsigned", value: { claimsJson: claims } },
@@ -371,7 +403,7 @@ export const ReallyMeJose = Object.freeze({
         return malformedProviderResponse();
       });
     } finally {
-      claims.fill(0);
+      for (const owned of owners) owned.fill(0);
     }
   },
 
@@ -389,11 +421,13 @@ export const ReallyMeJose = Object.freeze({
   },
 
   signJwt(options: ReallyMeJoseSignJwtOptions): string {
-    const claims = ownedBytes(options.claimsJson);
-    const jwk = ownedBytes(options.jwkJson);
-    const privateKey = ownedBytes(options.privateKey);
-    const type = optionalString(options.type);
+    ensureObject(options);
+    const owners: Uint8Array[] = [];
     try {
+      const claims = ownedBytes(options.claimsJson, owners);
+      const jwk = ownedBytes(options.jwkJson, owners);
+      const privateKey = ownedBytes(options.privateKey, owners);
+      const type = optionalString(options.type);
       ensureAggregateLength(claims.length, jwk.length, privateKey.length, utf8Length(type));
       const request = create(JoseOperationRequestSchema, {
         operation: {
@@ -407,17 +441,17 @@ export const ReallyMeJose = Object.freeze({
         return malformedProviderResponse();
       });
     } finally {
-      claims.fill(0);
-      jwk.fill(0);
-      privateKey.fill(0);
+      for (const owned of owners) owned.fill(0);
     }
   },
 
   verifyJwt(options: ReallyMeJoseVerifyJwtOptions): Uint8Array {
+    ensureObject(options);
     ensureString(options.compact);
-    const jwk = ownedBytes(options.jwkJson);
-    const publicKey = ownedBytes(options.publicKey);
+    const owners: Uint8Array[] = [];
     try {
+      const jwk = ownedBytes(options.jwkJson, owners);
+      const publicKey = ownedBytes(options.publicKey, owners);
       const headerPolicy = jwtHeaderPolicy(options.headerPolicy);
       const temporalPolicy = jwtTemporalPolicy(options.temporalPolicy);
       ensureAggregateLength(
@@ -446,12 +480,12 @@ export const ReallyMeJose = Object.freeze({
         return malformedProviderResponse();
       });
     } finally {
-      jwk.fill(0);
-      publicKey.fill(0);
+      for (const owned of owners) owned.fill(0);
     }
   },
 
   encryptJwe(options: ReallyMeJoseEncryptJweOptions): string {
+    ensureObject(options);
     validateAlgorithm(options.keyManagementAlgorithm, [
       JoseJweKeyManagementAlgorithm.DIRECT,
       JoseJweKeyManagementAlgorithm.ECDH_ES_P256,
@@ -463,14 +497,15 @@ export const ReallyMeJose = Object.freeze({
       JoseJweContentEncryptionAlgorithm.A192GCM,
       JoseJweContentEncryptionAlgorithm.A256GCM,
     ]);
-    const key = ownedBytes(options.key);
-    const plaintext = ownedBytes(options.plaintext);
-    const apu = ownedBytes(options.agreementPartyUInfo ?? new Uint8Array());
-    const apv = ownedBytes(options.agreementPartyVInfo ?? new Uint8Array());
-    const keyIdentifier = optionalString(options.keyIdentifier);
-    const type = optionalString(options.type);
-    const contentType = optionalString(options.contentType);
+    const owners: Uint8Array[] = [];
     try {
+      const key = ownedBytes(options.key, owners);
+      const plaintext = ownedBytes(options.plaintext, owners);
+      const apu = ownedBytes(options.agreementPartyUInfo === undefined ? new Uint8Array() : options.agreementPartyUInfo, owners);
+      const apv = ownedBytes(options.agreementPartyVInfo === undefined ? new Uint8Array() : options.agreementPartyVInfo, owners);
+      const keyIdentifier = optionalString(options.keyIdentifier);
+      const type = optionalString(options.type);
+      const contentType = optionalString(options.contentType);
       ensureAggregateLength(
         key.length,
         plaintext.length,
@@ -502,15 +537,14 @@ export const ReallyMeJose = Object.freeze({
         return malformedProviderResponse();
       });
     } finally {
-      key.fill(0);
-      plaintext.fill(0);
-      apu.fill(0);
-      apv.fill(0);
+      for (const owned of owners) owned.fill(0);
     }
   },
 
   decryptJwe(options: ReallyMeJoseDecryptJweOptions): Uint8Array {
+    ensureObject(options);
     ensureString(options.compact);
+    if (options.headerPolicy !== undefined) ensureObject(options.headerPolicy);
     validateAlgorithm(options.keyManagementAlgorithm, [
       JoseJweKeyManagementAlgorithm.DIRECT,
       JoseJweKeyManagementAlgorithm.ECDH_ES_P256,
@@ -522,14 +556,15 @@ export const ReallyMeJose = Object.freeze({
       JoseJweContentEncryptionAlgorithm.A192GCM,
       JoseJweContentEncryptionAlgorithm.A256GCM,
     ]);
-    const key = ownedBytes(options.key);
-    const expectedApu = options.headerPolicy?.expectedAgreementPartyUInfo === undefined
-      ? undefined
-      : ownedBytes(options.headerPolicy.expectedAgreementPartyUInfo);
-    const expectedApv = options.headerPolicy?.expectedAgreementPartyVInfo === undefined
-      ? undefined
-      : ownedBytes(options.headerPolicy.expectedAgreementPartyVInfo);
+    const owners: Uint8Array[] = [];
     try {
+      const key = ownedBytes(options.key, owners);
+      const expectedApu = options.headerPolicy?.expectedAgreementPartyUInfo === undefined
+        ? undefined
+        : ownedBytes(options.headerPolicy.expectedAgreementPartyUInfo, owners);
+      const expectedApv = options.headerPolicy?.expectedAgreementPartyVInfo === undefined
+        ? undefined
+        : ownedBytes(options.headerPolicy.expectedAgreementPartyVInfo, owners);
       ensureAggregateLength(
         utf8Length(options.compact),
         key.length,
@@ -563,9 +598,7 @@ export const ReallyMeJose = Object.freeze({
         return malformedProviderResponse();
       });
     } finally {
-      key.fill(0);
-      expectedApu?.fill(0);
-      expectedApv?.fill(0);
+      for (const owned of owners) owned.fill(0);
     }
   },
 });

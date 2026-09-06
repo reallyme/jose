@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 set -euo pipefail
 
-readonly ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly ROOT_DIR
 readonly SYMBOLS=(
   rm_jose_abi_version
   rm_jose_max_request_bytes
@@ -34,7 +35,8 @@ esac
 
 cd "${ROOT_DIR}"
 
-readonly TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/reallyme-jose-ffi.XXXXXX")"
+TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/reallyme-jose-ffi.XXXXXX")"
+readonly TEMP_DIR
 trap 'rm -rf "${TEMP_DIR}"' EXIT
 
 "${CC:-cc}" -std=c11 -Wall -Wextra -Werror \
@@ -68,7 +70,8 @@ fi
 
 "${NM_TOOL}" -g "${LIBRARY_PATH}" >"${TEMP_DIR}/symbols.txt"
 for symbol in "${SYMBOLS[@]}"; do
-  if ! grep -Eq "(^|[[:space:]])_?${symbol}$" "${TEMP_DIR}/symbols.txt"; then
+  # A global undefined reference is not an exported function definition.
+  if ! grep -Eq "(^|[[:space:]])T[[:space:]]+_?${symbol}$" "${TEMP_DIR}/symbols.txt"; then
     echo "release FFI artifact is missing exported symbol ${symbol}" >&2
     exit 1
   fi

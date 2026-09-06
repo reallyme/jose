@@ -9,7 +9,7 @@
 )]
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 //! Compact JWE decrypt tests.
 
@@ -1262,4 +1262,96 @@ fn compact_jwe_with_protected_header_json(
     let iv = bytes_to_base64url(nonce);
 
     Ok(format!("{protected}..{iv}.{ciphertext}.{tag}"))
+}
+
+#[test]
+fn oversized_jwe_is_rejected_before_randomness_is_consumed() {
+    struct CountingRandom(usize);
+    impl reallyme_crypto::csprng::SecureRandom for CountingRandom {
+        fn fill_secure(&mut self, output: &mut [u8], _: RngOutputKind) -> Result<(), CryptoError> {
+            self.0 += 1;
+            output.fill(1);
+            Ok(())
+        }
+    }
+    let key = [7_u8; 16];
+    let plaintext = vec![0_u8; 800_000];
+    let request = CompactJweEncryptRequest::new(&plaintext, JweContentEncryptionAlgorithm::A128Gcm);
+    let mut random = CountingRandom(0);
+    assert!(matches!(
+        encrypt_compact_jwe_bytes(&request, &mut DirectJweKeyEncryptor::new(&key), &mut random),
+        Err(JweError::InputTooLarge)
+    ));
+    assert_eq!(random.0, 0);
+}
+
+#[test]
+fn oversized_jwe_metadata_is_rejected_before_key_agreement() {
+    let metadata = "a".repeat(MAX_COMPACT_JWE_BYTES + 1);
+    let request = CompactJweEncryptRequest::new(b"", JweContentEncryptionAlgorithm::A128Gcm)
+        .with_kid(&metadata);
+    let mut random = FixedRandom::new([0_u8; 12]);
+    assert!(matches!(
+        encrypt_compact_jwe_bytes(
+            &request,
+            &mut P256EcdhEsJweKeyEncryptor::new(&[]),
+            &mut random
+        ),
+        Err(JweError::InputTooLarge)
+    ));
+}
+
+#[test]
+fn jwe_size_preflight_preserves_each_gcm_boundary_with_escaped_metadata() {
+    for (enc, key_len) in [
+        (JweContentEncryptionAlgorithm::A128Gcm, 16),
+        (JweContentEncryptionAlgorithm::A192Gcm, 24),
+        (JweContentEncryptionAlgorithm::A256Gcm, 32),
+    ] {
+        let key = vec![7_u8; key_len];
+        // JSON escaping and multi-byte UTF-8 must be measured after serialization.
+        let kid = "\"\\\n🔐";
+        let empty = encrypt_compact_jwe_bytes(
+            &CompactJweEncryptRequest::new(b"", enc).with_kid(kid),
+            &mut DirectJweKeyEncryptor::new(&key),
+            &mut FixedRandom::new([0_u8; 12]),
+        )
+        .unwrap();
+        let budget = MAX_COMPACT_JWE_BYTES.checked_sub(empty.len()).unwrap();
+        let raw_limit = budget
+            .checked_div(4)
+            .unwrap()
+            .checked_mul(3)
+            .unwrap()
+            .checked_add(match budget.checked_rem(4).unwrap() {
+                2 => 1,
+                3 => 2,
+                _ => 0,
+            })
+            .unwrap();
+        let plaintext = vec![0_u8; raw_limit];
+        let compact = encrypt_compact_jwe_bytes(
+            &CompactJweEncryptRequest::new(&plaintext, enc).with_kid(kid),
+            &mut DirectJweKeyEncryptor::new(&key),
+            &mut FixedRandom::new([1_u8; 12]),
+        )
+        .unwrap();
+        assert!(compact.len() <= MAX_COMPACT_JWE_BYTES);
+        assert!(MAX_COMPACT_JWE_BYTES.checked_sub(compact.len()).unwrap() <= 1);
+        let algorithms = [enc];
+        let policy = CompactJwePolicy::new(&[JweKeyManagementAlgorithm::Direct], &algorithms)
+            .with_expected_kid(kid);
+        let decoded =
+            decrypt_compact_jwe_bytes(&compact, &policy, &DirectJweKeyResolver::new(&key)).unwrap();
+        assert_eq!(&decoded[..], plaintext);
+        let too_large = vec![0_u8; raw_limit.checked_add(1).unwrap()];
+        assert!(matches!(
+            encrypt_compact_jwe_bytes(
+                &CompactJweEncryptRequest::new(&too_large, enc).with_kid(kid),
+                &mut DirectJweKeyEncryptor::new(&key),
+                &mut FixedRandom::new([2_u8; 12]),
+            ),
+            Err(JweError::InputTooLarge)
+        ));
+    }
 }

@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
 
 # Rust build artifacts
 /target
@@ -30,9 +29,14 @@ target/
 
 # Local developer state
 /AGENTS.md
+/.agents/
 /.claude/
 /.codex/
 /.release-readiness/
+/.release-readiness-upstream/
+
+# Local execution logs
+*.log
 
 # Generated artifacts
 /coverage/

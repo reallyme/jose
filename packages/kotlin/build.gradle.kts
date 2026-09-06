@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import org.gradle.api.publish.maven.tasks.PublishToMavenLocal
 import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.3.2"
+version = "0.3.3"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -479,9 +479,13 @@ publishing {
             from(components["java"])
             pom {
                 name.set("ReallyMe JOSE")
-                description.set("ReallyMe typed JOSE facade for Java and Kotlin/JVM.")
+                description.set("ReallyMe typed JOSE facade for Java and Kotlin/JVM. Licensed under MIT OR Apache-2.0, at your option.")
                 url.set("https://github.com/reallyme/jose")
                 licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/license/mit")
+                    }
                     license {
                         name.set("Apache License, Version 2.0")
                         url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")

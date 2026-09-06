@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -199,7 +199,8 @@ test("rejects an oversized checksum sidecar before reading it", async () => {
 });
 
 test("signs every staged publication file with the configured release key", async (context) => {
-  const root = mkdtempSync(join(tmpdir(), "reallyme-maven-sign-"));
+  // Leave room for keyring/S.gpg-agent.browser under macOS's temporary root.
+  const root = mkdtempSync(join(tmpdir(), "rmj-test-"));
   const keyHome = join(root, "keyring");
   try {
     const repository = join(root, "repository");

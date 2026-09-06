@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
 
 name: Crates Package Preflight
 
@@ -18,7 +17,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.3.2
+        default: 0.3.3
 
 permissions:
   contents: read
@@ -35,7 +34,7 @@ env:
   CARGO_SEMVER_CHECKS_VERSION: 0.50.0
   EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20
   WASM_BINDGEN_CLI_VERSION: 0.2.127
-  BUFFA_VERSION: 0.9.1
+  BUFFA_VERSION: 0.9.2
   BUF_VERSION: 1.72.0
   BUF_LINUX_X86_64_SHA256: 8720830e26a733da55bb89bcd3cb44849c0965fc0c44fb5d691cccdc64dca5af
 
@@ -231,7 +230,7 @@ jobs:
         run: cargo deny check
 
       - name: Security advisory audit
-        run: cargo audit --deny warnings
+        run: scripts/audit_committed_lockfiles.sh
 
       - name: Check release readiness contract
         run: node scripts/run_pinned_release_readiness.mjs

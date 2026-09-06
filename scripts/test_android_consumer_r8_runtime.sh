@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 set -euo pipefail
 
-readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly REPO_ROOT
 readonly ANDROID_HOME_VALUE="${ANDROID_HOME:-"$HOME/Library/Android/sdk"}"
 readonly ANDROID_NDK_HOME_VALUE="${ANDROID_NDK_HOME:-"$ANDROID_HOME_VALUE/ndk/29.0.14206865"}"
 readonly ADB="${ADB:-"$ANDROID_HOME_VALUE/platform-tools/adb"}"
@@ -23,10 +24,14 @@ readonly JNILIBS_DIR="$REPO_ROOT/build/android-jniLibs"
 readonly NATIVE_ASSETS_DIR="$REPO_ROOT/build/android-native-assets"
 readonly APK_PATH="$REPO_ROOT/packages/kotlin-android/consumer-r8-runtime/build/outputs/apk/release/consumer-r8-runtime-release.apk"
 
+# Per-run logs avoid following pre-created links in the shared temporary directory.
+LOG_DIR="$(mktemp -d "${TMPDIR:-/tmp}/reallyme-jose-r8.XXXXXX")"
+readonly LOG_DIR
 emulator_pid=""
 app_installed="false"
 export ANDROID_AVD_HOME="$ANDROID_AVD_HOME_VALUE"
 
+# shellcheck disable=SC2329 # Invoked by the EXIT trap.
 cleanup() {
     if [[ "$app_installed" == "true" ]]; then
         "$ADB" uninstall "$APP_ID" >/dev/null 2>&1 || true
@@ -35,12 +40,13 @@ cleanup() {
         "$ADB" emu kill >/dev/null 2>&1 || true
         wait "$emulator_pid" >/dev/null 2>&1 || true
     fi
+    rm -rf "$LOG_DIR"
 }
 trap cleanup EXIT
 
 dump_emulator_log() {
-    if [[ -f /tmp/reallyme-jose-r8-emulator.log ]]; then
-        tail -200 /tmp/reallyme-jose-r8-emulator.log >&2 || true
+    if [[ -f "$LOG_DIR/emulator.log" ]]; then
+        tail -200 "$LOG_DIR/emulator.log" >&2 || true
     fi
 }
 
@@ -72,7 +78,7 @@ ensure_avd_exists() {
     fi
 
     { yes 2>/dev/null || true; } | "$SDKMANAGER" "emulator" "$ANDROID_R8_PLATFORM" "$ANDROID_R8_SYSTEM_IMAGE" >/dev/null
-    printf 'no\n' | "$AVDMANAGER" create avd --force -n "$AVD_NAME" -k "$ANDROID_R8_SYSTEM_IMAGE" --device "pixel" >/tmp/reallyme-jose-r8-avdmanager.log
+    printf 'no\n' | "$AVDMANAGER" create avd --force -n "$AVD_NAME" -k "$ANDROID_R8_SYSTEM_IMAGE" --device "pixel" >"$LOG_DIR/avdmanager.log"
 
     while IFS= read -r existing_avd; do
         if [[ "$existing_avd" == "$AVD_NAME" ]]; then
@@ -80,8 +86,8 @@ ensure_avd_exists() {
         fi
     done < <("$EMULATOR" -list-avds)
 
-    if [[ -f /tmp/reallyme-jose-r8-avdmanager.log ]]; then
-        cat /tmp/reallyme-jose-r8-avdmanager.log >&2 || true
+    if [[ -f "$LOG_DIR/avdmanager.log" ]]; then
+        cat "$LOG_DIR/avdmanager.log" >&2 || true
     fi
     "$EMULATOR" -list-avds >&2 || true
     fail "Android AVD was not available after creation"
@@ -92,7 +98,7 @@ ensure_avd_exists() {
 
 if [[ -n "$AVD_NAME" ]]; then
     ensure_avd_exists
-    "$EMULATOR" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect >/tmp/reallyme-jose-r8-emulator.log 2>&1 &
+    "$EMULATOR" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect >"$LOG_DIR/emulator.log" 2>&1 &
     emulator_pid="$!"
 fi
 

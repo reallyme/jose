@@ -1,9 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 # ReallyMe JOSE C ABI
 
 `reallyme-jose-ffi` is the non-publishable native boundary used by supported
@@ -46,5 +40,6 @@ could retain its process-global panic-hook state.
 
 ## License
 
-Licensed under the Apache License, Version 2.0. See [LICENSE](../../LICENSE) and
+Licensed under either the MIT License or the Apache License, Version 2.0, at your
+option. See [LICENSE](../../LICENSE) and
 [NOTICE](../../NOTICE).

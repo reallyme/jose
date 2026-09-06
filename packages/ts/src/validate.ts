@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
 
 import { ReallyMeJoseError } from "./errors.js";
 
@@ -10,6 +9,12 @@ export const MAX_JOSE_RESPONSE_BYTES = 1_048_608;
 
 export const invalidInput = (): never => {
   throw new ReallyMeJoseError("invalid-input");
+};
+
+export const ensureObject = (value: unknown): void => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    invalidInput();
+  }
 };
 
 export const ensureBytes = (value: Uint8Array): void => {

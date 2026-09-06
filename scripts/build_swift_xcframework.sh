@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 set -euo pipefail
 
-readonly ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly ROOT_DIR
 # Cargo gives encoded flags precedence over RUSTFLAGS. Release packaging owns
 # the complete codegen policy, so inherited encoded flags must not participate.
 unset CARGO_ENCODED_RUSTFLAGS
@@ -26,9 +27,12 @@ build_target() {
   local target="$1"
   rustup target add "${target}"
   # Do not let ambient codegen flags override the audited panic strategy.
-  RUSTFLAGS="" cargo build --locked -p reallyme-jose-ffi \
-    --profile release-ffi \
-    --target "${target}"
+  (
+    cd "${ROOT_DIR}"
+    RUSTFLAGS="" cargo build --locked -p reallyme-jose-ffi \
+      --profile release-ffi \
+      --target "${target}"
+  )
 }
 
 copy_or_lipo() {

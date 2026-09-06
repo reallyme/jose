@@ -1,9 +1,14 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use reallyme_codec::base64url::bytes_to_base64url;
 use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
+
+use crate::measure_encoding::base64url_len;
+
+// Both supported JWS suites emit fixed-width 64-byte JOSE signatures.
+const JWS_SIGNATURE_BYTES: usize = 64;
 
 use super::{
     parse_compact::{build_sig_structure, MAX_COMPACT_JWS_BYTES},
@@ -27,6 +32,14 @@ pub(crate) fn encode_jws_signing_input(
     algorithm: JwsAlgorithm,
     payload: &[u8],
 ) -> Result<EncodedJwsSigningInput, JwsSigningInputError> {
+    let encoded_len = base64url_len(algorithm.protected_header_json().len())
+        .and_then(|length| length.checked_add(base64url_len(payload.len())?))
+        .and_then(|length| length.checked_add(base64url_len(JWS_SIGNATURE_BYTES)?))
+        .and_then(|length| length.checked_add(2))
+        .ok_or(JwsSigningInputError::LengthOverflow)?;
+    if encoded_len > MAX_COMPACT_JWS_BYTES {
+        return Err(JwsSigningInputError::InputTooLarge);
+    }
     let protected_header = bytes_to_base64url(algorithm.protected_header_json());
     let payload = bytes_to_base64url(payload);
     let signing_input = build_sig_structure(

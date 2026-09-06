@@ -1,7 +1,7 @@
 #![allow(missing_docs, clippy::expect_used, clippy::unwrap_used)]
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use super::support::{base_claims_json, gen_ed25519, gen_p256, gen_secp256k1};
 use reallyme_codec::base64url::bytes_to_base64url;
@@ -311,4 +311,86 @@ fn reject_signed_jwt_with_b64_header_parameter() {
         decode_verify_jwt_signature_only(&jwt, &k.jwk, &k.public);
 
     assert!(matches!(result, Err(JwtError::InvalidHeader)));
+}
+
+#[test]
+fn oversized_jwt_is_rejected_before_accessing_the_signing_key() {
+    let key = gen_ed25519();
+    // The raw claims fit; Base64URL expansion puts the compact over its limit.
+    let claims = serde_json::json!({"sub": "a".repeat(800_000)});
+    assert!(matches!(
+        encode_signed_jwt(&claims, &key.jwk, &[]),
+        Err(JwtError::InputTooLarge)
+    ));
+}
+
+#[test]
+fn signed_jwt_size_preflight_preserves_each_suite_boundary() {
+    for key in [gen_ed25519(), gen_p256(), gen_secp256k1()] {
+        let empty_claims = serde_json::json!({"sub": ""});
+        let empty = encode_signed_jwt(&empty_claims, &key.jwk, &key.private).unwrap();
+        let encoded_empty = empty.split('.').nth(1).unwrap().len();
+        let overhead = empty.len().checked_sub(encoded_empty).unwrap();
+        let budget = MAX_COMPACT_JWT_BYTES.checked_sub(overhead).unwrap();
+        let raw_limit = budget
+            .checked_div(4)
+            .unwrap()
+            .checked_mul(3)
+            .unwrap()
+            .checked_add(match budget.checked_rem(4).unwrap() {
+                2 => 1,
+                3 => 2,
+                _ => 0,
+            })
+            .unwrap();
+        let padding = raw_limit
+            .checked_sub(serde_json::to_vec(&empty_claims).unwrap().len())
+            .unwrap();
+        let claims = serde_json::json!({"sub": "a".repeat(padding)});
+        let compact = encode_signed_jwt(&claims, &key.jwk, &key.private).unwrap();
+        assert!(compact.len() <= MAX_COMPACT_JWT_BYTES);
+        assert!(MAX_COMPACT_JWT_BYTES.checked_sub(compact.len()).unwrap() <= 1);
+        let decoded: serde_json::Value =
+            decode_verify_jwt_signature_only(&compact, &key.jwk, &key.public).unwrap();
+        assert_eq!(decoded, claims);
+        let too_large = serde_json::json!({"sub": "a".repeat(padding.checked_add(1).unwrap())});
+        assert!(matches!(
+            encode_signed_jwt(&too_large, &key.jwk, &key.private),
+            Err(JwtError::InputTooLarge)
+        ));
+    }
+}
+
+#[test]
+fn oversized_jwt_does_not_invoke_external_signer() {
+    struct CountingSigner(std::cell::Cell<usize>);
+    impl reallyme_jose::Signer for CountingSigner {
+        fn alg(&self) -> reallyme_jose::Algorithm {
+            reallyme_jose::Algorithm::Ed25519
+        }
+
+        fn sign(&self, _: &[u8]) -> Result<Vec<u8>, reallyme_crypto::signer::SignerError> {
+            self.0.set(self.0.get().checked_add(1).unwrap());
+            Ok(Vec::new())
+        }
+    }
+    let key = gen_ed25519();
+    let signer = CountingSigner(std::cell::Cell::new(0));
+    let oversized = serde_json::json!({"sub": "a".repeat(800_000)});
+    assert!(matches!(
+        reallyme_jose::jwt::encode_signed_jwt_with_signer(&oversized, &key.jwk, &signer),
+        Err(JwtError::InputTooLarge)
+    ));
+    assert_eq!(signer.0.get(), 0);
+    // Ensure the hook is exercised for an accepted input and its malformed
+    // signature still receives the existing typed failure.
+    assert!(matches!(
+        reallyme_jose::jwt::encode_signed_jwt_with_signer(
+            &serde_json::json!({}),
+            &key.jwk,
+            &signer
+        ),
+        Err(JwtError::InvalidSignature)
+    ));
+    assert_eq!(signer.0.get(), 1);
 }

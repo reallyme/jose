@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 set -euo pipefail
 
-readonly ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly ROOT_DIR
 readonly RESOURCES_ROOT="${1:-${ROOT_DIR}/build/kotlin-native-resources}"
 
 # Packaged FFI binaries must be governed only by the reviewed workspace
@@ -23,7 +24,10 @@ case "$(uname -s):$(uname -m)" in
   *) printf 'unsupported host for Kotlin native resource staging\n' >&2; exit 1 ;;
 esac
 
-cargo build --locked -p reallyme-jose-ffi --profile release-ffi
+(
+  cd "${ROOT_DIR}"
+  cargo build --locked -p reallyme-jose-ffi --profile release-ffi
+)
 readonly OUTPUT_DIR="${RESOURCES_ROOT}/me/really/jose/native/${platform}"
 mkdir -p "${OUTPUT_DIR}"
 cp "${ROOT_DIR}/target/release-ffi/${library}" "${OUTPUT_DIR}/${library}"

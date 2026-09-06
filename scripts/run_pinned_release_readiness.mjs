@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { createHash, timingSafeEqual } from "node:crypto";
 import { lstatSync, readFileSync } from "node:fs";
@@ -10,11 +10,11 @@ import { spawnSync } from "node:child_process";
 // The vendored upstream core and repository-specific checker are both pinned
 // locally. Release gates must not depend on a live network fetch whose bytes
 // are not executed; scheduled CI separately reports upstream drift.
-const RELEASE_READINESS_COMMIT = "8abe3caf02676c6852edf6aab36e01552872105b";
+const RELEASE_READINESS_COMMIT = "304bc55cdca3c53bf66218982d51188f341806ed";
 const RELEASE_READINESS_CORE_SHA256 =
-  "ca71a25a0f8cce2eb72ac490086afc95acd0cbef01cc33fc25471ef29e88b8f4";
+  "0a33532aa595871c1beefb1ad1d3930f1a51675b236a73e8bf93ad5d7ccdbae4";
 const LOCAL_CHECKER_SHA256 =
-  "d72ff385f6f1421b9ae3cab4aa32e64f9504a9921fdbe911fe2a39f4fae6c22a";
+  "dc0d2ab6920f2858c79c3061ef8a2e0c62a6d15236eff6087206caa839b0e82c";
 const VENDORED_CORE_PATH = "scripts/release-readiness/core.mjs";
 const LOCAL_CHECKER_PATH = "scripts/check_release_readiness.mjs";
 const MAX_CORE_BYTES = 262_144;

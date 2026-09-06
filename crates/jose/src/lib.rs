@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! JOSE, JWT, and JWS helpers.
+//! Compact JWS, JWT, and JWE helpers.
 //!
 //! `reallyme-jose` owns JOSE byte-format mechanics for compact JWS, JWT, and
 //! JWE. Cryptographic operations are routed through `reallyme-crypto`; this
@@ -30,7 +30,7 @@
 //! verification APIs for verifier-grade paths.
 
 #[cfg(not(any(feature = "native", feature = "wasm")))]
-compile_error!("reallyme-jose requires a supported runtime lane: enable feature `native` for audited Rust crypto or `wasm` for the WebAssembly host-provider lane.");
+compile_error!("reallyme-jose requires a supported runtime lane: enable feature `native` for native Rust cryptography or `wasm` for the WebAssembly lane with package-owned cryptography.");
 
 /// Crypto algorithm selector used by JOSE/JWT public APIs.
 ///
@@ -48,6 +48,10 @@ pub use serde_json::Value as JsonValue;
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub use zeroize::Zeroizing;
 
+#[cfg(any(feature = "native", feature = "wasm"))]
+mod measure_encoding;
+#[cfg(test)]
+mod measure_encoding_tests;
 #[cfg(any(feature = "native", feature = "wasm"))]
 mod operation_contract;
 #[cfg(any(feature = "native", feature = "wasm"))]

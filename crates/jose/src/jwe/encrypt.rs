@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use serde::Serialize;
 use zeroize::Zeroize;
@@ -8,6 +8,8 @@ use zeroize::Zeroize;
 use reallyme_codec::base64url::bytes_to_base64url;
 use reallyme_crypto::core::RngOutputKind;
 
+use super::parse_compact::MAX_COMPACT_JWE_BYTES;
+use crate::measure_encoding::base64url_len;
 use crate::{JsonValue, SecureRandom, Zeroizing};
 
 use super::{
@@ -155,8 +157,8 @@ pub use key_management::{
 ///
 /// Returns [`JweError`] when key-management output is invalid, randomness is
 /// unavailable, header serialization fails, content-encryption input lengths
-/// are invalid, encryption fails, or compact serialization length arithmetic
-/// overflows.
+/// are invalid, encryption fails, the compact exceeds the size limit, or length
+/// arithmetic overflows.
 pub fn encrypt_compact_jwe_bytes<R: SecureRandom + ?Sized>(
     request: &CompactJweEncryptRequest<'_>,
     key_encryptor: &mut dyn JweContentEncryptionKeyEncryptor,
@@ -170,8 +172,26 @@ pub(crate) fn encrypt_compact_jwe_bytes_core<R: SecureRandom + ?Sized>(
     key_encryptor: &mut dyn JweContentEncryptionKeyEncryptor,
     rng: &mut R,
 ) -> Result<String, JweError> {
+    // Bound caller-controlled input before key agreement or encoding. Each
+    // component must fit even before JSON and Base64URL expansion.
+    let input_lengths = [
+        request.plaintext().len(),
+        request.kid().map_or(0, str::len),
+        request.typ().map_or(0, str::len),
+        request.cty().map_or(0, str::len),
+        request.apu().map_or(0, <[u8]>::len),
+        request.apv().map_or(0, <[u8]>::len),
+    ];
+    let input_len = input_lengths
+        .into_iter()
+        .try_fold(0_usize, |total, length| {
+            total.checked_add(length).ok_or(JweError::LengthOverflow)
+        })?;
+    if input_len > MAX_COMPACT_JWE_BYTES {
+        return Err(JweError::InputTooLarge);
+    }
     let prepared = key_encryptor.prepare_content_encryption_key(request)?;
-    let mut header = SerializableCompactJweProtectedHeader {
+    let header = SerializableCompactJweProtectedHeader {
         alg: prepared.alg,
         enc: request.enc(),
         kid: request.kid(),
@@ -187,11 +207,22 @@ pub(crate) fn encrypt_compact_jwe_bytes_core<R: SecureRandom + ?Sized>(
         request.apu().is_some(),
         request.apv().is_some(),
     )?;
-    let protected_header_result = serde_json::to_vec(&header);
-    header.apu.zeroize();
-    header.apv.zeroize();
-    let protected_header_json = protected_header_result.map_err(|_| JweError::InvalidHeader)?;
-    let protected_header = encode_jwe_base64url(&protected_header_json);
+    let protected_header_json =
+        Zeroizing::new(serde_json::to_vec(&header).map_err(|_| JweError::InvalidHeader)?);
+    // The serialized owner is sufficient from here. Do not retain the separate
+    // party-information copies while sizing or encrypting the message.
+    drop(header);
+    let encoded_len = base64url_len(protected_header_json.len())
+        .and_then(|length| length.checked_add(base64url_len(prepared.encrypted_key.len())?))
+        .and_then(|length| length.checked_add(base64url_len(request.enc().nonce_len())?))
+        .and_then(|length| length.checked_add(base64url_len(request.plaintext().len())?))
+        .and_then(|length| length.checked_add(base64url_len(request.enc().tag_len())?))
+        .and_then(|length| length.checked_add(4))
+        .ok_or(JweError::LengthOverflow)?;
+    if encoded_len > MAX_COMPACT_JWE_BYTES {
+        return Err(JweError::InputTooLarge);
+    }
+    let protected_header = Zeroizing::new(encode_jwe_base64url(&protected_header_json));
 
     let mut nonce = [0u8; reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH];
     rng.fill_secure(&mut nonce, RngOutputKind::AeadNonce12)
@@ -260,6 +291,15 @@ struct SerializableCompactJweProtectedHeader<'a> {
     typ: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     cty: Option<&'a str>,
+}
+
+impl Drop for SerializableCompactJweProtectedHeader<'_> {
+    fn drop(&mut self) {
+        // Party information can identify a person. Wipe encoded copies even
+        // when structural validation or serialization fails.
+        self.apu.zeroize();
+        self.apv.zeroize();
+    }
 }
 
 fn encrypt_content(

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -406,6 +406,10 @@ function publishPackage(pkg) {
       lowerCombined.includes("rate-limited") ||
       lowerCombined.includes("rate limited")
     ) {
+      if (attempt === MAX_PUBLISH_ATTEMPTS) {
+        console.error(`${pkg.name} publish retry limit reached`);
+        process.exit(result.status ?? 1);
+      }
       const delayMs = rateLimitDelayMs ?? CRATES_IO_DEFAULT_RATE_LIMIT_RETRY_MS;
       console.log(
         `crates.io rate-limited new crate uploads; retrying ${pkg.name} in ${Math.ceil(delayMs / 1000)}s...`,

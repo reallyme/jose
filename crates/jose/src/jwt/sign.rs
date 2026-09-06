@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use serde::Deserialize;
 use serde::Serialize;
@@ -11,6 +11,7 @@ use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 use reallyme_codec::base64url::bytes_to_base64url;
 
 use crate::jws::parse_compact::build_sig_structure;
+use crate::measure_encoding::base64url_len;
 use crate::{
     jws::suites::es256::{sign_p256_jose_prehash, verify_p256_jose_prehash},
     Algorithm, Jwk, Signer,
@@ -117,6 +118,9 @@ pub(crate) fn encode_signed_jwt_claims_json_core(
     private_key: &[u8],
     header_options: &JwtHeaderEncodeOptions,
 ) -> Result<String, JwtError> {
+    if claims_json.len() > MAX_COMPACT_JWT_BYTES {
+        return Err(JwtError::InputTooLarge);
+    }
     reject_duplicate_object_members(claims_json)?;
     let mut deserializer = serde_json::Deserializer::from_slice(claims_json);
     serde::de::IgnoredAny::deserialize(&mut deserializer).map_err(|_| JwtError::InvalidClaims)?;
@@ -137,6 +141,9 @@ pub(crate) fn encode_signed_jwt_claims_json_with_signer_core(
     signer: &dyn Signer,
     header_options: &JwtHeaderEncodeOptions,
 ) -> Result<String, JwtError> {
+    if claims_json.len() > MAX_COMPACT_JWT_BYTES {
+        return Err(JwtError::InputTooLarge);
+    }
     reject_duplicate_object_members(claims_json)?;
     let mut deserializer = serde_json::Deserializer::from_slice(claims_json);
     serde::de::IgnoredAny::deserialize(&mut deserializer).map_err(|_| JwtError::InvalidClaims)?;
@@ -164,6 +171,15 @@ fn encode_signing_input(
     kid: Option<String>,
     header_options: &JwtHeaderEncodeOptions,
 ) -> Result<EncodedJwtSigningInput, JwtError> {
+    if kid
+        .as_ref()
+        .is_some_and(|value| value.len() > MAX_COMPACT_JWT_BYTES)
+        || header_options
+            .typ()
+            .is_some_and(|value| value.len() > MAX_COMPACT_JWT_BYTES)
+    {
+        return Err(JwtError::InputTooLarge);
+    }
     let header = JwtHeader {
         alg: alg.to_string(),
         typ: header_options.typ.clone(),
@@ -173,6 +189,16 @@ fn encode_signing_input(
 
     let header_json =
         Zeroizing::new(serde_json::to_vec(&header).map_err(|_| JwtError::Serialization)?);
+    // Reject before invoking local or remote signers: an oversized token can
+    // never be consumed by our verifier, regardless of the signature bytes.
+    let encoded_len = base64url_len(header_json.len())
+        .and_then(|length| length.checked_add(base64url_len(claims_json.len())?))
+        .and_then(|length| length.checked_add(base64url_len(ECDSA_JOSE_SIGNATURE_LEN)?))
+        .and_then(|length| length.checked_add(2))
+        .ok_or(JwtError::LengthOverflow)?;
+    if encoded_len > MAX_COMPACT_JWT_BYTES {
+        return Err(JwtError::InputTooLarge);
+    }
     let protected_header = bytes_to_base64url(&header_json);
     let payload = bytes_to_base64url(claims_json);
     let signing_input = build_sig_structure(&protected_header, &payload, JwtError::LengthOverflow)?;

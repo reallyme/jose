@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
 
 name: Release Readiness
 
@@ -42,7 +41,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 8abe3caf02676c6852edf6aab36e01552872105b
+          ref: 304bc55cdca3c53bf66218982d51188f341806ed
           path: .release-readiness
           persist-credentials: false
 

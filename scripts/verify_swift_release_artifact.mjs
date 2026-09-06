@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { execFileSync } from "node:child_process";
 import { lstatSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -125,9 +125,11 @@ const requiredSymbols = [
   "rm_jose_zeroize_buffer",
 ];
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "reallyme-jose-swift-"));
+class SwiftArtifactError extends Error {}
+let verificationFailure;
 try {
   for (const [index, library] of libraries.entries()) {
-    if (!entries.includes(library)) fail(`XCFramework is missing ${library}`);
+    if (!entries.includes(library)) throw new SwiftArtifactError(`XCFramework is missing ${library}`);
     const bytes = execFileSync("unzip", ["-p", archivePath, library], {
       encoding: null,
       maxBuffer: maximumArchiveBytes,
@@ -141,13 +143,19 @@ try {
       stdio: ["ignore", "pipe", "ignore"],
     });
     for (const symbol of requiredSymbols) {
-      if (!new RegExp(`(?:^|\\s)_?${symbol}$`, "mu").test(symbols)) {
-        fail(`${library} is missing required C ABI symbols`);
+      // nm also lists undefined references. Require a global text definition.
+      if (!new RegExp(`(?:^|\\s)T[\\t ]+_?${symbol}$`, "mu").test(symbols)) {
+        throw new SwiftArtifactError(`${library} is missing required C ABI symbols`);
       }
     }
   }
+} catch (error) {
+  verificationFailure = error instanceof SwiftArtifactError
+    ? error.message
+    : "native slices could not be inspected";
 } finally {
   rmSync(temporaryDirectory, { recursive: true, force: true });
 }
+if (verificationFailure !== undefined) fail(verificationFailure);
 
 console.log("Swift XCFramework layout, checksum, version, and package binding verified");

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import assert from "node:assert/strict";
 import {
@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 
 const publisher = fileURLToPath(new URL("./publish_crates_in_order.mjs", import.meta.url));
 
-const writeFakeWorkspace = (root) => {
+const writeFakeWorkspace = (root, publishFailure = "crate version already exists") => {
   const binDirectory = join(root, "bin");
   const targetDirectory = join(root, "target");
   const metadataPath = join(root, "metadata.json");
@@ -64,7 +64,7 @@ if (process.argv[2] === "metadata") {
   process.stdout.write(fs.readFileSync(process.env.FAKE_CARGO_METADATA, "utf8"));
   process.exit(0);
 }
-process.stderr.write("crate version already exists\\n");
+process.stderr.write(process.env.FAKE_CARGO_FAILURE + "\\n");
 process.exit(101);
 `,
     { encoding: "utf8", mode: 0o700 },
@@ -77,6 +77,7 @@ process.exit(101);
       ...process.env,
       FAKE_CARGO_LOG: callLogPath,
       FAKE_CARGO_METADATA: metadataPath,
+      FAKE_CARGO_FAILURE: publishFailure,
       PATH: `${binDirectory}${delimiter}${process.env.PATH ?? ""}`,
     },
   };
@@ -93,13 +94,13 @@ const writeFakeInspectWorkspace = (root) => {
   const packages = [
     {
       name: "reallyme-jose-proto",
-      version: "0.3.2",
+      version: "0.3.3",
       publish: null,
       dependencies: [],
     },
     {
       name: "reallyme-jose",
-      version: "0.3.2",
+      version: "0.3.3",
       publish: null,
       dependencies: [
         {
@@ -107,7 +108,7 @@ const writeFakeInspectWorkspace = (root) => {
           package: null,
           source: null,
           path: join(root, "proto"),
-          req: "^0.3.2",
+          req: "^0.3.3",
         },
       ],
     },
@@ -154,7 +155,7 @@ if (args[0] === "publish" && args.includes("reallyme-jose-proto")) {
 }
 if (args[0] === "publish" && args.includes("reallyme-jose")) {
   const delimiter = String.fromCharCode(96);
-  process.stderr.write("failed to select a version for the requirement " + delimiter + "reallyme-jose-proto = \\\"^0.3.2\\\"" + delimiter + "\\n");
+  process.stderr.write("failed to select a version for the requirement " + delimiter + "reallyme-jose-proto = \\\"^0.3.3\\\"" + delimiter + "\\n");
   process.exit(101);
 }
 process.stderr.write("unexpected cargo invocation: " + args.join(" ") + "\\n");
@@ -243,6 +244,32 @@ test("rejects an existing crate instead of continuing with mixed provenance", ()
       .filter((line) => line.startsWith("publish "));
     assert.equal(publishCalls.length, 1);
     assert.match(publishCalls[0], /reallyme-jose-proto/u);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("exhausted rate-limit retries fail without publishing dependent crates", () => {
+  const root = mkdtempSync(join(tmpdir(), "reallyme-jose-retry-test-"));
+  try {
+    const workspace = writeFakeWorkspace(root, "too many requests");
+    // Bypass only elapsed time in the child; exercise the real retry loop and
+    // process exit status without making network requests or waiting minutes.
+    const preload = join(root, "skip-wait.cjs");
+    writeFileSync(preload, 'Atomics.wait = () => "timed-out";\n');
+    const result = spawnSync(process.execPath, ["--require", preload, publisher, "publish"], {
+      cwd: root,
+      encoding: "utf8",
+      env: workspace.environment,
+      timeout: 30_000,
+    });
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 101);
+    assert.match(result.stderr, /publish retry limit reached/u);
+    const calls = readFileSync(workspace.callLogPath, "utf8").split("\n")
+      .filter((line) => line.startsWith("publish "));
+    assert.equal(calls.length, 12);
+    assert.ok(calls.every((line) => line === "publish -p reallyme-jose-proto --locked"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -524,15 +524,31 @@ fn __reallyme_zeroize_unknown_field_data(data: &mut ::buffa::UnknownFieldData) {
     "#[serde(default)]",
     "#[serde(default, deny_unknown_fields)]",
   );
-  const ignoredUnknownField = `                        _ => {
+  const unknownFieldBranchVariants = [
+    {
+      ignored: `                        _ => {
                             map.next_value::<serde::de::IgnoredAny>()?;
-                        }`;
-  const ignoredUnknownFieldCount =
-    source.split(ignoredUnknownField).length - 1;
-  const strictUnknownField = `                        _ => {
+                        }`,
+      strict: `                        _ => {
                             return Err(serde::de::Error::custom("unknown field"));
-                        }`;
-  const strictUnknownFieldCount = source.split(strictUnknownField).length - 1;
+                        }`,
+    },
+    {
+      ignored: `                        _ => {
+                            map.next_value::<::serde::de::IgnoredAny>()?;
+                        }`,
+      strict: `                        _ => {
+                            return Err(::serde::de::Error::custom("unknown field"));
+                        }`,
+    },
+  ];
+  const countOccurrences = (haystack, needle) => haystack.split(needle).length - 1;
+  const ignoredUnknownFieldCount = unknownFieldBranchVariants
+    .map((variant) => countOccurrences(source, variant.ignored))
+    .reduce((sum, count) => sum + count, 0);
+  const strictUnknownFieldCount = unknownFieldBranchVariants
+    .map((variant) => countOccurrences(source, variant.strict))
+    .reduce((sum, count) => sum + count, 0);
   const expectedOneofUnknownFieldBranches =
     readFileSync(protoPath, "utf8").match(/^\s*oneof\s+\w+\s*\{/gmu)?.length ?? 0;
   if (
@@ -546,7 +562,9 @@ fn __reallyme_zeroize_unknown_field_data(data: &mut ::buffa::UnknownFieldData) {
       `${generatedPath} expected ${expectedOneofUnknownFieldBranches} generated oneof unknown-field branches, found ${ignoredUnknownFieldCount}`,
     );
   }
-  source = source.replaceAll(ignoredUnknownField, strictUnknownField);
+  for (const variant of unknownFieldBranchVariants) {
+    source = source.replaceAll(variant.ignored, variant.strict);
+  }
   // Buffa's enum visitors otherwise reflect attacker-controlled numeric values
   // into allocated error strings. Fixed diagnostics keep boundary failures
   // deterministic and avoid carrying untrusted input into logs.
@@ -647,7 +665,7 @@ function normalizeGeneratedModuleRust() {
     );
   }
 
-  // Buffa 0.9.1 emits its module-tree allow attributes on one long line.
+  // Buffa 0.9.2 emits its module-tree allow attributes on one long line.
   // Canonical expansion keeps checked-in generation compatible with the
   // repository-wide rustfmt gate without weakening that gate for generated
   // code or depending on an implicit formatter invocation.

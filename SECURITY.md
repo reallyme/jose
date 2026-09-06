@@ -1,9 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 # Security Policy
 
 `reallyme-jose` is security-sensitive JOSE infrastructure. Please report
@@ -35,12 +29,14 @@ PII, or raw user data in the report.
 
 ## Supported Surface
 
-Security support currently covers the published `reallyme-jose` crate on
-crates.io and its `native` feature lane.
+This repository contains the Rust JOSE and protobuf crates, native C/JNI
+adapter, Swift and Kotlin/JVM/Android packages, and TypeScript/WASM facade.
+Report issues in any of these surfaces. Native and WASM algorithm support
+differs; see the [supported JOSE surface](README.md#supported-jose-surface).
 
 The release readiness checks in `scripts/check_release_readiness.mjs`, the
 dependency policy in `deny.toml`, and the fuzz harnesses under `fuzz/` are part
-of the audit-facing maintenance contract for this crate.
+of the automated validation used to maintain these packages.
 
 ## Signature Malleability
 
@@ -64,17 +60,22 @@ content-encryption key. With `ECDH-ES`, anyone with the recipient public key can
 mint a syntactically valid encrypted message for that recipient.
 
 Applications must not treat decrypted JWE claims as issuer-authenticated unless
-the plaintext carries an independently verified signature, the key distribution
-model provides sender authentication, or the application binds `apu`/`apv`,
-`kid`, `typ`, and `cty` through an explicit policy before using the claims.
+the plaintext carries an independently verified signature or the key
+distribution model separately establishes sender authentication. Binding
+`apu`/`apv`, `kid`, `typ`, and `cty` through an explicit policy constrains the
+protocol context; it does not establish who sent an ECDH-ES message because a
+sender can choose those public header values.
 
 ## WASM Trust Boundary
 
-The `wasm` feature lane is build-checked so SDK packages can integrate it, but
-its cryptographic assurance depends on JavaScript host functions supplied by the
-selected `reallyme-crypto` provider. Point validation, ECDH, CSPRNG output, and
-GCM tag verification are therefore only as trustworthy as that host provider.
+The `wasm` feature lane executes the supported cryptographic operations in
+package-owned Rust implementations compiled to WebAssembly. The JavaScript host
+supplies secure randomness through Web Crypto; public-key validation, supported
+ECDH agreement, and GCM tag verification remain inside `reallyme-crypto`.
 
-Do not claim native-equivalent security for a WASM deployment until the selected
-provider, bundler configuration, and browser or runtime crypto bindings have
-been pinned, reviewed, and covered by release tests for that deployment.
+The supported TypeScript facade requires explicit provider installation and
+validates the canonical response contract. A substituted module can fabricate
+results, so provider identity, bundler configuration, and the host randomness
+source remain deployment trust boundaries. Pin and review them together with
+the published package. Unsupported P-384 and P-521 ECDH-ES operations fail closed
+in the WASM lane rather than falling back to an ambient provider.

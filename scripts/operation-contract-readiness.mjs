@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 const GENERATED_TYPE_PATTERN = /\breallyme_jose_proto\b|\bJose(?:Jws|Jwt|Jwe|Operation|Compact|Verify|Error)/u;
 

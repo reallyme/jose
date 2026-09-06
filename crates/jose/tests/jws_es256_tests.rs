@@ -6,7 +6,7 @@
 )]
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use reallyme_jose::jws::{
     suites::es256::{
@@ -379,4 +379,17 @@ fn malleate_p256_s(signature: [u8; 64]) -> [u8; 64] {
 
     assert_eq!(borrow, 0);
     malleated
+}
+
+#[test]
+fn jws_es256_accepts_exact_compact_size_boundary() {
+    let (public, private) = generate_keypair(Algorithm::P256).unwrap();
+    let payload = "a".repeat(786_351);
+    let compact = sign_es256_jws(&private, &payload).unwrap();
+    assert_eq!(compact.len(), MAX_COMPACT_JWS_BYTES);
+    verify_es256_jws(&compact, &public).unwrap();
+    assert_eq!(
+        sign_es256_jws(&private, &(payload + "a")),
+        Err(JwsEs256Error::InputTooLarge)
+    );
 }

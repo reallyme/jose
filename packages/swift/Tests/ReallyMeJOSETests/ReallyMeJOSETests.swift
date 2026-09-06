@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
 
 import Foundation
+import ReallyMeJOSEProto
 import Testing
 
 @testable import ReallyMeJOSE
@@ -152,3 +152,36 @@ private func bytes(hex: String) throws -> [UInt8] {
     #expect(try jose.decodeUnsignedJWT(compact) == claims)
   }
 #endif
+
+@Test func providerErrorReasonsMustBelongToTheirBranches() throws {
+  let cases: [(ReallyMeJOSEErrorBranch, ReallyMeProtoJoseErrorReason, ReallyMeJOSEErrorReason)] = [
+    (.primitive, .jwsInvalidSignature, .jwsInvalidSignature),
+    (.provider, .providerUnavailable, .providerUnavailable),
+    (.backend, .backendInternal, .backendInternal),
+  ]
+  for (expectedBranch, protoReason, reason) in cases {
+    for branch in [ReallyMeJOSEErrorBranch.primitive, .provider, .backend] {
+      var error = ReallyMeProtoJoseError()
+      switch branch {
+      case .primitive:
+        var value = ReallyMeProtoJosePrimitiveError()
+        value.reason = protoReason
+        error.error = .primitive(value)
+      case .provider:
+        var value = ReallyMeProtoJoseProviderError()
+        value.reason = protoReason
+        error.error = .provider(value)
+      case .backend:
+        var value = ReallyMeProtoJoseBackendError()
+        value.reason = protoReason
+        error.error = .backend(value)
+      }
+      let expected: ReallyMeJOSEError =
+        branch == expectedBranch
+        ? .jose(branch: branch, reason: reason) : .malformedProviderResponse
+      #expect(throws: expected) {
+        throw try sdkError(error)
+      }
+    }
+  }
+}

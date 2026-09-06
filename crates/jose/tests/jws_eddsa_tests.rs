@@ -6,7 +6,7 @@
 )]
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 use reallyme_codec::base64url::bytes_to_base64url;
 use reallyme_crypto::core::Algorithm;
@@ -114,4 +114,32 @@ fn jws_eddsa_encoder_rejects_output_over_parser_limit() {
     let err = sign_eddsa_jws(&private, &payload).unwrap_err();
 
     assert_eq!(err, JwsEddsaError::InputTooLarge);
+}
+
+#[test]
+fn oversized_jws_is_rejected_before_accessing_the_signing_key() {
+    let payload = "a".repeat(MAX_COMPACT_JWS_BYTES);
+    assert_eq!(
+        sign_eddsa_jws(&[], &payload),
+        Err(JwsEddsaError::InputTooLarge)
+    );
+    assert_eq!(
+        reallyme_jose::jws::suites::es256::sign_es256_jws(&[], &payload),
+        Err(reallyme_jose::jws::suites::es256::JwsEs256Error::InputTooLarge)
+    );
+}
+
+#[test]
+fn jws_encoding_accepts_the_exact_parser_limit() {
+    let (public, private) = generate_keypair(Algorithm::Ed25519).unwrap();
+    // 20 header bytes, two dots, and an 86-byte encoded signature leave
+    // 1,048,468 encoded payload bytes at the public 1 MiB limit.
+    let payload = "a".repeat(786_351);
+    let compact = sign_eddsa_jws(&private, &payload).unwrap();
+    assert_eq!(compact.len(), MAX_COMPACT_JWS_BYTES);
+    verify_eddsa_jws(&compact, &public).unwrap();
+    assert_eq!(
+        sign_eddsa_jws(&private, &(payload + "a")),
+        Err(JwsEddsaError::InputTooLarge)
+    );
 }

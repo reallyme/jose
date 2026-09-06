@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 set -euo pipefail
 
@@ -11,7 +11,8 @@ if [ "$#" -ne 1 ] || [[ ! "$1" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-
 fi
 
 readonly RELEASE_VERSION_INPUT="$1"
-readonly ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+readonly ROOT_DIR
 readonly ARCHIVE_PATH="${ROOT_DIR}/build/swift/ReallyMeJOSEFFI.xcframework.zip"
 readonly CHECKSUM_PATH="${ROOT_DIR}/build/swift/ReallyMeJOSEFFI.xcframework.checksum"
 

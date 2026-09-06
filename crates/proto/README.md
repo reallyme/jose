@@ -1,9 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 # reallyme-jose-proto
 
 `reallyme-jose-proto` contains the generated Buffa bindings for the versioned
@@ -12,7 +6,7 @@ ReallyMe JOSE protobuf boundary.
 The crate is intentionally small: it publishes the checked-in generated message,
 view, JSON, and protobuf encoding types used by `reallyme-jose` wire helpers.
 The `reallyme-jose` `wire` feature is opt-in, so normal native SDK users do not
-compile Buffa or generated protobuf code by default. This crate does not run a
+compile Buffa or generated protobuf code by default. This crate does not run an
 RPC service and does not own JOSE cryptographic behavior.
 
 The schema exists to give FFI, WASM, mobile, generated-SDK, and process
@@ -20,8 +14,6 @@ boundaries one deterministic request/result representation without duplicating
 JOSE policy or dispatch logic in every language. It defines messages only: no
 protobuf `service`, network transport, endpoint, streaming, or discovery
 contract is part of this crate.
-
-This crate defines messages only; it intentionally declares no protobuf service.
 
 ## Boundary Contract
 
@@ -43,7 +35,6 @@ selected operation. The JSON request representation is generated ProtoJSON;
 canonical results remain binary protobuf and have identical meaning across the
 binary and JSON request paths.
 
-ProtoJSON changes request decoding only; canonical results remain binary protobuf.
 FFI, JNI, Swift, Kotlin, and Android adapters all use the versioned,
 operation-discriminated response and never infer result types from opaque
 payload bytes.
@@ -86,6 +77,8 @@ the repository-level `buf.gen.yaml`:
 
 ```sh
 buf generate
+node scripts/harden-generated-jose-proto.mjs
+node scripts/harden-generated-jose-jvm.mjs
 cargo fmt --package reallyme-jose-proto
 ```
 
@@ -93,12 +86,13 @@ cargo fmt --package reallyme-jose-proto
 
 ```toml
 [dependencies]
-reallyme-jose-proto = { version = "0.3.2", features = ["generated"] }
+reallyme-jose-proto = { version = "0.3.3", features = ["generated"] }
 ```
 
 ## License
 
-Licensed under the Apache License, Version 2.0.
+Licensed under either the MIT License or the Apache License, Version 2.0, at your
+option. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
 ## Copyright And Trademarks
 

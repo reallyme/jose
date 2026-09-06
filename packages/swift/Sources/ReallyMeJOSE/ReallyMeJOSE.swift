@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
 
 import Foundation
 import ReallyMeJOSEProto
@@ -343,7 +342,7 @@ public struct ReallyMeJOSE: Sendable {
   }
 }
 
-private func sdkError(_ error: ReallyMeProtoJoseError) throws -> ReallyMeJOSEError {
+func sdkError(_ error: ReallyMeProtoJoseError) throws -> ReallyMeJOSEError {
   guard error.unknownFields.data.isEmpty else {
     throw ReallyMeJOSEError.malformedProviderResponse
   }
@@ -374,6 +373,7 @@ private func sdkError(_ error: ReallyMeProtoJoseError) throws -> ReallyMeJOSEErr
   guard let reason = ReallyMeJOSEErrorReason(rawValue: protoReason.rawValue) else {
     throw ReallyMeJOSEError.malformedProviderResponse
   }
+  try reason.validate(branch: branch)
   return .jose(branch: branch, reason: reason)
 }
 

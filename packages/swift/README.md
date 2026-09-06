@@ -1,9 +1,3 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 # ReallyMe JOSE for Swift
 
 `ReallyMeJOSE` is the supported Swift 6.3 facade for macOS 13 and iOS 16. It
@@ -17,7 +11,7 @@ that deliberately integrate at the wire boundary.
 ```swift
 .package(
   url: "https://github.com/reallyme/jose",
-  from: "0.3.2"
+  from: "0.3.3"
 )
 ```
 
@@ -64,10 +58,11 @@ Maintainers bind a freshly built local XCFramework with
 `--local-artifact-path` option. Release verification rejects that override,
 recomputes the archive checksum, inspects every native slice for the required C
 ABI symbols, and requires the public manifest to bind the exact version and
-checksum. `scripts/prepare_swift_release_candidate.sh 0.3.2` performs the full
+checksum. `scripts/prepare_swift_release_candidate.sh 0.3.3` performs the full
 build-and-bind preparation locally.
 
 ## License
 
-Licensed under the Apache License, Version 2.0. See [LICENSE](../../LICENSE) and
+Licensed under either the MIT License or the Apache License, Version 2.0, at your
+option. See [LICENSE](../../LICENSE) and
 [NOTICE](../../NOTICE).

@@ -1,13 +1,7 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 # Fuzzing Harnesses
 
 Coverage-guided libFuzzer targets exercise JOSE compact serializations as
-untrusted input. Each target asserts the same baseline property: arbitrary input
+untrusted input. Each target asserts the same baseline property: invalid input
 must fail closed with typed errors and must not panic, overflow, read out of
 bounds, or run unbounded.
 
@@ -38,27 +32,28 @@ from scratch.
 ## Running
 
 ```sh
-rustup toolchain install nightly
-cargo install cargo-fuzz
+rustup toolchain install nightly-2026-07-01
+cargo install cargo-fuzz --version 0.13.2 --locked
 
-cargo +nightly fuzz build
-cargo +nightly fuzz run compact_jwe -- -max_total_time=60
-cargo +nightly fuzz run compact_jwe_ecdh_es -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
-cargo +nightly fuzz run signed_jwt -- -max_total_time=60
-cargo +nightly fuzz run operation_wire -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
-cargo +nightly fuzz run operation_response -- -max_total_time=60
-cargo +nightly fuzz run ffi_operation -- -max_total_time=60
+cargo +nightly-2026-07-01 fuzz build
+cargo +nightly-2026-07-01 fuzz run compact_jwe -- -max_total_time=60
+cargo +nightly-2026-07-01 fuzz run compact_jwe_ecdh_es -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
+cargo +nightly-2026-07-01 fuzz run signed_jwt -- -max_total_time=60
+cargo +nightly-2026-07-01 fuzz run operation_wire -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
+cargo +nightly-2026-07-01 fuzz run operation_response -- -max_total_time=60
+cargo +nightly-2026-07-01 fuzz run ffi_operation -- -max_total_time=60
 ```
 
 Reproduce a crash artifact with:
 
 ```sh
-cargo +nightly fuzz run <target> fuzz/artifacts/<target>/<crash-file>
+cargo +nightly-2026-07-01 fuzz run <target> fuzz/artifacts/<target>/<crash-file>
 ```
 
 ## License
 
-Licensed under the Apache License, Version 2.0. See [LICENSE](../LICENSE) and
+Licensed under either the MIT License or the Apache License, Version 2.0, at your
+option. See [LICENSE](../LICENSE) and
 [NOTICE](../NOTICE).
 
 ## Copyright And Trademarks

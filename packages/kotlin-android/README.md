@@ -1,12 +1,6 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 # ReallyMe JOSE for Android
 
-`me.really:jose-android:0.3.2` is the Android AAR form of the typed Kotlin/JVM
+`me.really:jose-android:0.3.3` is the Android AAR form of the typed Kotlin/JVM
 JOSE facade. It packages the same Java/Kotlin API and Rust JNI boundary for
 API 24 or newer; application code never loads an arbitrary native path.
 
@@ -57,3 +51,8 @@ requires an HTTPS repository, credentials, and in-memory signing material.
 The Android package launcher delegates to the repository's single pinned
 Gradle 9.7.1 wrapper, avoiding a second wrapper JAR and distribution checksum
 that could drift independently.
+
+## License
+
+Licensed under either the MIT License or the Apache License, Version 2.0, at your
+option. See [LICENSE](../../LICENSE) and [NOTICE](../../NOTICE).

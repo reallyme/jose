@@ -1,12 +1,6 @@
-<!--
-SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
-
-SPDX-License-Identifier: Apache-2.0
--->
-
 # ReallyMe JOSE for Kotlin/JVM
 
-`me.really:jose:0.3.2` is the typed Java and Kotlin/JVM facade for the canonical
+`me.really:jose:0.3.3` is the typed Java and Kotlin/JVM facade for the canonical
 ReallyMe Rust JOSE implementation. Generated protobuf classes are packaged as
 implementation detail and are not the normal SDK surface.
 
@@ -60,3 +54,8 @@ sources, Javadoc, POM, Gradle module metadata, source SHA, and complete native
 inventory from the staged repository. Release promotion downloads those exact
 attested bytes, signs them in an isolated keyring, refuses existing remote
 coordinates, and compares every published remote file with its staged digest.
+
+## License
+
+Licensed under either the MIT License or the Apache License, Version 2.0, at your
+option. See [LICENSE](../../LICENSE) and [NOTICE](../../NOTICE).

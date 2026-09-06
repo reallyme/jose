@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -71,7 +71,10 @@ try {
 
 const keyBytes = Buffer.from(signingKey, "utf8");
 const passwordBytes = Buffer.from(`${signingPassword}\n`, "utf8");
-const gpgHome = mkdtempSync(join(tmpdir(), "reallyme-jose-maven-signing-"));
+// GPG appends Unix socket names to this path. macOS already has a long
+// per-user temporary directory, so keep the prefix short enough for its
+// socket-path limit while retaining mkdtemp's private, unpredictable owner.
+const gpgHome = mkdtempSync(join(tmpdir(), "rmj-"));
 const createdFiles = [];
 let signingError;
 

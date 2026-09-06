@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
 
 /// The stable generated error branch selected by the Rust semantic core.
 public enum ReallyMeJOSEErrorBranch: Sendable, Equatable {
@@ -85,6 +84,20 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
   case backendInternal = 900
   case backendJSONSerialization = 901
   case backendKeyDerivationFailed = 902
+
+  // The wire enum contains all reasons, but each oneof branch owns a distinct
+  // subset. Recognizing a reason alone does not validate its error branch.
+  func validate(branch: ReallyMeJOSEErrorBranch) throws {
+    let valid =
+      switch branch {
+      case .primitive: (100...399).contains(rawValue) || (700...703).contains(rawValue)
+      case .provider: (800...802).contains(rawValue)
+      case .backend: (900...902).contains(rawValue)
+      }
+    guard valid else {
+      throw ReallyMeJOSEError.malformedProviderResponse
+    }
+  }
 }
 
 /// Audit-safe Swift errors. No case contains secrets, PII, raw buffers, paths, or backend text.
