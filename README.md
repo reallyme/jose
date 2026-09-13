@@ -1,8 +1,8 @@
 <div align="center">
 
-# ReallyMe Jose
+# ReallyMe JOSE
 
-**Jose for Identity**
+**JSON Object Signing and Encryption for Identity**
 
 [![Rust CI](https://github.com/reallyme/jose/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/reallyme/jose/actions/workflows/rust-ci.yml)
 [![reallyme-jose](https://img.shields.io/crates/v/reallyme-jose?label=reallyme-jose&color=2563eb)](https://crates.io/crates/reallyme-jose)
