@@ -177,7 +177,7 @@ class ReallyMeJoseTest {
     fun everyKnownErrorReasonMustMatchItsBranch() {
         // Exercise the private decoder directly without widening the production
         // API or substituting a process-global JNI provider.
-        val decode = Class.forName("me.really.jose.ReallyMeJoseKt")
+        val decode = Class.forName("me.really.jose.OperationSupportKt")
             .getDeclaredMethod("sdkError", me.really.jose.v1.JoseError::class.java)
         decode.isAccessible = true
         for (reason in ReallyMeJoseErrorReason.entries) {
@@ -217,7 +217,7 @@ class ReallyMeJoseTest {
 
     @Test
     fun utf8LengthMatchesJdkForEveryUnicodeScalar() {
-        val measure = Class.forName("me.really.jose.ReallyMeJoseKt")
+        val measure = Class.forName("me.really.jose.OperationSupportKt")
             .getDeclaredMethod("utf8Length", String::class.java)
         measure.isAccessible = true
         // Group scalars to test transitions between UTF-8 widths and surrogate

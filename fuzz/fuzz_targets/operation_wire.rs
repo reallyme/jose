@@ -47,13 +47,15 @@ impl SecureRandom for FuzzRandom {
     }
 }
 
-fn assert_trusted_canonical_response(response: &[u8]) {
+fn validate_trusted_canonical_response(response: &[u8]) {
     let Some(maximum_response_bytes) =
         MAX_JOSE_PROTO_MESSAGE_BYTES.checked_add(MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES)
     else {
         return;
     };
-    assert!(response.len() <= maximum_response_bytes);
+    if response.len() > maximum_response_bytes {
+        std::process::abort();
+    }
 
     // A boundary error is valid for every expected operation. Once request
     // decoding selected an operation, exactly that operation must accept the
@@ -63,7 +65,9 @@ fn assert_trusted_canonical_response(response: &[u8]) {
         .iter()
         .filter(|operation| decode_operation_response_v1(response, **operation).is_ok())
         .count();
-    assert!(accepted_operations == 1 || accepted_operations == OPERATION_KINDS.len());
+    if accepted_operations != 1 && accepted_operations != OPERATION_KINDS.len() {
+        std::process::abort();
+    }
 }
 
 fuzz_target!(|data: &[u8]| {
@@ -74,11 +78,11 @@ fuzz_target!(|data: &[u8]| {
     match selector & FORMAT_JSON_MASK != 0 {
         false => {
             let response = execute_operation_v1(body, &mut rng);
-            assert_trusted_canonical_response(&response);
+            validate_trusted_canonical_response(&response);
         }
         true => {
             let response = execute_operation_json_v1(body, &mut rng);
-            assert_trusted_canonical_response(&response);
+            validate_trusted_canonical_response(&response);
         }
     }
 });

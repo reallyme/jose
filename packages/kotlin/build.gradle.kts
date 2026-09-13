@@ -209,7 +209,11 @@ fun verifyJvmNativeManifest(
 }
 
 kotlin {
+    explicitApi()
     jvmToolchain(21)
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
     sourceSets {
         main {
             kotlin.srcDir("../../gen/kotlin")

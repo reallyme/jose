@@ -17,16 +17,12 @@ use super::{
     JweKeyManagementAlgorithm,
 };
 
-const _: () = {
-    assert!(
-        reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH
-            == reallyme_crypto::aes::AES_192_GCM_NONCE_LENGTH
-    );
-    assert!(
-        reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH
-            == reallyme_crypto::aes::AES_256_GCM_NONCE_LENGTH
-    );
-};
+// Array-length equality keeps the shared nonce-size invariant compile-time
+// checked without introducing a terminating assertion into production code.
+const _: [(); reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH] =
+    [(); reallyme_crypto::aes::AES_192_GCM_NONCE_LENGTH];
+const _: [(); reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH] =
+    [(); reallyme_crypto::aes::AES_256_GCM_NONCE_LENGTH];
 
 /// Compact JWE encryption request.
 pub struct CompactJweEncryptRequest<'a> {

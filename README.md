@@ -9,7 +9,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/me.really/jose?label=maven)](https://central.sonatype.com/artifact/me.really/jose)
 [![npm](https://img.shields.io/npm/v/@reallyme/jose?label=npm&color=2563eb)](https://www.npmjs.com/package/@reallyme/jose)
 [![Security Policy](https://img.shields.io/badge/security-policy-0f766e)](SECURITY.md)
-[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
 
 </div>
 

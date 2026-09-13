@@ -87,7 +87,7 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
 
   // The wire enum contains all reasons, but each oneof branch owns a distinct
   // subset. Recognizing a reason alone does not validate its error branch.
-  func validate(branch: ReallyMeJOSEErrorBranch) throws {
+  func validate(branch: ReallyMeJOSEErrorBranch) throws(ReallyMeJOSEError) {
     let valid =
       switch branch {
       case .primitive: (100...399).contains(rawValue) || (700...703).contains(rawValue)

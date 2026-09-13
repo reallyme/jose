@@ -8,6 +8,8 @@
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
+    "noImplicitAny": true,
+    "useUnknownInCatchVariables": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,

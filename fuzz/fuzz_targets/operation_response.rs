@@ -51,7 +51,7 @@ fn decode_hex(input: &[u8]) -> Option<Vec<u8>> {
     }
 }
 
-fn assert_decoder_consistency(response: &[u8]) {
+fn validate_decoder_consistency(response: &[u8]) {
     let accepted_operations = OPERATION_KINDS
         .iter()
         .filter(|operation| decode_operation_response_v1(response, **operation).is_ok())
@@ -60,7 +60,9 @@ fn assert_decoder_consistency(response: &[u8]) {
     // Malformed responses are rejected for every operation, a valid selected
     // operation is accepted once, and a valid boundary error is accepted for
     // all operations. No other acceptance cardinality is meaningful.
-    assert!(matches!(accepted_operations, 0 | 1 | 8));
+    if !matches!(accepted_operations, 0 | 1 | 8) {
+        std::process::abort();
+    }
 }
 
 fuzz_target!(|data: &[u8]| {
@@ -75,9 +77,9 @@ fuzz_target!(|data: &[u8]| {
             return;
         };
         let _ = decode_operation_response_v1(&decoded, selected_operation);
-        assert_decoder_consistency(&decoded);
+        validate_decoder_consistency(&decoded);
     } else {
         let _ = decode_operation_response_v1(body, selected_operation);
-        assert_decoder_consistency(body);
+        validate_decoder_consistency(body);
     }
 });
