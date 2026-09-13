@@ -40,6 +40,6 @@ could retain its process-global panic-hook state.
 
 ## License
 
-Licensed under either the MIT License or the Apache License, Version 2.0, at your
-option. See [LICENSE](../../LICENSE) and
+Licensed under either the [MIT License](../../LICENSE-MIT) or the
+[Apache License, Version 2.0](../../LICENSE-APACHE), at your option. See
 [NOTICE](../../NOTICE).

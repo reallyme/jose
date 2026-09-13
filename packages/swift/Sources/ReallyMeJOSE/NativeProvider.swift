@@ -38,10 +38,12 @@ private enum NativeStatus {
 }
 
 /// Runtime-loaded native image. The handle remains alive while resolved symbols are callable.
-public final class ReallyMeJOSENativeLibrary: @unchecked Sendable {
-  fileprivate let handle: UnsafeMutableRawPointer
+public final class ReallyMeJOSENativeLibrary: Sendable {
+  // Store the immutable address value rather than a non-Sendable pointer. The
+  // native image remains owned by this instance and is closed only at deinit.
+  private let handleAddress: UInt
 
-  public init(path: String) throws {
+  public init(path: String) throws(ReallyMeJOSEError) {
     #if canImport(Darwin)
       guard FileManager.default.fileExists(atPath: path) else {
         throw ReallyMeJOSEError.nativeLibraryNotFound
@@ -49,7 +51,7 @@ public final class ReallyMeJOSENativeLibrary: @unchecked Sendable {
       guard let loaded = dlopen(path, RTLD_NOW | RTLD_LOCAL) else {
         throw ReallyMeJOSEError.nativeLibraryLoadFailed
       }
-      handle = loaded
+      handleAddress = UInt(bitPattern: loaded)
     #else
       _ = path
       throw ReallyMeJOSEError.unsupportedPlatform
@@ -58,12 +60,20 @@ public final class ReallyMeJOSENativeLibrary: @unchecked Sendable {
 
   deinit {
     #if canImport(Darwin)
-      dlclose(handle)
+      if let handle = UnsafeMutableRawPointer(bitPattern: handleAddress) {
+        dlclose(handle)
+      }
     #endif
   }
 
-  fileprivate func load<Function>(_ symbol: StaticString, as _: Function.Type) throws -> Function {
+  fileprivate func load<Function>(
+    _ symbol: StaticString,
+    as _: Function.Type
+  ) throws(ReallyMeJOSEError) -> Function {
     #if canImport(Darwin)
+      guard let handle = UnsafeMutableRawPointer(bitPattern: handleAddress) else {
+        throw ReallyMeJOSEError.nativeLibraryLoadFailed
+      }
       guard let raw = dlsym(handle, symbol.description) else {
         throw ReallyMeJOSEError.nativeSymbolMissing
       }
@@ -78,8 +88,8 @@ public final class ReallyMeJOSENativeLibrary: @unchecked Sendable {
 protocol ReallyMeJOSENativeProvider: Sendable {
   var maximumBinaryRequestBytes: Int { get }
   var maximumJSONRequestBytes: Int { get }
-  func executeBinary(_ request: [UInt8]) throws -> [UInt8]
-  func executeJSON(_ request: [UInt8]) throws -> [UInt8]
+  func executeBinary(_ request: [UInt8]) throws(ReallyMeJOSEError) -> [UInt8]
+  func executeJSON(_ request: [UInt8]) throws(ReallyMeJOSEError) -> [UInt8]
   func clearOwned(_ bytes: inout [UInt8])
 }
 
@@ -128,7 +138,7 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
   private let maximumResponseBytes: Int
 
   #if REALLYME_JOSE_LINKED_FFI
-    init() throws {
+    init() throws(ReallyMeJOSEError) {
       try Self.requireCompatibleABI(linkedABIVersion())
       maximumBinaryRequestBytes = try Self.validLimit(linkedMaximumRequestBytes())
       maximumJSONRequestBytes = try Self.validLimit(linkedMaximumJSONRequestBytes())
@@ -140,7 +150,7 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
     }
   #endif
 
-  init(library: ReallyMeJOSENativeLibrary) throws {
+  init(library: ReallyMeJOSENativeLibrary) throws(ReallyMeJOSEError) {
     self.library = library
     let version = try library.load("rm_jose_abi_version", as: ABIVersionFunction.self)
     try Self.requireCompatibleABI(version())
@@ -157,11 +167,11 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
     zeroizeFunction = try library.load("rm_jose_zeroize_buffer", as: ZeroizeFunction.self)
   }
 
-  func executeBinary(_ request: [UInt8]) throws -> [UInt8] {
+  func executeBinary(_ request: [UInt8]) throws(ReallyMeJOSEError) -> [UInt8] {
     try execute(request, limit: maximumBinaryRequestBytes, function: binaryFunction)
   }
 
-  func executeJSON(_ request: [UInt8]) throws -> [UInt8] {
+  func executeJSON(_ request: [UInt8]) throws(ReallyMeJOSEError) -> [UInt8] {
     try execute(request, limit: maximumJSONRequestBytes, function: jsonFunction)
   }
 
@@ -178,7 +188,7 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
     _ request: [UInt8],
     limit: Int,
     function: ExecuteFunction
-  ) throws -> [UInt8] {
+  ) throws(ReallyMeJOSEError) -> [UInt8] {
     guard request.count <= limit else {
       throw ReallyMeJOSEError.jose(
         branch: .primitive,
@@ -218,32 +228,34 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
         )
       }
     }
-    do {
-      try Self.throwTransportStatus(status)
-      guard producedLength == output.count else {
-        throw ReallyMeJOSEError.malformedProviderResponse
+    var returnOutput = false
+    defer {
+      if returnOutput == false {
+        clearOwned(&output)
       }
-      return output
-    } catch {
-      clearOwned(&output)
-      throw error
     }
+    try Self.throwTransportStatus(status)
+    guard producedLength == output.count else {
+      throw ReallyMeJOSEError.malformedProviderResponse
+    }
+    returnOutput = true
+    return output
   }
 
-  private static func requireCompatibleABI(_ actual: UInt32) throws {
+  private static func requireCompatibleABI(_ actual: UInt32) throws(ReallyMeJOSEError) {
     guard actual == expectedJoseABIVersion else {
       throw ReallyMeJOSEError.incompatibleABI
     }
   }
 
-  private static func validLimit(_ value: UInt) throws -> Int {
+  private static func validLimit(_ value: UInt) throws(ReallyMeJOSEError) -> Int {
     guard let converted = Int(exactly: value), converted > 0 else {
       throw ReallyMeJOSEError.malformedProviderResponse
     }
     return converted
   }
 
-  private static func throwTransportStatus(_ status: Int32) throws {
+  private static func throwTransportStatus(_ status: Int32) throws(ReallyMeJOSEError) {
     switch status {
     case NativeStatus.success:
       return

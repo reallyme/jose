@@ -12,14 +12,9 @@ import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
-import java.nio.file.attribute.AclEntry
-import java.nio.file.attribute.AclEntryPermission
-import java.nio.file.attribute.AclEntryType
-import java.nio.file.attribute.AclFileAttributeView
 import java.nio.file.attribute.PosixFileAttributeView
 import java.nio.file.attribute.PosixFilePermissions
 import java.security.MessageDigest
-import java.util.EnumSet
 import java.util.Locale
 
 /**
@@ -39,13 +34,8 @@ public object ReallyMeJoseRustNativeProvider {
     private const val DIGEST_BYTE_LENGTH: Int = 32
     private const val DIGEST_METADATA_MAX_BYTES: Int = 96
     private const val COPY_BUFFER_BYTES: Int = 8_192
-    private const val POSIX_GROUP_WRITE: Int = 0x10
-    private const val POSIX_OTHER_WRITE: Int = 0x02
-    private const val POSIX_STICKY: Int = 0x200
 
     private val digestMetadataPattern: Regex = Regex("^([0-9a-f]{64}) ([1-9][0-9]{0,11})\\n$")
-    private val trustedWindowsSidPattern: Regex =
-        Regex("(?:^|[^0-9])(?:s-1-5-18|s-1-5-32-544)(?:$|[^0-9])")
 
     @Volatile
     private var loaded: Boolean = false
@@ -212,157 +202,31 @@ public object ReallyMeJoseRustNativeProvider {
         } finally {
             buffer.fill(0)
             if (!completed) {
-                deleteExtractionFiles(target, directory)
+                NativeExtractionPolicy.deleteExtractionFiles(target, directory)
             }
         }
     }
 
     internal fun createPrivateExtractionDirectory(
         configuredRoot: String? = System.getProperty("java.io.tmpdir"),
-    ): Path? {
-        return try {
-            val rootValue = configuredRoot ?: return null
-            val root = Path.of(rootValue).toRealPath(LinkOption.NOFOLLOW_LINKS)
-            if (!Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS)) {
-                return null
-            }
-            val posixView = Files.getFileAttributeView(
-                root,
-                PosixFileAttributeView::class.java,
-                LinkOption.NOFOLLOW_LINKS,
-            )
-            if (posixView != null) {
-                val attributes = posixView.readAttributes()
-                val mode = Files.getAttribute(
-                    root,
-                    "unix:mode",
-                    LinkOption.NOFOLLOW_LINKS,
-                ) as? Int ?: return null
-                val currentUser = System.getProperty("user.name") ?: return null
-                if (
-                    !isSecurePosixTempMode(mode) ||
-                    !isTrustedPosixTempOwner(attributes.owner().name, currentUser)
-                ) {
-                    return null
-                }
-                Files.createTempDirectory(
-                    root,
-                    "reallyme-jose-native-",
-                    PosixFilePermissions.asFileAttribute(
-                        PosixFilePermissions.fromString("rwx------"),
-                    ),
-                )
-            } else {
-                val aclView = Files.getFileAttributeView(
-                    root,
-                    AclFileAttributeView::class.java,
-                    LinkOption.NOFOLLOW_LINKS,
-                ) ?: return null
-                val currentUser = System.getProperty("user.name") ?: return null
-                if (!isSecureAclTempRoot(aclView, currentUser)) {
-                    return null
-                }
-                val directory = Files.createTempDirectory(root, "reallyme-jose-native-")
-                if (!restrictAclToOwner(directory, writable = true)) {
-                    deleteExtractionFiles(directory.resolve("unused"), directory)
-                    return null
-                }
-                directory
-            }
-        } catch (_: IOException) {
-            null
-        } catch (_: SecurityException) {
-            null
-        }
-    }
+    ): Path? = NativeExtractionPolicy.createPrivateExtractionDirectory(configuredRoot)
 
-    internal fun isSecurePosixTempMode(mode: Int): Boolean {
-        val writableByAnotherPrincipal =
-            mode and (POSIX_GROUP_WRITE or POSIX_OTHER_WRITE) != 0
-        return !writableByAnotherPrincipal || mode and POSIX_STICKY != 0
-    }
+    internal fun isSecurePosixTempMode(mode: Int): Boolean =
+        NativeExtractionPolicy.isSecurePosixTempMode(mode)
 
     internal fun isTrustedPosixTempOwner(owner: String, currentUser: String): Boolean =
-        owner == currentUser || owner == "root" || owner == "0"
-
-    private fun isSecureAclTempRoot(
-        view: AclFileAttributeView,
-        currentUser: String,
-    ): Boolean {
-        val owner = view.owner
-        if (!isTrustedAclPrincipal(owner.name, currentUser, owner.toString())) {
-            return false
-        }
-        val mutatingPermissions = EnumSet.of(
-            AclEntryPermission.ADD_FILE,
-            AclEntryPermission.ADD_SUBDIRECTORY,
-            AclEntryPermission.APPEND_DATA,
-            AclEntryPermission.DELETE,
-            AclEntryPermission.DELETE_CHILD,
-            AclEntryPermission.WRITE_ACL,
-            AclEntryPermission.WRITE_ATTRIBUTES,
-            AclEntryPermission.WRITE_DATA,
-            AclEntryPermission.WRITE_NAMED_ATTRS,
-            AclEntryPermission.WRITE_OWNER,
-        )
-        return view.acl.none { entry ->
-            entry.type() == AclEntryType.ALLOW &&
-                !isTrustedAclPrincipal(
-                    entry.principal().name,
-                    currentUser,
-                    entry.principal().toString(),
-                ) &&
-                entry.permissions().any { it in mutatingPermissions }
-        }
-    }
+        NativeExtractionPolicy.isTrustedPosixTempOwner(owner, currentUser)
 
     internal fun isTrustedAclPrincipal(
         principal: String,
         currentUser: String,
         description: String = principal,
-    ): Boolean {
-        val normalizedPrincipal = principal.lowercase(Locale.ROOT)
-        val normalizedUser = currentUser.lowercase(Locale.ROOT)
-        val normalizedDescription = description.lowercase(Locale.ROOT)
-        return normalizedPrincipal == normalizedUser ||
-            normalizedPrincipal.endsWith("\\$normalizedUser") ||
-            normalizedPrincipal == "builtin\\administrators" ||
-            normalizedPrincipal == "nt authority\\system" ||
-            trustedWindowsSidPattern.containsMatchIn(normalizedDescription)
-    }
+    ): Boolean = NativeExtractionPolicy.isTrustedAclPrincipal(
+        principal,
+        currentUser,
+        description,
+    )
 
-    private fun restrictAclToOwner(path: Path, writable: Boolean): Boolean {
-        return try {
-            val view = Files.getFileAttributeView(
-                path,
-                AclFileAttributeView::class.java,
-                LinkOption.NOFOLLOW_LINKS,
-            ) ?: return false
-            val permissions = if (writable) {
-                EnumSet.allOf(AclEntryPermission::class.java)
-            } else {
-                EnumSet.of(
-                    AclEntryPermission.EXECUTE,
-                    AclEntryPermission.READ_ACL,
-                    AclEntryPermission.READ_ATTRIBUTES,
-                    AclEntryPermission.READ_DATA,
-                    AclEntryPermission.READ_NAMED_ATTRS,
-                    AclEntryPermission.SYNCHRONIZE,
-                )
-            }
-            val ownerEntry = AclEntry.newBuilder()
-                .setType(AclEntryType.ALLOW)
-                .setPrincipal(view.owner)
-                .setPermissions(permissions)
-                .build()
-            view.acl = listOf(ownerEntry)
-            true
-        } catch (_: IOException) {
-            false
-        } catch (_: SecurityException) {
-            false
-        }
-    }
 
     private fun makeExtractedLibraryReadOnly(path: Path): Boolean {
         return try {
@@ -378,7 +242,7 @@ public object ReallyMeJoseRustNativeProvider {
                 )
                 true
             } else {
-                restrictAclToOwner(path, writable = false)
+                NativeExtractionPolicy.restrictAclToOwner(path, writable = false)
             }
         } catch (_: IOException) {
             false
@@ -458,23 +322,6 @@ public object ReallyMeJoseRustNativeProvider {
             output[index] = ((high shl 4) or low).toByte()
         }
         return output
-    }
-
-    private fun deleteExtractionFiles(target: Path, directory: Path) {
-        try {
-            Files.deleteIfExists(target)
-        } catch (_: IOException) {
-            // Cleanup is best effort; a failed extraction is never loaded.
-        } catch (_: SecurityException) {
-            // Cleanup is best effort; a failed extraction is never loaded.
-        }
-        try {
-            Files.deleteIfExists(directory)
-        } catch (_: IOException) {
-            // Cleanup is best effort; a failed extraction is never loaded.
-        } catch (_: SecurityException) {
-            // Cleanup is best effort; a failed extraction is never loaded.
-        }
     }
 
     private fun loadExtractedLibrary(path: File): Boolean {

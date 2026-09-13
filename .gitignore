@@ -30,8 +30,6 @@ target/
 # Local developer state
 /AGENTS.md
 /.agents/
-/.claude/
-/.codex/
 /.release-readiness/
 /.release-readiness-upstream/
 

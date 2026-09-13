@@ -23,6 +23,10 @@ const {
   assertWorkflowActionsPinned,
   assertCargoFuzzWorkflowPolicy,
   assertWorkflowPermissionsPolicy,
+  assertRustSourcePolicy,
+  assertTypeScriptSourcePolicy,
+  assertSwiftSourcePolicy,
+  assertKotlinSourcePolicy,
   runNodeCheck,
 } = createReleaseReadinessContext({
   scriptUrl: import.meta.url,
@@ -42,7 +46,7 @@ const cryptoVersion = "0.3.7";
 const codecVersion = "0.2.3";
 const npmPackageVersion = "0.3.3";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
-const releaseReadinessCommit = "304bc55cdca3c53bf66218982d51188f341806ed";
+const releaseReadinessCommit = "48a5ae4a9c6f25053459122d6f84cf1741463454";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -52,6 +56,18 @@ const releaseReadinessCheckoutRequired = [
 const generatedFreshnessMode = process.argv.includes("--generated-freshness");
 const policyOnlyMode = process.argv.includes("--policy-only");
 const releasePackagesMode = process.argv.includes("--release-packages");
+
+// Policy-only jobs prove the shared structural rules without rerunning every
+// platform-native suite. The default readiness job executes these commands on
+// macOS, while the dedicated language workflows retain their own full matrix.
+const sourceVerification = (commands) => {
+  if (!policyOnlyMode) return commands;
+  return [{
+    roles: commands.flatMap((command) => command.roles),
+    command: process.execPath,
+    args: ["--version"],
+  }];
+};
 
 if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
   fail("RELEASE_VERSION must match every 0.3.3 release package");
@@ -65,12 +81,15 @@ assertContains("Cargo.toml", `license = "${projectLicense}"`);
 for (const manifest of ["packages/ts/package.json", "tools/panva-goldens/package.json"]) {
   if (readJson(manifest).license !== projectLicense) fail(`${manifest} has stale project licensing`);
 }
-const projectLicenseText = readText("LICENSE");
-assertNotContains("LICENSE", "SPDX-License-Identifier:");
-assertContains("LICENSE", "Permission is hereby granted, free of charge");
-assertContains("LICENSE", "TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION");
+assertNotContains("LICENSE-MIT", "SPDX-License-Identifier:");
+assertContains("LICENSE-MIT", "Permission is hereby granted, free of charge");
+assertNotContains("LICENSE-APACHE", "SPDX-License-Identifier:");
+assertContains("LICENSE-APACHE", "TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION");
+const packagedLicenseText = readText("crates/jose/LICENSE");
+assertContains("crates/jose/LICENSE", "licensed under either the MIT");
+assertContains("crates/jose/LICENSE", "Apache License, Version 2.0");
 for (const copy of ["crates/jose/LICENSE", "crates/proto/LICENSE", "crates/wasm/LICENSE", "packages/ts/LICENSE"]) {
-  if (readText(copy) !== projectLicenseText) fail(`${copy} differs from the project license`);
+  if (readText(copy) !== packagedLicenseText) fail(`${copy} differs from the packaged dual license`);
 }
 for (const build of ["packages/kotlin/build.gradle.kts", "packages/kotlin-android/build.gradle.kts"]) {
   assertContains(build, 'name.set("MIT License")');
@@ -439,13 +458,15 @@ for (const readme of ["README.md", "crates/jose/README.md", "vectors/README.md",
   assertContains(readme, "Copyright © 2026 by ReallyMe LLC.");
   assertContains(readme, "ReallyMe<sup>®</sup> is a registered trademark of ReallyMe LLC.");
 }
-assertContains("README.md", "See [LICENSE](LICENSE) and");
-assertContains("README.md", "[NOTICE](NOTICE).");
+assertContains("README.md", "[MIT License](LICENSE-MIT)");
+assertContains("README.md", "[Apache License, Version 2.0](LICENSE-APACHE)");
 assertContains("crates/jose/README.md", "See [LICENSE](LICENSE) and");
 assertContains("crates/jose/README.md", "[NOTICE](NOTICE).");
-assertContains("vectors/README.md", "See [LICENSE](../LICENSE) and");
+assertContains("vectors/README.md", "[MIT License](../LICENSE-MIT)");
+assertContains("vectors/README.md", "[Apache License, Version 2.0](../LICENSE-APACHE)");
 assertContains("vectors/README.md", "[NOTICE](../NOTICE).");
-assertContains("fuzz/README.md", "See [LICENSE](../LICENSE) and");
+assertContains("fuzz/README.md", "[MIT License](../LICENSE-MIT)");
+assertContains("fuzz/README.md", "[Apache License, Version 2.0](../LICENSE-APACHE)");
 assertContains("fuzz/README.md", "[NOTICE](../NOTICE).");
 assertContains("vectors/manifest.json", "reallyme.jose.conformance.vector_manifest.v1");
 assertContains("vectors/manifest.json", '"id": "panva-jose"');
@@ -597,7 +618,7 @@ assertContains(
 );
 assertContains(
   "scripts/run_pinned_release_readiness.mjs",
-  '"0a33532aa595871c1beefb1ad1d3930f1a51675b236a73e8bf93ad5d7ccdbae4"',
+  '"6eab296596b6badd76bb1ce4abf67b73513981ad352e8f6ab5e44cdca257545e"',
 );
 assertContains("scripts/run_pinned_release_readiness.mjs", "LOCAL_CHECKER_SHA256");
 assertContains("scripts/run_pinned_release_readiness.mjs", "MAX_CHECKER_BYTES = 524_288");
@@ -920,10 +941,13 @@ assertContains("crates/jose/tests/jwt_suite/unsigned_reject_tests.rs", "reject_u
 assertContains("crates/jose/tests/jwt_suite/unsigned_reject_tests.rs", "reject_unsigned_with_duplicate_claim_member");
 assertContains("crates/jose/tests/jwt_suite/signed_reject_tests.rs", "reject_signed_jwt_with_duplicate_claim_members");
 assertContains("crates/jose/tests/jwt_suite/signed_reject_tests.rs", "reject_signed_eddsa_jwt_with_wrong_signature_length");
-assertContains("crates/jose/tests/jwe_tests.rs", "rejects_ecdh_es_epk_with_private_member");
-assertContains("crates/jose/tests/jwe_tests.rs", "rejects_duplicate_epk_member");
-assertContains("crates/jose/tests/jwe_tests.rs", "rejects_direct_jwe_with_ecdh_ephemeral_key_headers");
-assertContains("crates/jose/tests/jwe_tests.rs", "rejects_invalid_ecdh_es_shared_secret_length_before_kdf");
+assertContains("crates/jose/tests/jwe_tests/cases.rs", "rejects_ecdh_es_epk_with_private_member");
+assertContains("crates/jose/tests/jwe_tests/cases.rs", "rejects_duplicate_epk_member");
+assertContains("crates/jose/tests/jwe_tests/cases.rs", "rejects_direct_jwe_with_ecdh_ephemeral_key_headers");
+assertContains(
+  "crates/jose/tests/jwe_tests/support_and_boundaries.rs",
+  "rejects_invalid_ecdh_es_shared_secret_length_before_kdf",
+);
 assertContains("crates/jose/tests/jws_es256_tests.rs", "jws_es256_rejects_all_zero_signature_scalars");
 assertContains("crates/jose/tests/jws_es256_tests.rs", "jws_es256_rejects_r_scalar_at_group_order");
 assertContains("crates/jose/tests/jws_es256_tests.rs", "jws_es256_rejects_s_scalar_at_group_order");
@@ -1400,7 +1424,10 @@ assertContains("packages/kotlin/src/main/kotlin/me/really/jose/ReallyMeJose.kt",
 assertContains("packages/kotlin/src/main/kotlin/me/really/jose/ReallyMeJose.kt", "responseBytes.fill(0)");
 assertContains("packages/kotlin/src/main/kotlin/me/really/jose/ReallyMeJose.kt", "reallyMeHasUnknownFieldsForValidation");
 assertContains("packages/kotlin/src/main/kotlin/me/really/jose/RustNativeProvider.kt", "MessageDigest.isEqual");
-assertContains("packages/kotlin/src/main/kotlin/me/really/jose/RustNativeProvider.kt", 'PosixFilePermissions.fromString("rwx------")');
+assertContains(
+  "packages/kotlin/src/main/kotlin/me/really/jose/NativeExtractionPolicy.kt",
+  'PosixFilePermissions.fromString("rwx------")',
+);
 assertContains("scripts/harden-generated-jose-jvm.mjs", "reallyMeHasUnknownFieldsForValidation");
 assertContains("scripts/harden-generated-jose-jvm.mjs", "{<redacted>}");
 assertContains("gen/java/me/really/jose/v1/JoseOperationRequest.java", "JoseOperationRequest{<redacted>}");
@@ -1732,8 +1759,8 @@ for (const seed of [
     fail(`${seed} is missing from the fuzz seed corpus`);
   }
 }
-assertContains("tools/vector-audit/src/main.rs", "decrypt_jwe_with_cek(case, compact, &derived_cek)");
-assertContains("tools/vector-audit/src/main.rs", "assert_expected_plaintext(case, &plaintext)");
+assertContains("tools/vector-audit/src/cases.rs", "decrypt_jwe_with_cek(case, compact, &derived_cek)");
+assertContains("tools/vector-audit/src/cases.rs", "assert_expected_plaintext(case, &plaintext)");
 assertContains("tools/panva-goldens/generate.mjs", "function cekLengthBits(enc)");
 assertContains("tools/panva-goldens/generate.mjs", "const keyDataLenBits = cekLengthBits");
 assertContains(".gitignore", "!packages/ts/src/proto/generated/");
@@ -1832,6 +1859,83 @@ for (const workflow of listFiles(".github/workflows").filter(
 if (!rootCargo.includes("[workspace.lints.clippy]")) {
   fail("workspace clippy lint policy is missing");
 }
+
+assertRustSourcePolicy({
+  roots: ["."],
+  generatedPrefixes: ["crates/proto/src/generated"],
+});
+assertTypeScriptSourcePolicy({
+  roots: ["packages/ts/src"],
+  generatedPrefixes: ["packages/ts/src/proto/generated"],
+  tsconfigPaths: ["packages/ts/tsconfig.json"],
+  staticAnalysis: {
+    files: [{
+      path: "packages/ts/tsconfig.json",
+      required: [
+        '"noImplicitReturns": true',
+        '"noUnusedLocals": true',
+        '"noUnusedParameters": true',
+        '"noFallthroughCasesInSwitch": true',
+      ],
+    }],
+  },
+  verification: sourceVerification([
+    {
+      roles: ["typecheck", "lint"],
+      command: "npm",
+      args: ["--prefix", "packages/ts", "run", "typecheck"],
+    },
+    {
+      roles: ["test"],
+      command: "npm",
+      args: ["--prefix", "packages/ts", "test"],
+    },
+  ]),
+});
+assertSwiftSourcePolicy({
+  roots: ["packages/swift/Sources", "packages/swift/Tests"],
+  generatedPrefixes: ["gen/swift"],
+  configuration: {
+    files: [{
+      path: "scripts/check_release_readiness.mjs",
+      required: ["-strict-concurrency=complete", "-warnings-as-errors"],
+    }],
+  },
+  verification: sourceVerification([
+    {
+      roles: ["format", "lint"],
+      command: "swift",
+      args: [
+        "format",
+        "lint",
+        "--recursive",
+        "--strict",
+        "packages/swift/Sources/ReallyMeJOSE",
+        "packages/swift/Tests/ReallyMeJOSETests",
+      ],
+    },
+    {
+      roles: ["build", "test"],
+      command: "scripts/test_swift_source_tree.sh",
+      args: [],
+    },
+  ]),
+});
+assertKotlinSourcePolicy({
+  roots: ["packages/kotlin/src"],
+  generatedPrefixes: ["gen/kotlin"],
+  configuration: {
+    files: [{
+      path: "packages/kotlin/build.gradle.kts",
+      required: ["explicitApi()", "allWarningsAsErrors.set(true)"],
+    }],
+  },
+  verification: sourceVerification([{
+    roles: ["format", "static-analysis", "compile", "test"],
+    command: "packages/kotlin/gradlew",
+    args: ["-p", "packages/kotlin", "--no-daemon", "test"],
+  }]),
+});
 
 if (!policyOnlyMode) {
   run(process.execPath, ["--test", "scripts/tests/operation-contract-readiness.test.mjs"]);

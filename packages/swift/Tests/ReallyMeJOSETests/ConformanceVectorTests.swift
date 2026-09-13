@@ -265,7 +265,8 @@ private func runUnsignedJWTVector(_ vector: [String: Any], jose: ReallyMeJOSE) t
 }
 
 private func runJWEVector(_ vector: [String: Any], jose: ReallyMeJOSE) throws {
-  let keyHex = optionalString(vector, "recipient_private_key_hex")
+  let keyHex =
+    optionalString(vector, "recipient_private_key_hex")
     ?? optionalString(vector, "cek_hex")
   guard let keyHex else { throw VectorFixtureError.invalidFixture }
   var key = try vectorBytes(hex: keyHex)

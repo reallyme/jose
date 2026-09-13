@@ -9,7 +9,8 @@ on:
     paths-ignore:
       - "**/*.md"
       - "docs/**"
-      - "LICENSE"
+      - "LICENSE-APACHE"
+      - "LICENSE-MIT"
       - "NOTICE"
       - ".github/renovate.json"
   push:
@@ -18,7 +19,8 @@ on:
     paths-ignore:
       - "**/*.md"
       - "docs/**"
-      - "LICENSE"
+      - "LICENSE-APACHE"
+      - "LICENSE-MIT"
       - "NOTICE"
       - ".github/renovate.json"
 
@@ -228,7 +230,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 304bc55cdca3c53bf66218982d51188f341806ed
+          ref: 48a5ae4a9c6f25053459122d6f84cf1741463454
           path: .release-readiness
           persist-credentials: false
 

@@ -9,12 +9,12 @@ import SwiftProtobuf
 public struct ReallyMeJOSE: Sendable {
   private let provider: any ReallyMeJOSENativeProvider
 
-  public init(nativeLibrary: ReallyMeJOSENativeLibrary) throws {
+  public init(nativeLibrary: ReallyMeJOSENativeLibrary) throws(ReallyMeJOSEError) {
     provider = try ReallyMeJOSERustProvider(library: nativeLibrary)
   }
 
   #if REALLYME_JOSE_LINKED_FFI
-    public init() throws {
+    public init() throws(ReallyMeJOSEError) {
       provider = try ReallyMeJOSERustProvider()
     }
   #endif
@@ -23,7 +23,7 @@ public struct ReallyMeJOSE: Sendable {
     algorithm: ReallyMeJOSESignatureAlgorithm,
     privateKey: [UInt8],
     payload: [UInt8]
-  ) throws -> String {
+  ) throws(ReallyMeJOSEError) -> String {
     try requireAggregateInput([privateKey.count, payload.count])
     var operation = ReallyMeProtoJoseJwsSignRequest()
     operation.algorithm = protoSignatureAlgorithm(algorithm)
@@ -55,7 +55,7 @@ public struct ReallyMeJOSE: Sendable {
     algorithm: ReallyMeJOSESignatureAlgorithm,
     compact: String,
     publicKey: [UInt8]
-  ) throws {
+  ) throws(ReallyMeJOSEError) {
     try requireAggregateInput([compact.utf8.count, publicKey.count])
     var operation = ReallyMeProtoJoseJwsVerifyRequest()
     operation.algorithm = protoSignatureAlgorithm(algorithm)
@@ -81,7 +81,7 @@ public struct ReallyMeJOSE: Sendable {
     }
   }
 
-  public func encodeUnsignedJWT(claimsJSON: [UInt8]) throws -> String {
+  public func encodeUnsignedJWT(claimsJSON: [UInt8]) throws(ReallyMeJOSEError) -> String {
     try requireAggregateInput([claimsJSON.count])
     var operation = ReallyMeProtoJoseJwtEncodeUnsignedRequest()
     operation.claimsJson = Data(claimsJSON)
@@ -104,7 +104,7 @@ public struct ReallyMeJOSE: Sendable {
     }
   }
 
-  public func decodeUnsignedJWT(_ compact: String) throws -> [UInt8] {
+  public func decodeUnsignedJWT(_ compact: String) throws(ReallyMeJOSEError) -> [UInt8] {
     try requireAggregateInput([compact.utf8.count])
     var operation = ReallyMeProtoJoseJwtDecodeUnsignedRequest()
     operation.compact = compact
@@ -135,7 +135,7 @@ public struct ReallyMeJOSE: Sendable {
     jwkJSON: [UInt8],
     privateKey: [UInt8],
     type: String = ""
-  ) throws -> String {
+  ) throws(ReallyMeJOSEError) -> String {
     try requireAggregateInput([claimsJSON.count, jwkJSON.count, privateKey.count, type.utf8.count])
     var operation = ReallyMeProtoJoseJwtSignRequest()
     operation.claimsJson = Data(claimsJSON)
@@ -168,7 +168,7 @@ public struct ReallyMeJOSE: Sendable {
     headerPolicy: ReallyMeJOSEJWTHeaderPolicy? = nil,
     temporalPolicy: ReallyMeJOSEJWTTemporalPolicy? = nil,
     signatureOnly: Bool = false
-  ) throws -> [UInt8] {
+  ) throws(ReallyMeJOSEError) -> [UInt8] {
     try requireAggregateInput([compact.utf8.count, jwkJSON.count, publicKey.count])
     var operation = ReallyMeProtoJoseJwtVerifyRequest()
     operation.compact = compact
@@ -209,7 +209,7 @@ public struct ReallyMeJOSE: Sendable {
     agreementPartyVInfo: [UInt8] = [],
     type: String = "",
     contentType: String = ""
-  ) throws -> String {
+  ) throws(ReallyMeJOSEError) -> String {
     try requireAggregateInput([
       key.count, plaintext.count, keyIdentifier.utf8.count,
       agreementPartyUInfo.count, agreementPartyVInfo.count,
@@ -251,7 +251,7 @@ public struct ReallyMeJOSE: Sendable {
     contentEncryptionAlgorithm: ReallyMeJOSEJWEContentEncryptionAlgorithm,
     key: [UInt8],
     headerPolicy: ReallyMeJOSEJWEHeaderPolicy? = nil
-  ) throws -> [UInt8] {
+  ) throws(ReallyMeJOSEError) -> [UInt8] {
     try requireAggregateInput([compact.utf8.count, key.count])
     var operation = ReallyMeProtoJoseJweDecryptRequest()
     operation.compact = compact
@@ -283,18 +283,18 @@ public struct ReallyMeJOSE: Sendable {
   }
 
   /// Explicit wire-level API. The caller owns and must clear returned bytes.
-  public func executeWireRequest(_ request: [UInt8]) throws -> [UInt8] {
+  public func executeWireRequest(_ request: [UInt8]) throws(ReallyMeJOSEError) -> [UInt8] {
     try provider.executeBinary(request)
   }
 
   /// Explicit generated-ProtoJSON request API returning canonical binary response bytes.
-  public func executeWireJSONRequest(_ request: [UInt8]) throws -> [UInt8] {
+  public func executeWireJSONRequest(_ request: [UInt8]) throws(ReallyMeJOSEError) -> [UInt8] {
     try provider.executeJSON(request)
   }
 
   private func execute(
     _ request: inout ReallyMeProtoJoseOperationRequest
-  ) throws -> ReallyMeProtoJoseOperationResponse {
+  ) throws(ReallyMeJOSEError) -> ReallyMeProtoJoseOperationResponse {
     defer { wipeRequest(&request) }
     var requestBytes: [UInt8]
     do {
@@ -327,11 +327,11 @@ public struct ReallyMeJOSE: Sendable {
     return response
   }
 
-  private func requireAggregateInput(_ lengths: [Int]) throws {
+  private func requireAggregateInput(_ lengths: [Int]) throws(ReallyMeJOSEError) {
     var aggregate = 0
     for length in lengths {
       let (sum, overflow) = aggregate.addingReportingOverflow(length)
-      guard !overflow, sum <= provider.maximumBinaryRequestBytes else {
+      guard overflow == false, sum <= provider.maximumBinaryRequestBytes else {
         throw ReallyMeJOSEError.jose(
           branch: .primitive,
           reason: .commonResourceLimitExceeded
@@ -342,7 +342,7 @@ public struct ReallyMeJOSE: Sendable {
   }
 }
 
-func sdkError(_ error: ReallyMeProtoJoseError) throws -> ReallyMeJOSEError {
+func sdkError(_ error: ReallyMeProtoJoseError) throws(ReallyMeJOSEError) -> ReallyMeJOSEError {
   guard error.unknownFields.data.isEmpty else {
     throw ReallyMeJOSEError.malformedProviderResponse
   }

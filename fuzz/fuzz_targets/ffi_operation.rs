@@ -70,7 +70,7 @@ fuzz_target!(|data: &[u8]| {
         }
     };
 
-    assert!(matches!(
+    if !matches!(
         status,
         value if value == JoseFfiStatus::Success.code()
             || value == JoseFfiStatus::CallerError.code()
@@ -78,16 +78,22 @@ fuzz_target!(|data: &[u8]| {
             || value == JoseFfiStatus::PanicCaught.code()
             || value == JoseFfiStatus::OutputCapacityMismatch.code()
             || value == JoseFfiStatus::UnsupportedAbi.code()
-    ));
-    if status == JoseFfiStatus::Success.code() {
-        assert!(produced <= output.len());
+    ) {
+        std::process::abort();
     }
-    if status == JoseFfiStatus::OutputCapacityMismatch.code() {
-        assert!(produced <= rm_jose_max_response_bytes());
+    if status == JoseFfiStatus::Success.code() && produced > output.len() {
+        std::process::abort();
+    }
+    if status == JoseFfiStatus::OutputCapacityMismatch.code()
+        && produced > rm_jose_max_response_bytes()
+    {
+        std::process::abort();
     }
 
     // SAFETY: `output` remains exclusively owned and writable here.
     let cleanup =
         unsafe { rm_jose_zeroize_buffer(JOSE_ABI_VERSION, output.as_mut_ptr(), output.len()) };
-    assert_eq!(cleanup, JoseFfiStatus::Success.code());
+    if cleanup != JoseFfiStatus::Success.code() {
+        std::process::abort();
+    }
 });

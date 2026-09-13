@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
 //
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { lstatSync, readdirSync, readFileSync, realpathSync } from "node:fs";
+import { lstatSync, readdirSync, readFileSync, realpathSync, writeSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { extname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -11,9 +11,11 @@ import { spawnSync } from "node:child_process";
 // This module is intentionally written as a standalone, vendorable release
 // readiness core. Sister repositories should copy it byte-for-byte or consume a
 // pinned upstream revision so release-critical checks do not drift silently.
-export const RELEASE_READINESS_CORE_CONTRACT_VERSION = 10;
+export const RELEASE_READINESS_CORE_CONTRACT_VERSION = 12;
 
 const DEFAULT_FAILURE_PREFIX = "release readiness check failed";
+const MAX_PRODUCTION_SOURCE_LINES = 500;
+const MAX_SEPARATE_TEST_SOURCE_LINES = 800;
 const DEFAULT_REALLYME_LATEST_STABLE_DEPENDENCIES = [
   "reallyme-crypto",
   "reallyme-codec",
@@ -81,23 +83,41 @@ const scrubProtoCommentsAndStrings = (source) => {
   return output;
 };
 
-const scrubJavaScriptCommentsAndStrings = (source) => {
+const javascriptSlashStartsRegex = (source, index) => {
+  let cursor = index - 1;
+  while (cursor >= 0 && /\s/u.test(source[cursor])) {
+    cursor -= 1;
+  }
+  if (cursor < 0) {
+    return true;
+  }
+  return "=(:,[!&|?;{}".includes(source[cursor]);
+};
+
+const scrubJavaScriptCommentsAndStrings = (source, options = {}) => {
+  const preserveStrings = options.preserveStrings ?? false;
+  const preserveComments = options.preserveComments ?? false;
   let output = "";
   let state = "normal";
+  let regexCharacterClass = false;
   for (let index = 0; index < source.length; index += 1) {
     const character = source[index];
     const next = source[index + 1];
     if (state === "normal") {
       if (character === "/" && next === "/") {
-        output += "  ";
+        output += preserveComments ? "//" : "  ";
         index += 1;
         state = "line-comment";
       } else if (character === "/" && next === "*") {
-        output += "  ";
+        output += preserveComments ? "/*" : "  ";
         index += 1;
         state = "block-comment";
+      } else if (character === "/" && javascriptSlashStartsRegex(source, index)) {
+        output += preserveStrings ? character : " ";
+        regexCharacterClass = false;
+        state = "regex";
       } else if (character === '"' || character === "'" || character === "`") {
-        output += " ";
+        output += preserveStrings ? character : " ";
         state =
           character === '"'
             ? "double-quoted-string"
@@ -114,14 +134,221 @@ const scrubJavaScriptCommentsAndStrings = (source) => {
         output += "\n";
         state = "normal";
       } else {
-        output += " ";
+        output += preserveComments ? character : " ";
       }
       continue;
     }
     if (state === "block-comment") {
       if (character === "*" && next === "/") {
+        output += preserveComments ? "*/" : "  ";
+        index += 1;
+        state = "normal";
+      } else {
+        output += preserveComments ? character : character === "\n" ? "\n" : " ";
+      }
+      continue;
+    }
+    if (state === "regex") {
+      if (character === "\\" && next !== undefined) {
+        output += preserveStrings ? `${character}${next}` : next === "\n" ? " \n" : "  ";
+        index += 1;
+      } else if (character === "[") {
+        output += preserveStrings ? character : " ";
+        regexCharacterClass = true;
+      } else if (character === "]") {
+        output += preserveStrings ? character : " ";
+        regexCharacterClass = false;
+      } else if (character === "/" && !regexCharacterClass) {
+        output += preserveStrings ? character : " ";
+        state = "normal";
+      } else {
+        output += preserveStrings ? character : character === "\n" ? "\n" : " ";
+      }
+      continue;
+    }
+    if (character === "\\" && next !== undefined) {
+      output += preserveStrings ? `${character}${next}` : next === "\n" ? " \n" : "  ";
+      index += 1;
+    } else if (
+      (state === "double-quoted-string" && character === '"') ||
+      (state === "single-quoted-string" && character === "'") ||
+      (state === "template-string" && character === "`")
+    ) {
+      output += preserveStrings ? character : " ";
+      state = "normal";
+    } else {
+      output += preserveStrings ? character : character === "\n" ? "\n" : " ";
+    }
+  }
+  return output;
+};
+
+const rustRawStringStart = (source, index) => {
+  let cursor = index;
+  if (source[cursor] === "b" && source[cursor + 1] === "r") {
+    cursor += 2;
+  } else if (source[cursor] === "r") {
+    cursor += 1;
+  } else {
+    return null;
+  }
+  let hashCount = 0;
+  while (source[cursor] === "#") {
+    hashCount += 1;
+    cursor += 1;
+  }
+  if (source[cursor] !== '"') {
+    return null;
+  }
+  return {
+    length: cursor - index + 1,
+    terminator: `"${"#".repeat(hashCount)}`,
+  };
+};
+
+const scrubRustCommentsAndStrings = (source) => {
+  let output = "";
+  let state = "normal";
+  let blockDepth = 0;
+  let rawTerminator = "";
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index];
+    const next = source[index + 1];
+    if (state === "normal") {
+      if (character === "/" && next === "/") {
         output += "  ";
         index += 1;
+        state = "line-comment";
+      } else if (character === "/" && next === "*") {
+        output += "  ";
+        index += 1;
+        blockDepth = 1;
+        state = "block-comment";
+      } else {
+        const rawStart = rustRawStringStart(source, index);
+        if (rawStart !== null) {
+          output += " ".repeat(rawStart.length);
+          index += rawStart.length - 1;
+          rawTerminator = rawStart.terminator;
+          state = "raw-string";
+        } else if (character === '"') {
+          output += " ";
+          state = "quoted-string";
+        } else {
+          output += character;
+        }
+      }
+      continue;
+    }
+    if (state === "line-comment") {
+      if (character === "\n") {
+        output += "\n";
+        state = "normal";
+      } else {
+        output += " ";
+      }
+      continue;
+    }
+    if (state === "block-comment") {
+      if (character === "/" && next === "*") {
+        output += "  ";
+        index += 1;
+        blockDepth += 1;
+      } else if (character === "*" && next === "/") {
+        output += "  ";
+        index += 1;
+        blockDepth -= 1;
+        if (blockDepth === 0) {
+          state = "normal";
+        }
+      } else {
+        output += character === "\n" ? "\n" : " ";
+      }
+      continue;
+    }
+    if (state === "quoted-string") {
+      if (character === "\\" && next !== undefined) {
+        output += next === "\n" ? " \n" : "  ";
+        index += 1;
+      } else if (character === '"') {
+        output += " ";
+        state = "normal";
+      } else {
+        output += character === "\n" ? "\n" : " ";
+      }
+      continue;
+    }
+    if (source.startsWith(rawTerminator, index)) {
+      output += " ".repeat(rawTerminator.length);
+      index += rawTerminator.length - 1;
+      state = "normal";
+    } else {
+      output += character === "\n" ? "\n" : " ";
+    }
+  }
+  return output;
+};
+
+const scrubSlashCommentsAndStrings = (source, options = {}) => {
+  const preserveComments = options.preserveComments ?? false;
+  let output = "";
+  let state = "normal";
+  let blockDepth = 0;
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index];
+    const next = source[index + 1];
+    if (state === "normal") {
+      if (character === "/" && next === "/") {
+        output += preserveComments ? "//" : "  ";
+        index += 1;
+        state = "line-comment";
+      } else if (character === "/" && next === "*") {
+        output += preserveComments ? "/*" : "  ";
+        index += 1;
+        blockDepth = 1;
+        state = "block-comment";
+      } else if (source.startsWith('"""', index)) {
+        output += "   ";
+        index += 2;
+        state = "triple-quoted-string";
+      } else if (character === '"' || character === "'") {
+        output += " ";
+        state = character === '"' ? "double-quoted-string" : "single-quoted-string";
+      } else {
+        output += character;
+      }
+      continue;
+    }
+    if (state === "line-comment") {
+      if (character === "\n") {
+        output += "\n";
+        state = "normal";
+      } else {
+        output += preserveComments ? character : " ";
+      }
+      continue;
+    }
+    if (state === "block-comment") {
+      if (character === "/" && next === "*") {
+        output += preserveComments ? "/*" : "  ";
+        index += 1;
+        blockDepth += 1;
+      } else if (character === "*" && next === "/") {
+        output += preserveComments ? "*/" : "  ";
+        index += 1;
+        blockDepth -= 1;
+        if (blockDepth === 0) {
+          state = "normal";
+        }
+      } else {
+        output += preserveComments ? character : character === "\n" ? "\n" : " ";
+      }
+      continue;
+    }
+    if (state === "triple-quoted-string") {
+      if (source.startsWith('"""', index)) {
+        output += "   ";
+        index += 2;
         state = "normal";
       } else {
         output += character === "\n" ? "\n" : " ";
@@ -133,8 +360,7 @@ const scrubJavaScriptCommentsAndStrings = (source) => {
       index += 1;
     } else if (
       (state === "double-quoted-string" && character === '"') ||
-      (state === "single-quoted-string" && character === "'") ||
-      (state === "template-string" && character === "`")
+      (state === "single-quoted-string" && character === "'")
     ) {
       output += " ";
       state = "normal";
@@ -173,6 +399,21 @@ export function createReleaseReadinessContext(options) {
   const fail = (message) => {
     console.error(`${failurePrefix}: ${message}`);
     process.exit(1);
+  };
+
+  const reportSourcePolicy = (language) => {
+    if (
+      process.env.RELEASE_READINESS_ENFORCED_CONTRACT !==
+        String(RELEASE_READINESS_CORE_CONTRACT_VERSION) ||
+      process.env.RELEASE_READINESS_SOURCE_POLICY_FD !== "3"
+    ) {
+      return;
+    }
+    try {
+      writeSync(3, `${language}\n`);
+    } catch {
+      fail(`could not report the enforced ${language} source policy`);
+    }
   };
 
   const resolveRepositoryPath = (path, description = "path") => {
@@ -1016,12 +1257,35 @@ export function createReleaseReadinessContext(options) {
 
   const assertSpdxHeaders = (policy = {}) => {
     const {
-      extensions = [".md", ".mjs", ".proto", ".py", ".rs", ".sh", ".toml", ".yaml", ".yml"],
+      extensions = [
+        ".cjs",
+        ".cts",
+        ".js",
+        ".jsx",
+        ".kt",
+        ".kts",
+        ".md",
+        ".mjs",
+        ".mts",
+        ".proto",
+        ".py",
+        ".rs",
+        ".sh",
+        ".swift",
+        ".toml",
+        ".ts",
+        ".tsx",
+        ".yaml",
+        ".yml",
+      ],
       names = [".gitignore"],
       excludedPrefixes = [],
+      exclusions = [],
+      requireExclusionsMatched = false,
+      requireExclusionReasons = false,
       copyright =
         "SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved",
-      license = "SPDX-License-Identifier: Apache-2.0",
+      license = "SPDX-License-Identifier: MIT OR Apache-2.0",
     } = policy;
     for (const [policyName, values] of [
       ["extensions", extensions],
@@ -1032,24 +1296,1499 @@ export function createReleaseReadinessContext(options) {
         fail(`SPDX ${policyName} policy must be an array of strings`);
       }
     }
+    if (!Array.isArray(exclusions)) {
+      fail("SPDX exclusions policy must be an array");
+    }
+    if (typeof requireExclusionsMatched !== "boolean") {
+      fail("SPDX requireExclusionsMatched policy must be a boolean");
+    }
+    if (typeof requireExclusionReasons !== "boolean") {
+      fail("SPDX requireExclusionReasons policy must be a boolean");
+    }
+    if (typeof copyright !== "string" || copyright.length === 0) {
+      fail("SPDX copyright policy must be a non-empty string");
+    }
+    if (typeof license !== "string" || license.length === 0) {
+      fail("SPDX license policy must be a non-empty string");
+    }
+    const allowedReasons = new Set(["generated", "third-party", "vendored"]);
+    const normalizedExclusions = excludedPrefixes.map((path) => ({ path, reason: null }));
+    for (const [index, exclusion] of exclusions.entries()) {
+      if (
+        exclusion === null ||
+        typeof exclusion !== "object" ||
+        Array.isArray(exclusion) ||
+        typeof exclusion.path !== "string" ||
+        exclusion.path.length === 0 ||
+        typeof exclusion.reason !== "string" ||
+        !allowedReasons.has(exclusion.reason)
+      ) {
+        fail(
+          `SPDX exclusions[${index}] must define a path and a generated, third-party, or vendored reason`,
+        );
+      }
+      normalizedExclusions.push({ path: exclusion.path, reason: exclusion.reason });
+    }
+    const exclusionPaths = new Set();
+    for (const exclusion of normalizedExclusions) {
+      const absolute = resolveRepositoryPath(exclusion.path, "SPDX exclusion path");
+      const path = relative(root, absolute).replaceAll("\\", "/").replace(/\/+$/u, "");
+      if (path.length === 0) {
+        fail("SPDX exclusion path must not be the repository root");
+      }
+      if (exclusionPaths.has(path)) {
+        fail(`SPDX exclusion path ${path} is duplicated`);
+      }
+      if (requireExclusionReasons && exclusion.reason === null) {
+        fail(`SPDX exclusion path ${path} requires a typed reason`);
+      }
+      exclusionPaths.add(path);
+    }
     const extensionSet = new Set(extensions);
     const nameSet = new Set(names);
-    for (const path of loadTrackedFiles()) {
-      if (excludedPrefixes.some((prefix) => pathIsInside(path, prefix))) {
+    const trackedFiles = [...loadTrackedFiles()];
+    const requiresSpdxHeader = (path) => {
+      const fileName = path.slice(path.lastIndexOf("/") + 1);
+      return nameSet.has(fileName) || extensionSet.has(extname(fileName));
+    };
+    if (requireExclusionsMatched) {
+      for (const path of exclusionPaths) {
+        if (
+          !trackedFiles.some(
+            (trackedPath) => pathIsInside(trackedPath, path) && requiresSpdxHeader(trackedPath),
+          )
+        ) {
+          fail(`SPDX exclusion path ${path} does not match a governed tracked file`);
+        }
+      }
+    }
+    for (const path of trackedFiles) {
+      if ([...exclusionPaths].some((prefix) => pathIsInside(path, prefix))) {
         continue;
       }
-      const fileName = path.slice(path.lastIndexOf("/") + 1);
-      if (!nameSet.has(fileName) && !extensionSet.has(extname(fileName))) {
+      if (!requiresSpdxHeader(path)) {
         continue;
       }
       const text = readText(path);
       if (!text.includes(copyright)) {
-        fail(`${path} is missing the ReallyMe SPDX copyright header`);
+        fail(`${path} is missing the configured SPDX copyright header`);
       }
       if (!text.includes(license)) {
-        fail(`${path} is missing the Apache-2.0 SPDX license header`);
+        fail(`${path} is missing the configured SPDX license header`);
       }
     }
+  };
+
+  const assertRepositoryShapePolicy = (policy) => {
+    if (policy === null || typeof policy !== "object" || Array.isArray(policy)) {
+      fail("repository shape policy must be an object");
+    }
+    const archetypes = {
+      "foundational-library": {
+        required: ["crates", "docs", "scripts", ".github"],
+        permitted: [
+          "crates",
+          "bindings",
+          "gen",
+          "packages",
+          "contracts",
+          "conformance",
+          "vectors",
+          "fuzz",
+          "examples",
+          "docs",
+          "scripts",
+          ".github",
+          ".cargo",
+        ],
+      },
+      "protocol-engine": {
+        required: ["crates", "contracts", "docs", "scripts", ".github"],
+        permitted: [
+          "crates",
+          "bindings",
+          "gen",
+          "packages",
+          "contracts",
+          "conformance",
+          "vectors",
+          "fuzz",
+          "examples",
+          "docs",
+          "scripts",
+          ".github",
+          ".cargo",
+        ],
+      },
+      "developer-platform": {
+        required: [
+          "bindings",
+          "gen",
+          "packages",
+          "examples",
+          "contracts",
+          "conformance",
+          "docs",
+          "scripts",
+          ".github",
+        ],
+        permitted: [
+          "crates",
+          "bindings",
+          "gen",
+          "packages",
+          "contracts",
+          "conformance",
+          "vectors",
+          "fuzz",
+          "examples",
+          "docs",
+          "scripts",
+          ".github",
+          ".cargo",
+          ".changeset",
+          "gradle",
+        ],
+      },
+      "hosted-service": {
+        required: ["services", "deploy", "operations", "docs", "scripts", ".github"],
+        permitted: [
+          "crates",
+          "contracts",
+          "conformance",
+          "vectors",
+          "fuzz",
+          "examples",
+          "docs",
+          "scripts",
+          ".github",
+          ".cargo",
+          "services",
+          "deploy",
+          "migrations",
+          "operations",
+          "config",
+          "docker",
+        ],
+      },
+      "platform-workspace": {
+        required: [
+          "crates",
+          "kits",
+          "apps",
+          "servers",
+          "workers",
+          "conformance",
+          "docs",
+          "scripts",
+          ".github",
+        ],
+        permitted: [
+          "crates",
+          "kits",
+          "apps",
+          "servers",
+          "workers",
+          "conformance",
+          "docs",
+          "scripts",
+          ".github",
+        ],
+      },
+      "runtime-composition": {
+        required: [
+          "crates",
+          "configs",
+          "deploy",
+          "contracts",
+          "conformance",
+          "docs",
+          "scripts",
+          ".github",
+        ],
+        permitted: [
+          "crates",
+          "configs",
+          "deploy",
+          "contracts",
+          "conformance",
+          "vectors",
+          "fuzz",
+          "examples",
+          "docs",
+          "scripts",
+          ".github",
+          ".cargo",
+          "docker",
+        ],
+      },
+      infrastructure: {
+        required: [
+          "deployments",
+          "operations",
+          "docs",
+          "scripts",
+          ".github",
+        ],
+        permitted: [
+          "topology",
+          "provisioning",
+          "configuration",
+          "deployments",
+          "networking",
+          "observability",
+          "operations",
+          "crates",
+          "tools",
+          "contracts",
+          "conformance",
+          "vectors",
+          "examples",
+          "docs",
+          "scripts",
+          ".github",
+          ".cargo",
+        ],
+      },
+      "conformance-suite": {
+        required: ["upstream", "plans", "adapters", "conformance", "docs", "scripts", ".github"],
+        permitted: [
+          "contracts",
+          "conformance",
+          "vectors",
+          "examples",
+          "docs",
+          "scripts",
+          ".github",
+          "upstream",
+          "plans",
+          "adapters",
+          "results",
+          "evidence",
+        ],
+      },
+      tooling: {
+        required: ["docs", "scripts", ".github"],
+        permitted: [
+          "contracts",
+          "conformance",
+          "vectors",
+          "examples",
+          "docs",
+          "scripts",
+          ".github",
+          "templates",
+          "test",
+          "fixtures",
+        ],
+      },
+    };
+    const {
+      archetype,
+      requiredLanes = [],
+      optionalLanes = [],
+      exceptions = [],
+      crates = [],
+      subLanes = {},
+      forbiddenPaths = [],
+      requireReleaseReadiness = archetype !== "tooling",
+    } = policy;
+    const archetypePolicy = archetypes[archetype];
+    if (archetypePolicy === undefined) {
+      fail(`repository shape archetype ${String(archetype)} is not approved`);
+    }
+    for (const [name, values] of [
+      ["requiredLanes", requiredLanes],
+      ["optionalLanes", optionalLanes],
+      ["forbiddenPaths", forbiddenPaths],
+    ]) {
+      if (
+        !Array.isArray(values) ||
+        values.some((value) => typeof value !== "string" || value.length === 0)
+      ) {
+        fail(`repository shape ${name} must be an array of non-empty strings`);
+      }
+      if (new Set(values).size !== values.length) {
+        fail(`repository shape ${name} must not contain duplicates`);
+      }
+    }
+    if (typeof requireReleaseReadiness !== "boolean") {
+      fail("repository shape requireReleaseReadiness must be a boolean");
+    }
+    if (!requireReleaseReadiness && archetype !== "tooling") {
+      fail("repository shape permits disabling release readiness only for tooling");
+    }
+    const requiredLaneSet = new Set(requiredLanes);
+    const optionalLaneSet = new Set(optionalLanes);
+    for (const lane of requiredLaneSet) {
+      if (optionalLaneSet.has(lane)) {
+        fail(`repository shape lane ${lane} cannot be both required and optional`);
+      }
+    }
+    const permittedLaneSet = new Set(archetypePolicy.permitted);
+    for (const lane of [...requiredLaneSet, ...optionalLaneSet]) {
+      if (!permittedLaneSet.has(lane)) {
+        fail(`repository shape archetype ${archetype} does not permit lane ${lane}`);
+      }
+    }
+    for (const lane of archetypePolicy.required) {
+      if (!requiredLaneSet.has(lane)) {
+        fail(`repository shape archetype ${archetype} requires lane ${lane}`);
+      }
+    }
+
+    if (!Array.isArray(exceptions)) {
+      fail("repository shape exceptions must be an array");
+    }
+    const exceptionReasons = new Set([
+      "build-tool",
+      "deployment",
+      "generated",
+      "organization-specific",
+      "third-party",
+      "vendored",
+    ]);
+    const exceptionPaths = new Set();
+    for (const [index, entry] of exceptions.entries()) {
+      if (
+        entry === null ||
+        typeof entry !== "object" ||
+        Array.isArray(entry) ||
+        typeof entry.path !== "string" ||
+        !/^[.]?[A-Za-z0-9][A-Za-z0-9_.-]*$/u.test(entry.path) ||
+        typeof entry.reason !== "string" ||
+        !exceptionReasons.has(entry.reason)
+      ) {
+        fail(`repository shape exceptions[${index}] must define a root lane and typed reason`);
+      }
+      if (exceptionPaths.has(entry.path)) {
+        fail(`repository shape exception ${entry.path} is duplicated`);
+      }
+      if (permittedLaneSet.has(entry.path)) {
+        fail(`repository shape exception ${entry.path} is unnecessary for this archetype`);
+      }
+      exceptionPaths.add(entry.path);
+    }
+
+    const repositoryFiles = new Set(loadTrackedFiles());
+    if (!requireTrackedFiles) {
+      for (const path of loadUntrackedFiles()) {
+        repositoryFiles.add(path);
+      }
+    }
+    const governedFiles = [...repositoryFiles].map((path) => path.replaceAll("\\", "/"));
+    const observedRootLanes = new Set(
+      governedFiles
+        .filter((path) => path.includes("/"))
+        .map((path) => path.slice(0, path.indexOf("/"))),
+    );
+    const forbiddenRootLanes = new Set(["src", "proto", "protos", "tests", "generated"]);
+    for (const lane of observedRootLanes) {
+      if (forbiddenRootLanes.has(lane)) {
+        fail(`repository shape forbids root lane ${lane}`);
+      }
+      if (
+        !requiredLaneSet.has(lane) &&
+        !optionalLaneSet.has(lane) &&
+        !exceptionPaths.has(lane)
+      ) {
+        fail(`repository shape has undeclared root lane ${lane}`);
+      }
+    }
+    for (const lane of requiredLaneSet) {
+      if (!observedRootLanes.has(lane)) {
+        fail(`repository shape required lane ${lane} has no tracked files`);
+      }
+    }
+    for (const path of exceptionPaths) {
+      if (!observedRootLanes.has(path)) {
+        fail(`repository shape exception ${path} does not match a tracked root lane`);
+      }
+    }
+    assertPathsAbsent([...forbiddenRootLanes, ...forbiddenPaths]);
+    if (governedFiles.some((path) => pathIsInside(path, "conformance/vectors"))) {
+      fail("repository shape requires reusable vectors at root vectors/, not conformance/vectors/");
+    }
+
+    if (subLanes === null || typeof subLanes !== "object" || Array.isArray(subLanes)) {
+      fail("repository shape subLanes must be an object");
+    }
+    const subLaneParents = new Set([
+      "bindings",
+      "gen",
+      "packages",
+      ...(archetype === "platform-workspace"
+        ? ["apps", "kits", "servers", "workers"]
+        : []),
+    ]);
+    for (const [parent, children] of Object.entries(subLanes)) {
+      if (!subLaneParents.has(parent)) {
+        fail(`repository shape does not support sublane declarations for ${parent}`);
+      }
+      if (
+        !Array.isArray(children) ||
+        children.length === 0 ||
+        children.some(
+          (child) =>
+            typeof child !== "string" ||
+            !/^[A-Za-z0-9][A-Za-z0-9_.-]*$/u.test(child),
+        ) ||
+        new Set(children).size !== children.length
+      ) {
+        fail(`repository shape ${parent} sublanes must be a non-empty array of unique names`);
+      }
+      if (!observedRootLanes.has(parent)) {
+        fail(`repository shape ${parent} sublanes are configured for an absent lane`);
+      }
+      const observedChildren = new Set(
+        governedFiles
+          .filter((path) => path.startsWith(`${parent}/`) && path.slice(parent.length + 1).includes("/"))
+          .map((path) => path.slice(parent.length + 1).split("/", 1)[0]),
+      );
+      for (const child of observedChildren) {
+        if (!children.includes(child)) {
+          fail(`repository shape has undeclared ${parent} sublane ${child}`);
+        }
+      }
+      for (const child of children) {
+        if (!observedChildren.has(child)) {
+          fail(`repository shape ${parent} sublane ${child} has no tracked files`);
+        }
+      }
+    }
+    for (const parent of subLaneParents) {
+      if (observedRootLanes.has(parent) && !Object.hasOwn(subLanes, parent)) {
+        fail(`repository shape lane ${parent} requires explicit sublane declarations`);
+      }
+    }
+
+    if (!Array.isArray(crates)) {
+      fail("repository shape crates must be an array");
+    }
+    const crateRoles = new Set([
+      "adapter",
+      "domain",
+      "proto",
+      "proto-codec",
+      "provider",
+      "runtime",
+      "storage",
+      "support",
+      "test-support",
+      "transport",
+    ]);
+    const declaredCrates = new Map();
+    for (const [index, entry] of crates.entries()) {
+      if (
+        entry === null ||
+        typeof entry !== "object" ||
+        Array.isArray(entry) ||
+        typeof entry.path !== "string" ||
+        !/^crates\/[A-Za-z0-9][A-Za-z0-9_.-]*(?:\/[A-Za-z0-9][A-Za-z0-9_.-]*)*$/u.test(
+          entry.path,
+        ) ||
+        typeof entry.role !== "string" ||
+        !crateRoles.has(entry.role)
+      ) {
+        fail(`repository shape crates[${index}] must define a crates/ path and approved role`);
+      }
+      resolveRepositoryPath(entry.path, `repository shape crate ${entry.path}`);
+      if (declaredCrates.has(entry.path)) {
+        fail(`repository shape crate ${entry.path} is duplicated`);
+      }
+      requireTracked(`${entry.path}/Cargo.toml`);
+      declaredCrates.set(entry.path, entry.role);
+    }
+    const observedCrates = governedFiles
+      .filter((path) => path.startsWith("crates/") && path.endsWith("/Cargo.toml"))
+      .map((path) => path.slice(0, -"/Cargo.toml".length));
+    for (const path of observedCrates) {
+      if (!declaredCrates.has(path)) {
+        fail(`repository shape Cargo crate ${path} is undeclared`);
+      }
+    }
+    if (observedRootLanes.has("crates")) {
+      requireTracked("Cargo.toml");
+      const rootCargo = readText("Cargo.toml");
+      if (!/^\[workspace\][ \t]*$/mu.test(rootCargo)) {
+        fail("repository shape with crates/ requires a root Cargo workspace");
+      }
+      if (/^\[package\][ \t]*$/mu.test(rootCargo)) {
+        fail("repository shape root Cargo.toml must not define a root package");
+      }
+      if (declaredCrates.size === 0) {
+        fail("repository shape crates/ lane requires declared Cargo crates");
+      }
+    } else if (crates.length !== 0) {
+      fail("repository shape declares Cargo crates without a crates/ lane");
+    }
+    const protoCrates = [...declaredCrates].filter(([, role]) => role === "proto");
+    const protoCodecCrates = [...declaredCrates].filter(([, role]) => role === "proto-codec");
+    if (protoCrates.length > 1 || protoCodecCrates.length > 1) {
+      fail("repository shape permits at most one proto and one proto-codec crate");
+    }
+    if (protoCrates.length === 1 && protoCrates[0][0] !== "crates/proto") {
+      fail("repository shape canonical proto crate must be crates/proto");
+    }
+    if (protoCodecCrates.length === 1 && protoCodecCrates[0][0] !== "crates/proto-codec") {
+      fail("repository shape proto-codec crate must be crates/proto-codec");
+    }
+    if (protoCodecCrates.length === 1 && protoCrates.length === 0) {
+      fail("repository shape proto-codec requires a canonical proto crate");
+    }
+    const protoFiles = governedFiles.filter((path) => path.endsWith(".proto"));
+    const usesAppOwnedProto = archetype === "platform-workspace";
+    if (usesAppOwnedProto && (protoCrates.length !== 0 || protoCodecCrates.length !== 0)) {
+      fail("repository shape platform-workspace keeps protobuf ownership in app contracts");
+    }
+    if (!usesAppOwnedProto && protoFiles.length !== 0 && protoCrates.length === 0) {
+      fail("repository shape found protobuf schemas without a declared canonical proto crate");
+    }
+    if (
+      !usesAppOwnedProto &&
+      protoCrates.length === 1 &&
+      protoFiles.some((path) => !pathIsInside(path, protoCrates[0][0]))
+    ) {
+      fail("repository shape requires every protobuf schema inside crates/proto");
+    }
+    if (
+      usesAppOwnedProto &&
+      protoFiles.some(
+        (path) =>
+          !/^apps\/[A-Za-z0-9][A-Za-z0-9_.-]*\/contract\/proto\/.+[.]proto$/u.test(path),
+      )
+    ) {
+      fail(
+        "repository shape platform-workspace requires protobuf schemas in apps/<app>/contract/proto",
+      );
+    }
+    if (
+      governedFiles.some(
+        (path) =>
+          path.startsWith("crates/proto/") &&
+          path.endsWith("/Cargo.toml") &&
+          path !== "crates/proto/Cargo.toml",
+      )
+    ) {
+      fail("repository shape forbids nested Cargo packages inside crates/proto");
+    }
+
+    if (requireReleaseReadiness) {
+      requireTracked("scripts/check_release_readiness.mjs");
+      requireTracked("scripts/release-readiness/core.mjs");
+    }
+  };
+
+  const assertRustSourcePolicy = (policy = {}) => {
+    if (policy === null || typeof policy !== "object" || Array.isArray(policy)) {
+      fail("Rust source policy must be an object");
+    }
+    const {
+      roots = ["."],
+      generatedPrefixes = [],
+      baselinePath = null,
+      productionTargetLines = 500,
+      productionHardLines = 500,
+      testTargetLines = 800,
+      testHardLines = 800,
+      moduleHardLines = 100,
+      forbidWildcardImports = true,
+      forbidInlineTests = true,
+      forbidSubstantiveFacades = true,
+      forbidPanickingProductionCode = true,
+      forbidDynamicErrorSurfaces = true,
+    } = policy;
+    if (
+      !Array.isArray(roots) ||
+      roots.length === 0 ||
+      roots.some((value) => typeof value !== "string" || value.length === 0)
+    ) {
+      fail("Rust source roots policy must be a non-empty array of non-empty strings");
+    }
+    if (
+      !Array.isArray(generatedPrefixes) ||
+      generatedPrefixes.some((value) => typeof value !== "string" || value.length === 0)
+    ) {
+      fail("Rust source generatedPrefixes policy must be an array of non-empty strings");
+    }
+    if (new Set(roots).size !== roots.length) {
+      fail("Rust source roots policy must not contain duplicates");
+    }
+    if (new Set(generatedPrefixes).size !== generatedPrefixes.length) {
+      fail("Rust source generatedPrefixes policy must not contain duplicates");
+    }
+    if (baselinePath !== null && (typeof baselinePath !== "string" || baselinePath.length === 0)) {
+      fail("Rust source baselinePath policy must be null or a non-empty string");
+    }
+    for (const [name, value] of Object.entries({
+      forbidWildcardImports,
+      forbidInlineTests,
+      forbidSubstantiveFacades,
+      forbidPanickingProductionCode,
+      forbidDynamicErrorSurfaces,
+    })) {
+      if (typeof value !== "boolean") {
+        fail(`Rust source ${name} policy must be a boolean`);
+      }
+      if (!value) {
+        fail(`Rust source ${name} policy is mandatory and cannot be disabled`);
+      }
+    }
+    const limits = {
+      productionTargetLines,
+      productionHardLines,
+      testTargetLines,
+      testHardLines,
+      moduleHardLines,
+    };
+    for (const [name, value] of Object.entries(limits)) {
+      if (!Number.isSafeInteger(value) || value <= 0) {
+        fail(`Rust source ${name} policy must be a positive safe integer`);
+      }
+    }
+    if (
+      productionTargetLines > productionHardLines ||
+      testTargetLines > testHardLines ||
+      moduleHardLines > productionHardLines
+    ) {
+      fail("Rust source line limits are inconsistent");
+    }
+    if (productionHardLines > MAX_PRODUCTION_SOURCE_LINES) {
+      fail(
+        `Rust production hard limit cannot exceed ${MAX_PRODUCTION_SOURCE_LINES} lines`,
+      );
+    }
+    if (testHardLines > MAX_SEPARATE_TEST_SOURCE_LINES) {
+      fail(
+        `Rust separate-test hard limit cannot exceed ${MAX_SEPARATE_TEST_SOURCE_LINES} lines`,
+      );
+    }
+
+    const normalizePolicyPath = (path, description, allowRepositoryRoot = false) => {
+      const absolute = resolveRepositoryPath(path, description);
+      const normalized = relative(root, absolute).replaceAll("\\", "/").replace(/\/+$/u, "");
+      if (normalized.length === 0) {
+        if (allowRepositoryRoot) {
+          return ".";
+        }
+        fail(`${description} must not be the repository root`);
+      }
+      return normalized;
+    };
+    const normalizedRoots = roots.map((path) =>
+      normalizePolicyPath(path, "Rust source root", true),
+    );
+    const normalizedGeneratedPrefixes = generatedPrefixes.map((path) =>
+      normalizePolicyPath(path, "Rust generated source prefix"),
+    );
+    for (const sourceRoot of normalizedRoots) {
+      assertRepositoryDirectory(sourceRoot, "Rust source root");
+    }
+    const trackedRustFiles = [...loadTrackedFiles()]
+      .map((path) => path.replaceAll("\\", "/"))
+      .filter((path) => path.endsWith(".rs"));
+    for (const prefix of normalizedGeneratedPrefixes) {
+      if (!/(?:^|\/)(?:gen|generated)(?:[./_-]|\/|$)/iu.test(prefix)) {
+        fail(`Rust generated source prefix ${prefix} must identify a gen or generated path`);
+      }
+      if (!trackedRustFiles.some((path) => pathIsInside(path, prefix))) {
+        fail(`Rust generated source prefix ${prefix} does not match a tracked Rust source file`);
+      }
+    }
+    const uncoveredRustFiles = trackedRustFiles.filter(
+      (path) =>
+        !normalizedRoots.some(
+          (sourceRoot) => sourceRoot === "." || pathIsInside(path, sourceRoot),
+        ) &&
+        !normalizedGeneratedPrefixes.some((prefix) => pathIsInside(path, prefix)),
+    );
+    if (uncoveredRustFiles.length !== 0) {
+      fail(`Rust source roots do not govern tracked source ${uncoveredRustFiles[0]}`);
+    }
+    const sourceFiles = new Set(
+      trackedRustFiles.filter(
+        (path) =>
+          normalizedRoots.some(
+            (sourceRoot) => sourceRoot === "." || pathIsInside(path, sourceRoot),
+          ) &&
+          !normalizedGeneratedPrefixes.some((prefix) => pathIsInside(path, prefix)),
+      ),
+    );
+    if (sourceFiles.size === 0) {
+      fail("Rust source policy found no Rust source files");
+    }
+
+    const baseline = new Map();
+    if (baselinePath !== null) {
+      const normalizedBaselinePath = normalizePolicyPath(
+        baselinePath,
+        "Rust source baseline path",
+      );
+      for (const [index, line] of readText(normalizedBaselinePath).split("\n").entries()) {
+        const trimmed = line.trim();
+        if (trimmed.length === 0 || trimmed.startsWith("#")) {
+          continue;
+        }
+        const fields = line.split("\t");
+        if (fields.length !== 2 || !/^[1-9][0-9]*$/u.test(fields[1])) {
+          fail(`Rust source baseline line ${index + 1} must be path<TAB>positive-lines`);
+        }
+        const path = normalizePolicyPath(fields[0], `Rust source baseline line ${index + 1} path`);
+        const allowedLines = Number(fields[1]);
+        if (!Number.isSafeInteger(allowedLines)) {
+          fail(`Rust source baseline line ${index + 1} exceeds the safe integer range`);
+        }
+        if (baseline.has(path)) {
+          fail(`Rust source baseline path ${path} is duplicated`);
+        }
+        if (!sourceFiles.has(path)) {
+          fail(`Rust source baseline path ${path} is not a governed Rust source file`);
+        }
+        baseline.set(path, allowedLines);
+      }
+    }
+
+    const wildcardImport = /^[ \t]*(?:pub(?:\([^)]*\))?[ \t]+)?use\b[^;]*\*[^;]*;/mu;
+    const externalTestModule = /#\s*\[\s*cfg\s*\(\s*test\s*\)\s*\]\s*(?:#\s*\[[^\]]+\]\s*)*(?:pub(?:\([^)]*\))?\s+)?mod\s+[A-Za-z_][A-Za-z0-9_]*\s*;/gu;
+    const testConfiguration = /#\s*\[\s*cfg\s*\([^\]]*\btest\b[^\]]*\)\s*\]/u;
+    const testAttribute = /#\s*\[\s*(?:[A-Za-z_][A-Za-z0-9_]*::)*test(?:\s*\([^\]]*\))?\s*\]/u;
+    const substantiveFacade = /(?:^|\n)[ \t]*(?:(?:pub(?:\([^)]*\))?|async|unsafe|const|extern(?:[ \t]+"[^"]*")?)[ \t]+)*(?:fn|struct|enum|union|trait|impl|static|const)[ \t]+|(?:^|\n)[ \t]*(?:pub(?:\([^)]*\))?[ \t]+)?mod[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*\{|(?:^|\n)[ \t]*macro_rules[ \t]*!/mu;
+    const panickingProductionPatterns = [
+      ["unwrap", /\.unwrap[ \t\n]*\(/u],
+      ["expect", /\.expect[ \t\n]*\(/u],
+      ["panic macro", /\bpanic[ \t\n]*!/u],
+      ["todo macro", /\btodo[ \t\n]*!/u],
+      ["unimplemented macro", /\bunimplemented[ \t\n]*!/u],
+      ["unreachable macro", /\bunreachable[ \t\n]*!/u],
+      ["assert macro", /\b(?:debug_)?assert(?:_eq|_ne)?[ \t\n]*!/u],
+    ];
+    const dynamicErrorPatterns = [
+      ["anyhow error", /\banyhow(?:::|[ \t\n]*!)/u],
+      [
+        "boxed dynamic error",
+        /\bBox[ \t\n]*<[ \t\n]*dyn[ \t\n]+(?:(?:std|core)::error::)?Error\b/u,
+      ],
+      [
+        "string Result error",
+        /\bResult[ \t\n]*<[^;={}]*,[ \t\n]*(?:String|&[ \t]*(?:\x27static[ \t]+)?str)[ \t\n]*>/u,
+      ],
+      [
+        "string error alias",
+        /\btype[ \t]+(?:[A-Za-z_][A-Za-z0-9_]*)?Error(?:Reason)?[ \t]*=[ \t]*(?:String|&[ \t]*(?:\x27static[ \t]+)?str)\b/u,
+      ],
+    ];
+    const forbiddenErrorField = /\bString\b|&[ \t]*(?:\x27static[ \t]+)?str\b|\bBox[ \t\n]*<[ \t\n]*dyn[ \t\n]+(?:(?:std|core)::error::)?Error\b/u;
+    const assertTypedErrorDefinitions = (path, source) => {
+      const declaration = /\b(?:enum|struct)[ \t]+((?:[A-Za-z_][A-Za-z0-9_]*)?Error(?:Reason)?)\b[^;{]*\{/gu;
+      let match = declaration.exec(source);
+      while (match !== null) {
+        let depth = 1;
+        let cursor = declaration.lastIndex;
+        while (cursor < source.length && depth > 0) {
+          if (source[cursor] === "{") {
+            depth += 1;
+          } else if (source[cursor] === "}") {
+            depth -= 1;
+          }
+          cursor += 1;
+        }
+        if (depth !== 0) {
+          fail(`${path} error definition ${match[1]} has unbalanced braces`);
+        }
+        const body = source.slice(declaration.lastIndex, cursor - 1);
+        if (forbiddenErrorField.test(body)) {
+          fail(`${path} error definition ${match[1]} contains a dynamic or string field`);
+        }
+        declaration.lastIndex = cursor;
+        match = declaration.exec(source);
+      }
+      const tupleDeclaration = /\bstruct[ \t]+((?:[A-Za-z_][A-Za-z0-9_]*)?Error(?:Reason)?)[ \t]*\(([^;]*)\)[ \t]*;/gu;
+      for (const tupleMatch of source.matchAll(tupleDeclaration)) {
+        if (forbiddenErrorField.test(tupleMatch[2])) {
+          fail(`${path} error definition ${tupleMatch[1]} contains a dynamic or string field`);
+        }
+      }
+    };
+    const lineCount = (text) => {
+      if (text.length === 0) {
+        return 0;
+      }
+      const lines = text.split("\n").length;
+      return text.endsWith("\n") ? lines - 1 : lines;
+    };
+    for (const path of [...sourceFiles].sort()) {
+      const text = readText(path);
+      const executableSource = scrubRustCommentsAndStrings(text);
+      if (forbidWildcardImports && wildcardImport.test(executableSource)) {
+        fail(`${path} must not use a wildcard import or re-export`);
+      }
+      const lines = lineCount(text);
+      const fileName = path.slice(path.lastIndexOf("/") + 1);
+      const isTest =
+        path.includes("/tests/") ||
+        fileName === "test.rs" ||
+        fileName === "tests.rs" ||
+        fileName.endsWith("_test.rs") ||
+        fileName.endsWith("_tests.rs");
+      if (!isTest && forbidInlineTests) {
+        const withoutExternalTestModules = executableSource.replace(externalTestModule, "");
+        if (
+          testConfiguration.test(withoutExternalTestModules) ||
+          testAttribute.test(withoutExternalTestModules)
+        ) {
+          fail(`${path} must keep test implementations in a separate test file`);
+        }
+      }
+      if (
+        !isTest &&
+        forbidSubstantiveFacades &&
+        (fileName === "lib.rs" || fileName === "mod.rs") &&
+        substantiveFacade.test(executableSource)
+      ) {
+        fail(`${path} must remain a declaration-and-re-export-only facade`);
+      }
+      if (!isTest && forbidPanickingProductionCode) {
+        for (const [description, pattern] of panickingProductionPatterns) {
+          if (pattern.test(executableSource)) {
+            fail(`${path} contains forbidden production ${description}`);
+          }
+        }
+      }
+      if (!isTest && forbidDynamicErrorSurfaces) {
+        assertTypedErrorDefinitions(path, executableSource);
+        for (const [description, pattern] of dynamicErrorPatterns) {
+          if (pattern.test(executableSource)) {
+            fail(`${path} contains forbidden ${description}`);
+          }
+        }
+      }
+      if (
+        !isTest &&
+        (fileName === "lib.rs" || fileName === "mod.rs") &&
+        lines > moduleHardLines
+      ) {
+        fail(`${path} has ${lines} lines, exceeding the module hard limit ${moduleHardLines}`);
+      }
+      const target = isTest ? testTargetLines : productionTargetLines;
+      const hardLimit = isTest ? testHardLines : productionHardLines;
+      if (lines > hardLimit) {
+        fail(`${path} has ${lines} lines, exceeding its hard limit ${hardLimit}`);
+      }
+      const allowedLines = baseline.get(path);
+      if (lines > target && allowedLines === undefined) {
+        fail(`${path} has ${lines} lines and requires a shrinking-only baseline above ${target}`);
+      }
+      if (allowedLines !== undefined && allowedLines <= target) {
+        fail(`${path} baseline ${allowedLines} is stale because it is not above target ${target}`);
+      }
+      if (allowedLines !== undefined && lines > allowedLines) {
+        fail(`${path} grew from its baseline ${allowedLines} to ${lines} lines`);
+      }
+      if (allowedLines !== undefined && lines <= target) {
+        fail(`${path} baseline is stale because the file is now within target ${target}`);
+      }
+    }
+    reportSourcePolicy("rust");
+  };
+
+  const assertLanguageVerificationPolicy = (language, verification, requiredRoles) => {
+    if (!Array.isArray(verification) || verification.length === 0) {
+      fail(`${language} verification policy requires at least one command`);
+    }
+    const allowedRoles = new Set(requiredRoles);
+    const observedRoles = new Set();
+    for (const [index, entry] of verification.entries()) {
+      const { roles, command, args, options = {} } = entry ?? {};
+      if (
+        !Array.isArray(roles) ||
+        roles.length === 0 ||
+        roles.some((role) => typeof role !== "string" || !allowedRoles.has(role))
+      ) {
+        fail(`${language} verification command ${index} has invalid roles`);
+      }
+      if (new Set(roles).size !== roles.length) {
+        fail(`${language} verification command ${index} has duplicate roles`);
+      }
+      for (const role of roles) {
+        if (observedRoles.has(role)) {
+          fail(`${language} verification role ${role} is configured more than once`);
+        }
+        observedRoles.add(role);
+      }
+      if (typeof command !== "string" || command.length === 0) {
+        fail(`${language} verification command ${index} requires a command`);
+      }
+      if (!Array.isArray(args) || args.some((arg) => typeof arg !== "string")) {
+        fail(`${language} verification command ${index} arguments must be strings`);
+      }
+      if (options === null || typeof options !== "object" || Array.isArray(options)) {
+        fail(`${language} verification command ${index} options must be an object`);
+      }
+    }
+    for (const role of requiredRoles) {
+      if (!observedRoles.has(role)) {
+        fail(`${language} verification policy is missing the ${role} role`);
+      }
+    }
+    for (const entry of verification) {
+      run(entry.command, entry.args, entry.options ?? {});
+    }
+  };
+
+  const createSourcePolicyState = ({
+    language,
+    policy,
+    extensions,
+    isTestPath,
+    inferredFacadePath = () => false,
+    isSourcePath = () => true,
+  }) => {
+    const {
+      roots = ["."],
+      generatedPrefixes = [],
+      facadeFiles = [],
+      baselinePath = null,
+      productionTargetLines = 500,
+      productionHardLines = 500,
+      testTargetLines = 800,
+      testHardLines = 800,
+      facadeHardLines = 100,
+    } = policy;
+    for (const [name, values, allowEmpty] of [
+      ["roots", roots, false],
+      ["generatedPrefixes", generatedPrefixes, true],
+      ["facadeFiles", facadeFiles, true],
+    ]) {
+      if (
+        !Array.isArray(values) ||
+        (!allowEmpty && values.length === 0) ||
+        values.some((value) => typeof value !== "string" || value.length === 0)
+      ) {
+        fail(`${language} source ${name} policy must be an array of non-empty strings`);
+      }
+      if (new Set(values).size !== values.length) {
+        fail(`${language} source ${name} policy must not contain duplicates`);
+      }
+    }
+    if (baselinePath !== null && (typeof baselinePath !== "string" || baselinePath.length === 0)) {
+      fail(`${language} source baselinePath policy must be null or a non-empty string`);
+    }
+    const limits = {
+      productionTargetLines,
+      productionHardLines,
+      testTargetLines,
+      testHardLines,
+      facadeHardLines,
+    };
+    for (const [name, value] of Object.entries(limits)) {
+      if (!Number.isSafeInteger(value) || value <= 0) {
+        fail(`${language} source ${name} policy must be a positive safe integer`);
+      }
+    }
+    if (
+      productionTargetLines > productionHardLines ||
+      testTargetLines > testHardLines ||
+      facadeHardLines > productionHardLines
+    ) {
+      fail(`${language} source line limits are inconsistent`);
+    }
+    if (productionHardLines > MAX_PRODUCTION_SOURCE_LINES) {
+      fail(
+        `${language} production hard limit cannot exceed ${MAX_PRODUCTION_SOURCE_LINES} lines`,
+      );
+    }
+    if (testHardLines > MAX_SEPARATE_TEST_SOURCE_LINES) {
+      fail(
+        `${language} separate-test hard limit cannot exceed ${MAX_SEPARATE_TEST_SOURCE_LINES} lines`,
+      );
+    }
+
+    const normalizePath = (path, description, allowRepositoryRoot = false) => {
+      const absolute = resolveRepositoryPath(path, description);
+      const normalized = relative(root, absolute).replaceAll("\\", "/").replace(/\/+$/u, "");
+      if (normalized.length === 0) {
+        if (allowRepositoryRoot) {
+          return ".";
+        }
+        fail(`${description} must not be the repository root`);
+      }
+      return normalized;
+    };
+    const normalizedRoots = roots.map((path) =>
+      normalizePath(path, `${language} source root`, true),
+    );
+    const normalizedGeneratedPrefixes = generatedPrefixes.map((path) =>
+      normalizePath(path, `${language} generated source prefix`),
+    );
+    for (const sourceRoot of normalizedRoots) {
+      assertRepositoryDirectory(sourceRoot, `${language} source root`);
+    }
+    const trackedLanguageFiles = [...loadTrackedFiles()]
+      .map((path) => path.replaceAll("\\", "/"))
+      .filter(
+        (path) =>
+          extensions.some((extension) => path.endsWith(extension)) && isSourcePath(path),
+      );
+    for (const prefix of normalizedGeneratedPrefixes) {
+      if (!/(?:^|\/)(?:gen|generated)(?:[./_-]|\/|$)/iu.test(prefix)) {
+        fail(
+          `${language} generated source prefix ${prefix} must identify a gen or generated path`,
+        );
+      }
+      if (!trackedLanguageFiles.some((path) => pathIsInside(path, prefix))) {
+        fail(
+          `${language} generated source prefix ${prefix} does not match a tracked source file`,
+        );
+      }
+    }
+    const uncoveredLanguageFiles = trackedLanguageFiles.filter(
+      (path) =>
+        !normalizedRoots.some(
+          (sourceRoot) => sourceRoot === "." || pathIsInside(path, sourceRoot),
+        ) &&
+        !normalizedGeneratedPrefixes.some((prefix) => pathIsInside(path, prefix)),
+    );
+    if (uncoveredLanguageFiles.length !== 0) {
+      fail(
+        `${language} source roots do not govern tracked source ${uncoveredLanguageFiles[0]}`,
+      );
+    }
+    const sourceFiles = trackedLanguageFiles
+      .filter(
+        (path) =>
+          normalizedRoots.some(
+            (sourceRoot) => sourceRoot === "." || pathIsInside(path, sourceRoot),
+          ) &&
+          !normalizedGeneratedPrefixes.some((prefix) => pathIsInside(path, prefix)),
+      )
+      .sort();
+    if (sourceFiles.length === 0) {
+      fail(`${language} source policy found no governed source files`);
+    }
+    const sourceFileSet = new Set(sourceFiles);
+    const normalizedFacadeFiles = new Set(
+      facadeFiles.map((path) => normalizePath(path, `${language} facade file`)),
+    );
+    for (const path of normalizedFacadeFiles) {
+      if (!sourceFileSet.has(path)) {
+        fail(`${language} facade file ${path} is not a governed source file`);
+      }
+    }
+
+    const baseline = new Map();
+    if (baselinePath !== null) {
+      const normalizedBaselinePath = normalizePath(
+        baselinePath,
+        `${language} source baseline path`,
+      );
+      for (const [index, line] of readText(normalizedBaselinePath).split("\n").entries()) {
+        const trimmed = line.trim();
+        if (trimmed.length === 0 || trimmed.startsWith("#")) {
+          continue;
+        }
+        const fields = line.split("\t");
+        if (fields.length !== 2 || !/^[1-9][0-9]*$/u.test(fields[1])) {
+          fail(`${language} source baseline line ${index + 1} must be path<TAB>positive-lines`);
+        }
+        const path = normalizePath(
+          fields[0],
+          `${language} source baseline line ${index + 1} path`,
+        );
+        const allowedLines = Number(fields[1]);
+        if (!Number.isSafeInteger(allowedLines)) {
+          fail(`${language} source baseline line ${index + 1} exceeds the safe integer range`);
+        }
+        if (baseline.has(path)) {
+          fail(`${language} source baseline path ${path} is duplicated`);
+        }
+        if (!sourceFileSet.has(path)) {
+          fail(`${language} source baseline path ${path} is not a governed source file`);
+        }
+        baseline.set(path, allowedLines);
+      }
+    }
+
+    const lineCount = (text) => {
+      if (text.length === 0) {
+        return 0;
+      }
+      const lines = text.split("\n").length;
+      return text.endsWith("\n") ? lines - 1 : lines;
+    };
+    const assertFileLimits = (path, text) => {
+      const isTest = isTestPath(path);
+      const lines = lineCount(text);
+      const isFacade = normalizedFacadeFiles.has(path) || inferredFacadePath(path);
+      if (!isTest && isFacade && lines > facadeHardLines) {
+        fail(`${path} has ${lines} lines, exceeding the facade hard limit ${facadeHardLines}`);
+      }
+      const target = isTest ? testTargetLines : productionTargetLines;
+      const hardLimit = isTest ? testHardLines : productionHardLines;
+      if (lines > hardLimit) {
+        fail(`${path} has ${lines} lines, exceeding its hard limit ${hardLimit}`);
+      }
+      const allowedLines = baseline.get(path);
+      if (lines > target && allowedLines === undefined) {
+        fail(`${path} has ${lines} lines and requires a shrinking-only baseline above ${target}`);
+      }
+      if (allowedLines !== undefined && allowedLines <= target) {
+        fail(`${path} baseline ${allowedLines} is stale because it is not above target ${target}`);
+      }
+      if (allowedLines !== undefined && lines > allowedLines) {
+        fail(`${path} grew from its baseline ${allowedLines} to ${lines} lines`);
+      }
+      if (allowedLines !== undefined && lines <= target) {
+        fail(`${path} baseline is stale because the file is now within target ${target}`);
+      }
+      return { isFacade, isTest };
+    };
+    return { assertFileLimits, sourceFiles };
+  };
+
+  const assertBooleanPolicyOptions = (language, options) => {
+    for (const [name, value] of Object.entries(options)) {
+      if (typeof value !== "boolean") {
+        fail(`${language} source ${name} policy must be a boolean`);
+      }
+      if (!value) {
+        fail(`${language} source ${name} policy is mandatory and cannot be disabled`);
+      }
+    }
+  };
+
+  const assertLanguageConfigurationPolicy = (language, configuration) => {
+    if (
+      configuration === null ||
+      typeof configuration !== "object" ||
+      Array.isArray(configuration)
+    ) {
+      fail(`${language} source policy requires a configuration text policy`);
+    }
+    const files = configuration.files;
+    if (
+      !Array.isArray(files) ||
+      files.length === 0 ||
+      files.some((entry) => {
+        const requiredCount = Array.isArray(entry?.required) ? entry.required.length : 0;
+        const requiredMatchCount = Array.isArray(entry?.requiredMatches)
+          ? entry.requiredMatches.length
+          : 0;
+        return requiredCount + requiredMatchCount === 0;
+      })
+    ) {
+      fail(`${language} configuration policy must require evidence from every file`);
+    }
+    assertTextPolicy(configuration);
+  };
+
+  const assertTypeScriptSourcePolicy = (policy = {}) => {
+    if (policy === null || typeof policy !== "object" || Array.isArray(policy)) {
+      fail("TypeScript source policy must be an object");
+    }
+    const {
+      tsconfigPaths = ["tsconfig.json"],
+      staticAnalysis,
+      verification,
+      forbidAny = true,
+      forbidSuppressions = true,
+      forbidUnsafeAssertions = true,
+      forbidInlineTests = true,
+      forbidWildcardSurfaces = true,
+      forbidGenericErrors = true,
+      forbidSubstantiveFacades = true,
+    } = policy;
+    assertBooleanPolicyOptions("TypeScript", {
+      forbidAny,
+      forbidSuppressions,
+      forbidUnsafeAssertions,
+      forbidInlineTests,
+      forbidWildcardSurfaces,
+      forbidGenericErrors,
+      forbidSubstantiveFacades,
+    });
+    if (
+      !Array.isArray(tsconfigPaths) ||
+      tsconfigPaths.length === 0 ||
+      tsconfigPaths.some((path) => typeof path !== "string" || path.length === 0) ||
+      new Set(tsconfigPaths).size !== tsconfigPaths.length
+    ) {
+      fail("TypeScript tsconfigPaths policy must be a non-empty array of unique paths");
+    }
+    const requiredCompilerOptions = [
+      "strict",
+      "noImplicitAny",
+      "noUncheckedIndexedAccess",
+      "exactOptionalPropertyTypes",
+      "useUnknownInCatchVariables",
+      "noImplicitOverride",
+      "noFallthroughCasesInSwitch",
+    ];
+    for (const path of tsconfigPaths) {
+      let configuration;
+      try {
+        const withoutComments = scrubJavaScriptCommentsAndStrings(readText(path), {
+          preserveStrings: true,
+        });
+        configuration = JSON.parse(withoutComments.replace(/,\s*([}\]])/gu, "$1"));
+      } catch {
+        fail(`${path} is not valid JSON-with-comments`);
+      }
+      if (
+        configuration === null ||
+        typeof configuration !== "object" ||
+        Array.isArray(configuration) ||
+        configuration.compilerOptions === null ||
+        typeof configuration.compilerOptions !== "object" ||
+        Array.isArray(configuration.compilerOptions)
+      ) {
+        fail(`${path} must define compilerOptions`);
+      }
+      for (const option of requiredCompilerOptions) {
+        if (configuration.compilerOptions[option] !== true) {
+          fail(`${path} compilerOptions.${option} must be explicitly true`);
+        }
+      }
+    }
+    assertLanguageConfigurationPolicy("TypeScript static analysis", staticAnalysis);
+    const isTypeScriptTest = (path) =>
+      /(?:^|\/)(?:test|tests|__tests__)\//u.test(path) ||
+      /(?:\.(?:test|spec)|_(?:test|tests))\.(?:cts|mts|tsx?|ts)$/u.test(path);
+    const isTypeScriptFacade = (path) => /(?:^|\/)index\.(?:cts|mts|tsx?|ts)$/u.test(path);
+    const state = createSourcePolicyState({
+      language: "TypeScript",
+      policy,
+      extensions: [".ts", ".tsx", ".mts", ".cts"],
+      isTestPath: isTypeScriptTest,
+      inferredFacadePath: isTypeScriptFacade,
+    });
+    const wildcardSurface = /(?:^|\n)[ \t]*(?:export[ \t]+\*(?:[ \t]+from)?|import[ \t]+\*[ \t]+as\b)/mu;
+    const inlineTest = /(?:^|[^A-Za-z0-9_$.])(?:describe|it|test)[ \t\n]*\(/u;
+    const substantiveFacade = /(?:^|\n)[ \t]*(?:export[ \t]+)?(?:async[ \t]+)?(?:function|class|enum|namespace|const|let|var)\b/mu;
+    const nonNullAssertion = /[A-Za-z0-9_)\]}][ \t]*!(?!=)/u;
+    const unsafeAssertion = /\bas[ \t\n]+(?:any|unknown|never)\b/u;
+    const genericError = /\bthrow[ \t\n]+new[ \t\n]+Error[ \t\n]*\(|\bPromise\.reject[ \t\n]*\([ \t\n]*new[ \t\n]+Error[ \t\n]*\(/u;
+    const stringFailure = /\bthrow[ \t\n]*["'`]|\bPromise\.reject[ \t\n]*\([ \t\n]*["'`]/u;
+    for (const path of state.sourceFiles) {
+      const text = readText(path);
+      const source = scrubJavaScriptCommentsAndStrings(text);
+      const commentFreeSource = scrubJavaScriptCommentsAndStrings(text, {
+        preserveStrings: true,
+      });
+      const directiveSource = scrubJavaScriptCommentsAndStrings(text, {
+        preserveComments: true,
+      });
+      const { isFacade, isTest } = state.assertFileLimits(path, text);
+      const hasForbiddenSuppression =
+        /\/\/[^\n]*(?:@ts-ignore\b|eslint-(?:disable|disable-line|disable-next-line)\b)/u.test(directiveSource) ||
+        /\/\*[\s\S]*?(?:@ts-ignore\b|eslint-(?:disable|disable-line|disable-next-line)\b)[\s\S]*?\*\//u.test(directiveSource);
+      if (forbidSuppressions && hasForbiddenSuppression) {
+        fail(`${path} contains a forbidden TypeScript or ESLint suppression`);
+      }
+      for (const line of directiveSource.split("\n")) {
+        const directive = /^[ \t]*\/\/[ \t]*@ts-expect-error\b(.*)$/u.exec(line);
+        if (directive === null) {
+          continue;
+        }
+        if (!isTest) {
+          fail(`${path} may use @ts-expect-error only in a separate test file`);
+        }
+        if (!/^[ \t]*(?::|--)[ \t]+\S/u.test(directive[1])) {
+          fail(`${path} @ts-expect-error requires an explanation`);
+        }
+      }
+      if (forbidAny && /\bany\b/u.test(source)) {
+        fail(`${path} contains forbidden TypeScript any`);
+      }
+      if (forbidWildcardSurfaces && wildcardSurface.test(source)) {
+        fail(`${path} contains a wildcard import or export`);
+      }
+      if (!isTest && forbidInlineTests && inlineTest.test(source)) {
+        fail(`${path} must keep test implementations in a separate test file`);
+      }
+      if (!isTest && forbidUnsafeAssertions && (unsafeAssertion.test(source) || nonNullAssertion.test(source))) {
+        fail(`${path} contains a forbidden unsafe TypeScript assertion`);
+      }
+      if (!isTest && forbidGenericErrors && (genericError.test(source) || stringFailure.test(commentFreeSource))) {
+        fail(`${path} contains a forbidden untyped TypeScript failure`);
+      }
+      if (!isTest && isFacade && forbidSubstantiveFacades && substantiveFacade.test(source)) {
+        fail(`${path} must remain an explicit import, export, and type-only facade`);
+      }
+    }
+    assertLanguageVerificationPolicy(
+      "TypeScript",
+      verification,
+      ["typecheck", "lint", "test"],
+    );
+    reportSourcePolicy("typescript");
+  };
+
+  const assertSwiftSourcePolicy = (policy = {}) => {
+    if (policy === null || typeof policy !== "object" || Array.isArray(policy)) {
+      fail("Swift source policy must be an object");
+    }
+    const {
+      configuration,
+      verification,
+      forbidSuppressions = true,
+      forbidUnsafeOperations = true,
+      forbidInlineTests = true,
+      forbidGenericErrors = true,
+      forbidSubstantiveFacades = true,
+      requireTypedThrows = true,
+      forbidConcurrencyEscapeHatches = true,
+    } = policy;
+    assertBooleanPolicyOptions("Swift", {
+      forbidSuppressions,
+      forbidUnsafeOperations,
+      forbidInlineTests,
+      forbidGenericErrors,
+      forbidSubstantiveFacades,
+      requireTypedThrows,
+      forbidConcurrencyEscapeHatches,
+    });
+    assertLanguageConfigurationPolicy("Swift", configuration);
+    const isSwiftTest = (path) =>
+      /(?:^|\/)(?:Tests|[A-Za-z0-9_-]+Tests)\//u.test(path);
+    const state = createSourcePolicyState({
+      language: "Swift",
+      policy,
+      extensions: [".swift"],
+      isTestPath: isSwiftTest,
+      // Package.swift is a build manifest validated through configuration
+      // policy, not an implementation module subject to source layout rules.
+      isSourcePath: (path) => !/(?:^|\/)Package\.swift$/u.test(path),
+    });
+    const unsafeOperation = /\b(?:try|as)[ \t]*!|[A-Za-z0-9_)\]}][ \t]*!(?!=)/u;
+    const crashOperation = /\b(?:fatalError|preconditionFailure|assertionFailure)[ \t\n]*\(/u;
+    const inlineTest = /\bXCTestCase\b|@[A-Za-z0-9_.]*Test\b|\bfunc[ \t]+test[A-Z_]/u;
+    const genericError = /\bthrow[ \t\n]+NSError[ \t\n]*\(|\bResult[ \t\n]*<[^>]+,[ \t\n]*(?:any[ \t\n]+)?Error[ \t\n]*>/u;
+    const untypedThrows = /\bthrows\b(?![ \t\n]*\()/u;
+    const substantiveFacade = /(?:^|\n)[ \t]*(?:(?:public|package|internal|private|fileprivate|open|final|indirect|nonisolated|isolated|distributed|static|class|mutating|nonmutating|override|required|convenience)[ \t]+)*(?:func|class|struct|enum|actor|protocol|extension|let|var)\b/mu;
+    for (const path of state.sourceFiles) {
+      const text = readText(path);
+      const source = scrubSlashCommentsAndStrings(text);
+      const directiveSource = scrubSlashCommentsAndStrings(text, {
+        preserveComments: true,
+      });
+      const { isFacade, isTest } = state.assertFileLimits(path, text);
+      const hasSwiftLintSuppression =
+        /\/\/[^\n]*swiftlint[ \t]*:[ \t]*disable\b/u.test(directiveSource) ||
+        /\/\*[\s\S]*?swiftlint[ \t]*:[ \t]*disable\b[\s\S]*?\*\//u.test(directiveSource);
+      if (forbidSuppressions && hasSwiftLintSuppression) {
+        fail(`${path} contains a forbidden SwiftLint suppression`);
+      }
+      if (!isTest && forbidInlineTests && inlineTest.test(source)) {
+        fail(`${path} must keep test implementations in a separate test file`);
+      }
+      if (!isTest && forbidUnsafeOperations && (unsafeOperation.test(source) || crashOperation.test(source))) {
+        fail(`${path} contains a forbidden unsafe or terminating Swift operation`);
+      }
+      if (!isTest && forbidGenericErrors && genericError.test(source)) {
+        fail(`${path} contains a forbidden generic Swift error surface`);
+      }
+      if (!isTest && requireTypedThrows && untypedThrows.test(source)) {
+        fail(`${path} must use typed throws or a typed Result`);
+      }
+      if (
+        !isTest &&
+        forbidConcurrencyEscapeHatches &&
+        /@unchecked[ \t]+Sendable\b|@preconcurrency\b/u.test(source)
+      ) {
+        fail(`${path} contains a forbidden Swift concurrency escape hatch`);
+      }
+      if (!isTest && isFacade && forbidSubstantiveFacades && substantiveFacade.test(source)) {
+        fail(`${path} must remain a declaration-and-re-export-only Swift facade`);
+      }
+    }
+    assertLanguageVerificationPolicy(
+      "Swift",
+      verification,
+      ["format", "lint", "build", "test"],
+    );
+    reportSourcePolicy("swift");
+  };
+
+  const assertKotlinSourcePolicy = (policy = {}) => {
+    if (policy === null || typeof policy !== "object" || Array.isArray(policy)) {
+      fail("Kotlin source policy must be an object");
+    }
+    const {
+      configuration,
+      verification,
+      forbidSuppressions = true,
+      forbidUnsafeOperations = true,
+      forbidInlineTests = true,
+      forbidWildcardImports = true,
+      forbidGenericErrors = true,
+      forbidSubstantiveFacades = true,
+      forbidLateinit = true,
+    } = policy;
+    assertBooleanPolicyOptions("Kotlin", {
+      forbidSuppressions,
+      forbidUnsafeOperations,
+      forbidInlineTests,
+      forbidWildcardImports,
+      forbidGenericErrors,
+      forbidSubstantiveFacades,
+      forbidLateinit,
+    });
+    assertLanguageConfigurationPolicy("Kotlin", configuration);
+    const isKotlinTest = (path) =>
+      /(?:^|\/)src\/(?:test|androidTest|commonTest|[A-Za-z0-9_]+Test)\//u.test(path);
+    const state = createSourcePolicyState({
+      language: "Kotlin",
+      policy,
+      // Gradle Kotlin scripts are build configuration and are validated by the
+      // configuration policy. Authored Kotlin implementation uses .kt files.
+      extensions: [".kt"],
+      isTestPath: isKotlinTest,
+    });
+    const wildcardImport = /(?:^|\n)[ \t]*import[ \t]+[^\n;]*\.\*[ \t]*(?:;|$)/mu;
+    const inlineTest = /@(Test|ParameterizedTest|RepeatedTest|TestFactory)\b|\b(?:kotlin\.test|org\.junit)\b/u;
+    const unsafeOperation = /!!/u;
+    const terminatingOperation = /\b(?:error|TODO|check|checkNotNull|require|requireNotNull)[ \t\n]*\(/u;
+    const genericError = /\b(?:Exception|RuntimeException|IllegalArgumentException|IllegalStateException)[ \t\n]*\(/u;
+    const substantiveFacade = /(?:^|\n)[ \t]*(?:(?:public|internal|private|protected|expect|actual|final|open|abstract|sealed|data|value|inline|suspend|operator|infix|tailrec|external|const|lateinit)[ \t]+)*(?:fun|class|interface|object|enum[ \t]+class|typealias|val|var)\b/mu;
+    for (const path of state.sourceFiles) {
+      const text = readText(path);
+      const source = scrubSlashCommentsAndStrings(text);
+      const { isFacade, isTest } = state.assertFileLimits(path, text);
+      if (forbidSuppressions && /@Suppress[ \t\n]*\(/u.test(source)) {
+        fail(`${path} contains a forbidden Kotlin suppression`);
+      }
+      if (forbidWildcardImports && wildcardImport.test(source)) {
+        fail(`${path} contains a wildcard Kotlin import`);
+      }
+      if (!isTest && forbidInlineTests && inlineTest.test(source)) {
+        fail(`${path} must keep test implementations in a separate test file`);
+      }
+      if (!isTest && forbidUnsafeOperations) {
+        if (unsafeOperation.test(source) || terminatingOperation.test(source)) {
+          fail(`${path} contains a forbidden unsafe or terminating Kotlin operation`);
+        }
+        for (const line of source.split("\n")) {
+          if (!/^[ \t]*import\b/u.test(line) && /\bas[ \t]+(?!\?)/u.test(line)) {
+            fail(`${path} contains a forbidden unsafe Kotlin cast`);
+          }
+        }
+      }
+      if (!isTest && forbidGenericErrors && genericError.test(source)) {
+        fail(`${path} contains a forbidden generic Kotlin error`);
+      }
+      if (!isTest && forbidLateinit && /\blateinit\b/u.test(source)) {
+        fail(`${path} contains forbidden Kotlin lateinit state`);
+      }
+      if (!isTest && isFacade && forbidSubstantiveFacades && substantiveFacade.test(source)) {
+        fail(`${path} must remain a declaration-and-re-export-only Kotlin facade`);
+      }
+    }
+    assertLanguageVerificationPolicy(
+      "Kotlin",
+      verification,
+      ["format", "static-analysis", "compile", "test"],
+    );
+    reportSourcePolicy("kotlin");
   };
 
   const snapshotDirectory = (path) => {
@@ -1616,6 +3355,11 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
       "assertReallyMeRustProtoRepositoryPolicy",
       "assertCargoMetadataPolicy",
       "assertCargoWorkspacePolicy",
+      "assertRepositoryShapePolicy",
+      "assertRustSourcePolicy",
+      "assertTypeScriptSourcePolicy",
+      "assertSwiftSourcePolicy",
+      "assertKotlinSourcePolicy",
       "assertTextPolicy",
       "assertSpdxHeaders",
       "assertWorkflowActionsPinned",
@@ -1971,27 +3715,32 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
     );
   };
 
-  const findWorkflowStep = (path, stepName) => {
+  const findWorkflowStep = (path, stepName, jobName = null) => {
     if (typeof stepName !== "string" || stepName.length === 0) {
       fail(`${path} workflow step policy requires a step name`);
     }
+    if (jobName !== null && (typeof jobName !== "string" || jobName.length === 0)) {
+      fail(`${path} workflow step ${stepName} job must be null or a non-empty string`);
+    }
     const steps = extractWorkflowSteps(path).filter(
-      (candidate) => candidate.name === stepName,
+      (candidate) =>
+        candidate.name === stepName && (jobName === null || candidate.job === jobName),
     );
+    const location = jobName === null ? stepName : `${jobName}/${stepName}`;
     if (steps.length === 0) {
-      fail(`${path} is missing workflow step ${stepName}`);
+      fail(`${path} is missing workflow step ${location}`);
     }
     if (steps.length > 1) {
-      fail(`${path} defines workflow step ${stepName} more than once`);
+      fail(`${path} defines workflow step ${location} more than once`);
     }
     return steps[0];
   };
 
-  const assertWorkflowRunStep = (path, stepName, expectedRun) => {
+  const assertWorkflowRunStep = (path, stepName, expectedRun, jobName = null) => {
     if (typeof expectedRun !== "string" || expectedRun.length === 0) {
       fail(`${path} step ${stepName} requires an expected run command`);
     }
-    const step = findWorkflowStep(path, stepName);
+    const step = findWorkflowStep(path, stepName, jobName);
     if (step.run === null) {
       fail(`${path} step ${stepName} does not define a run command`);
     }
@@ -2002,11 +3751,11 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
     }
   };
 
-  const assertWorkflowUsesStep = (path, stepName, expectedUses) => {
+  const assertWorkflowUsesStep = (path, stepName, expectedUses, jobName = null) => {
     if (typeof expectedUses !== "string" || expectedUses.length === 0) {
       fail(`${path} step ${stepName} requires an expected action`);
     }
-    const step = findWorkflowStep(path, stepName);
+    const step = findWorkflowStep(path, stepName, jobName);
     const expected = unquoteWorkflowScalar(expectedUses);
     if (step.uses !== expected) {
       fail(`${path} step ${stepName} must use ${expected}`);
@@ -2045,10 +3794,10 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
       assertNotContains(path, needle);
     }
     for (const step of runSteps) {
-      assertWorkflowRunStep(path, step?.name, step?.run);
+      assertWorkflowRunStep(path, step?.name, step?.run, step?.job ?? null);
     }
     for (const step of usesSteps) {
-      assertWorkflowUsesStep(path, step?.name, step?.uses);
+      assertWorkflowUsesStep(path, step?.name, step?.uses, step?.job ?? null);
     }
   };
 
@@ -2295,6 +4044,11 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
       nodeWorkflows = {},
       cargoFuzz,
       cargoWorkspace = {},
+      repositoryShape,
+      rustSource,
+      typescriptSource,
+      swiftSource,
+      kotlinSource,
       spdx = {},
       protobufBoundary,
       granularProviderBoundary,
@@ -2318,6 +4072,32 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
       ["protobufRelease", protobufRelease],
     ]) {
       if (value === null || typeof value !== "object" || Array.isArray(value)) {
+        fail(`ReallyMe Rust protobuf repository policy ${name} must be an object`);
+      }
+    }
+    if (
+      rustSource !== undefined &&
+      (rustSource === null || typeof rustSource !== "object" || Array.isArray(rustSource))
+    ) {
+      fail("ReallyMe Rust protobuf repository policy rustSource must be an object");
+    }
+    if (
+      repositoryShape !== undefined &&
+      (repositoryShape === null ||
+        typeof repositoryShape !== "object" ||
+        Array.isArray(repositoryShape))
+    ) {
+      fail("ReallyMe Rust protobuf repository policy repositoryShape must be an object");
+    }
+    for (const [name, value] of [
+      ["typescriptSource", typescriptSource],
+      ["swiftSource", swiftSource],
+      ["kotlinSource", kotlinSource],
+    ]) {
+      if (
+        value !== undefined &&
+        (value === null || typeof value !== "object" || Array.isArray(value))
+      ) {
         fail(`ReallyMe Rust protobuf repository policy ${name} must be an object`);
       }
     }
@@ -2370,6 +4150,21 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
     assertNodeWorkflowJobsPinNode(nodeWorkflows);
     assertCargoFuzzWorkflowPolicy(cargoFuzz);
     assertCargoWorkspacePolicy(cargoWorkspace);
+    if (repositoryShape !== undefined) {
+      assertRepositoryShapePolicy(repositoryShape);
+    }
+    if (rustSource !== undefined) {
+      assertRustSourcePolicy(rustSource);
+    }
+    if (typescriptSource !== undefined) {
+      assertTypeScriptSourcePolicy(typescriptSource);
+    }
+    if (swiftSource !== undefined) {
+      assertSwiftSourcePolicy(swiftSource);
+    }
+    if (kotlinSource !== undefined) {
+      assertKotlinSourcePolicy(kotlinSource);
+    }
     assertSpdxHeaders(spdx);
     assertReallyMeOperationBoundaryContract(protobufBoundary);
     if (granularProviderBoundary !== undefined) {
@@ -3017,6 +4812,11 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
     assertCargoMetadataDocument,
     assertCargoMetadataPolicy,
     assertCargoWorkspacePolicy,
+    assertRepositoryShapePolicy,
+    assertRustSourcePolicy,
+    assertTypeScriptSourcePolicy,
+    assertSwiftSourcePolicy,
+    assertKotlinSourcePolicy,
     snapshotDirectory,
     assertSnapshotsEqual,
     validateGeneratedArtifactsPolicy,

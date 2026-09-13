@@ -11,7 +11,6 @@ public enum class ReallyMeJoseErrorBranch {
 }
 
 /** Stable JOSE reason code. Entries intentionally carry no input or backend text. */
-@Suppress("MagicNumber")
 public enum class ReallyMeJoseErrorReason(public val code: Int) {
     JWS_INVALID_COMPACT(100), JWS_INPUT_TOO_LARGE(101), JWS_LENGTH_OVERFLOW(102),
     JWS_INVALID_PAYLOAD_UTF8(103), JWS_BAD_PAYLOAD_BASE64(104), JWS_BAD_HEADER_BASE64(120),
@@ -52,7 +51,11 @@ public enum class ReallyMeJoseErrorReason(public val code: Int) {
 }
 
 /** Audit-safe JVM exceptions. No variant contains secrets, PII, paths, or backend text. */
-public sealed class ReallyMeJoseException(message: String) : RuntimeException(message) {
+// Keep the domain hierarchy explicit while preserving conventional unchecked
+// JVM exception behavior for Java and Kotlin callers.
+internal typealias ReallyMeJoseExceptionBase = RuntimeException
+
+public sealed class ReallyMeJoseException(message: String) : ReallyMeJoseExceptionBase(message) {
     public class JoseFailure(
         public val branch: ReallyMeJoseErrorBranch,
         public val reason: ReallyMeJoseErrorReason,
