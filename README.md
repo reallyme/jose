@@ -1,4 +1,8 @@
-# reallyme-jose
+<div align="center">
+
+# ReallyMe Jose
+
+**Jose for Identity**
 
 [![Rust CI](https://github.com/reallyme/jose/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/reallyme/jose/actions/workflows/rust-ci.yml)
 [![reallyme-jose](https://img.shields.io/crates/v/reallyme-jose?label=reallyme-jose&color=2563eb)](https://crates.io/crates/reallyme-jose)
@@ -6,6 +10,8 @@
 [![npm](https://img.shields.io/npm/v/@reallyme/jose?label=npm&color=2563eb)](https://www.npmjs.com/package/@reallyme/jose)
 [![Security Policy](https://img.shields.io/badge/security-policy-0f766e)](SECURITY.md)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE)
+
+</div>
 
 `reallyme-jose` is a focused JOSE layer for identity systems that need compact
 JWS, JWT, and JWE handling without broad algorithm negotiation. It builds on
@@ -314,10 +320,10 @@ the broader local negative and round-trip corpus.
 
 ## License
 
-Licensed under either the MIT License or the Apache License, Version 2.0, at your
-option. See [LICENSE](LICENSE) and
-[NOTICE](NOTICE). Vendored components, including the pinned
-release-readiness core, retain their original license notices.
+Licensed under either the [MIT License](LICENSE-MIT) or the
+[Apache License, Version 2.0](LICENSE-APACHE), at your option.
+
+Third-party components retain their own licenses and notices.
 
 ## Copyright And Trademarks
 
