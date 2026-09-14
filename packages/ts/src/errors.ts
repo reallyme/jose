@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe Technologies Limited. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 import type { JoseErrorReason } from "./proto/generated/reallyme/jose/v1/jose_pb.js";
 
