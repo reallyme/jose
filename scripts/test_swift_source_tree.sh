@@ -10,6 +10,13 @@ runtime_marker="${repository_root}/.reallyme-jose-runtime-ffi"
 native_library="${repository_root}/target/debug/libreallyme_jose_ffi.dylib"
 created_marker=0
 
+# The published Swift facade targets Apple platforms, and its runtime loader is
+# deliberately Darwin-only. Linux readiness jobs still enforce Swift source
+# formatting; dedicated macOS CI performs strict compilation and runtime tests.
+if [[ "$(uname -s)" != "Darwin" ]]; then
+  exit 0
+fi
+
 cleanup() {
   if [[ "${created_marker}" -eq 1 ]]; then
     rm -f -- "${runtime_marker}"

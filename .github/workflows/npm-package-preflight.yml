@@ -101,7 +101,7 @@ jobs:
       - name: Verify release metadata
         env:
           RELEASE_VERSION: ${{ inputs.version }}
-        run: node scripts/run_pinned_release_readiness.mjs --release-packages
+        run: node scripts/run_pinned_release_readiness.mjs --release-packages --policy-only
       - name: Test TypeScript package and WASM provider
         run: npm --prefix packages/ts test
       - name: Verify npm tarball and WASM surface

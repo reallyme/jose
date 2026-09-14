@@ -132,11 +132,6 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
-          cache: npm
-          cache-dependency-path: packages/ts/package-lock.json
-
-      - name: Install TypeScript dependencies
-        run: npm ci --prefix packages/ts
 
       - name: Checkout Rust semver baseline
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -239,7 +234,7 @@ jobs:
         run: scripts/audit_committed_lockfiles.sh
 
       - name: Check release readiness contract
-        run: node scripts/run_pinned_release_readiness.mjs
+        run: node scripts/run_pinned_release_readiness.mjs --policy-only
         env:
           RELEASE_VERSION: ${{ inputs.version }}
 

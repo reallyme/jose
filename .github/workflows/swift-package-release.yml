@@ -100,11 +100,6 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
-          cache: npm
-          cache-dependency-path: packages/ts/package-lock.json
-
-      - name: Install TypeScript dependencies
-        run: npm ci --prefix packages/ts
 
       - name: Select Xcode 26.6
         run: |
@@ -123,7 +118,7 @@ jobs:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
           node scripts/verify_swift_release_artifact.mjs build/swift/ReallyMeJOSEFFI.xcframework.zip build/swift/ReallyMeJOSEFFI.xcframework.checksum Package.swift "${RELEASE_VERSION}"
-          node scripts/run_pinned_release_readiness.mjs --release-packages
+          node scripts/run_pinned_release_readiness.mjs --release-packages --policy-only
 
   swift-release:
     name: SwiftPM release tag

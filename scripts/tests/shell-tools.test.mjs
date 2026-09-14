@@ -4,7 +4,7 @@
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
 import test from "node:test";
@@ -12,6 +12,30 @@ import { fileURLToPath } from "node:url";
 
 const scripts = fileURLToPath(new URL("..", import.meta.url));
 const executable = (path, source) => writeFileSync(path, source, { mode: 0o700 });
+
+test("Swift runtime tests remain on their supported Darwin lane", () => {
+  const root = mkdtempSync(join(tmpdir(), "jose-swift-platform-test-"));
+  try {
+    const bin = join(root, "bin");
+    const unexpectedCall = join(root, "unexpected-call");
+    mkdirSync(bin);
+    executable(join(bin, "uname"), "#!/bin/sh\necho Linux\n");
+    for (const command of ["cargo", "swift"]) {
+      executable(
+        join(bin, command),
+        `#!/bin/sh\ntouch "${unexpectedCall}"\nexit 77\n`,
+      );
+    }
+    const result = spawnSync("bash", [join(scripts, "test_swift_source_tree.sh")], {
+      encoding: "utf8",
+      env: { ...process.env, PATH: `${bin}${delimiter}${process.env.PATH ?? ""}` },
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(existsSync(unexpectedCall), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test("sanitizer runs cannot inherit flags that override their instrumentation", () => {
   const root = mkdtempSync(join(tmpdir(), "jose-sanitizer-test-"));
