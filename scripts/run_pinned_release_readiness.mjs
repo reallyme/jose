@@ -14,7 +14,7 @@ const RELEASE_READINESS_COMMIT = "985cf16f866bcdbd384edd8a9b6f332b38c5eb52";
 const RELEASE_READINESS_CORE_SHA256 =
   "6bf50e9e5e55805191217c39e4291067d227a197ea46ab3d371d308f3f878a20";
 const LOCAL_CHECKER_SHA256 =
-  "abe4ae5bea17485aedc47d6b4dc479843dbe7c2e49de46e97eec7be8b88b6d6a";
+  "65ca561c1237ca498065f668e18904d6fd8af8b9811f1a6b123a2d6b2cc55743";
 const VENDORED_CORE_PATH = "scripts/release-readiness/core.mjs";
 const LOCAL_CHECKER_PATH = "scripts/check_release_readiness.mjs";
 const MAX_CORE_BYTES = 262_144;
