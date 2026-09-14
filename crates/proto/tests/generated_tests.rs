@@ -18,7 +18,8 @@ use reallyme_jose_proto::generated::{
         JoseJweContentEncryptionAlgorithm, JoseJweEncryptRequest, JoseJweKeyManagementAlgorithm,
         JoseJwePlaintextResult, JoseJwePlaintextResultOwnedView, JoseJwsSignRequest,
         JoseJwsSignRequestOwnedView, JoseJwtTemporalValidationPolicy, JoseOperationRequest,
-        JosePrimitiveError, JoseProviderError, JoseSignatureAlgorithm,
+        JosePrimitiveError, JoseProviderError, JoseSignatureAlgorithm, JoseVerifyResult,
+        JoseVerifyResultOwnedView,
     },
     JOSE_PROTO_PACKAGE,
 };
@@ -86,6 +87,30 @@ fn generated_plaintext_debug_output_is_redacted() -> Result<(), buffa::DecodeErr
     let plaintext_view_debug = format!("{:?}", plaintext_view.view());
     assert_debug_redacts_bytes(plaintext_view_debug, "plaintext");
     assert!(format!("{plaintext_view:?}").contains("<redacted>"));
+    Ok(())
+}
+
+#[test]
+fn generated_verified_parts_are_redacted_and_cleared() -> Result<(), buffa::DecodeError> {
+    let mut result = JoseVerifyResult {
+        protected_header_json: vec![0x30, 0x82, 0x01, 0x0a],
+        payload: vec![0x30, 0x82, 0x02, 0x0b],
+        __buffa_unknown_fields: Default::default(),
+    };
+
+    let debug = format!("{result:?}");
+    assert_debug_redacts_bytes(debug.clone(), "protected_header_json");
+    assert_debug_redacts_bytes(debug, "payload");
+
+    let view = JoseVerifyResultOwnedView::from_owned(&result)?;
+    let view_debug = format!("{:?}", view.view());
+    assert_debug_redacts_bytes(view_debug.clone(), "protected_header_json");
+    assert_debug_redacts_bytes(view_debug, "payload");
+    assert!(format!("{view:?}").contains("<redacted>"));
+
+    result.clear();
+    assert!(result.protected_header_json.is_empty());
+    assert!(result.payload.is_empty());
     Ok(())
 }
 
@@ -254,6 +279,18 @@ fn jose_compact_result_wire_contract_is_stable() -> Result<(), buffa::DecodeErro
         __buffa_unknown_fields: Default::default(),
     };
     assert_golden_wire(&result, &[0x0a, 0x05, b'a', b'.', b'b', b'.', b'c'])?;
+
+    Ok(())
+}
+
+#[test]
+fn jose_verify_result_wire_contract_is_stable() -> Result<(), buffa::DecodeError> {
+    let result = JoseVerifyResult {
+        protected_header_json: vec![1, 2],
+        payload: vec![3, 4],
+        __buffa_unknown_fields: Default::default(),
+    };
+    assert_golden_wire(&result, &[0x0a, 0x02, 0x01, 0x02, 0x12, 0x02, 0x03, 0x04])?;
 
     Ok(())
 }

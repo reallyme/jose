@@ -171,9 +171,9 @@
     {
       "alg": "ES256",
       "compact": "eyJhbGciOiJFUzI1NiIsIng1YyI6WyJNSUlCIl19.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk.Dy45AanX_6oEOWChW4x1PLlgStyKYxU5mNZHLmdT6qw6-1OKqYNbH14g98APHp8iBqPs2L1sDSVU8cYWfFYG6A",
-      "expected_error": "HeaderMismatch",
+      "expected_error": "InvalidSignature",
       "format": "jws-compact",
-      "id": "reallyme-jws/es256-x5c-header",
+      "id": "reallyme-jws/es256-tampered-x5c-header",
       "public_key_hex": "0247776904c0f1cc3a9c0984b66f75301a5fa68678f0d64af8ba1abce34738a73e",
       "source": "RFC7515"
     },

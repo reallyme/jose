@@ -7,12 +7,12 @@
 use reallyme_crypto::core::Algorithm as CryptoAlgorithm;
 use reallyme_crypto::dispatch::verify as dispatch_verify;
 use thiserror::Error;
-use zeroize::Zeroizing;
 
 use crate::jws::parse_compact::{build_sig_structure, parse_compact_jws};
 use crate::jws::parse_header::JwsAlgorithm;
 use crate::jws::verify::{decode_and_validate_header, decode_payload, decode_signature};
 use crate::jws::verify_p256::{verify_p256_jose_signature, P256JoseVerifyErrorReason};
+use crate::jws::AuthenticatedCompactJws;
 
 const ED25519_SIGNATURE_LENGTH: usize = 64;
 const ES256_SIGNATURE_LENGTH: usize = reallyme_crypto::p256::P256_ECDSA_JOSE_SIGNATURE_LEN;
@@ -49,25 +49,6 @@ impl<'a> JwsVerifyInput<'a> {
             compact,
             public_key,
         }
-    }
-}
-
-/// Authenticated compact-JWS payload bytes.
-///
-/// The bytes are decoded only after cryptographic verification succeeds and
-/// are zeroized when their final owner is dropped.
-pub(crate) struct VerifiedJwsPayload {
-    bytes: Zeroizing<Vec<u8>>,
-}
-
-impl VerifiedJwsPayload {
-    const fn new(bytes: Zeroizing<Vec<u8>>) -> Self {
-        Self { bytes }
-    }
-
-    /// Transfers ownership of the authenticated payload bytes.
-    pub(crate) fn into_bytes(self) -> Zeroizing<Vec<u8>> {
-        self.bytes
     }
 }
 
@@ -117,7 +98,9 @@ impl JwsVerifyError {
 /// This is the semantic authority for the new operation-contract route. It
 /// preserves the existing validation order. Payload decoding occurs only after
 /// the signature authenticates the encoded payload segment.
-pub(crate) fn verify_jws(input: JwsVerifyInput<'_>) -> Result<VerifiedJwsPayload, JwsVerifyError> {
+pub(crate) fn verify_jws(
+    input: JwsVerifyInput<'_>,
+) -> Result<AuthenticatedCompactJws, JwsVerifyError> {
     let parts = parse_compact_jws(
         input.compact,
         JwsVerifyError::new(JwsVerifyErrorReason::InvalidCompact),
@@ -126,7 +109,7 @@ pub(crate) fn verify_jws(input: JwsVerifyInput<'_>) -> Result<VerifiedJwsPayload
         JwsVerifyAlgorithm::Es256 => JwsAlgorithm::Es256,
         JwsVerifyAlgorithm::Eddsa => JwsAlgorithm::Eddsa,
     };
-    decode_and_validate_header(
+    let protected_header = decode_and_validate_header(
         parts.protected_header,
         header_algorithm,
         JwsVerifyError::new(JwsVerifyErrorReason::BadHeaderBase64),
@@ -160,7 +143,7 @@ pub(crate) fn verify_jws(input: JwsVerifyInput<'_>) -> Result<VerifiedJwsPayload
         JwsVerifyError::new(JwsVerifyErrorReason::BadPayloadBase64),
     )?;
 
-    Ok(VerifiedJwsPayload::new(payload))
+    Ok(AuthenticatedCompactJws::new(protected_header, payload))
 }
 
 fn verify_es256(

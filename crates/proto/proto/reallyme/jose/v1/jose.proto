@@ -277,10 +277,18 @@ message JoseJwsVerifyRequest {
   bytes public_key = 3;
 }
 
-// Empty success message. Verification success is represented by envelope
-// status = RESULT; verification failure is represented by a structured
-// JoseError envelope and must not be inferred from message fields.
-message JoseVerifyResult {}
+// Authenticated compact-JWS content returned only after signature verification
+// succeeds. This result covers the supported attached, base64url-encoded
+// compact profile; it does not imply support for JWS JSON Serialization,
+// detached payloads, or RFC 7797 unencoded payloads. Profile-aware callers must
+// parse and authorize these returned bytes instead of the original input.
+message JoseVerifyResult {
+  // Exact decoded JWS Protected Header bytes authenticated by the signature.
+  // JOSE binds alg but does not interpret application/profile parameters.
+  bytes protected_header_json = 1;
+  // Decoded JWS Payload bytes authenticated by the signature.
+  bytes payload = 2;
+}
 
 message JoseJwtEncodeUnsignedRequest {
   // Claims JSON bytes. Claims can contain PII and must be zeroized after use.

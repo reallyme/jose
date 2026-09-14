@@ -4,6 +4,7 @@
 
 //! JSON Web Signature support.
 
+mod authenticated;
 pub(crate) mod parse_compact;
 pub(crate) mod parse_header;
 pub(crate) mod sign;
@@ -12,4 +13,5 @@ pub mod suites;
 pub(crate) mod verify;
 pub(crate) mod verify_p256;
 
+pub use authenticated::AuthenticatedCompactJws;
 pub use parse_compact::MAX_COMPACT_JWS_BYTES;

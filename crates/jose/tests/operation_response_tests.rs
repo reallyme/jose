@@ -66,7 +66,13 @@ fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std
             __buffa_unknown_fields: Default::default(),
         },
     )));
-    assert_route_parity(&jws_verify, JoseOperationKind::JwsVerify, [2u8; 12])?;
+    let (verified_header, verified_payload) = decode_verify_result(&assert_route_parity(
+        &jws_verify,
+        JoseOperationKind::JwsVerify,
+        [2u8; 12],
+    )?)?;
+    assert_eq!(verified_header, br#"{"alg":"EdDSA"}"#);
+    assert_eq!(verified_payload, b"stage-11-jws");
 
     let unsigned_claims = br#"{"sub":"unsigned-stage-11"}"#.to_vec();
     let jwt_encode = operation(RequestOperation::JwtEncodeUnsigned(Box::new(
@@ -593,6 +599,8 @@ fn canonical(response: Option<Response>) -> JoseOperationResponse {
 fn valid_verify_response() -> Response {
     Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
         outcome: Some(JwsVerifyOutcome::Result(Box::new(JoseVerifyResult {
+            protected_header_json: Vec::new(),
+            payload: Vec::new(),
             __buffa_unknown_fields: Default::default(),
         }))),
         __buffa_unknown_fields: Default::default(),
@@ -607,6 +615,14 @@ fn decode_compact(bytes: &[u8]) -> Result<String, buffa::DecodeError> {
 fn decode_claims(bytes: &[u8]) -> Result<Vec<u8>, buffa::DecodeError> {
     let mut result = JoseJwtClaimsResult::decode_from_slice(bytes)?;
     Ok(core::mem::take(&mut result.claims_json))
+}
+
+fn decode_verify_result(bytes: &[u8]) -> Result<(Vec<u8>, Vec<u8>), buffa::DecodeError> {
+    let mut result = JoseVerifyResult::decode_from_slice(bytes)?;
+    Ok((
+        core::mem::take(&mut result.protected_header_json),
+        core::mem::take(&mut result.payload),
+    ))
 }
 
 fn decode_plaintext(bytes: &[u8]) -> Result<Vec<u8>, buffa::DecodeError> {

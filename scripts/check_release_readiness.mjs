@@ -34,20 +34,20 @@ const {
   requireTrackedFiles: true,
 });
 
-assertReallyMeVendoredCorePolicy({ version: "0.6.0" });
+assertReallyMeVendoredCorePolicy({ version: "0.6.2" });
 assertWorkflowActionsPinned();
 assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
 assertOperationContractArchitecture({ readText, listFiles, fail });
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 
-const crateVersion = "0.3.3";
-const protoCrateVersion = "0.3.3";
+const crateVersion = "0.4.0";
+const protoCrateVersion = "0.4.0";
 const buffaVersion = "0.9.2";
 const cryptoVersion = "0.3.7";
 const codecVersion = "0.2.3";
-const npmPackageVersion = "0.3.3";
+const npmPackageVersion = "0.4.0";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
-const releaseReadinessCommit = "3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b";
+const releaseReadinessCommit = "985cf16f866bcdbd384edd8a9b6f332b38c5eb52";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -71,7 +71,7 @@ const sourceVerification = (commands) => {
 };
 
 if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
-  fail("RELEASE_VERSION must match every 0.3.3 release package");
+  fail("RELEASE_VERSION must match every 0.4.0 release package");
 }
 
 assertNodeWorkflowJobsPinNode({ nodeVersion: "24" });
@@ -138,7 +138,7 @@ assertNotContains("Cargo.toml", 'time = "');
 
 const ffiCargo = readText("crates/ffi/Cargo.toml");
 assertContains("crates/ffi/Cargo.toml", 'name = "reallyme-jose-ffi"');
-assertContains("crates/ffi/Cargo.toml", 'version = "0.3.3"');
+assertContains("crates/ffi/Cargo.toml", 'version = "0.4.0"');
 assertContains("crates/ffi/Cargo.toml", "publish = false");
 assertContains("crates/ffi/Cargo.toml", 'crate-type = ["rlib", "staticlib", "cdylib"]');
 assertContains("crates/ffi/Cargo.toml", 'default = ["native"]');
@@ -149,7 +149,7 @@ assertContains(
 assertContains("crates/ffi/Cargo.toml", 'features = ["csprng"]');
 assertContains(
   "crates/ffi/Cargo.toml",
-  'reallyme-jose = { version = "0.3.3", path = "../jose", default-features = false, features = ["wire"] }',
+  'reallyme-jose = { version = "0.4.0", path = "../jose", default-features = false, features = ["wire"] }',
 );
 assertContains("crates/ffi/Cargo.toml", "workspace = true");
 assertNotContains("crates/ffi/Cargo.toml", "publish = true");
@@ -222,7 +222,7 @@ assertContains("crates/proto/Cargo.toml", '"/tests/**/*.rs"');
 assertContains("crates/proto/Cargo.toml", '"/proto/**/*.proto"');
 assertContains(
   "crates/proto/README.md",
-  'reallyme-jose-proto = { version = "0.3.3", features = ["generated"] }',
+  'reallyme-jose-proto = { version = "0.4.0", features = ["generated"] }',
 );
 assertContains("crates/proto/README.md", "JoseOperationRequest");
 assertContains("crates/proto/README.md", "JoseOperationResponse");
@@ -261,7 +261,7 @@ if (npmPackage.publishConfig?.registry !== "https://registry.npmjs.org/") {
 }
 assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.14.1"');
 assertContains("packages/ts/package-lock.json", '"name": "@reallyme/jose"');
-assertContains("packages/ts/package-lock.json", '"version": "0.3.3"');
+assertContains("packages/ts/package-lock.json", '"version": "0.4.0"');
 assertContains("packages/ts/tsconfig.json", '"strict": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedLocals": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedParameters": true');
@@ -270,6 +270,8 @@ assertContains("packages/ts/README.md", "Direct raw WASM calls are unsupported")
 assertContains("packages/ts/src/errors.ts", "class ReallyMeJoseError extends Error");
 assertContains("packages/ts/src/provider.ts", "installReallyMeJoseWasmProvider");
 assertContains("packages/ts/src/facade.ts", "export const ReallyMeJose = Object.freeze");
+assertContains("packages/ts/src/facade-support.ts", "outcome.value.protectedHeaderJson.fill(0)");
+assertContains("packages/ts/src/facade-support.ts", "outcome.value.payload.fill(0)");
 assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_PACK_VERSION = "0.15.0"');
 assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_BINDGEN_VERSION = "0.2.127"');
 assertContains("packages/ts/scripts/check-pack.mjs", "unreviewed semantic export");
@@ -629,7 +631,7 @@ assertContains(
 );
 assertContains(
   "scripts/run_pinned_release_readiness.mjs",
-  '"435ae6205d000d1605761bce2e7b75a1584d6d3ad1b7d338ca8e61868959abdc"',
+  '"6bf50e9e5e55805191217c39e4291067d227a197ea46ab3d371d308f3f878a20"',
 );
 assertContains("scripts/run_pinned_release_readiness.mjs", "LOCAL_CHECKER_SHA256");
 assertContains("scripts/run_pinned_release_readiness.mjs", "MAX_CHECKER_BYTES = 524_288");
@@ -709,6 +711,8 @@ printf '%s\\n' "$install_dir" >> "$GITHUB_PATH"
       { message: "JoseCompactResult", field: "compact", kind: "string", sensitivity: "sensitive" },
       { message: "JoseJwsVerifyRequest", field: "compact", kind: "string", sensitivity: "sensitive" },
       { message: "JoseJwsVerifyRequest", field: "public_key", kind: "bytes", sensitivity: "sensitive" },
+      { message: "JoseVerifyResult", field: "protected_header_json", kind: "bytes", sensitivity: "sensitive" },
+      { message: "JoseVerifyResult", field: "payload", kind: "bytes", sensitivity: "sensitive" },
       { message: "JoseJwtEncodeUnsignedRequest", field: "claims_json", kind: "bytes", sensitivity: "sensitive" },
       { message: "JoseJwtDecodeUnsignedRequest", field: "compact", kind: "string", sensitivity: "sensitive" },
       { message: "JoseJwtClaimsResult", field: "claims_json", kind: "bytes", sensitivity: "sensitive" },
@@ -1131,7 +1135,7 @@ assertContains("Package.swift", '.iOS(.v16)');
 assertContains("Package.swift", 'name: "ReallyMeJOSE"');
 assertContains("Package.swift", 'exact: "1.38.1"');
 assertContains("Package.swift", 'path: "gen/swift"');
-assertContains("Package.swift", 'ffiArtifactVersion = "0.3.3"');
+assertContains("Package.swift", 'ffiArtifactVersion = "0.4.0"');
 assertContains("Package.swift", 'ffiArtifactLocalPathOverride = ""');
 assertNotContains("Package.swift", "0000000000000000000000000000000000000000000000000000000000000000");
 assertContains("Package.swift", "REALLYME_JOSE_SWIFTPM_RUNTIME_FFI");
@@ -1164,8 +1168,10 @@ assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "adding
 assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "messageDepthLimit = 32");
 assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "provider.clearOwned(&requestBytes)");
 assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "provider.clearOwned(&responseBytes)");
+assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "clearOwned(&result.protectedHeaderJson)");
+assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "clearOwned(&result.payload)");
 assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "response.contractVersion == .v1");
-assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "ReallyMeJOSEErrorReason(rawValue: protoReason.rawValue)");
+assertContains("packages/swift/Sources/ReallyMeJOSE/OperationContract.swift", "ReallyMeJOSEErrorReason(rawValue: protoReason.rawValue)");
 assertContains("packages/swift/Sources/ReallyMeJOSE/MemoryHygiene.swift", "memset_s");
 assertContains("packages/swift/Sources/ReallyMeJOSE/NativeProvider.swift", "try Self.requireCompatibleABI(version())");
 assertContains("packages/swift/Sources/ReallyMeJOSE/NativeProvider.swift", "Resolve no operational symbol until");

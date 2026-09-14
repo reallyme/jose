@@ -13,7 +13,7 @@ pub(crate) fn decode_and_validate_header<E: Copy>(
     bad_base64: E,
     bad_utf8: E,
     mismatch: E,
-) -> Result<(), E> {
+) -> Result<Zeroizing<Vec<u8>>, E> {
     let header_bytes = Zeroizing::new(
         base64url_bytes_to_bytes(protected_header.as_bytes()).map_err(|_| bad_base64)?,
     );
@@ -23,7 +23,7 @@ pub(crate) fn decode_and_validate_header<E: Copy>(
         return Err(mismatch);
     }
 
-    Ok(())
+    Ok(header_bytes)
 }
 
 pub(crate) fn decode_signature<E>(signature: &str, bad_base64: E) -> Result<Zeroizing<Vec<u8>>, E> {

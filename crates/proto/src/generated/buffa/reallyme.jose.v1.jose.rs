@@ -4969,20 +4969,84 @@ pub const __JOSE_JWS_VERIFY_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEnt
     from_json: ::buffa::type_registry::any_from_json::<JoseJwsVerifyRequest>,
     is_wkt: false,
 };
-/// Empty success message. Verification success is represented by envelope
-/// status = RESULT; verification failure is represented by a structured
-/// JoseError envelope and must not be inferred from message fields.
+/// Authenticated compact-JWS content returned only after signature verification
+/// succeeds. This result covers the supported attached, base64url-encoded
+/// compact profile; it does not imply support for JWS JSON Serialization,
+/// detached payloads, or RFC 7797 unencoded payloads. Profile-aware callers must
+/// parse and authorize these returned bytes instead of the original input.
 #[derive(Clone, PartialEq, Default)]
-#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[derive(::serde::Serialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct JoseVerifyResult {
+    /// Exact decoded JWS Protected Header bytes authenticated by the signature.
+    /// JOSE binds alg but does not interpret application/profile parameters.
+    ///
+    /// Field 1: `protected_header_json`
+    #[serde(
+        rename = "protectedHeaderJson",
+        alias = "protected_header_json",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub protected_header_json: ::buffa::alloc::vec::Vec<u8>,
+    /// Decoded JWS Payload bytes authenticated by the signature.
+    ///
+    /// Field 2: `payload`
+    #[serde(
+        rename = "payload",
+        with = "::buffa::json_helpers::bytes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    pub payload: ::buffa::alloc::vec::Vec<u8>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
 }
 impl ::core::fmt::Debug for JoseVerifyResult {
     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-        f.debug_struct("JoseVerifyResult").finish()
+        f.debug_struct("JoseVerifyResult")
+            .field("protected_header_json", &"<redacted>")
+            .field("payload", &"<redacted>")
+            .finish()
+    }
+}
+impl ::core::ops::Drop for JoseVerifyResult {
+    fn drop(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.protected_header_json);
+        ::zeroize::Zeroize::zeroize(&mut self.payload);
+        __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseVerifyResult {
+    fn deserialize<D>(deserializer: D) -> ::core::result::Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        fn deserialize_zeroizing_bytes<'de, D>(
+            deserializer: D,
+        ) -> ::core::result::Result<::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            ::buffa::json_helpers::bytes::deserialize(deserializer)
+                .map(::zeroize::Zeroizing::new)
+        }
+
+        #[derive(Default, ::serde::Deserialize)]
+        #[serde(default, deny_unknown_fields)]
+        struct Wire {
+            #[serde(rename = "protectedHeaderJson", alias = "protected_header_json", deserialize_with = "deserialize_zeroizing_bytes")]
+            protected_header_json: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+            #[serde(rename = "payload", deserialize_with = "deserialize_zeroizing_bytes")]
+            payload: ::zeroize::Zeroizing<::buffa::alloc::vec::Vec<u8>>,
+        }
+
+        let mut wire = Wire::deserialize(deserializer)?;
+        Ok(Self {
+            protected_header_json: ::core::mem::take(&mut *wire.protected_header_json),
+            payload: ::core::mem::take(&mut *wire.payload),
+            __buffa_unknown_fields: Default::default(),
+        })
     }
 }
 impl JoseVerifyResult {
@@ -5012,6 +5076,15 @@ impl ::buffa::Message for JoseVerifyResult {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
+        if !self.protected_header_json.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.protected_header_json)
+                        as u64;
+        }
+        if !self.payload.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.payload) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -5022,6 +5095,16 @@ impl ::buffa::Message for JoseVerifyResult {
     ) {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
+        if !self.protected_header_json.is_empty() {
+            ::buffa::types::put_shared_bytes_field(
+                1u32,
+                &self.protected_header_json,
+                buf,
+            );
+        }
+        if !self.payload.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.payload, buf);
+        }
         self.__buffa_unknown_fields.write_to(buf);
     }
     fn merge_field(
@@ -5035,6 +5118,20 @@ impl ::buffa::Message for JoseVerifyResult {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_bytes(&mut self.protected_header_json, buf)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_bytes(&mut self.payload, buf)?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -5043,6 +5140,8 @@ impl ::buffa::Message for JoseVerifyResult {
         ::core::result::Result::Ok(())
     }
     fn clear(&mut self) {
+        ::zeroize::Zeroize::zeroize(&mut self.protected_header_json);
+        ::zeroize::Zeroize::zeroize(&mut self.payload);
         __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
     }
 }

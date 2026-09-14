@@ -42,18 +42,20 @@ pub(crate) fn verify_jws_request(
     request: &JoseJwsVerifyRequest,
 ) -> JoseWireResult<JoseVerifyResult> {
     let algorithm = request_algorithm(request.algorithm).map_err(map_request_error)?;
-    let verified_payload = verify_jws(JwsVerifyInput::new(
+    let verified = verify_jws(JwsVerifyInput::new(
         algorithm,
         &request.compact,
         &request.public_key,
     ))
     .map_err(map_verify_error)?;
 
-    // The wire contract currently exposes only verification status. Dropping
-    // this owner here zeroizes the authenticated payload instead of retaining
-    // application data beyond the operation boundary.
-    drop(verified_payload.into_bytes());
+    let (mut protected_header_json, mut payload) = verified.into_parts();
     Ok(JoseVerifyResult {
+        // Transfer both allocations directly into the hardened generated
+        // owner. Copying here would leave avoidable duplicate identity and
+        // payload bytes in memory until the temporary owners were dropped.
+        protected_header_json: core::mem::take(&mut *protected_header_json),
+        payload: core::mem::take(&mut *payload),
         __buffa_unknown_fields: Default::default(),
     })
 }
