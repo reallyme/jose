@@ -131,10 +131,6 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
-          cache: npm
-          cache-dependency-path: packages/ts/package-lock.json
-      - name: Install TypeScript dependencies
-        run: npm ci --prefix packages/ts
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
           toolchain: 1.98.1
@@ -185,7 +181,7 @@ jobs:
           node scripts/verify_sdk_release_version.mjs "${RELEASE_VERSION}"
           node --test scripts/promote_maven_release_repository.test.mjs scripts/verify_native_artifact_handoff.test.mjs scripts/verify_release_attestation.test.mjs scripts/verify_sdk_release_version.test.mjs
           node scripts/verify_maven_release_repository.mjs build/maven-release "${RELEASE_VERSION}"
-          node scripts/run_pinned_release_readiness.mjs
+          node scripts/run_pinned_release_readiness.mjs --policy-only
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: maven-publications-${{ inputs.version }}-${{ needs.verify-source-sha.outputs.release_sha }}

@@ -76,9 +76,9 @@ if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
 
 assertNodeWorkflowJobsPinNode({ nodeVersion: "24" });
 
-// The local readiness runner exercises the TypeScript package even when the
-// surrounding workflow primarily certifies another package ecosystem. Keep
-// the locked install in the same job and before the readiness invocation.
+// Package workflows own their ecosystem's expensive runtime tests. Requiring
+// policy-only mode here prevents an Ubuntu npm, crates, or Android runner from
+// accidentally executing Darwin-only Swift tests or rebuilding other packages.
 for (const workflow of listFiles(".github/workflows").filter(
   (path) => path.endsWith(".yml") || path.endsWith(".yaml"),
 )) {
@@ -92,17 +92,16 @@ for (const workflow of listFiles(".github/workflows").filter(
   for (const [index, header] of jobHeaders.entries()) {
     const nextHeader = jobHeaders[index + 1];
     const job = jobs.slice(header.index, nextHeader?.index ?? jobs.length);
-    const readinessIndex = job.indexOf(
-      "node scripts/run_pinned_release_readiness.mjs",
-    );
-    if (readinessIndex === -1) {
+    const readinessLines = job
+      .split("\n")
+      .filter((line) => line.includes("node scripts/run_pinned_release_readiness.mjs"));
+    if (readinessLines.length === 0) {
       continue;
     }
-    const installIndex = job.indexOf("npm ci --prefix packages/ts");
-    if (installIndex === -1 || installIndex > readinessIndex) {
-      fail(
-        `${workflow} job ${header[1]} must install locked TypeScript dependencies before local release readiness`,
-      );
+    for (const line of readinessLines) {
+      if (!line.includes("--policy-only")) {
+        fail(`${workflow} job ${header[1]} must keep local release readiness policy-only`);
+      }
     }
   }
 }
@@ -554,7 +553,10 @@ assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "--exclude reallyme-jose-ffi",
 );
-assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/run_pinned_release_readiness.mjs");
+assertContains(
+  ".github/workflows/crates-package-preflight.yml",
+  "node scripts/run_pinned_release_readiness.mjs --policy-only",
+);
 assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "run: node scripts/publish_crates_in_order.mjs order",
@@ -646,6 +648,7 @@ assertContains(
 );
 assertContains(".github/workflows/rust-ci.yml", releaseReadinessCommand);
 assertContains(".github/workflows/readiness.yml", releaseReadinessCommand);
+assertContains(".github/workflows/readiness.yml", "runs-on: macos-26");
 assertContains(".github/workflows/readiness.yml", "WASM_BINDGEN_CLI_VERSION: 0.2.127");
 assertContains(".github/workflows/readiness.yml", "WASM_PACK_VERSION: 0.15.0");
 assertContains(
@@ -1206,6 +1209,7 @@ assertContains("packages/swift/Sources/ReallyMeJOSE/OperationContract.swift", "R
 assertContains("packages/swift/Sources/ReallyMeJOSE/MemoryHygiene.swift", "memset_s");
 assertContains("packages/swift/Sources/ReallyMeJOSE/MemoryHygiene.swift", "canImport(Glibc)");
 assertContains("packages/swift/Sources/ReallyMeJOSE/MemoryHygiene.swift", "explicit_bzero");
+assertContains("scripts/test_swift_source_tree.sh", '"$(uname -s)" != "Darwin"');
 assertContains("packages/swift/Sources/ReallyMeJOSE/NativeProvider.swift", "try Self.requireCompatibleABI(version())");
 assertContains("packages/swift/Sources/ReallyMeJOSE/NativeProvider.swift", "Resolve no operational symbol until");
 assertContains("packages/swift/Sources/ReallyMeJOSE/NativeProvider.swift", "rm_jose_zeroize_buffer");
@@ -1261,8 +1265,10 @@ assertContains(".github/workflows/swift-package-preflight.yml", "macos-26");
 assertContains(".github/workflows/swift-package-preflight.yml", "Select Xcode 26.6");
 assertContains(".github/workflows/swift-package-preflight.yml", "components: llvm-tools-preview");
 assertContains(".github/workflows/swift-package-preflight.yml", "verify_swift_release_artifact.test.mjs");
-assertContains(".github/workflows/swift-package-preflight.yml", "npm ci --prefix packages/ts");
-assertContains(".github/workflows/swift-package-preflight.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
+assertContains(
+  ".github/workflows/swift-package-preflight.yml",
+  "node scripts/run_pinned_release_readiness.mjs --release-packages --policy-only",
+);
 assertContains(".github/workflows/rust-ci.yml", "--profile release-ffi");
 assertContains(".github/workflows/rust-ci.yml", "name: MSRV 1.96");
 assertContains(
@@ -1315,8 +1321,10 @@ assertContains(
 assertContains(swiftReleaseWorkflow, 'git tag "v${RELEASE_VERSION}" "${tag_target}"');
 assertContains(swiftReleaseWorkflow, "--verify-tag");
 assertContains(swiftReleaseWorkflow, "node scripts/run_pinned_release_readiness.mjs");
-assertContains(swiftReleaseWorkflow, "node scripts/run_pinned_release_readiness.mjs --release-packages");
-assertContains(swiftReleaseWorkflow, "npm ci --prefix packages/ts");
+assertContains(
+  swiftReleaseWorkflow,
+  "node scripts/run_pinned_release_readiness.mjs --release-packages --policy-only",
+);
 assertNotContains(swiftReleaseWorkflow, "scripts/build_swift_xcframework.sh");
 assertNotContains(swiftReleaseWorkflow, "--clobber");
 assertNotContains(swiftReleaseWorkflow, "gh release edit");
@@ -1362,7 +1370,14 @@ assertContains(npmPreflightWorkflow, "npm package preflight");
 assertContains(npmPreflightWorkflow, "run-name: npm package preflight ${{ inputs.version }}");
 assertContains(npmPreflightWorkflow, "npm --prefix packages/ts test");
 assertContains(npmPreflightWorkflow, "npm --prefix packages/ts run pack:check");
-assertContains(npmPreflightWorkflow, "node scripts/run_pinned_release_readiness.mjs --release-packages");
+assertContains(
+  npmPreflightWorkflow,
+  "node scripts/run_pinned_release_readiness.mjs --release-packages --policy-only",
+);
+assertContains(
+  npmReleaseWorkflow,
+  "node scripts/run_pinned_release_readiness.mjs --release-packages --policy-only",
+);
 assertContains(npmReleaseWorkflow, "Require current main and successful npm package checks");
 assertContains(npmReleaseWorkflow, "build and verify immutable npm package");
 assertContains(npmReleaseWorkflow, "Upload immutable npm tarball");
@@ -1575,7 +1590,10 @@ assertContains(".github/workflows/android-ci.yml", "ndk;29.0.14206865");
 assertContains(".github/workflows/android-ci.yml", "test_android_consumer_r8_runtime.sh");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "linux-aarch64");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "verify_maven_release_repository.mjs");
-assertContains(".github/workflows/kotlin-android-package-preflight.yml", "npm ci --prefix packages/ts");
+assertContains(
+  ".github/workflows/kotlin-android-package-preflight.yml",
+  "node scripts/run_pinned_release_readiness.mjs --policy-only",
+);
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "kotlin-digest-${{ matrix.platform }}");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "build/kotlin-native-digests");
 assertNotContains(".github/workflows/kotlin-android-package-preflight.yml", "needs.jvm-native.outputs");
