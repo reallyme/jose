@@ -8,7 +8,9 @@
 // For information on using the generated types, please see the documentation:
 //   https://github.com/apple/swift-protobuf/
 
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
 
 #if canImport(FoundationEssentials)
 import FoundationEssentials

@@ -1,5 +1,6 @@
-# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+# SPDX-FileCopyrightText: 2026 ReallyMe LLC
 #
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 name: Rust CI
 
@@ -230,7 +231,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 48a5ae4a9c6f25053459122d6f84cf1741463454
+          ref: 3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b
           path: .release-readiness
           persist-credentials: false
 

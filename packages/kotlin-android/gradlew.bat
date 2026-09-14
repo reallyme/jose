@@ -1,4 +1,4 @@
-@rem SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+@rem SPDX-FileCopyrightText: 2026 ReallyMe LLC
 @rem
 @rem SPDX-License-Identifier: MIT OR Apache-2.0
 @echo off

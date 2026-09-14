@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -10,6 +10,7 @@ const {
   readText,
   readJson,
   listFiles,
+  loadTrackedFiles,
   fail,
   assertContains,
   assertNotContains,
@@ -33,7 +34,7 @@ const {
   requireTrackedFiles: true,
 });
 
-assertReallyMeVendoredCorePolicy();
+assertReallyMeVendoredCorePolicy({ version: "0.6.0" });
 assertWorkflowActionsPinned();
 assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
 assertOperationContractArchitecture({ readText, listFiles, fail });
@@ -46,7 +47,7 @@ const cryptoVersion = "0.3.7";
 const codecVersion = "0.2.3";
 const npmPackageVersion = "0.3.3";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
-const releaseReadinessCommit = "48a5ae4a9c6f25053459122d6f84cf1741463454";
+const releaseReadinessCommit = "3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -612,13 +613,23 @@ assertContains(
 );
 assertContains(".github/workflows/rust-ci.yml", releaseReadinessCommand);
 assertContains(".github/workflows/readiness.yml", releaseReadinessCommand);
+assertContains(".github/workflows/readiness.yml", "WASM_BINDGEN_CLI_VERSION: 0.2.127");
+assertContains(".github/workflows/readiness.yml", "WASM_PACK_VERSION: 0.15.0");
+assertContains(
+  ".github/workflows/readiness.yml",
+  'tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}',
+);
+assertContains(
+  ".github/workflows/readiness.yml",
+  'tool: wasm-pack@${{ env.WASM_PACK_VERSION }}',
+);
 assertContains(
   "scripts/run_pinned_release_readiness.mjs",
   `const RELEASE_READINESS_COMMIT = "${releaseReadinessCommit}"`,
 );
 assertContains(
   "scripts/run_pinned_release_readiness.mjs",
-  '"6eab296596b6badd76bb1ce4abf67b73513981ad352e8f6ab5e44cdca257545e"',
+  '"435ae6205d000d1605761bce2e7b75a1584d6d3ad1b7d338ca8e61868959abdc"',
 );
 assertContains("scripts/run_pinned_release_readiness.mjs", "LOCAL_CHECKER_SHA256");
 assertContains("scripts/run_pinned_release_readiness.mjs", "MAX_CHECKER_BYTES = 524_288");
@@ -1677,8 +1688,41 @@ const requiredWorkflows = [
   ".github/workflows/npm-package-preflight.yml",
   ".github/workflows/npm-package-release.yml",
 ];
+const spdxCopyright = ["SPDX-FileCopyrightText:", "2026 ReallyMe LLC"].join(" ");
+const spdxLicense = ["SPDX-License-Identifier:", "MIT OR Apache-2.0"].join(" ");
 for (const workflow of requiredWorkflows) {
-  assertNotContains(workflow, "SPDX-License-Identifier:");
+  assertContains(workflow, spdxCopyright);
+  assertContains(workflow, spdxLicense);
+}
+
+const immutableVendoredSpdxPaths = new Set(["scripts/release-readiness/core.mjs"]);
+const spdxTextPath = /\.(?:c|dict|h|java|js|kt|kts|mjs|modulemap|plist|pro|properties|proto|rs|sh|swift|ts|xml|ya?ml)$/u;
+const spdxTextNames = new Set([".gitignore", "NOTICE", "Package.swift", "gradlew", "gradlew.bat"]);
+
+for (const path of loadTrackedFiles()) {
+  if (path.endsWith(".md") || path.endsWith(".txt")) {
+    assertNotContains(path, "SPDX-FileCopyrightText:");
+    assertNotContains(path, "SPDX-License-Identifier:");
+    continue;
+  }
+  if (immutableVendoredSpdxPaths.has(path)) {
+    // The upstream runner verifies this file byte-for-byte against the pinned
+    // release, so its upstream-owned header cannot be rewritten locally.
+    continue;
+  }
+  const name = path.split("/").at(-1);
+  if (!spdxTextPath.test(path) && !spdxTextNames.has(name)) continue;
+
+  const text = readText(path);
+  const hasCopyright = text.includes("SPDX-FileCopyrightText:");
+  const hasLicense = text.includes("SPDX-License-Identifier:");
+  if (!hasCopyright && !hasLicense) continue;
+  if (!text.includes(spdxCopyright) || !text.includes(spdxLicense)) {
+    fail(`${path} has an incomplete or stale SPDX header`);
+  }
+  if (text.split(spdxCopyright).length !== 2 || text.split(spdxLicense).length !== 2) {
+    fail(`${path} must contain exactly one normalized SPDX header`);
+  }
 }
 
 const fuzzCargo = readText("fuzz/Cargo.toml");

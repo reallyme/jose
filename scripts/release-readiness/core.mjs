@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+// SPDX-FileCopyrightText: 2026 ReallyMe LLC
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -11,7 +11,7 @@ import { spawnSync } from "node:child_process";
 // This module is intentionally written as a standalone, vendorable release
 // readiness core. Sister repositories should copy it byte-for-byte or consume a
 // pinned upstream revision so release-critical checks do not drift silently.
-export const RELEASE_READINESS_CORE_CONTRACT_VERSION = 12;
+export const RELEASE_READINESS_VERSION = "0.6.0";
 
 const DEFAULT_FAILURE_PREFIX = "release readiness check failed";
 const MAX_PRODUCTION_SOURCE_LINES = 500;
@@ -403,8 +403,7 @@ export function createReleaseReadinessContext(options) {
 
   const reportSourcePolicy = (language) => {
     if (
-      process.env.RELEASE_READINESS_ENFORCED_CONTRACT !==
-        String(RELEASE_READINESS_CORE_CONTRACT_VERSION) ||
+      process.env.RELEASE_READINESS_ENFORCED_VERSION !== RELEASE_READINESS_VERSION ||
       process.env.RELEASE_READINESS_SOURCE_POLICY_FD !== "3"
     ) {
       return;
@@ -1264,7 +1263,6 @@ export function createReleaseReadinessContext(options) {
         ".jsx",
         ".kt",
         ".kts",
-        ".md",
         ".mjs",
         ".mts",
         ".proto",
@@ -1283,8 +1281,7 @@ export function createReleaseReadinessContext(options) {
       exclusions = [],
       requireExclusionsMatched = false,
       requireExclusionReasons = false,
-      copyright =
-        "SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved",
+      copyright = "SPDX-FileCopyrightText: 2026 ReallyMe LLC",
       license = "SPDX-License-Identifier: MIT OR Apache-2.0",
     } = policy;
     for (const [policyName, values] of [
@@ -1403,7 +1400,7 @@ export function createReleaseReadinessContext(options) {
         ],
       },
       "protocol-engine": {
-        required: ["crates", "contracts", "docs", "scripts", ".github"],
+        required: ["crates", "contracts", "conformance", "docs", "scripts", ".github"],
         permitted: [
           "crates",
           "bindings",
@@ -1450,8 +1447,50 @@ export function createReleaseReadinessContext(options) {
           "gradle",
         ],
       },
+      application: {
+        required: ["crates", "contracts", "conformance", "docs", "scripts", ".github"],
+        permitted: [
+          "crates",
+          "contracts",
+          "conformance",
+          "vectors",
+          "fuzz",
+          "examples",
+          "docs",
+          "scripts",
+          ".github",
+          ".cargo",
+          "config",
+          "migrations",
+          "resources",
+        ],
+      },
+      "application-collection": {
+        required: ["apps", "conformance", "docs", "scripts", ".github"],
+        permitted: [
+          "apps",
+          "crates",
+          "contracts",
+          "conformance",
+          "vectors",
+          "fuzz",
+          "examples",
+          "docs",
+          "scripts",
+          ".github",
+          ".cargo",
+        ],
+      },
       "hosted-service": {
-        required: ["services", "deploy", "operations", "docs", "scripts", ".github"],
+        required: [
+          "services",
+          "deploy",
+          "operations",
+          "conformance",
+          "docs",
+          "scripts",
+          ".github",
+        ],
         permitted: [
           "crates",
           "contracts",
@@ -1551,10 +1590,20 @@ export function createReleaseReadinessContext(options) {
         ],
       },
       "conformance-suite": {
-        required: ["upstream", "plans", "adapters", "conformance", "docs", "scripts", ".github"],
+        required: [
+          "upstream",
+          "plans",
+          "adapters",
+          "schemas",
+          "tests",
+          "results",
+          "evidence",
+          "docs",
+          "scripts",
+          ".github",
+        ],
         permitted: [
           "contracts",
-          "conformance",
           "vectors",
           "examples",
           "docs",
@@ -1563,12 +1612,55 @@ export function createReleaseReadinessContext(options) {
           "upstream",
           "plans",
           "adapters",
+          "schemas",
+          "tests",
           "results",
           "evidence",
         ],
       },
+      taxonomy: {
+        required: [
+          "taxonomy",
+          "schema",
+          "views",
+          "consumers",
+          "conformance",
+          "tests",
+          "docs",
+          "scripts",
+          ".github",
+        ],
+        permitted: [
+          "taxonomy",
+          "schema",
+          "views",
+          "consumers",
+          "conformance",
+          "tests",
+          "docs",
+          "scripts",
+          ".github",
+        ],
+      },
+      "documentation-site": {
+        required: ["content", "contracts", "tests", "scripts", ".github"],
+        permitted: [
+          "content",
+          "components",
+          "snippets",
+          "contracts",
+          "conformance",
+          "examples",
+          "localization",
+          "assets",
+          "docs",
+          "tests",
+          "scripts",
+          ".github",
+        ],
+      },
       tooling: {
-        required: ["docs", "scripts", ".github"],
+        required: ["test", "docs", "scripts", ".github"],
         permitted: [
           "contracts",
           "conformance",
@@ -1682,7 +1774,18 @@ export function createReleaseReadinessContext(options) {
         .filter((path) => path.includes("/"))
         .map((path) => path.slice(0, path.indexOf("/"))),
     );
-    const forbiddenRootLanes = new Set(["src", "proto", "protos", "tests", "generated"]);
+    const archetypesWithRootTests = new Set([
+      "conformance-suite",
+      "taxonomy",
+      "documentation-site",
+    ]);
+    const forbiddenRootLanes = new Set([
+      "src",
+      "proto",
+      "protos",
+      "generated",
+      ...(archetypesWithRootTests.has(archetype) ? [] : ["tests"]),
+    ]);
     for (const lane of observedRootLanes) {
       if (forbiddenRootLanes.has(lane)) {
         fail(`repository shape forbids root lane ${lane}`);
@@ -1717,8 +1820,13 @@ export function createReleaseReadinessContext(options) {
       "bindings",
       "gen",
       "packages",
+      ...(archetype === "hosted-service" ? ["services"] : []),
+      ...(archetype === "taxonomy" ? ["views"] : []),
+      ...(archetype === "documentation-site" ? ["content"] : []),
       ...(archetype === "platform-workspace"
         ? ["apps", "kits", "servers", "workers"]
+        : archetype === "application-collection"
+          ? ["apps"]
         : []),
     ]);
     for (const [parent, children] of Object.entries(subLanes)) {
@@ -1803,6 +1911,13 @@ export function createReleaseReadinessContext(options) {
       .filter((path) => path.startsWith("crates/") && path.endsWith("/Cargo.toml"))
       .map((path) => path.slice(0, -"/Cargo.toml".length));
     for (const path of observedCrates) {
+      if (path.startsWith("crates/proto-") && path !== "crates/proto-codec") {
+        fail(
+          `repository shape forbids compatibility proto package ${path}; generated protobuf modules belong in crates/proto`,
+        );
+      }
+    }
+    for (const path of observedCrates) {
       if (!declaredCrates.has(path)) {
         fail(`repository shape Cargo crate ${path} is undeclared`);
       }
@@ -1837,9 +1952,10 @@ export function createReleaseReadinessContext(options) {
       fail("repository shape proto-codec requires a canonical proto crate");
     }
     const protoFiles = governedFiles.filter((path) => path.endsWith(".proto"));
-    const usesAppOwnedProto = archetype === "platform-workspace";
+    const usesAppOwnedProto =
+      archetype === "platform-workspace" || archetype === "application-collection";
     if (usesAppOwnedProto && (protoCrates.length !== 0 || protoCodecCrates.length !== 0)) {
-      fail("repository shape platform-workspace keeps protobuf ownership in app contracts");
+      fail(`repository shape ${archetype} keeps protobuf ownership in application contracts`);
     }
     if (!usesAppOwnedProto && protoFiles.length !== 0 && protoCrates.length === 0) {
       fail("repository shape found protobuf schemas without a declared canonical proto crate");
@@ -1853,14 +1969,19 @@ export function createReleaseReadinessContext(options) {
     }
     if (
       usesAppOwnedProto &&
-      protoFiles.some(
-        (path) =>
-          !/^apps\/[A-Za-z0-9][A-Za-z0-9_.-]*\/contract\/proto\/.+[.]proto$/u.test(path),
-      )
+      protoFiles.some((path) => {
+        const expectedPattern =
+          archetype === "application-collection"
+            ? /^apps\/[A-Za-z0-9][A-Za-z0-9_.-]*\/contracts\/proto\/.+[.]proto$/u
+            : /^apps\/[A-Za-z0-9][A-Za-z0-9_.-]*\/contract\/proto\/.+[.]proto$/u;
+        return !expectedPattern.test(path);
+      })
     ) {
-      fail(
-        "repository shape platform-workspace requires protobuf schemas in apps/<app>/contract/proto",
-      );
+      const expectedPath =
+        archetype === "application-collection"
+          ? "apps/<app>/contracts/proto"
+          : "apps/<app>/contract/proto";
+      fail(`repository shape ${archetype} requires protobuf schemas in ${expectedPath}`);
     }
     if (
       governedFiles.some(
@@ -3321,11 +3442,21 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
   };
 
   const assertReallyMeVendoredCorePolicy = (policy = {}) => {
+    if (policy === null || typeof policy !== "object" || Array.isArray(policy)) {
+      fail("vendored core policy must be an object");
+    }
+    if (Object.prototype.hasOwnProperty.call(policy, "contractVersion")) {
+      fail("numeric release-readiness contractVersion is not supported");
+    }
     const {
       scriptPath = "scripts/check_release_readiness.mjs",
       corePath = "scripts/release-readiness/core.mjs",
-      contractVersion = RELEASE_READINESS_CORE_CONTRACT_VERSION,
+      version = RELEASE_READINESS_VERSION,
     } = policy;
+
+    if (typeof version !== "string" || !/^\d+\.\d+\.\d+$/u.test(version)) {
+      fail("release-readiness version must be an exact semantic version");
+    }
 
     requireTracked(scriptPath);
     requireTracked(corePath);
@@ -3346,7 +3477,7 @@ cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked`,
       }
     };
 
-    assertContains(corePath, `RELEASE_READINESS_CORE_CONTRACT_VERSION = ${contractVersion}`);
+    assertContains(corePath, `RELEASE_READINESS_VERSION = "${version}"`);
     for (const name of [
       "assertGeneratedArtifactsFresh",
       "assertGeneratedProtoHardeningPolicy",

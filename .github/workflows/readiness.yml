@@ -1,5 +1,6 @@
-# SPDX-FileCopyrightText: Copyright © 2026 ReallyMe LLC. All rights reserved
+# SPDX-FileCopyrightText: 2026 ReallyMe LLC
 #
+# SPDX-License-Identifier: MIT OR Apache-2.0
 
 name: Release Readiness
 
@@ -12,6 +13,10 @@ on:
 
 permissions:
   contents: read
+
+env:
+  WASM_BINDGEN_CLI_VERSION: 0.2.127
+  WASM_PACK_VERSION: 0.15.0
 
 jobs:
   readiness:
@@ -52,7 +57,12 @@ jobs:
       - name: Install wasm-pack
         uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
         with:
-          tool: wasm-pack@0.15.0
+          tool: wasm-pack@${{ env.WASM_PACK_VERSION }}
+
+      - name: Install wasm-bindgen-cli
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}
 
       - name: Install TypeScript package dependencies
         run: npm ci --prefix packages/ts
@@ -66,7 +76,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 48a5ae4a9c6f25053459122d6f84cf1741463454
+          ref: 3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b
           path: .release-readiness
           persist-credentials: false
 
