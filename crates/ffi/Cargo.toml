@@ -1,6 +1,6 @@
 [package]
 name = "reallyme-jose-ffi"
-version = "0.3.3"
+version = "0.4.0"
 description = "ReallyMe JOSE native C ABI operation-contract adapter."
 edition.workspace = true
 rust-version.workspace = true
@@ -18,7 +18,7 @@ native = ["reallyme-crypto/native", "reallyme-jose/native"]
 [dependencies]
 jni = { workspace = true }
 reallyme-crypto = { workspace = true, features = ["csprng"] }
-reallyme-jose = { version = "0.3.3", path = "../jose", default-features = false, features = ["wire"] }
+reallyme-jose = { version = "0.4.0", path = "../jose", default-features = false, features = ["wire"] }
 zeroize = { workspace = true }
 
 [lints]

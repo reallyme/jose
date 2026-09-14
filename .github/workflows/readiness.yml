@@ -76,7 +76,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 3fcf50eb312ae20dc9dc7a256f8fae67a7ba2c6b
+          ref: 985cf16f866bcdbd384edd8a9b6f332b38c5eb52
           path: .release-readiness
           persist-credentials: false
 

@@ -173,7 +173,14 @@ export const claimsOutcome = (outcome: JoseJwtDecodeUnsignedResponse["outcome"])
 export const verifyOutcome = (outcome: JoseJwsVerifyResponse["outcome"]): void => {
   if (outcome.case === "error") return throwJoseError(outcome.value);
   if (outcome.case !== "result") return malformedProviderResponse();
-  requireClean(outcome.value);
+  try {
+    requireClean(outcome.value);
+  } finally {
+    // The compatibility facade returns only verification status. Do not leave
+    // authenticated identity or payload bytes in managed response buffers.
+    outcome.value.protectedHeaderJson.fill(0);
+    outcome.value.payload.fill(0);
+  }
 };
 
 export const plaintextOutcome = (outcome: JoseJweDecryptResponse["outcome"]): Uint8Array => {

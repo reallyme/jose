@@ -3818,13 +3818,33 @@ impl ::serde::Serialize for JoseJwsVerifyRequestOwnedView {
         ::serde::Serialize::serialize(&self.0, __s)
     }
 }
-/// Empty success message. Verification success is represented by envelope
-/// status = RESULT; verification failure is represented by a structured
-/// JoseError envelope and must not be inferred from message fields.
-#[derive(Clone, Debug, Default)]
+/// Authenticated compact-JWS content returned only after signature verification
+/// succeeds. This result covers the supported attached, base64url-encoded
+/// compact profile; it does not imply support for JWS JSON Serialization,
+/// detached payloads, or RFC 7797 unencoded payloads. Profile-aware callers must
+/// parse and authorize these returned bytes instead of the original input.
+#[derive(Clone, Default)]
 pub struct JoseVerifyResultView<'a> {
+    /// Exact decoded JWS Protected Header bytes authenticated by the signature.
+    /// JOSE binds alg but does not interpret application/profile parameters.
+    ///
+    /// Field 1: `protected_header_json`
+    pub protected_header_json: &'a [u8],
+    /// Decoded JWS Payload bytes authenticated by the signature.
+    ///
+    /// Field 2: `payload`
+    pub payload: &'a [u8],
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
 }
+impl<'a> ::core::fmt::Debug for JoseVerifyResultView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseVerifyResultView")
+            .field("protected_header_json", &"<redacted>")
+            .field("payload", &"<redacted>")
+            .finish()
+    }
+}
+
 impl<'a> ::buffa::MessageView<'a> for JoseVerifyResultView<'a> {
     type Owned = super::super::JoseVerifyResult;
     fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
@@ -3855,6 +3875,20 @@ impl<'a> ::buffa::MessageView<'a> for JoseVerifyResultView<'a> {
         let view = self;
         let mut cur = cur;
         match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.protected_header_json = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.payload = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
             _ => {
                 ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                 let span_len = before_tag.len() - cur.len();
@@ -3877,6 +3911,8 @@ impl<'a> ::buffa::MessageView<'a> for JoseVerifyResultView<'a> {
         use ::buffa::alloc::string::ToString as _;
         let _ = __buffa_src;
         ::core::result::Result::Ok(super::super::JoseVerifyResult {
+            protected_header_json: (self.protected_header_json).to_vec(),
+            payload: (self.payload).to_vec(),
             __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
             ..::core::default::Default::default()
         })
@@ -3888,6 +3924,15 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseVerifyResultView<'a> {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
+        if !self.protected_header_json.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.protected_header_json)
+                        as u64;
+        }
+        if !self.payload.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.payload) as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -3899,6 +3944,16 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseVerifyResultView<'a> {
     ) {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
+        if !self.protected_header_json.is_empty() {
+            ::buffa::types::put_shared_bytes_field(
+                1u32,
+                &self.protected_header_json,
+                buf,
+            );
+        }
+        if !self.payload.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.payload, buf);
+        }
         self.__buffa_unknown_fields.write_to(buf);
     }
 }
@@ -3920,6 +3975,20 @@ impl<'__a> ::serde::Serialize for JoseVerifyResultView<'__a> {
     ) -> ::core::result::Result<__S::Ok, __S::Error> {
         use ::serde::ser::SerializeMap as _;
         let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_bytes(self.protected_header_json) {
+            __map
+                .serialize_entry(
+                    "protectedHeaderJson",
+                    &::buffa::json_helpers::BytesJson(self.protected_header_json),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_empty_bytes(self.payload) {
+            __map
+                .serialize_entry(
+                    "payload",
+                    &::buffa::json_helpers::BytesJson(self.payload),
+                )?;
+        }
         __map.end()
     }
 }
@@ -3936,8 +4005,13 @@ impl<'a> ::buffa::MessageName for JoseVerifyResultView<'a> {
  Wraps [`::buffa::OwnedView`]`<`[`JoseVerifyResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
 
  Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`JoseVerifyResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct JoseVerifyResultOwnedView(::buffa::OwnedView<JoseVerifyResultView<'static>>);
+impl ::core::fmt::Debug for JoseVerifyResultOwnedView {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.write_str("JoseVerifyResultOwnedView(<redacted>)")
+    }
+}
 impl JoseVerifyResultOwnedView {
     /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
     ///
@@ -4012,6 +4086,21 @@ impl JoseVerifyResultOwnedView {
     #[must_use]
     pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
         self.0.into_bytes()
+    }
+    /// Exact decoded JWS Protected Header bytes authenticated by the signature.
+    /// JOSE binds alg but does not interpret application/profile parameters.
+    ///
+    /// Field 1: `protected_header_json`
+    #[must_use]
+    pub fn protected_header_json(&self) -> &'_ [u8] {
+        self.0.reborrow().protected_header_json
+    }
+    /// Decoded JWS Payload bytes authenticated by the signature.
+    ///
+    /// Field 2: `payload`
+    #[must_use]
+    pub fn payload(&self) -> &'_ [u8] {
+        self.0.reborrow().payload
     }
 }
 impl ::core::convert::From<::buffa::OwnedView<JoseVerifyResultView<'static>>>

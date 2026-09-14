@@ -11,7 +11,8 @@
 use reallyme_jose::jws::{
     suites::es256::{
         sign_es256_jws, sign_p256_jose_prehash, verify_es256_jws,
-        verify_es256_jws_and_decode_payload, verify_p256_jose_prehash, JwsEs256Error,
+        verify_es256_jws_and_decode_authenticated_parts, verify_es256_jws_and_decode_payload,
+        verify_p256_jose_prehash, JwsEs256Error,
     },
     MAX_COMPACT_JWS_BYTES,
 };
@@ -42,6 +43,38 @@ fn jws_es256_roundtrip() {
 
     let authenticated = verify_es256_jws_and_decode_payload(&jws, &public).unwrap();
     assert_eq!(authenticated.as_slice(), payload.as_bytes());
+}
+
+#[test]
+fn jws_es256_returns_exact_authenticated_header_and_payload() {
+    let (public, private) = generate_keypair(Algorithm::P256).unwrap();
+    let header = br#"{ "alg":"ES256", "iat":1789344000, "sigT":"2024-07-14T12:00:00Z", "x5t#o":{"digAlg":"sha-512","digVal":"AA"}, "sigX5ts":[{"digAlg":"sha-256","digVal":"AA"},{"digAlg":"sha-256","digVal":"AQ"}] }"#;
+    let encoded_header = bytes_to_base64url(header);
+    let encoded_payload = bytes_to_base64url(b"profile-payload");
+    let signing_input = format!("{encoded_header}.{encoded_payload}");
+    let signature = sign_p256_jose_prehash(&private, signing_input.as_bytes()).unwrap();
+    let compact = format!(
+        "{signing_input}.{}",
+        bytes_to_base64url(signature.as_slice())
+    );
+
+    let authenticated = verify_es256_jws_and_decode_authenticated_parts(&compact, &public).unwrap();
+
+    assert_eq!(authenticated.protected_header(), header);
+    assert_eq!(authenticated.payload(), b"profile-payload");
+}
+
+#[test]
+fn authenticated_parts_api_rejects_jws_json_general_serialization() {
+    let (public, _private) = generate_keypair(Algorithm::P256).unwrap();
+    let general =
+        r#"{"payload":"cHJvZmlsZS1wYXlsb2Fk","signatures":[{"protected":"e30","signature":"AA"}]}"#;
+
+    let error = verify_es256_jws_and_decode_authenticated_parts(general, &public)
+        .err()
+        .unwrap();
+
+    assert_eq!(error, JwsEs256Error::InvalidCompactEncoding);
 }
 
 #[test]

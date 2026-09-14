@@ -1,6 +1,6 @@
 # ReallyMe JOSE for Kotlin/JVM
 
-`me.really:jose:0.3.3` is the typed Java and Kotlin/JVM facade for the canonical
+`me.really:jose:0.4.0` is the typed Java and Kotlin/JVM facade for the canonical
 ReallyMe Rust JOSE implementation. Generated protobuf classes are packaged as
 implementation detail and are not the normal SDK surface.
 

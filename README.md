@@ -118,11 +118,11 @@ service-discovery model. Those concerns belong to the embedding application.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.3.3"
+reallyme-jose = "0.4.0"
 ```
 
 ```sh
-npm install @reallyme/jose@0.3.3
+npm install @reallyme/jose@0.4.0
 ```
 
 ## Supported JOSE Surface
@@ -202,10 +202,13 @@ The following JOSE features are not part of this profile and fail closed:
 - JWE JSON serialization;
 - `b64`, `crit`, `zip`, `jku`, and `x5u` protected-header parameters.
 
-Embedded `jwk` and `x5c` headers are rejected by default. An explicit signed-JWT
-header policy can tolerate their presence, but ignores their contents: key
-selection and verification still use the caller-supplied JWK and public key.
-JWS and JWE do not provide this exception.
+Embedded `jwk` headers are rejected by default. JWE also rejects embedded
+`x5c`. An explicit signed-JWT header policy can tolerate `jwk` or `x5c`
+presence, but ignores their contents: key selection and verification still use
+the caller-supplied JWK and public key. Compact JWS accepts non-critical `x5c`
+and JAdES metadata without interpreting it so callers can obtain the exact
+signed header from an authenticated-parts verification API. Profile-aware
+callers must bind that returned metadata to the supplied verification key.
 
 ## Wire Boundary
 

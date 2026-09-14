@@ -1645,7 +1645,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-jose"
-version = "0.3.3"
+version = "0.4.0"
 dependencies = [
  "buffa",
  "getrandom 0.2.17",
@@ -1661,7 +1661,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-jose-ffi"
-version = "0.3.3"
+version = "0.4.0"
 dependencies = [
  "jni",
  "reallyme-crypto",
@@ -1671,7 +1671,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-jose-proto"
-version = "0.3.3"
+version = "0.4.0"
 dependencies = [
  "buffa",
  "serde",
@@ -1681,7 +1681,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-jose-wasm"
-version = "0.3.3"
+version = "0.4.0"
 dependencies = [
  "js-sys",
  "reallyme-crypto",

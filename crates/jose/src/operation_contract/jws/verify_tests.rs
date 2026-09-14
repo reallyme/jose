@@ -14,10 +14,10 @@ use reallyme_crypto::dispatch::generate_keypair;
 
 use crate::jws::suites::eddsa::sign_eddsa_jws;
 use crate::jws::suites::es256::{sign_es256_jws, sign_p256_jose_prehash};
+use crate::jws::AuthenticatedCompactJws;
 
 use super::verify::{
     verify_jws, JwsVerifyAlgorithm, JwsVerifyError, JwsVerifyErrorReason, JwsVerifyInput,
-    VerifiedJwsPayload,
 };
 
 const P256_N: [u8; 32] = [
@@ -40,7 +40,7 @@ fn verifies_supported_algorithms() {
         &es256_public,
     ))
     .unwrap()
-    .into_bytes();
+    .into_payload();
     assert_eq!(es256_payload.as_slice(), b"stage-5-es256");
 
     let (eddsa_public, eddsa_private) = generate_keypair(Algorithm::Ed25519).unwrap();
@@ -51,8 +51,55 @@ fn verifies_supported_algorithms() {
         &eddsa_public,
     ))
     .unwrap()
-    .into_bytes();
+    .into_payload();
     assert_eq!(eddsa_payload.as_slice(), b"stage-5-eddsa");
+}
+
+#[test]
+fn returns_the_exact_authenticated_protected_header() {
+    let (public_key, private_key) = generate_keypair(Algorithm::P256).unwrap();
+    let protected_header =
+        br#"{"alg":"ES256","x5c":["Y2VydA=="],"x5t#S256":"dGh1bWI","iat":1789344000}"#;
+    let encoded_header = bytes_to_base64url(protected_header);
+    let encoded_payload = bytes_to_base64url(b"authenticated-payload");
+    let signing_input = format!("{encoded_header}.{encoded_payload}");
+    let signature = sign_p256_jose_prehash(&private_key, signing_input.as_bytes()).unwrap();
+    let compact = format!(
+        "{signing_input}.{}",
+        bytes_to_base64url(signature.as_slice())
+    );
+
+    let authenticated = verify_jws(JwsVerifyInput::new(
+        JwsVerifyAlgorithm::Es256,
+        &compact,
+        &public_key,
+    ))
+    .unwrap();
+
+    assert_eq!(authenticated.protected_header(), protected_header);
+    assert_eq!(authenticated.payload(), b"authenticated-payload");
+}
+
+#[test]
+fn never_releases_a_modified_protected_header() {
+    let (public_key, private_key) = generate_keypair(Algorithm::P256).unwrap();
+    let original_header = bytes_to_base64url(br#"{"alg":"ES256","iat":1789344000}"#);
+    let payload = bytes_to_base64url(b"authenticated-payload");
+    let signing_input = format!("{original_header}.{payload}");
+    let signature = sign_p256_jose_prehash(&private_key, signing_input.as_bytes()).unwrap();
+    let modified_header = bytes_to_base64url(br#"{"alg":"ES256","iat":1789344001}"#);
+    let compact = format!(
+        "{modified_header}.{payload}.{}",
+        bytes_to_base64url(signature.as_slice())
+    );
+
+    let error = expect_verify_error(verify_jws(JwsVerifyInput::new(
+        JwsVerifyAlgorithm::Es256,
+        &compact,
+        &public_key,
+    )));
+
+    assert_eq!(error.reason(), JwsVerifyErrorReason::InvalidSignature);
 }
 
 #[test]
@@ -182,7 +229,7 @@ fn accepts_valid_high_s_es256_signature() {
         &public_key,
     ))
     .unwrap()
-    .into_bytes();
+    .into_payload();
     assert_eq!(verified_payload.as_slice(), b"high-s");
 }
 
@@ -195,7 +242,7 @@ fn assert_reason(compact: &str, public_key: &[u8], expected: JwsVerifyErrorReaso
     assert_eq!(error.reason(), expected);
 }
 
-fn expect_verify_error(result: Result<VerifiedJwsPayload, JwsVerifyError>) -> JwsVerifyError {
+fn expect_verify_error(result: Result<AuthenticatedCompactJws, JwsVerifyError>) -> JwsVerifyError {
     // Converting to `Option` avoids requiring `Debug` on the secret-bearing
     // authenticated payload merely to use `Result::unwrap_err` in tests.
     result.err().unwrap()

@@ -12,9 +12,11 @@ public inline fun joseVerifyResult(block: me.really.jose.v1.JoseVerifyResultKt.D
   me.really.jose.v1.JoseVerifyResultKt.Dsl._create(me.really.jose.v1.JoseVerifyResult.newBuilder()).apply { block() }._build()
 /**
  * ```
- * Empty success message. Verification success is represented by envelope
- * status = RESULT; verification failure is represented by a structured
- * JoseError envelope and must not be inferred from message fields.
+ * Authenticated compact-JWS content returned only after signature verification
+ * succeeds. This result covers the supported attached, base64url-encoded
+ * compact profile; it does not imply support for JWS JSON Serialization,
+ * detached payloads, or RFC 7797 unencoded payloads. Profile-aware callers must
+ * parse and authorize these returned bytes instead of the original input.
  * ```
  *
  * Protobuf type `reallyme.jose.v1.JoseVerifyResult`
@@ -34,6 +36,58 @@ public object JoseVerifyResultKt {
     @kotlin.jvm.JvmSynthetic
   @kotlin.PublishedApi
     internal fun _build(): me.really.jose.v1.JoseVerifyResult = _builder.build()
+
+    /**
+     * ```
+     * Exact decoded JWS Protected Header bytes authenticated by the signature.
+     * JOSE binds alg but does not interpret application/profile parameters.
+     * ```
+     *
+     * `bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];`
+     */
+    public var protectedHeaderJson: com.google.protobuf.ByteString
+      @kotlin.jvm.JvmName("getProtectedHeaderJson")
+        get() = _builder.protectedHeaderJson
+      @kotlin.jvm.JvmName("setProtectedHeaderJson")
+        set(value) {
+        _builder.protectedHeaderJson = value
+      }
+    /**
+     * ```
+     * Exact decoded JWS Protected Header bytes authenticated by the signature.
+     * JOSE binds alg but does not interpret application/profile parameters.
+     * ```
+     *
+     * `bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];`
+     */
+    public fun clearProtectedHeaderJson() {
+      _builder.clearProtectedHeaderJson()
+    }
+
+    /**
+     * ```
+     * Decoded JWS Payload bytes authenticated by the signature.
+     * ```
+     *
+     * `bytes payload = 2 [json_name = "payload"];`
+     */
+    public var payload: com.google.protobuf.ByteString
+      @kotlin.jvm.JvmName("getPayload")
+        get() = _builder.payload
+      @kotlin.jvm.JvmName("setPayload")
+        set(value) {
+        _builder.payload = value
+      }
+    /**
+     * ```
+     * Decoded JWS Payload bytes authenticated by the signature.
+     * ```
+     *
+     * `bytes payload = 2 [json_name = "payload"];`
+     */
+    public fun clearPayload() {
+      _builder.clearPayload()
+    }
   }
 }
 public inline fun me.really.jose.v1.JoseVerifyResult.copy(block: `me.really.jose.v1`.JoseVerifyResultKt.Dsl.() -> kotlin.Unit): me.really.jose.v1.JoseVerifyResult =

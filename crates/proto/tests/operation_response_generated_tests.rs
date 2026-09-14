@@ -35,6 +35,8 @@ fn canonical_response_version_and_field_numbers_are_stable() -> Result<(), buffa
         ),
         response: Some(Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
             outcome: Some(JwsVerifyOutcome::Result(Box::new(JoseVerifyResult {
+                protected_header_json: Vec::new(),
+                payload: Vec::new(),
                 __buffa_unknown_fields: Default::default(),
             }))),
             __buffa_unknown_fields: Default::default(),
@@ -59,6 +61,8 @@ fn canonical_response_proto_json_round_trips_with_generated_oneofs(
         ),
         response: Some(Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
             outcome: Some(JwsVerifyOutcome::Result(Box::new(JoseVerifyResult {
+                protected_header_json: Vec::new(),
+                payload: Vec::new(),
                 __buffa_unknown_fields: Default::default(),
             }))),
             __buffa_unknown_fields: Default::default(),

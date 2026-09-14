@@ -206,12 +206,30 @@ pub fn verify_es256_jws_and_decode_payload(
     jws: &str,
     public_key_sec1: &[u8],
 ) -> Result<Zeroizing<Vec<u8>>, JwsEs256Error> {
+    verify_es256_jws_and_decode_authenticated_parts(jws, public_key_sec1)
+        .map(crate::jws::AuthenticatedCompactJws::into_payload)
+}
+
+/// Verifies compact ES256 and returns authenticated protected-header and
+/// payload bytes as one zeroizing receipt.
+///
+/// The caller-supplied key remains authoritative. Profile-aware callers must
+/// parse and authorize the returned protected-header bytes, then bind any key
+/// or certificate references to that same supplied key.
+///
+/// # Errors
+///
+/// Returns [`JwsEs256Error`] for malformed compact input, invalid protected
+/// header data, invalid payload encoding, or signature verification failure.
+pub fn verify_es256_jws_and_decode_authenticated_parts(
+    jws: &str,
+    public_key_sec1: &[u8],
+) -> Result<crate::jws::AuthenticatedCompactJws, JwsEs256Error> {
     verify_jws(JwsVerifyInput::new(
         JwsVerifyAlgorithm::Es256,
         jws,
         public_key_sec1,
     ))
-    .map(|verified| verified.into_bytes())
     .map_err(map_jws_verify_error)
 }
 

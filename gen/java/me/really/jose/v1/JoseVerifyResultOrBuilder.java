@@ -9,4 +9,25 @@ package me.really.jose.v1;
 public interface JoseVerifyResultOrBuilder extends
     // @@protoc_insertion_point(interface_extends:reallyme.jose.v1.JoseVerifyResult)
     com.google.protobuf.MessageLiteOrBuilder {
+
+  /**
+   * <pre>
+   * Exact decoded JWS Protected Header bytes authenticated by the signature.
+   * JOSE binds alg but does not interpret application/profile parameters.
+   * </pre>
+   *
+   * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
+   * @return The protectedHeaderJson.
+   */
+  com.google.protobuf.ByteString getProtectedHeaderJson();
+
+  /**
+   * <pre>
+   * Decoded JWS Payload bytes authenticated by the signature.
+   * </pre>
+   *
+   * <code>bytes payload = 2 [json_name = "payload"];</code>
+   * @return The payload.
+   */
+  com.google.protobuf.ByteString getPayload();
 }

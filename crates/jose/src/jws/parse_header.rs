@@ -68,14 +68,15 @@ impl<'de> Visitor<'de> for JwsProtectedHeaderVisitor {
 
             match key.as_str() {
                 "alg" => alg = Some(map.next_value::<String>()?),
-                "typ" | "cty" | "kid" => {
+                "typ" | "cty" | "kid" | "x5c" | "x5t#S256" | "x5t#o" | "sigX5ts" | "iat"
+                | "sigT" => {
                     // These non-critical metadata fields do not change the
                     // cryptographic operation. The caller has already selected
                     // the authoritative algorithm and key; profile-aware layers
                     // remain responsible for metadata policy.
                     let _ = map.next_value::<IgnoredAny>()?;
                 }
-                "b64" | "crit" | "zip" | "jku" | "x5u" | "x5c" | "jwk" => {
+                "b64" | "crit" | "zip" | "jku" | "x5u" | "jwk" => {
                     let _ = map.next_value::<IgnoredAny>()?;
                     return Err(serde::de::Error::custom(JwsHeaderError::Invalid));
                 }

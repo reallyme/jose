@@ -7,9 +7,11 @@ package me.really.jose.v1;
 
 /**
  * <pre>
- * Empty success message. Verification success is represented by envelope
- * status = RESULT; verification failure is represented by a structured
- * JoseError envelope and must not be inferred from message fields.
+ * Authenticated compact-JWS content returned only after signature verification
+ * succeeds. This result covers the supported attached, base64url-encoded
+ * compact profile; it does not imply support for JWS JSON Serialization,
+ * detached payloads, or RFC 7797 unencoded payloads. Profile-aware callers must
+ * parse and authorize these returned bytes instead of the original input.
  * </pre>
  *
  * Protobuf type {@code reallyme.jose.v1.JoseVerifyResult}
@@ -37,7 +39,90 @@ public  final class JoseVerifyResult extends
   }
 
   private JoseVerifyResult() {
+    protectedHeaderJson_ = com.google.protobuf.ByteString.EMPTY;
+    payload_ = com.google.protobuf.ByteString.EMPTY;
   }
+  public static final int PROTECTED_HEADER_JSON_FIELD_NUMBER = 1;
+  private com.google.protobuf.ByteString protectedHeaderJson_;
+  /**
+   * <pre>
+   * Exact decoded JWS Protected Header bytes authenticated by the signature.
+   * JOSE binds alg but does not interpret application/profile parameters.
+   * </pre>
+   *
+   * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
+   * @return The protectedHeaderJson.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getProtectedHeaderJson() {
+    return protectedHeaderJson_;
+  }
+  /**
+   * <pre>
+   * Exact decoded JWS Protected Header bytes authenticated by the signature.
+   * JOSE binds alg but does not interpret application/profile parameters.
+   * </pre>
+   *
+   * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
+   * @param value The protectedHeaderJson to set.
+   */
+  private void setProtectedHeaderJson(com.google.protobuf.ByteString value) {
+    java.util.Objects.requireNonNull(value);
+
+    protectedHeaderJson_ = value;
+  }
+  /**
+   * <pre>
+   * Exact decoded JWS Protected Header bytes authenticated by the signature.
+   * JOSE binds alg but does not interpret application/profile parameters.
+   * </pre>
+   *
+   * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
+   */
+  private void clearProtectedHeaderJson() {
+
+    protectedHeaderJson_ = getDefaultInstance().getProtectedHeaderJson();
+  }
+
+  public static final int PAYLOAD_FIELD_NUMBER = 2;
+  private com.google.protobuf.ByteString payload_;
+  /**
+   * <pre>
+   * Decoded JWS Payload bytes authenticated by the signature.
+   * </pre>
+   *
+   * <code>bytes payload = 2 [json_name = "payload"];</code>
+   * @return The payload.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString getPayload() {
+    return payload_;
+  }
+  /**
+   * <pre>
+   * Decoded JWS Payload bytes authenticated by the signature.
+   * </pre>
+   *
+   * <code>bytes payload = 2 [json_name = "payload"];</code>
+   * @param value The payload to set.
+   */
+  private void setPayload(com.google.protobuf.ByteString value) {
+    java.util.Objects.requireNonNull(value);
+
+    payload_ = value;
+  }
+  /**
+   * <pre>
+   * Decoded JWS Payload bytes authenticated by the signature.
+   * </pre>
+   *
+   * <code>bytes payload = 2 [json_name = "payload"];</code>
+   */
+  private void clearPayload() {
+
+    payload_ = getDefaultInstance().getPayload();
+  }
+
   public static me.really.jose.v1.JoseVerifyResult parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -123,9 +208,11 @@ public  final class JoseVerifyResult extends
 
   /**
    * <pre>
-   * Empty success message. Verification success is represented by envelope
-   * status = RESULT; verification failure is represented by a structured
-   * JoseError envelope and must not be inferred from message fields.
+   * Authenticated compact-JWS content returned only after signature verification
+   * succeeds. This result covers the supported attached, base64url-encoded
+   * compact profile; it does not imply support for JWS JSON Serialization,
+   * detached payloads, or RFC 7797 unencoded payloads. Profile-aware callers must
+   * parse and authorize these returned bytes instead of the original input.
    * </pre>
    *
    * Protobuf type {@code reallyme.jose.v1.JoseVerifyResult}
@@ -140,6 +227,89 @@ public  final class JoseVerifyResult extends
       super(DEFAULT_INSTANCE);
     }
 
+
+    /**
+     * <pre>
+     * Exact decoded JWS Protected Header bytes authenticated by the signature.
+     * JOSE binds alg but does not interpret application/profile parameters.
+     * </pre>
+     *
+     * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
+     * @return The protectedHeaderJson.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getProtectedHeaderJson() {
+      return instance.getProtectedHeaderJson();
+    }
+    /**
+     * <pre>
+     * Exact decoded JWS Protected Header bytes authenticated by the signature.
+     * JOSE binds alg but does not interpret application/profile parameters.
+     * </pre>
+     *
+     * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
+     * @param value The protectedHeaderJson to set.
+     * @return This builder for chaining.
+     */
+    public Builder setProtectedHeaderJson(com.google.protobuf.ByteString value) {
+      copyOnWrite();
+      instance.setProtectedHeaderJson(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Exact decoded JWS Protected Header bytes authenticated by the signature.
+     * JOSE binds alg but does not interpret application/profile parameters.
+     * </pre>
+     *
+     * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearProtectedHeaderJson() {
+      copyOnWrite();
+      instance.clearProtectedHeaderJson();
+      return this;
+    }
+
+    /**
+     * <pre>
+     * Decoded JWS Payload bytes authenticated by the signature.
+     * </pre>
+     *
+     * <code>bytes payload = 2 [json_name = "payload"];</code>
+     * @return The payload.
+     */
+    @java.lang.Override
+    public com.google.protobuf.ByteString getPayload() {
+      return instance.getPayload();
+    }
+    /**
+     * <pre>
+     * Decoded JWS Payload bytes authenticated by the signature.
+     * </pre>
+     *
+     * <code>bytes payload = 2 [json_name = "payload"];</code>
+     * @param value The payload to set.
+     * @return This builder for chaining.
+     */
+    public Builder setPayload(com.google.protobuf.ByteString value) {
+      copyOnWrite();
+      instance.setPayload(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Decoded JWS Payload bytes authenticated by the signature.
+     * </pre>
+     *
+     * <code>bytes payload = 2 [json_name = "payload"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearPayload() {
+      copyOnWrite();
+      instance.clearPayload();
+      return this;
+    }
 
     // @@protoc_insertion_point(builder_scope:reallyme.jose.v1.JoseVerifyResult)
   }
@@ -156,9 +326,12 @@ public  final class JoseVerifyResult extends
         return new Builder();
       }
       case BUILD_MESSAGE_INFO: {
-          java.lang.Object[] objects = null;
+          java.lang.Object[] objects = new java.lang.Object[] {
+            "protectedHeaderJson_",
+            "payload_",
+          };
           java.lang.String info =
-              "\u0000\u0000";
+              "\u0000\u0002\u0000\u0000\u0001\u0002\u0002\u0000\u0000\u0000\u0001\n\u0002\n";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

@@ -231,7 +231,7 @@ test("production WASM provider and TypeScript facade", async (suite) => {
     }
   });
 
-  await suite.test("JWS signs, verifies, and returns a stable typed tamper error", () => {
+  await suite.test("JWS signs, verifies, clears its receipt, and returns a stable typed tamper error", (context) => {
     const privateKey = fromHex("09".repeat(32));
     const publicKey = fromHex(
       "fd1724385aa0c75b64fb78cd602fa1d991fdebf76b13c58ed702eac835e9f618",
@@ -242,11 +242,24 @@ test("production WASM provider and TypeScript facade", async (suite) => {
       privateKey,
       payload,
     });
+    const expectedHeader = textEncoder.encode('{"alg":"EdDSA"}');
+    const clearedReceiptParts = new Set();
+    const fill = Uint8Array.prototype.fill;
+    context.mock.method(Uint8Array.prototype, "fill", function (value, ...rest) {
+      if (value === 0 && Buffer.from(this).equals(Buffer.from(expectedHeader))) {
+        clearedReceiptParts.add("header");
+      }
+      if (value === 0 && Buffer.from(this).equals(Buffer.from(payload))) {
+        clearedReceiptParts.add("payload");
+      }
+      return Reflect.apply(fill, this, [value, ...rest]);
+    });
     ReallyMeJose.verifyJws({
       algorithm: JoseSignatureAlgorithm.EDDSA,
       compact,
       publicKey,
     });
+    assert.deepEqual(clearedReceiptParts, new Set(["header", "payload"]));
     const tampered = compact.replace(/\.[^.]+$/, ".AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
     assert.throws(
       () => ReallyMeJose.verifyJws({

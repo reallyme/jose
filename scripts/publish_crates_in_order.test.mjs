@@ -94,13 +94,13 @@ const writeFakeInspectWorkspace = (root) => {
   const packages = [
     {
       name: "reallyme-jose-proto",
-      version: "0.3.3",
+      version: "0.4.0",
       publish: null,
       dependencies: [],
     },
     {
       name: "reallyme-jose",
-      version: "0.3.3",
+      version: "0.4.0",
       publish: null,
       dependencies: [
         {
@@ -108,7 +108,7 @@ const writeFakeInspectWorkspace = (root) => {
           package: null,
           source: null,
           path: join(root, "proto"),
-          req: "^0.3.3",
+          req: "^0.4.0",
         },
       ],
     },
@@ -155,7 +155,7 @@ if (args[0] === "publish" && args.includes("reallyme-jose-proto")) {
 }
 if (args[0] === "publish" && args.includes("reallyme-jose")) {
   const delimiter = String.fromCharCode(96);
-  process.stderr.write("failed to select a version for the requirement " + delimiter + "reallyme-jose-proto = \\\"^0.3.3\\\"" + delimiter + "\\n");
+  process.stderr.write("failed to select a version for the requirement " + delimiter + "reallyme-jose-proto = \\\"^0.4.0\\\"" + delimiter + "\\n");
   process.exit(101);
 }
 process.stderr.write("unexpected cargo invocation: " + args.join(" ") + "\\n");

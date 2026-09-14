@@ -22,7 +22,7 @@ protobuf code by default.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.3.3"
+reallyme-jose = "0.4.0"
 ```
 
 ## Security Model
@@ -42,9 +42,12 @@ reallyme-jose = "0.3.3"
   members so mixed deployments cannot disagree on first-wins versus last-wins
   claim interpretation.
 - `b64`, `crit`, `zip`, `jku`, and `x5u` protected-header parameters fail closed.
-  Embedded `jwk` and `x5c` headers are rejected by default. An explicit signed-JWT
-  header policy can allow their presence, but their contents are ignored; the
-  supplied JWK and public key remain authoritative. JWS and JWE reject them.
+  Embedded `jwk` headers are rejected. JWE also rejects `x5c`. An explicit
+  signed-JWT header policy can allow `jwk` or `x5c` presence, but ignores their
+  contents; the supplied JWK and public key remain authoritative. Compact JWS
+  accepts non-critical `x5c` and JAdES metadata without interpreting it so the
+  authenticated-parts APIs can return the exact signed header. Profile-aware
+  callers must bind that returned metadata to the supplied verification key.
 - ES256 verification accepts otherwise valid high-S signatures as RFC 7515
   permits; applications should not use compact-token byte equality as an
   issuer-independent uniqueness guarantee. Face ID and Secure Enclave protected

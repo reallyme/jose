@@ -64,15 +64,20 @@ public struct ReallyMeJOSE: Sendable {
     operation.publicKey = Data(publicKey)
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jwsVerify(operation)
-    let response = try execute(&request)
-    guard case .jwsVerify(let selected)? = response.response,
+    var response = try execute(&request)
+    guard case .jwsVerify(var selected)? = response.response,
       selected.unknownFields.data.isEmpty
     else {
       throw ReallyMeJOSEError.malformedProviderResponse
     }
+    response.response = nil
     switch selected.outcome {
-    case .result(let result):
-      guard result.unknownFields.data.isEmpty else {
+    case .result(var result):
+      selected.outcome = nil
+      let resultIsClean = result.unknownFields.data.isEmpty
+      ReallyMeJOSEMemory.clearOwned(&result.protectedHeaderJson)
+      ReallyMeJOSEMemory.clearOwned(&result.payload)
+      guard resultIsClean else {
         throw ReallyMeJOSEError.malformedProviderResponse
       }
     case .error(let error):
@@ -341,41 +346,6 @@ public struct ReallyMeJOSE: Sendable {
       aggregate = sum
     }
   }
-}
-
-func sdkError(_ error: ReallyMeProtoJoseError) throws(ReallyMeJOSEError) -> ReallyMeJOSEError {
-  guard error.unknownFields.data.isEmpty else {
-    throw ReallyMeJOSEError.malformedProviderResponse
-  }
-  let branch: ReallyMeJOSEErrorBranch
-  let protoReason: ReallyMeProtoJoseErrorReason
-  switch error.error {
-  case .primitive(let value):
-    guard value.unknownFields.data.isEmpty else {
-      throw ReallyMeJOSEError.malformedProviderResponse
-    }
-    branch = .primitive
-    protoReason = value.reason
-  case .provider(let value):
-    guard value.unknownFields.data.isEmpty else {
-      throw ReallyMeJOSEError.malformedProviderResponse
-    }
-    branch = .provider
-    protoReason = value.reason
-  case .backend(let value):
-    guard value.unknownFields.data.isEmpty else {
-      throw ReallyMeJOSEError.malformedProviderResponse
-    }
-    branch = .backend
-    protoReason = value.reason
-  case nil:
-    throw ReallyMeJOSEError.malformedProviderResponse
-  }
-  guard let reason = ReallyMeJOSEErrorReason(rawValue: protoReason.rawValue) else {
-    throw ReallyMeJOSEError.malformedProviderResponse
-  }
-  try reason.validate(branch: branch)
-  return .jose(branch: branch, reason: reason)
 }
 
 private func protoSignatureAlgorithm(

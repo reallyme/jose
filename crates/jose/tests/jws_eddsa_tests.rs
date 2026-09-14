@@ -13,7 +13,8 @@ use reallyme_crypto::core::Algorithm;
 use reallyme_crypto::dispatch::{generate_keypair, sign};
 use reallyme_jose::jws::{
     suites::eddsa::{
-        sign_eddsa_jws, verify_eddsa_jws, verify_eddsa_jws_and_decode_payload, JwsEddsaError,
+        sign_eddsa_jws, verify_eddsa_jws, verify_eddsa_jws_and_decode_authenticated_parts,
+        verify_eddsa_jws_and_decode_payload, JwsEddsaError,
     },
     MAX_COMPACT_JWS_BYTES,
 };
@@ -27,6 +28,17 @@ fn jws_eddsa_roundtrip() {
 
     let authenticated = verify_eddsa_jws_and_decode_payload(&jws, &public).unwrap();
     assert_eq!(authenticated.as_slice(), b"cid:example:eddsa");
+}
+
+#[test]
+fn jws_eddsa_returns_authenticated_header_and_payload() {
+    let (public, private) = generate_keypair(Algorithm::Ed25519).unwrap();
+    let jws = sign_eddsa_jws(&private, "authenticated-payload").unwrap();
+
+    let authenticated = verify_eddsa_jws_and_decode_authenticated_parts(&jws, &public).unwrap();
+
+    assert_eq!(authenticated.protected_header(), br#"{"alg":"EdDSA"}"#);
+    assert_eq!(authenticated.payload(), b"authenticated-payload");
 }
 
 #[test]
