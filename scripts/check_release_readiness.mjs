@@ -76,6 +76,37 @@ if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
 
 assertNodeWorkflowJobsPinNode({ nodeVersion: "24" });
 
+// The local readiness runner exercises the TypeScript package even when the
+// surrounding workflow primarily certifies another package ecosystem. Keep
+// the locked install in the same job and before the readiness invocation.
+for (const workflow of listFiles(".github/workflows").filter(
+  (path) => path.endsWith(".yml") || path.endsWith(".yaml"),
+)) {
+  const source = readText(workflow);
+  const jobsOffset = source.indexOf("\njobs:\n");
+  if (jobsOffset === -1) {
+    continue;
+  }
+  const jobs = source.slice(jobsOffset + 1);
+  const jobHeaders = [...jobs.matchAll(/^  ([a-zA-Z0-9_-]+):\s*$/gmu)];
+  for (const [index, header] of jobHeaders.entries()) {
+    const nextHeader = jobHeaders[index + 1];
+    const job = jobs.slice(header.index, nextHeader?.index ?? jobs.length);
+    const readinessIndex = job.indexOf(
+      "node scripts/run_pinned_release_readiness.mjs",
+    );
+    if (readinessIndex === -1) {
+      continue;
+    }
+    const installIndex = job.indexOf("npm ci --prefix packages/ts");
+    if (installIndex === -1 || installIndex > readinessIndex) {
+      fail(
+        `${workflow} job ${header[1]} must install locked TypeScript dependencies before local release readiness`,
+      );
+    }
+  }
+}
+
 const rootCargo = readText("Cargo.toml");
 const projectLicense = "MIT OR Apache-2.0";
 assertContains("Cargo.toml", `license = "${projectLicense}"`);
@@ -1544,6 +1575,7 @@ assertContains(".github/workflows/android-ci.yml", "ndk;29.0.14206865");
 assertContains(".github/workflows/android-ci.yml", "test_android_consumer_r8_runtime.sh");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "linux-aarch64");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "verify_maven_release_repository.mjs");
+assertContains(".github/workflows/kotlin-android-package-preflight.yml", "npm ci --prefix packages/ts");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "kotlin-digest-${{ matrix.platform }}");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "build/kotlin-native-digests");
 assertNotContains(".github/workflows/kotlin-android-package-preflight.yml", "needs.jvm-native.outputs");
