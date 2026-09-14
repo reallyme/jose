@@ -6,6 +6,10 @@ import Foundation
 
 #if canImport(Darwin)
   import Darwin
+#elseif canImport(Glibc)
+  import Glibc
+#elseif canImport(Musl)
+  import Musl
 #endif
 
 enum ReallyMeJOSEMemory {
@@ -21,8 +25,12 @@ enum ReallyMeJOSEMemory {
     guard let baseAddress = buffer.baseAddress, !buffer.isEmpty else { return }
     #if canImport(Darwin)
       _ = memset_s(baseAddress, buffer.count, 0, buffer.count)
+    #elseif canImport(Glibc) || canImport(Musl)
+      // Linux libcs provide an explicit erasure primitive whose call cannot be
+      // removed when the buffer becomes dead immediately after this function.
+      explicit_bzero(baseAddress, buffer.count)
     #else
-      #error("ReallyMeJOSE supports Swift only on Darwin platforms with non-elidable memset_s")
+      #error("ReallyMeJOSE requires a platform-provided non-elidable memory erasure primitive")
     #endif
   }
 }

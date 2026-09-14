@@ -35,12 +35,13 @@ response fails closed with `ReallyMeJOSEError`; errors never carry claims,
 keys, compact tokens, plaintext, raw buffers, paths, or backend text.
 
 Sensitive SDK-owned request and response arrays are cleared through the native
-zeroization export, with `memset_s` as a fail-safe. Temporary generated `Data`
-fields are cleared on all typed-facade paths. Swift strings, SwiftProtobuf
-internals, copy-on-write aliases, and garbage-collected or runtime-created
-copies cannot promise Rust-style erasure. The facade minimizes those copies,
-prefers `[UInt8]` for keys, claims, JWK JSON, and plaintext, and does not expose
-debug descriptions for sensitive domain values.
+zeroization export, with `memset_s` on Darwin and `explicit_bzero` on Linux as
+fail-safes. Temporary generated `Data` fields are cleared on all typed-facade
+paths. Swift strings, SwiftProtobuf internals, copy-on-write aliases, and
+garbage-collected or runtime-created copies cannot promise Rust-style erasure.
+The facade minimizes those copies, prefers `[UInt8]` for keys, claims, JWK JSON,
+and plaintext, and does not expose debug descriptions for sensitive domain
+values.
 
 Runtime-loaded tests use `REALLYME_JOSE_FFI_LIBRARY_PATH` or the local debug
 library. Published packages use the checksum-bound `ReallyMeJOSEFFI`

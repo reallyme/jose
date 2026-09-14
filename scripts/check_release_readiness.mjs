@@ -1173,6 +1173,8 @@ assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "clearO
 assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "response.contractVersion == .v1");
 assertContains("packages/swift/Sources/ReallyMeJOSE/OperationContract.swift", "ReallyMeJOSEErrorReason(rawValue: protoReason.rawValue)");
 assertContains("packages/swift/Sources/ReallyMeJOSE/MemoryHygiene.swift", "memset_s");
+assertContains("packages/swift/Sources/ReallyMeJOSE/MemoryHygiene.swift", "canImport(Glibc)");
+assertContains("packages/swift/Sources/ReallyMeJOSE/MemoryHygiene.swift", "explicit_bzero");
 assertContains("packages/swift/Sources/ReallyMeJOSE/NativeProvider.swift", "try Self.requireCompatibleABI(version())");
 assertContains("packages/swift/Sources/ReallyMeJOSE/NativeProvider.swift", "Resolve no operational symbol until");
 assertContains("packages/swift/Sources/ReallyMeJOSE/NativeProvider.swift", "rm_jose_zeroize_buffer");
@@ -1193,6 +1195,7 @@ for (const testName of [
   "signedJWTAndPolicyRoundTrip",
   "oversizedManagedInputFailsBeforeNativeCopy",
   "linkedXCFrameworkExecutesOperationContract",
+  "memoryClearerZeroizesOwnedBuffers",
 ]) {
   assertContains("packages/swift/Tests/ReallyMeJOSETests/ReallyMeJOSETests.swift", testName);
 }
@@ -1227,6 +1230,7 @@ assertContains(".github/workflows/swift-package-preflight.yml", "macos-26");
 assertContains(".github/workflows/swift-package-preflight.yml", "Select Xcode 26.6");
 assertContains(".github/workflows/swift-package-preflight.yml", "components: llvm-tools-preview");
 assertContains(".github/workflows/swift-package-preflight.yml", "verify_swift_release_artifact.test.mjs");
+assertContains(".github/workflows/swift-package-preflight.yml", "npm ci --prefix packages/ts");
 assertContains(".github/workflows/swift-package-preflight.yml", "node scripts/run_pinned_release_readiness.mjs --release-packages");
 assertContains(".github/workflows/rust-ci.yml", "--profile release-ffi");
 assertContains(".github/workflows/rust-ci.yml", "name: MSRV 1.96");
@@ -1281,6 +1285,7 @@ assertContains(swiftReleaseWorkflow, 'git tag "v${RELEASE_VERSION}" "${tag_targe
 assertContains(swiftReleaseWorkflow, "--verify-tag");
 assertContains(swiftReleaseWorkflow, "node scripts/run_pinned_release_readiness.mjs");
 assertContains(swiftReleaseWorkflow, "node scripts/run_pinned_release_readiness.mjs --release-packages");
+assertContains(swiftReleaseWorkflow, "npm ci --prefix packages/ts");
 assertNotContains(swiftReleaseWorkflow, "scripts/build_swift_xcframework.sh");
 assertNotContains(swiftReleaseWorkflow, "--clobber");
 assertNotContains(swiftReleaseWorkflow, "gh release edit");

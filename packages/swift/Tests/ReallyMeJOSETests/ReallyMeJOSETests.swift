@@ -44,6 +44,16 @@ private func bytes(hex: String) throws -> [UInt8] {
   return result
 }
 
+@Test func memoryClearerZeroizesOwnedBuffers() {
+  var array = [UInt8](repeating: 0xa5, count: 32)
+  ReallyMeJOSEMemory.clearOwned(&array)
+  #expect(array.allSatisfy { byte in byte == 0 })
+
+  var data = Data(repeating: 0x5a, count: 32)
+  ReallyMeJOSEMemory.clearOwned(&data)
+  #expect(data.allSatisfy { byte in byte == 0 })
+}
+
 @Test func jwsKnownAnswerAndTypedFailure() throws {
   let jose = try configuredJOSE()
   let publicKey = try bytes(
