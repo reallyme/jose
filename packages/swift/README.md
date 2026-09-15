@@ -11,7 +11,7 @@ that deliberately integrate at the wire boundary.
 ```swift
 .package(
   url: "https://github.com/reallyme/jose",
-  from: "0.4.0"
+  from: "0.4.1"
 )
 ```
 
@@ -59,7 +59,7 @@ Maintainers bind a freshly built local XCFramework with
 `--local-artifact-path` option. Release verification rejects that override,
 recomputes the archive checksum, inspects every native slice for the required C
 ABI symbols, and requires the public manifest to bind the exact version and
-checksum. `scripts/prepare_swift_release_candidate.sh 0.4.0` performs the full
+checksum. `scripts/prepare_swift_release_candidate.sh 0.4.1` performs the full
 build-and-bind preparation locally.
 
 ## License

@@ -40,12 +40,12 @@ assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
 assertOperationContractArchitecture({ readText, listFiles, fail });
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 
-const crateVersion = "0.4.0";
-const protoCrateVersion = "0.4.0";
+const crateVersion = "0.4.1";
+const protoCrateVersion = "0.4.1";
 const buffaVersion = "0.9.2";
-const cryptoVersion = "0.3.7";
+const cryptoVersion = "0.3.9";
 const codecVersion = "0.2.3";
-const npmPackageVersion = "0.4.0";
+const npmPackageVersion = "0.4.1";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
 const releaseReadinessCommit = "985cf16f866bcdbd384edd8a9b6f332b38c5eb52";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
@@ -71,7 +71,7 @@ const sourceVerification = (commands) => {
 };
 
 if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
-  fail("RELEASE_VERSION must match every 0.4.0 release package");
+  fail("RELEASE_VERSION must match every 0.4.1 release package");
 }
 
 assertNodeWorkflowJobsPinNode({ nodeVersion: "24" });
@@ -168,7 +168,7 @@ assertNotContains("Cargo.toml", 'time = "');
 
 const ffiCargo = readText("crates/ffi/Cargo.toml");
 assertContains("crates/ffi/Cargo.toml", 'name = "reallyme-jose-ffi"');
-assertContains("crates/ffi/Cargo.toml", 'version = "0.4.0"');
+assertContains("crates/ffi/Cargo.toml", 'version = "0.4.1"');
 assertContains("crates/ffi/Cargo.toml", "publish = false");
 assertContains("crates/ffi/Cargo.toml", 'crate-type = ["rlib", "staticlib", "cdylib"]');
 assertContains("crates/ffi/Cargo.toml", 'default = ["native"]');
@@ -179,7 +179,7 @@ assertContains(
 assertContains("crates/ffi/Cargo.toml", 'features = ["csprng"]');
 assertContains(
   "crates/ffi/Cargo.toml",
-  'reallyme-jose = { version = "0.4.0", path = "../jose", default-features = false, features = ["wire"] }',
+  'reallyme-jose = { version = "0.4.1", path = "../jose", default-features = false, features = ["wire"] }',
 );
 assertContains("crates/ffi/Cargo.toml", "workspace = true");
 assertNotContains("crates/ffi/Cargo.toml", "publish = true");
@@ -252,7 +252,7 @@ assertContains("crates/proto/Cargo.toml", '"/tests/**/*.rs"');
 assertContains("crates/proto/Cargo.toml", '"/proto/**/*.proto"');
 assertContains(
   "crates/proto/README.md",
-  'reallyme-jose-proto = { version = "0.4.0", features = ["generated"] }',
+  'reallyme-jose-proto = { version = "0.4.1", features = ["generated"] }',
 );
 assertContains("crates/proto/README.md", "JoseOperationRequest");
 assertContains("crates/proto/README.md", "JoseOperationResponse");
@@ -291,7 +291,7 @@ if (npmPackage.publishConfig?.registry !== "https://registry.npmjs.org/") {
 }
 assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.14.1"');
 assertContains("packages/ts/package-lock.json", '"name": "@reallyme/jose"');
-assertContains("packages/ts/package-lock.json", '"version": "0.4.0"');
+assertContains("packages/ts/package-lock.json", '"version": "0.4.1"');
 assertContains("packages/ts/tsconfig.json", '"strict": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedLocals": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedParameters": true');
@@ -1048,7 +1048,11 @@ assertContains(".github/workflows/crates-package-preflight.yml", "--test panva_v
 assertContains(".github/workflows/rust-ci.yml", "cargo-deny@${{ env.CARGO_DENY_VERSION }}");
 assertContains(".github/workflows/rust-ci.yml", "cargo-audit@${{ env.CARGO_AUDIT_VERSION }}");
 assertContains(".github/workflows/crates-package-preflight.yml", "cargo fmt --check");
-assertContains(".github/workflows/crates-package-preflight.yml", "cargo check --locked --workspace");
+assertNotContains(".github/workflows/crates-package-preflight.yml", "Check warnings as errors");
+assertContains(
+  ".github/workflows/crates-package-preflight.yml",
+  "cargo clippy --locked --workspace --all-targets --all-features -- -D warnings",
+);
 assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "Test publishable crates in the release profile",
@@ -1169,7 +1173,7 @@ assertContains("Package.swift", '.iOS(.v16)');
 assertContains("Package.swift", 'name: "ReallyMeJOSE"');
 assertContains("Package.swift", 'exact: "1.38.1"');
 assertContains("Package.swift", 'path: "gen/swift"');
-assertContains("Package.swift", 'ffiArtifactVersion = "0.4.0"');
+assertContains("Package.swift", 'ffiArtifactVersion = "0.4.1"');
 assertContains("Package.swift", 'ffiArtifactLocalPathOverride = ""');
 assertNotContains("Package.swift", "0000000000000000000000000000000000000000000000000000000000000000");
 assertContains("Package.swift", "REALLYME_JOSE_SWIFTPM_RUNTIME_FFI");
@@ -1304,7 +1308,7 @@ assertContains(swiftReleaseWorkflow, "gh release create");
 assertContains(swiftReleaseWorkflow, "--notes-file -");
 assertContains(swiftReleaseWorkflow, "- update to buffa 0.9.2");
 assertContains(swiftReleaseWorkflow, "- update to reallyme/codec 0.2.3");
-assertContains(swiftReleaseWorkflow, "- update to reallyme/crypto 0.3.7");
+assertContains(swiftReleaseWorkflow, "- update to reallyme/crypto 0.3.9");
 assertContains(swiftReleaseWorkflow, "- add dual licensing under MIT OR Apache-2.0");
 assertContains(
   swiftReleaseWorkflow,
@@ -1906,7 +1910,15 @@ assertContains(
 assertContains("scripts/publish_crates_in_order.mjs", "const fetchArgs =");
 assertContains(
   "scripts/publish_crates_in_order.mjs",
+  "CARGO_TARGET_DIR: inspectionTargetDirectory",
+);
+assertContains(
+  "scripts/publish_crates_in_order.mjs",
   '"--all-features",\n    "--locked",\n    "--offline"',
+);
+assertContains(
+  "scripts/publish_crates_in_order.mjs",
+  '"--dry-run",\n    "--no-verify",\n    "--locked"',
 );
 for (const workflow of [
   ".github/workflows/crates-package-preflight.yml",

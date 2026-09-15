@@ -1,6 +1,6 @@
 {
   "name": "@reallyme/jose",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Strict JOSE, JWT, JWS, and JWE for TypeScript through the canonical ReallyMe Rust/WASM operation contract.",
   "license": "MIT OR Apache-2.0",
   "repository": {

@@ -33,6 +33,7 @@ if (allowDirty && mode !== MODE_INSPECT) {
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
     encoding: "utf8",
+    env: options.env,
     stdio: options.capture ? "pipe" : "inherit",
   });
   if (result.error) {
@@ -241,9 +242,22 @@ if (mode === MODE_ORDER) {
 }
 
 const unpackDirectory = path.join(packageDirectory, "release-preflight");
+const inspectionTargetDirectory = path.join(packageDirectory, "release-preflight-target");
+const inspectionEnvironment = {
+  ...process.env,
+  CARGO_TARGET_DIR: inspectionTargetDirectory,
+};
 
 if (mode === MODE_INSPECT) {
-  const packageArgs = ["package", "--workspace", "--no-verify", "--locked"];
+  // Package only public release artifacts. Workspace-wide packaging also
+  // normalizes the private FFI and WASM crates even though Cargo will never
+  // upload them.
+  const packageArgs = [
+    "package",
+    ...ordered.flatMap((pkg) => ["-p", pkg.name]),
+    "--no-verify",
+    "--locked",
+  ];
   if (allowDirty) {
     packageArgs.push("--allow-dirty");
   }
@@ -334,7 +348,7 @@ function inspectPackage(pkg) {
   // that source with its extracted archive necessarily updates the temporary
   // lockfile. The subsequent locked, offline check proves that this is the only
   // resolution phase required by the patched archive graph.
-  const fetchResult = run("cargo", fetchArgs);
+  const fetchResult = run("cargo", fetchArgs, { env: inspectionEnvironment });
   if (fetchResult.status !== 0) {
     process.exit(fetchResult.status ?? 1);
   }
@@ -348,12 +362,25 @@ function inspectPackage(pkg) {
     "--offline",
     ...patchArgs,
   ];
-  const checkResult = run("cargo", checkArgs);
+  // Every extracted package uses the same target directory. Cargo can then
+  // reuse dependency artifacts while each normalized archive is still checked
+  // through its own manifest and patched release-order dependency graph.
+  const checkResult = run("cargo", checkArgs, { env: inspectionEnvironment });
   if (checkResult.status !== 0) {
     process.exit(checkResult.status ?? 1);
   }
 
-  const dryRunArgs = ["publish", "-p", pkg.name, "--dry-run", "--locked"];
+  // The extracted normalized archive was checked immediately above. Preserve
+  // Cargo's registry-facing dry-run validation without compiling the same
+  // package for a second time.
+  const dryRunArgs = [
+    "publish",
+    "-p",
+    pkg.name,
+    "--dry-run",
+    "--no-verify",
+    "--locked",
+  ];
   if (allowDirty) {
     dryRunArgs.push("--allow-dirty");
   }

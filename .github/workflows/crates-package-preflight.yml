@@ -18,7 +18,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.4.0
+        default: 0.4.1
 
 permissions:
   contents: read
@@ -197,9 +197,9 @@ jobs:
       - name: Format
         run: cargo fmt --check
 
-      - name: Check warnings as errors
-        run: RUSTFLAGS=-Dwarnings cargo check --locked --workspace --all-features
-
+      # Clippy invokes rustc for every workspace target and feature below and
+      # rejects both compiler and Clippy warnings. A separate warning-only
+      # cargo check would invalidate dependency reuse without adding coverage.
       - name: Clippy
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
