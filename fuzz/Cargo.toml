@@ -18,7 +18,7 @@ cargo-fuzz = true
 libfuzzer-sys = "0.4"
 reallyme-jose = { path = "../crates/jose", features = ["native", "wire"] }
 reallyme-jose-ffi = { path = "../crates/ffi" }
-reallyme-crypto = { version = "0.3.7", default-features = false, features = ["jwk"] }
+reallyme-crypto = { version = "0.3.9", default-features = false, features = ["jwk"] }
 serde_json = "1.0"
 
 [[bin]]

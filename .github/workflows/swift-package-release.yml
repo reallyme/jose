@@ -13,7 +13,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.4.0
+        default: 0.4.1
 
 permissions:
   contents: read
@@ -209,7 +209,7 @@ jobs:
           gh release create "v${RELEASE_VERSION}" build/swift/ReallyMeJOSEFFI.xcframework.zip --verify-tag --title "ReallyMe JOSE v${RELEASE_VERSION}" --notes-file - <<'RELEASE_NOTES'
           - update to buffa 0.9.2
           - update to reallyme/codec 0.2.3
-          - update to reallyme/crypto 0.3.7
+          - update to reallyme/crypto 0.3.9
           - add dual licensing under MIT OR Apache-2.0
           - harden compact JWS, JWT, and JWE size checks before signing, key agreement, randomness, or encoding work
           - tighten Swift, Kotlin, and TypeScript SDK validation for malformed provider responses

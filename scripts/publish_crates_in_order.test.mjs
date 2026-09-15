@@ -88,6 +88,7 @@ const writeFakeInspectWorkspace = (root) => {
   const targetDirectory = join(root, "target");
   const metadataPath = join(root, "metadata.json");
   const callLogPath = join(root, "cargo-calls.txt");
+  const targetLogPath = join(root, "cargo-targets.txt");
   mkdirSync(binDirectory, { recursive: true });
   mkdirSync(targetDirectory, { recursive: true });
 
@@ -112,6 +113,12 @@ const writeFakeInspectWorkspace = (root) => {
         },
       ],
     },
+    {
+      name: "reallyme-jose-ffi",
+      version: "0.4.0",
+      publish: [],
+      dependencies: [],
+    },
   ];
   writeFileSync(
     metadataPath,
@@ -132,13 +139,13 @@ if (args[0] === "metadata") {
   process.stdout.write(fs.readFileSync(process.env.FAKE_CARGO_METADATA, "utf8"));
   process.exit(0);
 }
-if (args[0] === "package" && args.includes("--workspace")) {
+if (args[0] === "package" && args.includes("-p")) {
   const metadata = JSON.parse(fs.readFileSync(process.env.FAKE_CARGO_METADATA, "utf8"));
   const packageDirectory = path.join(metadata.target_directory, "package");
   const stagingDirectory = path.join(metadata.target_directory, "fake-package-staging");
   fs.mkdirSync(packageDirectory, { recursive: true });
   fs.mkdirSync(stagingDirectory, { recursive: true });
-  for (const pkg of metadata.packages) {
+  for (const pkg of metadata.packages.filter((candidate) => args.includes(candidate.name))) {
     const directoryName = pkg.name + "-" + pkg.version;
     const crateDirectory = path.join(stagingDirectory, directoryName);
     fs.mkdirSync(crateDirectory, { recursive: true });
@@ -147,7 +154,11 @@ if (args[0] === "package" && args.includes("--workspace")) {
   }
   process.exit(0);
 }
-if (args[0] === "fetch" || args[0] === "check") {
+if (args[0] === "check") {
+  fs.appendFileSync(process.env.FAKE_CARGO_TARGET_LOG, process.env.CARGO_TARGET_DIR + "\\n");
+  process.exit(0);
+}
+if (args[0] === "fetch") {
   process.exit(0);
 }
 if (args[0] === "publish" && args.includes("reallyme-jose-proto")) {
@@ -167,10 +178,12 @@ process.exit(1);
 
   return {
     callLogPath,
+    targetLogPath,
     environment: {
       ...process.env,
       FAKE_CARGO_LOG: callLogPath,
       FAKE_CARGO_METADATA: metadataPath,
+      FAKE_CARGO_TARGET_LOG: targetLogPath,
       PATH: `${binDirectory}${delimiter}${process.env.PATH ?? ""}`,
     },
   };
@@ -214,8 +227,19 @@ test("inspect mode does not re-resolve archive listings through the registry", (
       /reallyme-jose dry-run reached unpublished ordered workspace dependencies: reallyme-jose-proto/u,
     );
     const calls = readFileSync(workspace.callLogPath, "utf8").trim().split("\n");
-    assert.ok(calls.includes("package --workspace --no-verify --locked"));
-    assert.equal(calls.some((call) => call.startsWith("package -p ")), false);
+    assert.ok(
+      calls.includes(
+        "package -p reallyme-jose-proto -p reallyme-jose --no-verify --locked",
+      ),
+    );
+    assert.equal(calls.some((call) => call.includes("--workspace")), false);
+    assert.equal(calls.some((call) => call.includes("reallyme-jose-ffi")), false);
+    const dryRunCalls = calls.filter((call) => call.startsWith("publish "));
+    assert.equal(dryRunCalls.length, 2);
+    assert.ok(dryRunCalls.every((call) => call.includes("--dry-run --no-verify --locked")));
+    const inspectionTargets = readFileSync(workspace.targetLogPath, "utf8").trim().split("\n");
+    assert.equal(inspectionTargets.length, 2);
+    assert.equal(new Set(inspectionTargets).size, 1);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
