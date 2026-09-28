@@ -263,9 +263,16 @@ private fun runJweCase(vector: JsonObject) {
         }
         val expected = vector.get("expected_plaintext_json")
         val expectedError = optionalString(vector, "expected_error")
+        val headerPolicy = if (optionalString(vector, "zip") == "DEF") {
+            ReallyMeJoseJweHeaderPolicy(
+                allowedCompressionAlgorithms = listOf(ReallyMeJoseJweCompressionAlgorithm.DEFLATE),
+            )
+        } else {
+            null
+        }
         if (expected != null && !expected.isJsonNull) {
             val actual = ReallyMeJose.decryptJwe(
-                requiredString(vector, "compact"), keyManagement, contentEncryption, key,
+                requiredString(vector, "compact"), keyManagement, contentEncryption, key, headerPolicy,
             )
             try {
                 assertEquals(expected, parseJsonBytes(actual))
@@ -275,7 +282,7 @@ private fun runJweCase(vector: JsonObject) {
         } else {
             assertTypedFailure(expectedJweReason(requireNotNull(expectedError))) {
                 ReallyMeJose.decryptJwe(
-                    requiredString(vector, "compact"), keyManagement, contentEncryption, key,
+                    requiredString(vector, "compact"), keyManagement, contentEncryption, key, headerPolicy,
                 ).fill(0)
             }
         }
@@ -322,6 +329,7 @@ private fun expectedJweReason(name: String): ReallyMeJoseErrorReason = when (nam
     "InvalidHeader" -> ReallyMeJoseErrorReason.JWE_INVALID_HEADER
     "UnsupportedKeyManagementAlgorithm" -> ReallyMeJoseErrorReason.JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM
     "UnsupportedContentEncryptionAlgorithm" -> ReallyMeJoseErrorReason.JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM
+    "UnsupportedCompressionAlgorithm" -> ReallyMeJoseErrorReason.JWE_UNSUPPORTED_COMPRESSION_ALGORITHM
     "MissingRequiredHeaderParameter" -> ReallyMeJoseErrorReason.JWE_MISSING_REQUIRED_HEADER_PARAMETER
     "HeaderPolicyMismatch" -> ReallyMeJoseErrorReason.JWE_HEADER_POLICY_MISMATCH
     "InvalidEncryptedKey" -> ReallyMeJoseErrorReason.JWE_INVALID_ENCRYPTED_KEY
@@ -331,6 +339,9 @@ private fun expectedJweReason(name: String): ReallyMeJoseErrorReason = when (nam
     "Encrypt" -> ReallyMeJoseErrorReason.JWE_ENCRYPT_FAILED
     "InvalidKeyAgreementKey" -> ReallyMeJoseErrorReason.JWE_INVALID_KEY_AGREEMENT_KEY
     "InvalidPayloadJson" -> ReallyMeJoseErrorReason.JWE_INVALID_PAYLOAD_JSON
+    "Compression" -> ReallyMeJoseErrorReason.JWE_COMPRESSION_FAILED
+    "Decompression" -> ReallyMeJoseErrorReason.JWE_DECOMPRESSION_FAILED
+    "DecompressedPlaintextTooLarge" -> ReallyMeJoseErrorReason.JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE
     else -> throw AssertionError("unknown JWE vector error")
 }
 

@@ -12,6 +12,7 @@ import {
   executeOperationJson,
   installReallyMeJoseWasmProvider,
   JoseErrorReason,
+  JoseJweCompressionAlgorithm,
   JoseJweContentEncryptionAlgorithm,
   JoseJweKeyManagementAlgorithm,
   JoseSignatureAlgorithm,
@@ -345,6 +346,40 @@ test("production WASM provider and TypeScript facade", async (suite) => {
       }),
       assertSdkError("jose-failure", JoseErrorReason.JWE_DECRYPT_FAILED),
     );
+    key.fill(0);
+    plaintext.fill(0);
+    decrypted.fill(0);
+  });
+
+  await suite.test("direct JWE applies negotiated raw DEFLATE compression", () => {
+    const key = new Uint8Array(32).fill(6);
+    const plaintext = textEncoder.encode("credential-".repeat(64));
+    const compact = ReallyMeJose.encryptJwe({
+      keyManagementAlgorithm: JoseJweKeyManagementAlgorithm.DIRECT,
+      contentEncryptionAlgorithm: JoseJweContentEncryptionAlgorithm.A256GCM,
+      compressionAlgorithm: JoseJweCompressionAlgorithm.DEFLATE,
+      key,
+      plaintext,
+    });
+    assert.throws(
+      () => ReallyMeJose.decryptJwe({
+        compact,
+        keyManagementAlgorithm: JoseJweKeyManagementAlgorithm.DIRECT,
+        contentEncryptionAlgorithm: JoseJweContentEncryptionAlgorithm.A256GCM,
+        key,
+      }),
+      assertSdkError("jose-failure", JoseErrorReason.JWE_UNSUPPORTED_COMPRESSION_ALGORITHM),
+    );
+    const decrypted = ReallyMeJose.decryptJwe({
+      compact,
+      keyManagementAlgorithm: JoseJweKeyManagementAlgorithm.DIRECT,
+      contentEncryptionAlgorithm: JoseJweContentEncryptionAlgorithm.A256GCM,
+      key,
+      headerPolicy: {
+        allowedCompressionAlgorithms: [JoseJweCompressionAlgorithm.DEFLATE],
+      },
+    });
+    assert.deepEqual(decrypted, plaintext);
     key.fill(0);
     plaintext.fill(0);
     decrypted.fill(0);

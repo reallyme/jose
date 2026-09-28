@@ -164,6 +164,7 @@ impl JweContentEncryptionKeyEncryptor for P256EcdhEsJweKeyEncryptor<'_> {
         let header = CompactJweProtectedHeader {
             alg: JweKeyManagementAlgorithm::EcdhEs,
             enc: request.enc(),
+            zip: request.compression(),
             kid: request.kid().map(str::to_owned),
             apu: encode_optional_base64url(request.apu()),
             apv: encode_optional_base64url(request.apv()),
@@ -264,6 +265,7 @@ impl JweContentEncryptionKeyEncryptor for P384EcdhEsJweKeyEncryptor<'_> {
         let header = CompactJweProtectedHeader {
             alg: JweKeyManagementAlgorithm::EcdhEs,
             enc: request.enc(),
+            zip: request.compression(),
             kid: request.kid().map(str::to_owned),
             apu: encode_optional_base64url(request.apu()),
             apv: encode_optional_base64url(request.apv()),
@@ -367,6 +369,7 @@ impl JweContentEncryptionKeyEncryptor for P521EcdhEsJweKeyEncryptor<'_> {
         let header = CompactJweProtectedHeader {
             alg: JweKeyManagementAlgorithm::EcdhEs,
             enc: request.enc(),
+            zip: request.compression(),
             kid: request.kid().map(str::to_owned),
             apu: encode_optional_base64url(request.apu()),
             apv: encode_optional_base64url(request.apv()),

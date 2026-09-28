@@ -12,11 +12,14 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import me.really.jose.ReallyMeJose;
 import me.really.jose.ReallyMeJoseErrorBranch;
 import me.really.jose.ReallyMeJoseErrorReason;
 import me.really.jose.ReallyMeJoseException;
 import me.really.jose.ReallyMeJoseJweContentEncryptionAlgorithm;
+import me.really.jose.ReallyMeJoseJweCompressionAlgorithm;
+import me.really.jose.ReallyMeJoseJweHeaderPolicy;
 import me.really.jose.ReallyMeJoseJweKeyManagementAlgorithm;
 import me.really.jose.ReallyMeJoseJwtTemporalPolicy;
 import me.really.jose.ReallyMeJoseSignatureAlgorithm;
@@ -305,9 +308,14 @@ final class AndroidConformanceVectorRunner {
             case "A256GCM" -> ReallyMeJoseJweContentEncryptionAlgorithm.A256_GCM;
             default -> ReallyMeJoseJweContentEncryptionAlgorithm.A128_GCM;
           };
+      ReallyMeJoseJweHeaderPolicy headerPolicy = "DEF".equals(vector.optString("zip", null))
+          ? new ReallyMeJoseJweHeaderPolicy(
+              false, null, null, null, null, null,
+              List.of(ReallyMeJoseJweCompressionAlgorithm.DEFLATE))
+          : null;
       if (vector.has("expected_plaintext_json")) {
         byte[] actual = ReallyMeJose.decryptJwe(
-            requiredString(vector, "compact"), keyManagement, contentEncryption, key, null);
+            requiredString(vector, "compact"), keyManagement, contentEncryption, key, headerPolicy);
         try {
           requireJsonEquals(vector.getJSONObject("expected_plaintext_json"), actual);
         } finally {
@@ -316,7 +324,7 @@ final class AndroidConformanceVectorRunner {
       } else {
         expectFailure(expectedJweReason(requiredString(vector, "expected_error")), () -> {
           byte[] unexpected = ReallyMeJose.decryptJwe(
-              requiredString(vector, "compact"), keyManagement, contentEncryption, key, null);
+              requiredString(vector, "compact"), keyManagement, contentEncryption, key, headerPolicy);
           Arrays.fill(unexpected, (byte) 0);
         });
       }
@@ -376,6 +384,8 @@ final class AndroidConformanceVectorRunner {
           ReallyMeJoseErrorReason.JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM;
       case "UnsupportedContentEncryptionAlgorithm" ->
           ReallyMeJoseErrorReason.JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM;
+      case "UnsupportedCompressionAlgorithm" ->
+          ReallyMeJoseErrorReason.JWE_UNSUPPORTED_COMPRESSION_ALGORITHM;
       case "MissingRequiredHeaderParameter" ->
           ReallyMeJoseErrorReason.JWE_MISSING_REQUIRED_HEADER_PARAMETER;
       case "HeaderPolicyMismatch" -> ReallyMeJoseErrorReason.JWE_HEADER_POLICY_MISMATCH;
@@ -388,6 +398,10 @@ final class AndroidConformanceVectorRunner {
       case "Encrypt" -> ReallyMeJoseErrorReason.JWE_ENCRYPT_FAILED;
       case "InvalidKeyAgreementKey" -> ReallyMeJoseErrorReason.JWE_INVALID_KEY_AGREEMENT_KEY;
       case "InvalidPayloadJson" -> ReallyMeJoseErrorReason.JWE_INVALID_PAYLOAD_JSON;
+      case "Compression" -> ReallyMeJoseErrorReason.JWE_COMPRESSION_FAILED;
+      case "Decompression" -> ReallyMeJoseErrorReason.JWE_DECOMPRESSION_FAILED;
+      case "DecompressedPlaintextTooLarge" ->
+          ReallyMeJoseErrorReason.JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE;
       default -> throw invalidFixture(null);
     };
   }

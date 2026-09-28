@@ -22,7 +22,7 @@ protobuf code by default.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.4.1"
+reallyme-jose = "0.4.2"
 ```
 
 ## Security Model
@@ -41,7 +41,10 @@ reallyme-jose = "0.4.1"
 - Unsigned JWT parsing and verified claims JSON also reject duplicate object
   members so mixed deployments cannot disagree on first-wins versus last-wins
   claim interpretation.
-- `b64`, `crit`, `zip`, `jku`, and `x5u` protected-header parameters fail closed.
+- `b64`, `crit`, `jku`, and `x5u` protected-header parameters fail closed.
+  Compact-JWE `zip = "DEF"` is supported only when the caller explicitly adds
+  the typed DEFLATE algorithm to the protected-header policy; every other `zip`
+  value is rejected as unsupported.
   Embedded `jwk` headers are rejected. JWE also rejects `x5c`. An explicit
   signed-JWT header policy can allow `jwk` or `x5c` presence, but ignores their
   contents; the supplied JWK and public key remain authoritative. Compact JWS
@@ -61,6 +64,14 @@ reallyme-jose = "0.4.1"
 - Direct-key JWE encryption generates a fresh 96-bit IV but cannot count uses of
   a caller-owned CEK. Callers must enforce an AES-GCM per-key invocation budget
   and rotate the CEK before the applicable NIST SP 800-38D limit.
+- Raw DEFLATE compression, when requested, runs before encryption. Decryption
+  authenticates AES-GCM before inflating, rejects trailing compressed data, and
+  caps decompressed plaintext at 1 MiB. Intermediate compressed and
+  decompressed plaintext buffers zeroize on drop. Compression remains disabled
+  by default because ciphertext length can expose secret-dependent information;
+  do not mix attacker-controlled and confidential values in compressed content.
+  OpenID4VCI adapters may advertise `zip_values_supported: ["DEF"]` only when
+  they opt in to this policy; absent metadata means no compression.
 - ECDH-ES protected headers use a deliberately minimal `epk` profile. Only
   `kty`, `crv`, `x`, and `y` are accepted; standalone-JWK metadata such as
   `kid`, `use`, or `alg`, private `d`, and shortened EC coordinates fail

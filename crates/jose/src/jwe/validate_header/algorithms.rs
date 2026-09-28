@@ -116,6 +116,40 @@ impl Serialize for JweContentEncryptionAlgorithm {
     }
 }
 
+/// Supported JWE plaintext compression algorithms.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum JweCompressionAlgorithm {
+    /// Raw DEFLATE (`zip = "DEF"`).
+    Deflate,
+}
+
+impl JweCompressionAlgorithm {
+    /// Returns the JOSE `zip` string.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Deflate => "DEF",
+        }
+    }
+
+    pub(crate) fn parse(input: &str) -> Result<Self, JweError> {
+        match input {
+            "DEF" => Ok(Self::Deflate),
+            _ => Err(JweError::UnsupportedCompressionAlgorithm),
+        }
+    }
+}
+
+impl Serialize for JweCompressionAlgorithm {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.as_str())
+    }
+}
+
 impl<'de> Deserialize<'de> for JweKeyManagementAlgorithm {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -127,6 +161,16 @@ impl<'de> Deserialize<'de> for JweKeyManagementAlgorithm {
 }
 
 impl<'de> Deserialize<'de> for JweContentEncryptionAlgorithm {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        Self::parse(&value).map_err(serde::de::Error::custom)
+    }
+}
+
+impl<'de> Deserialize<'de> for JweCompressionAlgorithm {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,

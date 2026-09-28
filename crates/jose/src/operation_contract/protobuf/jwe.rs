@@ -6,14 +6,15 @@
 
 use buffa::EnumValue;
 use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
-    JoseCompactResult, JoseErrorReason, JoseJweContentEncryptionAlgorithm, JoseJweDecryptRequest,
-    JoseJweEncryptRequest, JoseJweKeyManagementAlgorithm, JoseJwePlaintextResult,
+    JoseCompactResult, JoseErrorReason, JoseJweCompressionAlgorithm,
+    JoseJweContentEncryptionAlgorithm, JoseJweDecryptRequest, JoseJweEncryptRequest,
+    JoseJweKeyManagementAlgorithm, JoseJwePlaintextResult,
 };
 use zeroize::Zeroizing;
 
 use crate::jwe::{
     CompactJweEncryptRequest, CompactJwePolicy, DirectJweKeyEncryptor, DirectJweKeyResolver,
-    JweContentEncryptionAlgorithm, JweContentEncryptionKeyEncryptor,
+    JweCompressionAlgorithm, JweContentEncryptionAlgorithm, JweContentEncryptionKeyEncryptor,
     JweContentEncryptionKeyResolver, JweError, JweKeyManagementAlgorithm,
     P256EcdhEsJweKeyEncryptor, P256EcdhEsJweKeyResolver, PreparedJweEncryptionKey,
 };
@@ -53,6 +54,9 @@ pub(crate) fn encrypt_jwe_request<R: SecureRandom + ?Sized>(
     }
     if let Some(value) = optional_str(&cty) {
         native_request = native_request.with_cty(value);
+    }
+    if let Some(compression) = compression_from_proto(request.compression_algorithm)? {
+        native_request = native_request.with_compression(compression);
     }
 
     let mut encryptor = key_encryptor_from_proto(request.key_management_algorithm, &key)?;
@@ -106,11 +110,18 @@ pub(crate) fn decrypt_jwe_request(
             .take()
             .map_or_else(Vec::new, |mut value| core::mem::take(&mut value.value)),
     );
+    let allowed_compression_algorithms = header_policy
+        .allowed_compression_algorithms
+        .iter()
+        .copied()
+        .map(required_compression_from_proto)
+        .collect::<JoseWireResult<Vec<_>>>()?;
     let alg = key_management_from_proto(request.key_management_algorithm)?;
     let enc = content_encryption_from_proto(request.content_encryption_algorithm)?;
     let mut policy =
         CompactJwePolicy::new(core::slice::from_ref(&alg), core::slice::from_ref(&enc));
     if header_policy_is_set {
+        policy = policy.with_allowed_compression_algorithms(&allowed_compression_algorithms);
         if header_policy.require_kid {
             policy = policy.require_kid();
         }
@@ -137,6 +148,30 @@ pub(crate) fn decrypt_jwe_request(
     Ok(JoseJwePlaintextResult {
         plaintext: core::mem::take(&mut plaintext),
         __buffa_unknown_fields: Default::default(),
+    })
+}
+
+fn compression_from_proto(
+    value: EnumValue<JoseJweCompressionAlgorithm>,
+) -> JoseWireResult<Option<JweCompressionAlgorithm>> {
+    match value.as_known() {
+        Some(JoseJweCompressionAlgorithm::JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED) => Ok(None),
+        Some(JoseJweCompressionAlgorithm::JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE) => {
+            Ok(Some(JweCompressionAlgorithm::Deflate))
+        }
+        None => Err(JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM,
+        )),
+    }
+}
+
+fn required_compression_from_proto(
+    value: EnumValue<JoseJweCompressionAlgorithm>,
+) -> JoseWireResult<JweCompressionAlgorithm> {
+    compression_from_proto(value)?.ok_or_else(|| {
+        JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM,
+        )
     })
 }
 
@@ -328,6 +363,9 @@ const fn map_jwe_error(error: JweError) -> JoseWireError {
         JweError::UnsupportedContentEncryptionAlgorithm => {
             JoseErrorReason::JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM
         }
+        JweError::UnsupportedCompressionAlgorithm => {
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM
+        }
         JweError::MissingRequiredHeaderParameter => {
             JoseErrorReason::JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER
         }
@@ -350,6 +388,11 @@ const fn map_jwe_error(error: JweError) -> JoseWireError {
         }
         JweError::Decrypt => JoseErrorReason::JOSE_ERROR_REASON_JWE_DECRYPT_FAILED,
         JweError::Encrypt => JoseErrorReason::JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED,
+        JweError::Compression => JoseErrorReason::JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED,
+        JweError::Decompression => JoseErrorReason::JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED,
+        JweError::DecompressedPlaintextTooLarge => {
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE
+        }
         JweError::InvalidKeyAgreementKey => {
             JoseErrorReason::JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY
         }

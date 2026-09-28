@@ -70,4 +70,53 @@ public interface JoseJweHeaderValidationPolicyOrBuilder extends
    * @return The expectedApv.
    */
   me.really.jose.v1.JoseExpectedBytes getExpectedApv();
+
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @return A list containing the allowedCompressionAlgorithms.
+   */
+  java.util.List<me.really.jose.v1.JoseJweCompressionAlgorithm> getAllowedCompressionAlgorithmsList();
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @return The count of allowedCompressionAlgorithms.
+   */
+  int getAllowedCompressionAlgorithmsCount();
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @param index The index of the element to return.
+   * @return The allowedCompressionAlgorithms at the given index.
+   */
+  me.really.jose.v1.JoseJweCompressionAlgorithm getAllowedCompressionAlgorithms(int index);
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @return A list containing the enum numeric values on the wire for allowedCompressionAlgorithms.
+   */
+  java.util.List<java.lang.Integer>
+  getAllowedCompressionAlgorithmsValueList();
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @param index The index of the value to return.
+   * @return The enum numeric value on the wire of allowedCompressionAlgorithms at the given index.
+   */
+  int getAllowedCompressionAlgorithmsValue(int index);
 }

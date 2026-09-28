@@ -10,6 +10,8 @@ public enum class ReallyMeJoseJweKeyManagementAlgorithm { DIRECT, ECDH_ES_P256, 
 
 public enum class ReallyMeJoseJweContentEncryptionAlgorithm { A128_GCM, A192_GCM, A256_GCM }
 
+public enum class ReallyMeJoseJweCompressionAlgorithm { DEFLATE }
+
 public class ReallyMeJoseJwtHeaderPolicy(
     public val allowMissingType: Boolean,
     public val allowEmbeddedKeyHeader: Boolean,
@@ -38,9 +40,30 @@ public class ReallyMeJoseJweHeaderPolicy(
     public val expectedContentType: String? = null,
     expectedAgreementPartyUInfo: ByteArray? = null,
     expectedAgreementPartyVInfo: ByteArray? = null,
+    allowedCompressionAlgorithms: List<ReallyMeJoseJweCompressionAlgorithm> = emptyList(),
 ) : AutoCloseable {
+    /** Preserves the pre-compression JVM constructor while keeping compression opt-in. */
+    public constructor(
+        requireKeyIdentifier: Boolean,
+        expectedKeyIdentifier: String?,
+        expectedType: String?,
+        expectedContentType: String?,
+        expectedAgreementPartyUInfo: ByteArray?,
+        expectedAgreementPartyVInfo: ByteArray?,
+    ) : this(
+        requireKeyIdentifier,
+        expectedKeyIdentifier,
+        expectedType,
+        expectedContentType,
+        expectedAgreementPartyUInfo,
+        expectedAgreementPartyVInfo,
+        emptyList(),
+    )
+
     private val ownedAgreementPartyUInfo: ByteArray? = expectedAgreementPartyUInfo?.copyOf()
     private val ownedAgreementPartyVInfo: ByteArray? = expectedAgreementPartyVInfo?.copyOf()
+    public val allowedCompressionAlgorithms: List<ReallyMeJoseJweCompressionAlgorithm> =
+        allowedCompressionAlgorithms.toList()
 
     internal fun agreementPartyUInfoCopy(): ByteArray? = ownedAgreementPartyUInfo?.copyOf()
 

@@ -214,7 +214,8 @@ public struct ReallyMeJOSE: Sendable {
     agreementPartyUInfo: [UInt8] = [],
     agreementPartyVInfo: [UInt8] = [],
     type: String = "",
-    contentType: String = ""
+    contentType: String = "",
+    compressionAlgorithm: ReallyMeJOSEJWECompressionAlgorithm? = nil
   ) throws(ReallyMeJOSEError) -> String {
     try requireAggregateInput([
       key.count, plaintext.count, keyIdentifier.utf8.count,
@@ -232,6 +233,9 @@ public struct ReallyMeJOSE: Sendable {
     operation.apv = Data(agreementPartyVInfo)
     operation.typ = type
     operation.cty = contentType
+    if let compressionAlgorithm {
+      operation.compressionAlgorithm = protoCompressionAlgorithm(compressionAlgorithm)
+    }
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jweEncrypt(operation)
     let response = try execute(&request)
@@ -378,6 +382,14 @@ private func protoContentEncryptionAlgorithm(
   }
 }
 
+private func protoCompressionAlgorithm(
+  _ value: ReallyMeJOSEJWECompressionAlgorithm
+) -> ReallyMeProtoJoseJweCompressionAlgorithm {
+  switch value {
+  case .deflate: .deflate
+  }
+}
+
 private func protoJWTHeaderPolicy(
   _ value: ReallyMeJOSEJWTHeaderPolicy
 ) -> ReallyMeProtoJoseJwtHeaderValidationPolicy {
@@ -434,6 +446,8 @@ private func protoJWEHeaderPolicy(
     wrapped.value = Data(expected)
     result.expectedApv = wrapped
   }
+  result.allowedCompressionAlgorithms = value.allowedCompressionAlgorithms.map(
+    protoCompressionAlgorithm)
   return result
 }
 

@@ -28,6 +28,10 @@ pub enum JweError {
     #[error("unsupported JWE content-encryption algorithm")]
     UnsupportedContentEncryptionAlgorithm,
 
+    /// The protected-header compression algorithm is not supported by policy.
+    #[error("unsupported JWE compression algorithm")]
+    UnsupportedCompressionAlgorithm,
+
     /// A required protected-header parameter was missing.
     #[error("missing required JWE protected-header parameter")]
     MissingRequiredHeaderParameter,
@@ -75,6 +79,18 @@ pub enum JweError {
     /// Content encryption failed.
     #[error("JWE content encryption failed")]
     Encrypt,
+
+    /// Plaintext compression failed before encryption.
+    #[error("JWE plaintext compression failed")]
+    Compression,
+
+    /// Authenticated compressed plaintext was not a valid raw DEFLATE stream.
+    #[error("JWE plaintext decompression failed")]
+    Decompression,
+
+    /// Authenticated compressed plaintext exceeded the decompression ceiling.
+    #[error("JWE decompressed plaintext too large")]
+    DecompressedPlaintextTooLarge,
 
     /// JWE key-agreement material was invalid.
     #[error("invalid JWE key-agreement key")]

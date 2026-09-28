@@ -9,8 +9,9 @@ use crate::Zeroizing;
 
 use super::validate_header::RawCompactJweProtectedHeader;
 use super::{
-    parse_compact::parse_compact_jwe, CompactJwePolicy, CompactJweProtectedHeader,
-    JweContentEncryptionAlgorithm, JweError, JweKeyManagementAlgorithm,
+    compression::decompress_deflate, parse_compact::parse_compact_jwe, CompactJwePolicy,
+    CompactJweProtectedHeader, JweCompressionAlgorithm, JweContentEncryptionAlgorithm, JweError,
+    JweKeyManagementAlgorithm,
 };
 
 /// Resolves a content-encryption key for a parsed and policy-validated JWE.
@@ -103,13 +104,17 @@ pub(crate) fn decrypt_compact_jwe_bytes_core(
     }
 
     let ciphertext_with_tag = join_ciphertext_and_tag(ciphertext, tag)?;
-    decrypt_content(
+    let plaintext = decrypt_content(
         header.enc,
         &cek,
         &iv,
         parts.protected_header.as_bytes(),
         ciphertext_with_tag,
-    )
+    )?;
+    match header.zip {
+        Some(JweCompressionAlgorithm::Deflate) => decompress_deflate(&plaintext),
+        None => Ok(plaintext),
+    }
 }
 
 /// Decrypts a compact JWE and decodes the plaintext as JSON.

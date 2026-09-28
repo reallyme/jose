@@ -18,7 +18,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.4.1
+        default: 0.4.2
 
 permissions:
   contents: read
@@ -233,8 +233,16 @@ jobs:
       - name: Security advisory audit
         run: scripts/audit_committed_lockfiles.sh
 
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: bdedc88f3f25fcc14242730d4dec6ce6a0c75531
+          path: .release-readiness
+          persist-credentials: false
+
       - name: Check release readiness contract
-        run: node scripts/run_pinned_release_readiness.mjs --policy-only
+        run: node .release-readiness/scripts/run-consumer-check.mjs --policy-only
         env:
           RELEASE_VERSION: ${{ inputs.version }}
 

@@ -333,6 +333,7 @@ fn jwe_encrypt_request_json_round_trips() -> Result<(), Box<dyn std::error::Erro
         apv: b"issuer".to_vec(),
         typ: "JWT".to_owned(),
         cty: "json".to_owned(),
+        compression_algorithm: Default::default(),
         __buffa_unknown_fields: Default::default(),
     };
 

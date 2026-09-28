@@ -11,6 +11,7 @@
 
 use std::collections::HashSet;
 use std::fmt::{Display, Formatter, Write};
+use std::io::{Cursor, Read};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
@@ -167,6 +168,10 @@ enum AuditReason {
     JweDecrypt,
     #[error("JWE plaintext JSON mismatch")]
     JwePlaintextMismatch,
+    #[error("JWE compressed plaintext is invalid")]
+    JweDecompression,
+    #[error("JWE decompressed plaintext exceeds the audit boundary")]
+    JweDecompressedPlaintextTooLarge,
 }
 
 type AuditResult<T> = Result<T, AuditError>;
@@ -226,6 +231,7 @@ struct JweCase {
     id: String,
     alg: String,
     enc: String,
+    zip: Option<String>,
     cek_hex: Option<String>,
     protected_header: Value,
     compact: String,

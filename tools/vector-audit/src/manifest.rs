@@ -112,6 +112,7 @@ fn audit_panva_case(case: &PanvaCase) -> AuditResult<()> {
                 .enc
                 .clone()
                 .ok_or_else(|| general(AuditReason::MissingField))?,
+            zip: None,
             cek_hex: None,
             protected_header: case
                 .protected_header

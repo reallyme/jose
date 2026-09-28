@@ -1,6 +1,6 @@
 # ReallyMe JOSE for Android
 
-`me.really:jose-android:0.4.1` is the Android AAR form of the typed Kotlin/JVM
+`me.really:jose-android:0.4.2` is the Android AAR form of the typed Kotlin/JVM
 JOSE facade. It packages the same Java/Kotlin API and Rust JNI boundary for
 API 24 or newer; application code never loads an arbitrary native path.
 
@@ -16,7 +16,7 @@ manifest verification.
 
 Consumer rules preserve the JNI-resolved class and generated Protobuf Lite
 field layout. The release gate builds a minified consumer APK and an emulator
-test launches the consumer activity through all 96 checked-in JWS, JWT, JWE,
+test launches the consumer activity through all 102 checked-in JWS, JWT, JWE,
 and panva cases, binary/ProtoJSON parity, typed wire failures, and managed
 cleanup paths.
 

@@ -25,6 +25,7 @@ fn rejects_invalid_ecdh_es_shared_secret_length_before_kdf() -> Result<(), JweEr
     let header = CompactJweProtectedHeader {
         alg: JweKeyManagementAlgorithm::EcdhEs,
         enc: JweContentEncryptionAlgorithm::A128Gcm,
+        zip: None,
         kid: None,
         apu: None,
         apv: None,
@@ -170,7 +171,7 @@ fn decrypt_jwe_vector_case(case: &JweVectorCase) -> Result<Result<Value, JweErro
             )?;
             Ok(decrypt_compact_jwe_json(
                 &case.compact,
-                &CompactJwePolicy::openid4vp_direct_post_jwt(),
+                &jwe_vector_policy(case),
                 &DirectJweKeyResolver::new(&key),
             ))
         }
@@ -190,23 +191,33 @@ fn decrypt_ecdh_es_jwe_vector_case(
     Ok(match recipient_private_key.len() {
         32 => decrypt_compact_jwe_json(
             &case.compact,
-            &CompactJwePolicy::openid4vp_direct_post_jwt(),
+            &jwe_vector_policy(case),
             &P256EcdhEsJweKeyResolver::new(&recipient_private_key),
         ),
         #[cfg(feature = "native")]
         48 => decrypt_compact_jwe_json(
             &case.compact,
-            &CompactJwePolicy::openid4vp_direct_post_jwt(),
+            &jwe_vector_policy(case),
             &P384EcdhEsJweKeyResolver::new(&recipient_private_key),
         ),
         #[cfg(feature = "native")]
         66 => decrypt_compact_jwe_json(
             &case.compact,
-            &CompactJwePolicy::openid4vp_direct_post_jwt(),
+            &jwe_vector_policy(case),
             &P521EcdhEsJweKeyResolver::new(&recipient_private_key),
         ),
         _ => Err(JweError::InvalidKeyAgreementKey),
     })
+}
+
+fn jwe_vector_policy(case: &JweVectorCase) -> CompactJwePolicy<'static> {
+    const COMPRESSION: [JweCompressionAlgorithm; 1] = [JweCompressionAlgorithm::Deflate];
+    let policy = CompactJwePolicy::openid4vp_direct_post_jwt();
+    if case.protected_header.get("zip").and_then(Value::as_str) == Some("DEF") {
+        policy.with_allowed_compression_algorithms(&COMPRESSION)
+    } else {
+        policy
+    }
 }
 
 fn assert_vector_derived_cek(case: &JweVectorCase, expected_cek_hex: &str) -> Result<(), JweError> {
@@ -275,6 +286,10 @@ fn jwe_error_matches(err: &JweError, expected: &str) -> bool {
                 JweError::UnsupportedContentEncryptionAlgorithm
             )
             | (
+                "UnsupportedCompressionAlgorithm",
+                JweError::UnsupportedCompressionAlgorithm
+            )
+            | (
                 "MissingRequiredHeaderParameter",
                 JweError::MissingRequiredHeaderParameter
             )
@@ -290,6 +305,12 @@ fn jwe_error_matches(err: &JweError, expected: &str) -> bool {
             )
             | ("Decrypt", JweError::Decrypt)
             | ("Encrypt", JweError::Encrypt)
+            | ("Compression", JweError::Compression)
+            | ("Decompression", JweError::Decompression)
+            | (
+                "DecompressedPlaintextTooLarge",
+                JweError::DecompressedPlaintextTooLarge
+            )
             | ("InvalidKeyAgreementKey", JweError::InvalidKeyAgreementKey)
             | ("Randomness", JweError::Randomness)
             | ("InvalidPayloadJson", JweError::InvalidPayloadJson)
@@ -520,6 +541,69 @@ fn oversized_jwe_is_rejected_before_randomness_is_consumed() {
         Err(JweError::InputTooLarge)
     ));
     assert_eq!(random.0, 0);
+}
+
+#[test]
+fn authenticated_deflate_is_bounded_against_decompression_bombs() -> Result<(), JweError> {
+    use std::io::Write;
+
+    let oversized_length = MAX_DECOMPRESSED_JWE_BYTES
+        .checked_add(1)
+        .ok_or(JweError::LengthOverflow)?;
+    let oversized = vec![b'a'; oversized_length];
+    let mut encoder = flate2::write::DeflateEncoder::new(Vec::new(), flate2::Compression::best());
+    encoder
+        .write_all(&oversized)
+        .map_err(|_| JweError::Compression)?;
+    let compressed = encoder.finish().map_err(|_| JweError::Compression)?;
+    let key = [7_u8; 16];
+    let compact = compact_jwe_with_header(
+        &json!({"alg":"dir","enc":"A128GCM","zip":"DEF"}),
+        &key,
+        &[9_u8; 12],
+        &compressed,
+        JweContentEncryptionAlgorithm::A128Gcm,
+    )?;
+    let compression = [JweCompressionAlgorithm::Deflate];
+    let policy = CompactJwePolicy::new(
+        &[JweKeyManagementAlgorithm::Direct],
+        &[JweContentEncryptionAlgorithm::A128Gcm],
+    )
+    .with_allowed_compression_algorithms(&compression);
+
+    let err = require_jwe_error(decrypt_compact_jwe_bytes(
+        &compact,
+        &policy,
+        &DirectJweKeyResolver::new(&key),
+    ))?;
+    assert!(matches!(err, JweError::DecompressedPlaintextTooLarge));
+    Ok(())
+}
+
+#[test]
+fn authenticated_invalid_deflate_is_rejected_after_authentication() -> Result<(), JweError> {
+    let key = [7_u8; 16];
+    let compact = compact_jwe_with_header(
+        &json!({"alg":"dir","enc":"A128GCM","zip":"DEF"}),
+        &key,
+        &[9_u8; 12],
+        b"not a raw DEFLATE stream",
+        JweContentEncryptionAlgorithm::A128Gcm,
+    )?;
+    let compression = [JweCompressionAlgorithm::Deflate];
+    let policy = CompactJwePolicy::new(
+        &[JweKeyManagementAlgorithm::Direct],
+        &[JweContentEncryptionAlgorithm::A128Gcm],
+    )
+    .with_allowed_compression_algorithms(&compression);
+
+    let err = require_jwe_error(decrypt_compact_jwe_bytes(
+        &compact,
+        &policy,
+        &DirectJweKeyResolver::new(&key),
+    ))?;
+    assert!(matches!(err, JweError::Decompression));
+    Ok(())
 }
 
 #[test]

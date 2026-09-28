@@ -56,7 +56,7 @@ explicit, untrusted boundary values are validated before dispatch, and the
 package zeroizes its owned copies of keys, plaintext, claims, and wire buffers.
 
 Swift, Kotlin/JVM, the minified Android consumer, and TypeScript/WASM execute
-the same 96 checked-in JWS, JWT, JWE, and panva conformance cases as Rust. Their
+the same 102 checked-in JWS, JWT, JWE, and panva conformance cases as Rust. Their
 wire APIs additionally test byte-identical binary
 protobuf/ProtoJSON responses and exact typed negative mappings.
 
@@ -100,8 +100,11 @@ Release and CI validation use the immutable upstream-pinned readiness core and
 audit the published dependency graph with:
 
 ```sh
-node scripts/run_pinned_release_readiness.mjs
+node .release-readiness/scripts/run-consumer-check.mjs
 ```
+
+The `.release-readiness` checkout is pinned to commit
+`bdedc88f3f25fcc14242730d4dec6ce6a0c75531` (release v0.6.6) before execution.
 
 Release readiness requires the declared crates.io versions and rejects path or
 Git overrides. Local sibling dependency substitutions must be removed before
@@ -118,11 +121,11 @@ service-discovery model. Those concerns belong to the embedding application.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.4.1"
+reallyme-jose = "0.4.2"
 ```
 
 ```sh
-npm install @reallyme/jose@0.4.1
+npm install @reallyme/jose@0.4.2
 ```
 
 ## Supported JOSE Surface
@@ -138,6 +141,7 @@ npm install @reallyme/jose@0.4.1
 - compact JWE encryption and decryption for `dir` and `ECDH-ES`;
 - AES-GCM content encryption with `A128GCM`, `A192GCM`, and `A256GCM`;
 - ECDH-ES over P-256, P-384, and P-521 in the native lane;
+- opt-in compact-JWE compression with raw DEFLATE (`zip = "DEF"`).
 
 The profile follows RFC 7515, RFC 7516, RFC 7518, RFC 7519, RFC 8725, and
 RFC 9864. Algorithm identifiers map explicitly to ReallyMe crypto primitives;
@@ -176,6 +180,21 @@ stateless encryptor cannot count all uses of a caller-owned CEK. Applications
 must maintain an AES-GCM per-key invocation budget and rotate the CEK before the
 applicable NIST SP 800-38D limit is reached.
 
+Compact-JWE compression is disabled by default. Encryption compresses with the
+raw DEFLATE format before AES-GCM encryption and serializes `zip = "DEF"` in the
+protected header. Decryption authenticates the complete compact JWE before it
+inflates plaintext, rejects trailing compressed data, and enforces a 1 MiB
+decompressed-plaintext ceiling. Compressed and decompressed plaintext buffers
+are zeroized on drop. Callers must opt in to `DEF` through the protected-header
+policy; an empty allowlist rejects every `zip` value.
+
+Compression changes the ciphertext length and can expose secret-dependent size
+information when attacker-controlled and confidential values share a
+plaintext. Do not enable it for such mixed-origin content. Protocol adapters
+must negotiate compression before calling the primitive. In OpenID4VCI 1.0,
+issuers that enable this primitive advertise `zip_values_supported: ["DEF"]`;
+absence of that metadata means the request must remain uncompressed.
+
 ECDH-ES protected headers use a deliberately minimal `epk` profile. Only
 `kty`, `crv`, `x`, and `y` are accepted. Additional standalone-JWK metadata
 such as `kid`, `use`, or `alg`, private `d`, and zero-stripped coordinates fail
@@ -200,7 +219,8 @@ The following JOSE features are not part of this profile and fail closed:
 - RSA JWS and RSA JWE algorithms;
 - AES Key Wrap and PBES2 key management;
 - JWE JSON serialization;
-- `b64`, `crit`, `zip`, `jku`, and `x5u` protected-header parameters.
+- `b64`, `crit`, `jku`, and `x5u` protected-header parameters, plus every `zip`
+  value other than the explicitly enabled `DEF` algorithm.
 
 Embedded `jwk` headers are rejected by default. JWE also rejects embedded
 `x5c`. An explicit signed-JWT header policy can tolerate `jwk` or `x5c`

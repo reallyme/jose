@@ -22,9 +22,9 @@ use reallyme_jose::jwe::{
     decrypt_compact_jwe_bytes, decrypt_compact_jwe_json, derive_ecdh_es_content_encryption_key,
     encrypt_compact_jwe_bytes, CompactJweEncryptRequest, CompactJwePolicy,
     CompactJweProtectedHeader, DirectJweKeyEncryptor, DirectJweKeyResolver,
-    JweContentEncryptionAlgorithm, JweContentEncryptionKeyResolver, JweError,
-    JweKeyManagementAlgorithm, P256EcdhEsJweKeyEncryptor, P256EcdhEsJweKeyResolver,
-    PreparedJweEncryptionKey, MAX_COMPACT_JWE_BYTES,
+    JweCompressionAlgorithm, JweContentEncryptionAlgorithm, JweContentEncryptionKeyResolver,
+    JweError, JweKeyManagementAlgorithm, P256EcdhEsJweKeyEncryptor, P256EcdhEsJweKeyResolver,
+    PreparedJweEncryptionKey, MAX_COMPACT_JWE_BYTES, MAX_DECOMPRESSED_JWE_BYTES,
 };
 #[cfg(feature = "native")]
 use reallyme_jose::jwe::{P384EcdhEsJweKeyResolver, P521EcdhEsJweKeyResolver};

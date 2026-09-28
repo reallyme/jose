@@ -368,7 +368,16 @@ fn audit_jwe_negative(
 ) -> AuditResult<()> {
     match expected_error {
         "Decrypt" => {
-            let plaintext = decrypt_direct_jwe(case, compact);
+            let plaintext = if case.alg == "ECDH-ES" {
+                let cek_hex = case
+                    .derived_cek_hex
+                    .as_deref()
+                    .ok_or_else(|| general(AuditReason::MissingField))?;
+                let cek = decode_hex(cek_hex)?;
+                decrypt_jwe_with_cek(case, compact, &cek)
+            } else {
+                decrypt_direct_jwe(case, compact)
+            };
             ensure(plaintext.is_err(), AuditReason::JweDecrypt)
         }
         "UnsupportedKeyManagementAlgorithm" => ensure(
@@ -379,6 +388,28 @@ fn audit_jwe_negative(
             !matches!(case.enc.as_str(), "A128GCM" | "A192GCM" | "A256GCM"),
             AuditReason::UnsupportedContentEncryptionAlgorithm,
         ),
+        "UnsupportedCompressionAlgorithm" => ensure(
+            !matches!(case.zip.as_deref(), None | Some("DEF")),
+            AuditReason::UnsupportedAlgorithmVectorInvalid,
+        ),
+        "DecompressedPlaintextTooLarge" => {
+            let derived_cek_hex = case
+                .derived_cek_hex
+                .as_deref()
+                .ok_or_else(|| general(AuditReason::MissingField))?;
+            let cek = decode_hex(derived_cek_hex)?;
+            let result = decrypt_jwe_with_cek(case, compact, &cek);
+            ensure(
+                matches!(
+                    result,
+                    Err(AuditError {
+                        reason: AuditReason::JweDecompressedPlaintextTooLarge,
+                        ..
+                    })
+                ),
+                AuditReason::JweDecompressedPlaintextTooLarge,
+            )
+        }
         "MissingRequiredHeaderParameter" => ensure(
             case.alg == "ECDH-ES" && protected.get("epk").is_none(),
             AuditReason::NegativeHeaderShape,

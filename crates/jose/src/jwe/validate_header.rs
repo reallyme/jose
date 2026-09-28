@@ -17,7 +17,9 @@ use super::JweError;
 
 mod algorithms;
 
-pub use algorithms::{JweContentEncryptionAlgorithm, JweKeyManagementAlgorithm};
+pub use algorithms::{
+    JweCompressionAlgorithm, JweContentEncryptionAlgorithm, JweKeyManagementAlgorithm,
+};
 
 /// Decoded compact-JWE protected header.
 ///
@@ -29,6 +31,8 @@ pub struct CompactJweProtectedHeader {
     pub alg: JweKeyManagementAlgorithm,
     /// Content-encryption algorithm.
     pub enc: JweContentEncryptionAlgorithm,
+    /// Plaintext compression algorithm, when supplied by the sender.
+    pub zip: Option<JweCompressionAlgorithm>,
     /// Key identifier, when supplied by the sender.
     pub kid: Option<String>,
     /// Agreement PartyUInfo, still Base64URL-encoded as carried in the header.
@@ -81,6 +85,7 @@ fn zeroize_json_value(value: JsonValue) {
 pub(crate) struct RawCompactJweProtectedHeader {
     alg: String,
     enc: String,
+    zip: Option<String>,
     kid: Option<String>,
     apu: Option<String>,
     apv: Option<String>,
@@ -93,6 +98,7 @@ impl Drop for RawCompactJweProtectedHeader {
     fn drop(&mut self) {
         self.alg.zeroize();
         self.enc.zeroize();
+        self.zip.zeroize();
         self.kid.zeroize();
         self.apu.zeroize();
         self.apv.zeroize();
@@ -129,6 +135,7 @@ impl<'de> Visitor<'de> for RawCompactJweProtectedHeaderVisitor {
         let mut seen = BTreeSet::new();
         let mut alg = None;
         let mut enc = None;
+        let mut zip = None;
         let mut kid = None;
         let mut apu = None;
         let mut apv = None;
@@ -143,6 +150,7 @@ impl<'de> Visitor<'de> for RawCompactJweProtectedHeaderVisitor {
             match key.as_str() {
                 "alg" => alg = Some(map.next_value()?),
                 "enc" => enc = Some(map.next_value()?),
+                "zip" => zip = Some(map.next_value()?),
                 "kid" => kid = Some(map.next_value()?),
                 "apu" => apu = Some(map.next_value()?),
                 "apv" => apv = Some(map.next_value()?),
@@ -152,7 +160,7 @@ impl<'de> Visitor<'de> for RawCompactJweProtectedHeaderVisitor {
                 }
                 "typ" => typ = Some(map.next_value()?),
                 "cty" => cty = Some(map.next_value()?),
-                "b64" | "crit" | "zip" | "jku" | "x5u" | "x5c" | "jwk" => {
+                "b64" | "crit" | "jku" | "x5u" | "x5c" | "jwk" => {
                     let _ = map.next_value::<IgnoredAny>()?;
                     return Err(serde::de::Error::custom(JweError::InvalidHeader));
                 }
@@ -165,6 +173,7 @@ impl<'de> Visitor<'de> for RawCompactJweProtectedHeaderVisitor {
         Ok(RawCompactJweProtectedHeader {
             alg: alg.ok_or_else(|| serde::de::Error::custom(JweError::InvalidHeader))?,
             enc: enc.ok_or_else(|| serde::de::Error::custom(JweError::InvalidHeader))?,
+            zip,
             kid,
             apu,
             apv,
@@ -189,6 +198,11 @@ impl TryFrom<RawCompactJweProtectedHeader> for CompactJweProtectedHeader {
         Ok(Self {
             alg,
             enc: JweContentEncryptionAlgorithm::parse(&value.enc)?,
+            zip: value
+                .zip
+                .as_deref()
+                .map(JweCompressionAlgorithm::parse)
+                .transpose()?,
             kid: value.kid.take(),
             apu: value.apu.take(),
             apv: value.apv.take(),
@@ -280,6 +294,8 @@ pub struct CompactJwePolicy<'a> {
     allowed_key_management_algorithms: &'a [JweKeyManagementAlgorithm],
     /// Permitted content-encryption algorithms.
     allowed_content_encryption_algorithms: &'a [JweContentEncryptionAlgorithm],
+    /// Permitted plaintext compression algorithms.
+    allowed_compression_algorithms: &'a [JweCompressionAlgorithm],
     /// Require a `kid` protected-header parameter.
     require_kid: bool,
     /// Require an exact `kid` value.
@@ -304,6 +320,7 @@ impl<'a> CompactJwePolicy<'a> {
         Self {
             allowed_key_management_algorithms,
             allowed_content_encryption_algorithms,
+            allowed_compression_algorithms: &[],
             require_kid: false,
             expected_kid: None,
             expected_typ: None,
@@ -326,6 +343,7 @@ impl<'a> CompactJwePolicy<'a> {
                 JweContentEncryptionAlgorithm::A192Gcm,
                 JweContentEncryptionAlgorithm::A256Gcm,
             ],
+            allowed_compression_algorithms: &[],
             require_kid: false,
             expected_kid: None,
             expected_typ: None,
@@ -333,6 +351,19 @@ impl<'a> CompactJwePolicy<'a> {
             expected_apu: None,
             expected_apv: None,
         }
+    }
+
+    /// Permits the selected protected-header compression algorithms.
+    ///
+    /// An empty slice, which is the default, rejects every `zip` value. This
+    /// preserves the JOSE rule that compression must be explicitly negotiated.
+    #[must_use]
+    pub const fn with_allowed_compression_algorithms(
+        mut self,
+        algorithms: &'a [JweCompressionAlgorithm],
+    ) -> Self {
+        self.allowed_compression_algorithms = algorithms;
+        self
     }
 
     /// Requires a `kid` protected-header parameter.
@@ -386,6 +417,11 @@ impl<'a> CompactJwePolicy<'a> {
             .contains(&header.enc)
         {
             return Err(JweError::UnsupportedContentEncryptionAlgorithm);
+        }
+        if let Some(compression) = header.zip {
+            if !self.allowed_compression_algorithms.contains(&compression) {
+                return Err(JweError::UnsupportedCompressionAlgorithm);
+            }
         }
         if self.require_kid && header.kid.is_none() {
             return Err(JweError::MissingRequiredHeaderParameter);

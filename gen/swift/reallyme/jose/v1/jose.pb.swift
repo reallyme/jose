@@ -72,6 +72,7 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
   case jweKidPolicyMismatch // = 225
   case jweApuPolicyMismatch // = 226
   case jweApvPolicyMismatch // = 227
+  case jweUnsupportedCompressionAlgorithm // = 228
 
   /// Compact JWE key-management and content-encryption failures: 240-259.
   case jweInvalidEncryptedKey // = 240
@@ -85,6 +86,9 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
 
   /// Compact JWE plaintext handling: 260-279.
   case jweInvalidPayloadJson // = 260
+  case jweCompressionFailed // = 261
+  case jweDecompressionFailed // = 262
+  case jweDecompressedPlaintextTooLarge // = 263
 
   /// JWT compact structure and encoding: 300-319.
   case jwtInvalidCompact // = 300
@@ -178,6 +182,7 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     case 225: self = .jweKidPolicyMismatch
     case 226: self = .jweApuPolicyMismatch
     case 227: self = .jweApvPolicyMismatch
+    case 228: self = .jweUnsupportedCompressionAlgorithm
     case 240: self = .jweInvalidEncryptedKey
     case 241: self = .jweInvalidContentEncryptionKey
     case 242: self = .jweInvalidContentCipherInput
@@ -187,6 +192,9 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     case 246: self = .jweLengthOverflow
     case 247: self = .jweInvalidSharedSecret
     case 260: self = .jweInvalidPayloadJson
+    case 261: self = .jweCompressionFailed
+    case 262: self = .jweDecompressionFailed
+    case 263: self = .jweDecompressedPlaintextTooLarge
     case 300: self = .jwtInvalidCompact
     case 301: self = .jwtInputTooLarge
     case 302: self = .jwtBase64URLDecodeFailed
@@ -259,6 +267,7 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     case .jweKidPolicyMismatch: return 225
     case .jweApuPolicyMismatch: return 226
     case .jweApvPolicyMismatch: return 227
+    case .jweUnsupportedCompressionAlgorithm: return 228
     case .jweInvalidEncryptedKey: return 240
     case .jweInvalidContentEncryptionKey: return 241
     case .jweInvalidContentCipherInput: return 242
@@ -268,6 +277,9 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     case .jweLengthOverflow: return 246
     case .jweInvalidSharedSecret: return 247
     case .jweInvalidPayloadJson: return 260
+    case .jweCompressionFailed: return 261
+    case .jweDecompressionFailed: return 262
+    case .jweDecompressedPlaintextTooLarge: return 263
     case .jwtInvalidCompact: return 300
     case .jwtInputTooLarge: return 301
     case .jwtBase64URLDecodeFailed: return 302
@@ -340,6 +352,7 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     .jweKidPolicyMismatch,
     .jweApuPolicyMismatch,
     .jweApvPolicyMismatch,
+    .jweUnsupportedCompressionAlgorithm,
     .jweInvalidEncryptedKey,
     .jweInvalidContentEncryptionKey,
     .jweInvalidContentCipherInput,
@@ -349,6 +362,9 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     .jweLengthOverflow,
     .jweInvalidSharedSecret,
     .jweInvalidPayloadJson,
+    .jweCompressionFailed,
+    .jweDecompressionFailed,
+    .jweDecompressedPlaintextTooLarge,
     .jwtInvalidCompact,
     .jwtInputTooLarge,
     .jwtBase64URLDecodeFailed,
@@ -522,6 +538,42 @@ public nonisolated enum ReallyMeProtoJoseJweContentEncryptionAlgorithm: SwiftPro
     .a128Gcm,
     .a192Gcm,
     .a256Gcm,
+  ]
+
+}
+
+public nonisolated enum ReallyMeProtoJoseJweCompressionAlgorithm: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+
+  /// RFC 7518 raw DEFLATE compression: 100-199.
+  case deflate // = 100
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 100: self = .deflate
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .deflate: return 100
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [ReallyMeProtoJoseJweCompressionAlgorithm] = [
+    .unspecified,
+    .deflate,
   ]
 
 }
@@ -1130,6 +1182,9 @@ public nonisolated struct ReallyMeProtoJoseJweEncryptRequest: Sendable {
 
   public var cty: String = String()
 
+  /// Optional plaintext compression performed before content encryption.
+  public var compressionAlgorithm: ReallyMeProtoJoseJweCompressionAlgorithm = .unspecified
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -1243,6 +1298,9 @@ public nonisolated struct ReallyMeProtoJoseJweHeaderValidationPolicy: Sendable {
   public var hasExpectedApv: Bool {self._expectedApv != nil}
   /// Clears the value of `expectedApv`. Subsequent reads from it will return its default value.
   public mutating func clearExpectedApv() {self._expectedApv = nil}
+
+  /// Empty means every protected-header zip value is rejected.
+  public var allowedCompressionAlgorithms: [ReallyMeProtoJoseJweCompressionAlgorithm] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1546,7 +1604,7 @@ public nonisolated struct ReallyMeProtoJoseJweDecryptResponse: Sendable {
 fileprivate nonisolated let _protobuf_package = "reallyme.jose.v1"
 
 nonisolated extension ReallyMeProtoJoseErrorReason: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_ERROR_REASON_UNSPECIFIED\0\u{2}d\u{1}JOSE_ERROR_REASON_JWS_INVALID_COMPACT\0\u{1}JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE\0\u{1}JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW\0\u{1}JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8\0\u{1}JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64\0\u{2}\u{10}JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64\0\u{1}JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8\0\u{1}JOSE_ERROR_REASON_JWS_HEADER_MISMATCH\0\u{2}\u{12}JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64\0\u{1}JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE\0\u{1}JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE\0\u{2}\u{12}JOSE_ERROR_REASON_JWS_SIGN_FAILED\0\u{1}JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE\0\u{2}'JOSE_ERROR_REASON_JWE_INVALID_COMPACT\0\u{1}JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_ENCODING\0\u{2}\u{12}JOSE_ERROR_REASON_JWE_INVALID_HEADER\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER\0\u{1}JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH\0\u{2}\u{d}JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT\0\u{1}JOSE_ERROR_REASON_JWE_DECRYPT_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY\0\u{1}JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET\0\u{2}\u{d}JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON\0\u{2}(JOSE_ERROR_REASON_JWT_INVALID_COMPACT\0\u{1}JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE\0\u{1}JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED\0\u{1}JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW\0\u{2}\u{11}JOSE_ERROR_REASON_JWT_INVALID_HEADER\0\u{1}JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY\0\u{1}JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_JWK\0\u{2}\u{b}JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE\0\u{1}JOSE_ERROR_REASON_JWT_CRYPTO_FAILED\0\u{2}\u{13}JOSE_ERROR_REASON_JWT_INVALID_CLAIMS\0\u{1}JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED\0\u{2}\u{13}JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE\0\u{1}JOSE_ERROR_REASON_JWT_EXPIRED\0\u{1}JOSE_ERROR_REASON_JWT_NOT_YET_VALID\0\u{1}JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY\0\u{1}JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE\0\u{1}JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH\0\u{2}t\u{4}JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF\0\u{1}JOSE_ERROR_REASON_COMMON_MALFORMED_JSON\0\u{1}JOSE_ERROR_REASON_COMMON_MISSING_OPERATION\0\u{1}JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED\0\u{2}a\u{1}JOSE_ERROR_REASON_PROVIDER_UNAVAILABLE\0\u{1}JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED\0\u{1}JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE\0\u{2}b\u{1}JOSE_ERROR_REASON_BACKEND_INTERNAL\0\u{1}JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION\0\u{1}JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_ERROR_REASON_UNSPECIFIED\0\u{2}d\u{1}JOSE_ERROR_REASON_JWS_INVALID_COMPACT\0\u{1}JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE\0\u{1}JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW\0\u{1}JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8\0\u{1}JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64\0\u{2}\u{10}JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64\0\u{1}JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8\0\u{1}JOSE_ERROR_REASON_JWS_HEADER_MISMATCH\0\u{2}\u{12}JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64\0\u{1}JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE\0\u{1}JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE\0\u{2}\u{12}JOSE_ERROR_REASON_JWS_SIGN_FAILED\0\u{1}JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE\0\u{2}'JOSE_ERROR_REASON_JWE_INVALID_COMPACT\0\u{1}JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_ENCODING\0\u{2}\u{12}JOSE_ERROR_REASON_JWE_INVALID_HEADER\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER\0\u{1}JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM\0\u{2}\u{c}JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT\0\u{1}JOSE_ERROR_REASON_JWE_DECRYPT_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY\0\u{1}JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET\0\u{2}\u{d}JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON\0\u{1}JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE\0\u{2}%JOSE_ERROR_REASON_JWT_INVALID_COMPACT\0\u{1}JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE\0\u{1}JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED\0\u{1}JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW\0\u{2}\u{11}JOSE_ERROR_REASON_JWT_INVALID_HEADER\0\u{1}JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY\0\u{1}JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_JWK\0\u{2}\u{b}JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE\0\u{1}JOSE_ERROR_REASON_JWT_CRYPTO_FAILED\0\u{2}\u{13}JOSE_ERROR_REASON_JWT_INVALID_CLAIMS\0\u{1}JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED\0\u{2}\u{13}JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE\0\u{1}JOSE_ERROR_REASON_JWT_EXPIRED\0\u{1}JOSE_ERROR_REASON_JWT_NOT_YET_VALID\0\u{1}JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY\0\u{1}JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE\0\u{1}JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH\0\u{2}t\u{4}JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF\0\u{1}JOSE_ERROR_REASON_COMMON_MALFORMED_JSON\0\u{1}JOSE_ERROR_REASON_COMMON_MISSING_OPERATION\0\u{1}JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED\0\u{2}a\u{1}JOSE_ERROR_REASON_PROVIDER_UNAVAILABLE\0\u{1}JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED\0\u{1}JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE\0\u{2}b\u{1}JOSE_ERROR_REASON_BACKEND_INTERNAL\0\u{1}JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION\0\u{1}JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED\0")
 }
 
 nonisolated extension ReallyMeProtoJoseSignatureAlgorithm: SwiftProtobuf._ProtoNameProviding {
@@ -1559,6 +1617,10 @@ nonisolated extension ReallyMeProtoJoseJweKeyManagementAlgorithm: SwiftProtobuf.
 
 nonisolated extension ReallyMeProtoJoseJweContentEncryptionAlgorithm: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_UNSPECIFIED\0\u{2}d\u{1}JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM\0\u{2}\u{a}JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM\0\u{2}\u{a}JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM\0")
+}
+
+nonisolated extension ReallyMeProtoJoseJweCompressionAlgorithm: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED\0\u{2}d\u{1}JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE\0")
 }
 
 nonisolated extension ReallyMeProtoJoseOperationContractVersion: SwiftProtobuf._ProtoNameProviding {
@@ -2550,7 +2612,7 @@ nonisolated extension ReallyMeProtoJoseJwtTemporalValidationPolicy: SwiftProtobu
 
 nonisolated extension ReallyMeProtoJoseJweEncryptRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".JoseJweEncryptRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}key_management_algorithm\0\u{3}content_encryption_algorithm\0\u{1}key\0\u{1}plaintext\0\u{1}kid\0\u{1}apu\0\u{1}apv\0\u{1}typ\0\u{1}cty\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}key_management_algorithm\0\u{3}content_encryption_algorithm\0\u{1}key\0\u{1}plaintext\0\u{1}kid\0\u{1}apu\0\u{1}apv\0\u{1}typ\0\u{1}cty\0\u{3}compression_algorithm\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2567,6 +2629,7 @@ nonisolated extension ReallyMeProtoJoseJweEncryptRequest: SwiftProtobuf.Message,
       case 7: try { try decoder.decodeSingularBytesField(value: &self.apv) }()
       case 8: try { try decoder.decodeSingularStringField(value: &self.typ) }()
       case 9: try { try decoder.decodeSingularStringField(value: &self.cty) }()
+      case 10: try { try decoder.decodeSingularEnumField(value: &self.compressionAlgorithm) }()
       default: break
       }
     }
@@ -2600,6 +2663,9 @@ nonisolated extension ReallyMeProtoJoseJweEncryptRequest: SwiftProtobuf.Message,
     if !self.cty.isEmpty {
       try visitor.visitSingularStringField(value: self.cty, fieldNumber: 9)
     }
+    if self.compressionAlgorithm != .unspecified {
+      try visitor.visitSingularEnumField(value: self.compressionAlgorithm, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2613,6 +2679,7 @@ nonisolated extension ReallyMeProtoJoseJweEncryptRequest: SwiftProtobuf.Message,
     if lhs.apv != rhs.apv {return false}
     if lhs.typ != rhs.typ {return false}
     if lhs.cty != rhs.cty {return false}
+    if lhs.compressionAlgorithm != rhs.compressionAlgorithm {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2734,7 +2801,7 @@ nonisolated extension ReallyMeProtoJoseExpectedBytes: SwiftProtobuf.Message, Swi
 
 nonisolated extension ReallyMeProtoJoseJweHeaderValidationPolicy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".JoseJweHeaderValidationPolicy"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}require_kid\0\u{3}expected_kid\0\u{3}expected_typ\0\u{3}expected_cty\0\u{3}expected_apu\0\u{3}expected_apv\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}require_kid\0\u{3}expected_kid\0\u{3}expected_typ\0\u{3}expected_cty\0\u{3}expected_apu\0\u{3}expected_apv\0\u{3}allowed_compression_algorithms\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2748,6 +2815,7 @@ nonisolated extension ReallyMeProtoJoseJweHeaderValidationPolicy: SwiftProtobuf.
       case 4: try { try decoder.decodeSingularMessageField(value: &self._expectedCty) }()
       case 5: try { try decoder.decodeSingularMessageField(value: &self._expectedApu) }()
       case 6: try { try decoder.decodeSingularMessageField(value: &self._expectedApv) }()
+      case 7: try { try decoder.decodeRepeatedEnumField(value: &self.allowedCompressionAlgorithms) }()
       default: break
       }
     }
@@ -2776,6 +2844,9 @@ nonisolated extension ReallyMeProtoJoseJweHeaderValidationPolicy: SwiftProtobuf.
     try { if let v = self._expectedApv {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     } }()
+    if !self.allowedCompressionAlgorithms.isEmpty {
+      try visitor.visitPackedEnumField(value: self.allowedCompressionAlgorithms, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2786,6 +2857,7 @@ nonisolated extension ReallyMeProtoJoseJweHeaderValidationPolicy: SwiftProtobuf.
     if lhs._expectedCty != rhs._expectedCty {return false}
     if lhs._expectedApu != rhs._expectedApu {return false}
     if lhs._expectedApv != rhs._expectedApv {return false}
+    if lhs.allowedCompressionAlgorithms != rhs.allowedCompressionAlgorithms {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

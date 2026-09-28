@@ -434,6 +434,69 @@ public  final class JoseJweEncryptRequest extends
 
   }
 
+  public static final int COMPRESSION_ALGORITHM_FIELD_NUMBER = 10;
+  private int compressionAlgorithm_;
+  /**
+   * <pre>
+   * Optional plaintext compression performed before content encryption.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+   * @return The enum numeric value on the wire for compressionAlgorithm.
+   */
+  @java.lang.Override
+  public int getCompressionAlgorithmValue() {
+    return compressionAlgorithm_;
+  }
+  /**
+   * <pre>
+   * Optional plaintext compression performed before content encryption.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+   * @return The compressionAlgorithm.
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJweCompressionAlgorithm getCompressionAlgorithm() {
+    me.really.jose.v1.JoseJweCompressionAlgorithm result = me.really.jose.v1.JoseJweCompressionAlgorithm.forNumber(compressionAlgorithm_);
+    return result == null ? me.really.jose.v1.JoseJweCompressionAlgorithm.UNRECOGNIZED : result;
+  }
+  /**
+   * <pre>
+   * Optional plaintext compression performed before content encryption.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+   * @param value The enum numeric value on the wire for compressionAlgorithm to set.
+   */
+  private void setCompressionAlgorithmValue(int value) {
+      compressionAlgorithm_ = value;
+  }
+  /**
+   * <pre>
+   * Optional plaintext compression performed before content encryption.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+   * @param value The compressionAlgorithm to set.
+   * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+   */
+  private void setCompressionAlgorithm(me.really.jose.v1.JoseJweCompressionAlgorithm value) {
+    compressionAlgorithm_ = value.getNumber();
+
+  }
+  /**
+   * <pre>
+   * Optional plaintext compression performed before content encryption.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+   */
+  private void clearCompressionAlgorithm() {
+
+    compressionAlgorithm_ = 0;
+  }
+
   public static me.really.jose.v1.JoseJweEncryptRequest parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -944,6 +1007,73 @@ public  final class JoseJweEncryptRequest extends
       return this;
     }
 
+    /**
+     * <pre>
+     * Optional plaintext compression performed before content encryption.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+     * @return The enum numeric value on the wire for compressionAlgorithm.
+     */
+    @java.lang.Override
+    public int getCompressionAlgorithmValue() {
+      return instance.getCompressionAlgorithmValue();
+    }
+    /**
+     * <pre>
+     * Optional plaintext compression performed before content encryption.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+     * @param value The compressionAlgorithm to set.
+     * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+     * @return This builder for chaining.
+     */
+    public Builder setCompressionAlgorithmValue(int value) {
+      copyOnWrite();
+      instance.setCompressionAlgorithmValue(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Optional plaintext compression performed before content encryption.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+     * @return The compressionAlgorithm.
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJweCompressionAlgorithm getCompressionAlgorithm() {
+      return instance.getCompressionAlgorithm();
+    }
+    /**
+     * <pre>
+     * Optional plaintext compression performed before content encryption.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+     * @param value The enum numeric value on the wire for compressionAlgorithm to set.
+     * @return This builder for chaining.
+     */
+    public Builder setCompressionAlgorithm(me.really.jose.v1.JoseJweCompressionAlgorithm value) {
+      copyOnWrite();
+      instance.setCompressionAlgorithm(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Optional plaintext compression performed before content encryption.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearCompressionAlgorithm() {
+      copyOnWrite();
+      instance.clearCompressionAlgorithm();
+      return this;
+    }
+
     // @@protoc_insertion_point(builder_scope:reallyme.jose.v1.JoseJweEncryptRequest)
   }
   @java.lang.Override
@@ -969,10 +1099,11 @@ public  final class JoseJweEncryptRequest extends
             "apv_",
             "typ_",
             "cty_",
+            "compressionAlgorithm_",
           };
           java.lang.String info =
-              "\u0000\t\u0000\u0000\u0001\t\t\u0000\u0000\u0000\u0001\f\u0002\f\u0003\n\u0004\n" +
-              "\u0005\u0208\u0006\n\u0007\n\b\u0208\t\u0208";
+              "\u0000\n\u0000\u0000\u0001\n\n\u0000\u0000\u0000\u0001\f\u0002\f\u0003\n\u0004\n" +
+              "\u0005\u0208\u0006\n\u0007\n\b\u0208\t\u0208\n\f";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

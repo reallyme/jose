@@ -90,6 +90,63 @@ fn encrypts_compact_dir_a128gcm_json() -> Result<(), JweError> {
 }
 
 #[test]
+fn deflate_is_serialized_and_applied_before_each_gcm_cipher() -> Result<(), JweError> {
+    const COMPRESSION: [JweCompressionAlgorithm; 1] = [JweCompressionAlgorithm::Deflate];
+    let payload = br#"{"credential":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}"#;
+
+    for (enc, key) in [
+        (JweContentEncryptionAlgorithm::A128Gcm, vec![1_u8; 16]),
+        (JweContentEncryptionAlgorithm::A192Gcm, vec![2_u8; 24]),
+        (JweContentEncryptionAlgorithm::A256Gcm, vec![3_u8; 32]),
+    ] {
+        let mut encryptor = DirectJweKeyEncryptor::new(&key);
+        let compact = encrypt_compact_jwe_bytes(
+            &CompactJweEncryptRequest::new(payload, enc)
+                .with_compression(JweCompressionAlgorithm::Deflate),
+            &mut encryptor,
+            &mut FixedRandom::new([4_u8; 12]),
+        )?;
+        let protected = compact.split('.').next().ok_or(JweError::InvalidCompact)?;
+        let header: CompactJweProtectedHeader = serde_json::from_slice(
+            &base64url_to_bytes(protected).map_err(|_| JweError::InvalidEncoding)?,
+        )
+        .map_err(|_| JweError::InvalidHeader)?;
+        assert_eq!(header.zip, Some(JweCompressionAlgorithm::Deflate));
+
+        let algorithms = [enc];
+        let policy = CompactJwePolicy::new(&[JweKeyManagementAlgorithm::Direct], &algorithms)
+            .with_allowed_compression_algorithms(&COMPRESSION);
+        let plaintext =
+            decrypt_compact_jwe_bytes(&compact, &policy, &DirectJweKeyResolver::new(&key))?;
+        assert_eq!(&plaintext[..], payload);
+    }
+    Ok(())
+}
+
+#[test]
+fn deflate_requires_explicit_decryption_policy() -> Result<(), JweError> {
+    let key = [7_u8; 16];
+    let mut encryptor = DirectJweKeyEncryptor::new(&key);
+    let compact = encrypt_compact_jwe_bytes(
+        &CompactJweEncryptRequest::new(b"compressible plaintext", JweContentEncryptionAlgorithm::A128Gcm)
+            .with_compression(JweCompressionAlgorithm::Deflate),
+        &mut encryptor,
+        &mut FixedRandom::new([8_u8; 12]),
+    )?;
+
+    let err = require_jwe_error(decrypt_compact_jwe_bytes(
+        &compact,
+        &CompactJwePolicy::new(
+            &[JweKeyManagementAlgorithm::Direct],
+            &[JweContentEncryptionAlgorithm::A128Gcm],
+        ),
+        &DirectJweKeyResolver::new(&key),
+    ))?;
+    assert!(matches!(err, JweError::UnsupportedCompressionAlgorithm));
+    Ok(())
+}
+
+#[test]
 fn direct_encryption_rejects_ecdh_party_info() -> Result<(), JweError> {
     let key = [7u8; 16];
     let mut rng = FixedRandom::new([9u8; 12]);
@@ -327,9 +384,9 @@ fn jwe_compact_vectors_decrypt_or_fail_closed() -> Result<(), JweError> {
     }
 
     #[cfg(target_arch = "wasm32")]
-    assert_eq!(executed_cases, 26);
-    #[cfg(not(target_arch = "wasm32"))]
     assert_eq!(executed_cases, 28);
+    #[cfg(not(target_arch = "wasm32"))]
+    assert_eq!(executed_cases, 34);
 
     Ok(())
 }
@@ -511,7 +568,7 @@ fn rejects_missing_key_management_algorithm() -> Result<(), JweError> {
 }
 
 #[test]
-fn rejects_unsupported_compression_header() -> Result<(), JweError> {
+fn rejects_compression_without_explicit_policy() -> Result<(), JweError> {
     let key = [7u8; 16];
     let nonce = [9u8; 12];
     let payload = br#"{"vp_token":"presented","state":"abc"}"#;
@@ -529,7 +586,7 @@ fn rejects_unsupported_compression_header() -> Result<(), JweError> {
         &DirectJweKeyResolver::new(&key),
     ))?;
 
-    assert!(matches!(err, JweError::InvalidHeader));
+    assert!(matches!(err, JweError::UnsupportedCompressionAlgorithm));
     Ok(())
 }
 

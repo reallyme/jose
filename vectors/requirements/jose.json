@@ -69,7 +69,7 @@
       "rejects_duplicate_protected_header_parameter",
       "rejects_missing_key_management_algorithm",
       "rejects_modified_protected_header_aad",
-      "rejects_unsupported_compression_header"
+      "rejects_compression_without_explicit_policy"
     ],
     "applicable": true,
     "exclusion_reason": null

@@ -9,6 +9,7 @@ import { ReallyMeJoseError } from "./errors.js";
 import type { ReallyMeJoseErrorBranch } from "./errors.js";
 import {
   JoseErrorReason,
+  JoseJweCompressionAlgorithm,
   JoseOperationContractVersion,
   JoseOperationRequestSchema,
   JoseOperationResponseSchema,
@@ -260,6 +261,14 @@ export const jweHeaderPolicy = (
 ) => {
   if (policy === undefined) return undefined;
   ensureObject(policy);
+  const configuredCompressionAlgorithms = policy.allowedCompressionAlgorithms ?? [];
+  if (!Array.isArray(configuredCompressionAlgorithms)) invalidInput();
+  const allowedCompressionAlgorithms: JoseJweCompressionAlgorithm[] = [
+    ...configuredCompressionAlgorithms,
+  ];
+  for (const algorithm of allowedCompressionAlgorithms) {
+    validateAlgorithm(algorithm, [JoseJweCompressionAlgorithm.DEFLATE]);
+  }
   return {
     requireKid: optionalBoolean(policy.requireKeyIdentifier, false),
     expectedKid: policy.expectedKeyIdentifier === undefined
@@ -273,5 +282,6 @@ export const jweHeaderPolicy = (
       : { value: optionalString(policy.expectedContentType) },
     expectedApu: ownedApu === undefined ? undefined : { value: ownedApu },
     expectedApv: ownedApv === undefined ? undefined : { value: ownedApv },
+    allowedCompressionAlgorithms,
   };
 };

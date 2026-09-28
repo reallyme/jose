@@ -28,6 +28,7 @@ export {
 export type { ReallyMeJoseWasmProvider } from "./provider.js";
 export {
   JoseErrorReason,
+  JoseJweCompressionAlgorithm,
   JoseJweContentEncryptionAlgorithm,
   JoseJweKeyManagementAlgorithm,
   JoseSignatureAlgorithm,
