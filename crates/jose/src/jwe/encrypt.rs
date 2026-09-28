@@ -13,8 +13,8 @@ use crate::measure_encoding::base64url_len;
 use crate::{JsonValue, SecureRandom, Zeroizing};
 
 use super::{
-    parse_compact::format_compact_jwe, JweContentEncryptionAlgorithm, JweError,
-    JweKeyManagementAlgorithm,
+    compression::compress_deflate, parse_compact::format_compact_jwe, JweCompressionAlgorithm,
+    JweContentEncryptionAlgorithm, JweError, JweKeyManagementAlgorithm, MAX_DECOMPRESSED_JWE_BYTES,
 };
 
 // Array-length equality keeps the shared nonce-size invariant compile-time
@@ -30,6 +30,8 @@ pub struct CompactJweEncryptRequest<'a> {
     plaintext: &'a [u8],
     /// Content-encryption algorithm.
     enc: JweContentEncryptionAlgorithm,
+    /// Optional plaintext compression performed before content encryption.
+    compression: Option<JweCompressionAlgorithm>,
     /// Optional key identifier copied into the protected header.
     kid: Option<&'a str>,
     /// Agreement PartyUInfo as raw bytes; JOSE encodes this as Base64URL.
@@ -49,12 +51,20 @@ impl<'a> CompactJweEncryptRequest<'a> {
         Self {
             plaintext,
             enc,
+            compression: None,
             kid: None,
             apu: None,
             apv: None,
             typ: None,
             cty: None,
         }
+    }
+
+    /// Compresses plaintext before encryption and writes the algorithm to `zip`.
+    #[must_use]
+    pub const fn with_compression(mut self, compression: JweCompressionAlgorithm) -> Self {
+        self.compression = Some(compression);
+        self
     }
 
     /// Sets the protected-header `kid` value.
@@ -102,6 +112,12 @@ impl<'a> CompactJweEncryptRequest<'a> {
     #[must_use]
     pub const fn enc(&self) -> JweContentEncryptionAlgorithm {
         self.enc
+    }
+
+    /// Returns the selected plaintext compression algorithm.
+    #[must_use]
+    pub const fn compression(&self) -> Option<JweCompressionAlgorithm> {
+        self.compression
     }
 
     pub(crate) const fn kid(&self) -> Option<&'a str> {
@@ -183,13 +199,22 @@ pub(crate) fn encrypt_compact_jwe_bytes_core<R: SecureRandom + ?Sized>(
         .try_fold(0_usize, |total, length| {
             total.checked_add(length).ok_or(JweError::LengthOverflow)
         })?;
-    if input_len > MAX_COMPACT_JWE_BYTES {
+    if input_len > MAX_DECOMPRESSED_JWE_BYTES {
         return Err(JweError::InputTooLarge);
     }
+    let compressed_plaintext = match request.compression() {
+        Some(JweCompressionAlgorithm::Deflate) => Some(compress_deflate(request.plaintext())?),
+        None => None,
+    };
+    let encryption_plaintext = compressed_plaintext
+        .as_ref()
+        .map(|plaintext| plaintext.as_slice())
+        .unwrap_or_else(|| request.plaintext());
     let prepared = key_encryptor.prepare_content_encryption_key(request)?;
     let header = SerializableCompactJweProtectedHeader {
         alg: prepared.alg,
         enc: request.enc(),
+        zip: request.compression(),
         kid: request.kid(),
         apu: encode_optional_base64url(request.apu()),
         apv: encode_optional_base64url(request.apv()),
@@ -211,7 +236,7 @@ pub(crate) fn encrypt_compact_jwe_bytes_core<R: SecureRandom + ?Sized>(
     let encoded_len = base64url_len(protected_header_json.len())
         .and_then(|length| length.checked_add(base64url_len(prepared.encrypted_key.len())?))
         .and_then(|length| length.checked_add(base64url_len(request.enc().nonce_len())?))
-        .and_then(|length| length.checked_add(base64url_len(request.plaintext().len())?))
+        .and_then(|length| length.checked_add(base64url_len(encryption_plaintext.len())?))
         .and_then(|length| length.checked_add(base64url_len(request.enc().tag_len())?))
         .and_then(|length| length.checked_add(4))
         .ok_or(JweError::LengthOverflow)?;
@@ -228,7 +253,7 @@ pub(crate) fn encrypt_compact_jwe_bytes_core<R: SecureRandom + ?Sized>(
         &prepared.cek,
         &nonce,
         protected_header.as_bytes(),
-        request.plaintext(),
+        encryption_plaintext,
     )?;
     let ciphertext_and_tag = ciphertext_with_tag.as_bytes();
     let tag_len = request.enc().tag_len();
@@ -275,6 +300,8 @@ pub fn encrypt_compact_jwe_json<T: Serialize, R: SecureRandom + ?Sized>(
 struct SerializableCompactJweProtectedHeader<'a> {
     alg: JweKeyManagementAlgorithm,
     enc: JweContentEncryptionAlgorithm,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    zip: Option<JweCompressionAlgorithm>,
     #[serde(skip_serializing_if = "Option::is_none")]
     kid: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]

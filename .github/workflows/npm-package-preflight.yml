@@ -17,7 +17,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.4.1
+        default: 0.4.2
 
 permissions:
   contents: read
@@ -98,10 +98,17 @@ jobs:
           tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}
       - name: Install TypeScript dependencies
         run: npm ci --prefix packages/ts
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: bdedc88f3f25fcc14242730d4dec6ce6a0c75531
+          path: .release-readiness
+          persist-credentials: false
       - name: Verify release metadata
         env:
           RELEASE_VERSION: ${{ inputs.version }}
-        run: node scripts/run_pinned_release_readiness.mjs --release-packages --policy-only
+        run: node .release-readiness/scripts/run-consumer-check.mjs --release-packages --policy-only
       - name: Test TypeScript package and WASM provider
         run: npm --prefix packages/ts test
       - name: Verify npm tarball and WASM surface

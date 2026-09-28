@@ -161,6 +161,7 @@ fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std
             apv: Vec::new(),
             typ: String::new(),
             cty: String::new(),
+            compression_algorithm: Default::default(),
             __buffa_unknown_fields: Default::default(),
         },
     )));

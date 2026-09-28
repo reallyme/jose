@@ -235,6 +235,38 @@ public object JoseJweEncryptRequestKt {
     public fun clearCty() {
       _builder.clearCty()
     }
+
+    /**
+     * ```
+     * Optional plaintext compression performed before content encryption.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];`
+     */
+    public var compressionAlgorithm: me.really.jose.v1.JoseJweCompressionAlgorithm
+      @kotlin.jvm.JvmName("getCompressionAlgorithm")
+        get() = _builder.compressionAlgorithm
+      @kotlin.jvm.JvmName("setCompressionAlgorithm")
+        set(value) {
+        _builder.compressionAlgorithm = value
+      }
+    public var compressionAlgorithmValue: kotlin.Int
+      @kotlin.jvm.JvmName("getCompressionAlgorithmValue")
+        get() = _builder.compressionAlgorithmValue
+      @kotlin.jvm.JvmName("setCompressionAlgorithmValue")
+        set(value) {
+        _builder.compressionAlgorithmValue = value
+      }
+    /**
+     * ```
+     * Optional plaintext compression performed before content encryption.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];`
+     */
+    public fun clearCompressionAlgorithm() {
+      _builder.clearCompressionAlgorithm()
+    }
   }
 }
 public inline fun me.really.jose.v1.JoseJweEncryptRequest.copy(block: `me.really.jose.v1`.JoseJweEncryptRequestKt.Dsl.() -> kotlin.Unit): me.really.jose.v1.JoseJweEncryptRequest =

@@ -4,6 +4,7 @@
 
 //! JSON Web Encryption helpers.
 
+mod compression;
 pub(crate) mod decrypt;
 mod derive_key;
 pub(crate) mod encrypt;
@@ -11,6 +12,7 @@ mod error;
 mod parse_compact;
 mod validate_header;
 
+pub use compression::MAX_DECOMPRESSED_JWE_BYTES;
 pub use decrypt::{
     decrypt_compact_jwe_bytes, decrypt_compact_jwe_json, DirectJweKeyResolver,
     JweContentEncryptionKeyResolver,
@@ -29,6 +31,6 @@ pub use encrypt::{
 pub use error::JweError;
 pub use parse_compact::MAX_COMPACT_JWE_BYTES;
 pub use validate_header::{
-    CompactJwePolicy, CompactJweProtectedHeader, JweContentEncryptionAlgorithm,
-    JweKeyManagementAlgorithm,
+    CompactJwePolicy, CompactJweProtectedHeader, JweCompressionAlgorithm,
+    JweContentEncryptionAlgorithm, JweKeyManagementAlgorithm,
 };

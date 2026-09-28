@@ -17,7 +17,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.4.1
+        default: 0.4.2
 
 permissions:
   contents: read
@@ -111,6 +111,13 @@ jobs:
           retention-days: 7
       - name: Test Swift release tooling
         run: node --test scripts/prepare_swift_binary_manifest.test.mjs scripts/verify_swift_release_artifact.test.mjs scripts/verify_release_attestation.test.mjs scripts/verify_sdk_release_version.test.mjs
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: bdedc88f3f25fcc14242730d4dec6ce6a0c75531
+          path: .release-readiness
+          persist-credentials: false
       - name: Bind manifest to Swift release candidate
         env:
           RELEASE_VERSION: ${{ inputs.version }}
@@ -122,7 +129,7 @@ jobs:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
           node scripts/verify_swift_release_artifact.mjs build/swift/ReallyMeJOSEFFI.xcframework.zip build/swift/ReallyMeJOSEFFI.xcframework.checksum Package.swift "${RELEASE_VERSION}"
-          node scripts/run_pinned_release_readiness.mjs --release-packages --policy-only
+          node .release-readiness/scripts/run-consumer-check.mjs --release-packages --policy-only
       - name: Prepare local SwiftPM binary manifest
         env:
           RELEASE_VERSION: ${{ inputs.version }}

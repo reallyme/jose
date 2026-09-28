@@ -66,6 +66,15 @@ distribution model separately establishes sender authentication. Binding
 protocol context; it does not establish who sent an ECDH-ES message because a
 sender can choose those public header values.
 
+Compact-JWE compression is opt-in and supports only raw DEFLATE through the
+typed `DEF` algorithm. Compression occurs before encryption. Decryption verifies
+the AES-GCM tag before any inflate work, rejects malformed or trailing data, and
+enforces a 1 MiB decompressed-plaintext ceiling to bound memory amplification.
+Intermediate compressed and decompressed plaintext buffers are zeroized on
+drop. Applications must not compress plaintext that combines secrets with
+attacker-controlled values when the resulting ciphertext length is observable;
+that construction can create a compression side channel.
+
 ## WASM Trust Boundary
 
 The `wasm` feature lane executes the supported cryptographic operations in

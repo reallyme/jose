@@ -6696,6 +6696,12 @@ pub struct JoseJweEncryptRequestView<'a> {
     pub typ: &'a str,
     /// Field 9: `cty`
     pub cty: &'a str,
+    /// Optional plaintext compression performed before content encryption.
+    ///
+    /// Field 10: `compression_algorithm`
+    pub compression_algorithm: ::buffa::EnumValue<
+        super::super::JoseJweCompressionAlgorithm,
+    >,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
 }
 impl<'a> ::core::fmt::Debug for JoseJweEncryptRequestView<'a> {
@@ -6710,6 +6716,7 @@ impl<'a> ::core::fmt::Debug for JoseJweEncryptRequestView<'a> {
             .field("apv", &"<redacted>")
             .field("typ", &self.typ)
             .field("cty", &self.cty)
+            .field("compression_algorithm", &self.compression_algorithm)
             .finish()
     }
 }
@@ -6811,6 +6818,15 @@ impl<'a> ::buffa::MessageView<'a> for JoseJweEncryptRequestView<'a> {
                 )?;
                 view.cty = ::buffa::types::borrow_str(&mut cur)?;
             }
+            10u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.compression_algorithm = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
             _ => {
                 ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                 let span_len = before_tag.len() - cur.len();
@@ -6848,6 +6864,7 @@ impl<'a> ::buffa::MessageView<'a> for JoseJweEncryptRequestView<'a> {
             apv: (self.apv).to_vec(),
             typ: self.typ.to_string(),
             cty: self.cty.to_string(),
+            compression_algorithm: self.compression_algorithm,
             __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
             ..::core::default::Default::default()
         })
@@ -6892,6 +6909,12 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseJweEncryptRequestView<'a> {
         if !self.cty.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.cty) as u64;
         }
+        {
+            let val = self.compression_algorithm.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -6935,6 +6958,12 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseJweEncryptRequestView<'a> {
         }
         if !self.cty.is_empty() {
             ::buffa::types::put_string_field(9u32, &self.cty, buf);
+        }
+        {
+            let val = self.compression_algorithm.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(10u32, val, buf);
+            }
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -6999,6 +7028,11 @@ impl<'__a> ::serde::Serialize for JoseJweEncryptRequestView<'__a> {
         }
         if !::buffa::json_helpers::skip_if::is_empty_str(self.cty) {
             __map.serialize_entry("cty", self.cty)?;
+        }
+        if !::buffa::json_helpers::skip_if::is_default_enum_value(
+            &self.compression_algorithm,
+        ) {
+            __map.serialize_entry("compressionAlgorithm", &self.compression_algorithm)?;
         }
         __map.end()
     }
@@ -7160,6 +7194,15 @@ impl JoseJweEncryptRequestOwnedView {
     #[must_use]
     pub fn cty(&self) -> &'_ str {
         self.0.reborrow().cty
+    }
+    /// Optional plaintext compression performed before content encryption.
+    ///
+    /// Field 10: `compression_algorithm`
+    #[must_use]
+    pub fn compression_algorithm(
+        &self,
+    ) -> ::buffa::EnumValue<super::super::JoseJweCompressionAlgorithm> {
+        self.0.reborrow().compression_algorithm
     }
 }
 impl ::core::convert::From<::buffa::OwnedView<JoseJweEncryptRequestView<'static>>>
@@ -8187,6 +8230,13 @@ pub struct JoseJweHeaderValidationPolicyView<'a> {
     pub expected_apv: ::buffa::MessageFieldView<
         super::super::__buffa::view::JoseExpectedBytesView<'a>,
     >,
+    /// Empty means every protected-header zip value is rejected.
+    ///
+    /// Field 7: `allowed_compression_algorithms`
+    pub allowed_compression_algorithms: ::buffa::RepeatedView<
+        'a,
+        ::buffa::EnumValue<super::super::JoseJweCompressionAlgorithm>,
+    >,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
 }
 impl<'a> ::buffa::MessageView<'a> for JoseJweHeaderValidationPolicyView<'a> {
@@ -8331,6 +8381,36 @@ impl<'a> ::buffa::MessageView<'a> for JoseJweHeaderValidationPolicyView<'a> {
                     }
                 }
             }
+            7u32 => {
+                if tag.wire_type() == ::buffa::encoding::WireType::LengthDelimited {
+                    let payload = ::buffa::types::borrow_bytes(&mut cur)?;
+                    view.allowed_compression_algorithms
+                        .reserve(::buffa::encoding::count_varints(payload));
+                    let mut pcur: &[u8] = payload;
+                    while !pcur.is_empty() {
+                        view.allowed_compression_algorithms
+                            .push(
+                                ::buffa::EnumValue::from(
+                                    ::buffa::types::decode_int32_packed(&mut pcur)?,
+                                ),
+                            );
+                    }
+                } else if tag.wire_type() == ::buffa::encoding::WireType::Varint {
+                    view.allowed_compression_algorithms
+                        .push(
+                            ::buffa::EnumValue::from(
+                                ::buffa::types::decode_int32(&mut cur)?,
+                            ),
+                        );
+                } else {
+                    return Err(
+                        ::buffa::encoding::wire_type_mismatch(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        ),
+                    );
+                }
+            }
             _ => {
                 ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                 let span_len = before_tag.len() - cur.len();
@@ -8405,6 +8485,7 @@ impl<'a> ::buffa::MessageView<'a> for JoseJweHeaderValidationPolicyView<'a> {
                 }
                 None => ::buffa::MessageField::none(),
             },
+            allowed_compression_algorithms: self.allowed_compression_algorithms.to_vec(),
             __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
             ..::core::default::Default::default()
         })
@@ -8458,6 +8539,14 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseJweHeaderValidationPolicyView<'a> {
             size
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
+        }
+        if !self.allowed_compression_algorithms.is_empty() {
+            let payload: u64 = self
+                .allowed_compression_algorithms
+                .iter()
+                .map(|v| ::buffa::types::int32_encoded_len(v.to_i32()) as u64)
+                .sum::<u64>();
+            size += 1u64 + ::buffa::encoding::varint_len(payload) as u64 + payload;
         }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
@@ -8513,6 +8602,17 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseJweHeaderValidationPolicyView<'a> {
             );
             self.expected_apv.write_to(__cache, buf);
         }
+        if !self.allowed_compression_algorithms.is_empty() {
+            let payload: u64 = self
+                .allowed_compression_algorithms
+                .iter()
+                .map(|v| ::buffa::types::int32_encoded_len(v.to_i32()) as u64)
+                .sum::<u64>();
+            ::buffa::types::put_len_delimited_header(7u32, payload, buf);
+            for v in &self.allowed_compression_algorithms {
+                ::buffa::types::encode_int32(v.to_i32(), buf);
+            }
+        }
         self.__buffa_unknown_fields.write_to(buf);
     }
 }
@@ -8561,6 +8661,15 @@ impl<'__a> ::serde::Serialize for JoseJweHeaderValidationPolicyView<'__a> {
             if let ::core::option::Option::Some(__v) = self.expected_apv.as_option() {
                 __map.serialize_entry("expectedApv", __v)?;
             }
+        }
+        if !self.allowed_compression_algorithms.is_empty() {
+            __map
+                .serialize_entry(
+                    "allowedCompressionAlgorithms",
+                    &::buffa::json_helpers::EnumSeqJson(
+                        &self.allowed_compression_algorithms,
+                    ),
+                )?;
         }
         __map.end()
     }
@@ -8706,6 +8815,18 @@ impl JoseJweHeaderValidationPolicyOwnedView {
         super::super::__buffa::view::JoseExpectedBytesView<'_>,
     > {
         &self.0.reborrow().expected_apv
+    }
+    /// Empty means every protected-header zip value is rejected.
+    ///
+    /// Field 7: `allowed_compression_algorithms`
+    #[must_use]
+    pub fn allowed_compression_algorithms(
+        &self,
+    ) -> &::buffa::RepeatedView<
+        '_,
+        ::buffa::EnumValue<super::super::JoseJweCompressionAlgorithm>,
+    > {
+        &self.0.reborrow().allowed_compression_algorithms
     }
 }
 impl ::core::convert::From<

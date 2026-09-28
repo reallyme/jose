@@ -11,6 +11,7 @@ import me.really.jose.v1.JoseError
 import me.really.jose.v1.JoseExpectedBytes
 import me.really.jose.v1.JoseExpectedString
 import me.really.jose.v1.JoseJweContentEncryptionAlgorithm
+import me.really.jose.v1.JoseJweCompressionAlgorithm
 import me.really.jose.v1.JoseJweDecryptResponse
 import me.really.jose.v1.JoseJweEncryptResponse
 import me.really.jose.v1.JoseJweHeaderValidationPolicy
@@ -162,6 +163,13 @@ internal fun protoContentEncryptionAlgorithm(
     ReallyMeJoseJweContentEncryptionAlgorithm.A256_GCM -> JoseJweContentEncryptionAlgorithm.JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM
 }
 
+internal fun protoCompressionAlgorithm(
+    value: ReallyMeJoseJweCompressionAlgorithm,
+): JoseJweCompressionAlgorithm = when (value) {
+    ReallyMeJoseJweCompressionAlgorithm.DEFLATE ->
+        JoseJweCompressionAlgorithm.JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE
+}
+
 internal fun protoJwtHeaderPolicy(value: ReallyMeJoseJwtHeaderPolicy): JoseJwtHeaderValidationPolicy {
     for (type in value.acceptedTypeValues) utf8Length(type)
     return JoseJwtHeaderValidationPolicy.newBuilder()
@@ -210,6 +218,9 @@ internal fun protoJweHeaderPolicy(
     value.expectedType?.let { utf8Length(it) }
     value.expectedContentType?.let { utf8Length(it) }
     val builder = JoseJweHeaderValidationPolicy.newBuilder().setRequireKid(value.requireKeyIdentifier)
+        .addAllAllowedCompressionAlgorithms(
+            value.allowedCompressionAlgorithms.map(::protoCompressionAlgorithm),
+        )
     if (value.expectedKeyIdentifier != null) {
         builder.setExpectedKid(JoseExpectedString.newBuilder().setValue(value.expectedKeyIdentifier).build())
     }

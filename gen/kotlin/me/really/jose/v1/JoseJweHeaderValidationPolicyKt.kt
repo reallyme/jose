@@ -180,7 +180,103 @@ public object JoseJweHeaderValidationPolicyKt {
 
     public val JoseJweHeaderValidationPolicyKt.Dsl.expectedApvOrNull: me.really.jose.v1.JoseExpectedBytes?
       get() = _builder.expectedApvOrNull
-  }
+
+    /**
+     * An uninstantiable, behaviorless type to represent the field in
+     * generics.
+     */
+    @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
+    public class AllowedCompressionAlgorithmsProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
+    /**
+     * ```
+     * Empty means every protected-header zip value is rejected.
+     * ```
+     *
+     * `repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];`
+     */
+     public val allowedCompressionAlgorithms: com.google.protobuf.kotlin.DslList<me.really.jose.v1.JoseJweCompressionAlgorithm, AllowedCompressionAlgorithmsProxy>
+      @kotlin.jvm.JvmSynthetic
+  get() = com.google.protobuf.kotlin.DslList(
+        _builder.allowedCompressionAlgorithmsList
+      )
+    /**
+     * ```
+     * Empty means every protected-header zip value is rejected.
+     * ```
+     *
+     * `repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];`
+     * @param value The allowedCompressionAlgorithms to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("addAllowedCompressionAlgorithms")
+    public fun com.google.protobuf.kotlin.DslList<me.really.jose.v1.JoseJweCompressionAlgorithm, AllowedCompressionAlgorithmsProxy>.add(value: me.really.jose.v1.JoseJweCompressionAlgorithm) {
+      _builder.addAllowedCompressionAlgorithms(value)
+    }/**
+     * ```
+     * Empty means every protected-header zip value is rejected.
+     * ```
+     *
+     * `repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];`
+     * @param value The allowedCompressionAlgorithms to add.
+     */
+    @kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("plusAssignAllowedCompressionAlgorithms")
+    @Suppress("NOTHING_TO_INLINE")
+    public inline operator fun com.google.protobuf.kotlin.DslList<me.really.jose.v1.JoseJweCompressionAlgorithm, AllowedCompressionAlgorithmsProxy>.plusAssign(value: me.really.jose.v1.JoseJweCompressionAlgorithm) {
+      add(value)
+    }/**
+     * ```
+     * Empty means every protected-header zip value is rejected.
+     * ```
+     *
+     * `repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];`
+     * @param values The allowedCompressionAlgorithms to add.
+     * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+     */
+    @kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("addAllAllowedCompressionAlgorithms")
+    public fun com.google.protobuf.kotlin.DslList<me.really.jose.v1.JoseJweCompressionAlgorithm, AllowedCompressionAlgorithmsProxy>.addAll(values: kotlin.collections.Iterable<me.really.jose.v1.JoseJweCompressionAlgorithm>) {
+      _builder.addAllAllowedCompressionAlgorithms(values)
+    }/**
+     * ```
+     * Empty means every protected-header zip value is rejected.
+     * ```
+     *
+     * `repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];`
+     * @param values The allowedCompressionAlgorithms to add.
+     * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+     */
+    @kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("plusAssignAllAllowedCompressionAlgorithms")
+    @Suppress("NOTHING_TO_INLINE")
+    public inline operator fun com.google.protobuf.kotlin.DslList<me.really.jose.v1.JoseJweCompressionAlgorithm, AllowedCompressionAlgorithmsProxy>.plusAssign(values: kotlin.collections.Iterable<me.really.jose.v1.JoseJweCompressionAlgorithm>) {
+      addAll(values)
+    }/**
+     * ```
+     * Empty means every protected-header zip value is rejected.
+     * ```
+     *
+     * `repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];`
+     * @param index The index to set the value at.
+     * @param value The allowedCompressionAlgorithms to set.
+     * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+     */
+    @kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("setAllowedCompressionAlgorithms")
+    public operator fun com.google.protobuf.kotlin.DslList<me.really.jose.v1.JoseJweCompressionAlgorithm, AllowedCompressionAlgorithmsProxy>.set(index: kotlin.Int, value: me.really.jose.v1.JoseJweCompressionAlgorithm) {
+      _builder.setAllowedCompressionAlgorithms(index, value)
+    }/**
+     * ```
+     * Empty means every protected-header zip value is rejected.
+     * ```
+     *
+     * `repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];`
+     */
+    @kotlin.jvm.JvmSynthetic
+@kotlin.jvm.JvmName("clearAllowedCompressionAlgorithms")
+    public fun com.google.protobuf.kotlin.DslList<me.really.jose.v1.JoseJweCompressionAlgorithm, AllowedCompressionAlgorithmsProxy>.clear() {
+      _builder.clearAllowedCompressionAlgorithms()
+    }}
 }
 public inline fun me.really.jose.v1.JoseJweHeaderValidationPolicy.copy(block: `me.really.jose.v1`.JoseJweHeaderValidationPolicyKt.Dsl.() -> kotlin.Unit): me.really.jose.v1.JoseJweHeaderValidationPolicy =
   `me.really.jose.v1`.JoseJweHeaderValidationPolicyKt.Dsl._create(this.toBuilder()).apply { block() }._build()

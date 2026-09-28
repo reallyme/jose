@@ -111,4 +111,23 @@ public interface JoseJweEncryptRequestOrBuilder extends
    */
   com.google.protobuf.ByteString
       getCtyBytes();
+
+  /**
+   * <pre>
+   * Optional plaintext compression performed before content encryption.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+   * @return The enum numeric value on the wire for compressionAlgorithm.
+   */
+  int getCompressionAlgorithmValue();
+  /**
+   * <pre>
+   * Optional plaintext compression performed before content encryption.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweCompressionAlgorithm compression_algorithm = 10 [json_name = "compressionAlgorithm"];</code>
+   * @return The compressionAlgorithm.
+   */
+  me.really.jose.v1.JoseJweCompressionAlgorithm getCompressionAlgorithm();
 }

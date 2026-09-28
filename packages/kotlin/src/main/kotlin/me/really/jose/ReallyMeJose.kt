@@ -182,12 +182,13 @@ public object ReallyMeJose {
         agreementPartyVInfo: ByteArray = ByteArray(0),
         type: String = "",
         contentType: String = "",
+        compressionAlgorithm: ReallyMeJoseJweCompressionAlgorithm? = null,
     ): String = withOwned(key, plaintext, agreementPartyUInfo, agreementPartyVInfo) { owned ->
         requireAggregate(
             owned[0].size, owned[1].size, utf8Length(keyIdentifier), owned[2].size,
             owned[3].size, utf8Length(type), utf8Length(contentType),
         )
-        val operation = JoseJweEncryptRequest.newBuilder()
+        val operationBuilder = JoseJweEncryptRequest.newBuilder()
             .setKeyManagementAlgorithm(protoKeyManagementAlgorithm(keyManagementAlgorithm))
             .setContentEncryptionAlgorithm(protoContentEncryptionAlgorithm(contentEncryptionAlgorithm))
             .setKey(wrap(owned[0]))
@@ -197,7 +198,10 @@ public object ReallyMeJose {
             .setApv(wrap(owned[3]))
             .setTyp(type)
             .setCty(contentType)
-            .build()
+        if (compressionAlgorithm != null) {
+            operationBuilder.setCompressionAlgorithm(protoCompressionAlgorithm(compressionAlgorithm))
+        }
+        val operation = operationBuilder.build()
         val response = execute(JoseOperationRequest.newBuilder().setJweEncrypt(operation).build())
         if (response.responseCase != JoseOperationResponse.ResponseCase.JWE_ENCRYPT) malformed()
         val selected = response.jweEncrypt

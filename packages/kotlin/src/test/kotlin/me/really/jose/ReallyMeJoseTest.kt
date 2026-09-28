@@ -70,6 +70,7 @@ class ReallyMeJoseTest {
             key,
             plaintext,
             keyIdentifier = "stage-15",
+            compressionAlgorithm = ReallyMeJoseJweCompressionAlgorithm.DEFLATE,
         )
         val decrypted = ReallyMeJose.decryptJwe(
             encrypted,
@@ -79,6 +80,7 @@ class ReallyMeJoseTest {
             ReallyMeJoseJweHeaderPolicy(
                 requireKeyIdentifier = true,
                 expectedKeyIdentifier = "stage-15",
+                allowedCompressionAlgorithms = listOf(ReallyMeJoseJweCompressionAlgorithm.DEFLATE),
             ),
         )
         assertContentEquals(plaintext, decrypted)

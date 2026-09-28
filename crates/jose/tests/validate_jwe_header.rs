@@ -4,7 +4,9 @@
 
 //! Public compact-JWE protected-header deserialization tests.
 
-use reallyme_jose::jwe::{CompactJweProtectedHeader, JweKeyManagementAlgorithm};
+use reallyme_jose::jwe::{
+    CompactJweProtectedHeader, JweCompressionAlgorithm, JweKeyManagementAlgorithm,
+};
 
 #[test]
 fn public_header_deserialization_accepts_a_hardened_direct_header() {
@@ -19,12 +21,25 @@ fn public_header_deserialization_accepts_a_hardened_direct_header() {
 }
 
 #[test]
+fn public_header_deserialization_accepts_typed_deflate() {
+    let header = serde_json::from_str::<CompactJweProtectedHeader>(
+        r#"{"alg":"dir","enc":"A128GCM","zip":"DEF"}"#,
+    );
+
+    assert!(matches!(
+        header.as_ref().map(|value| value.zip),
+        Ok(Some(JweCompressionAlgorithm::Deflate))
+    ));
+}
+
+#[test]
 fn public_header_deserialization_rejects_dangerous_and_duplicate_members() {
     for header in [
         r#"{"alg":"dir","alg":"dir","enc":"A128GCM"}"#,
         r#"{"alg":"dir","enc":"A128GCM","b64":false}"#,
         r#"{"alg":"dir","enc":"A128GCM","crit":["applicationExtension"]}"#,
-        r#"{"alg":"dir","enc":"A128GCM","zip":"DEF"}"#,
+        r#"{"alg":"dir","enc":"A128GCM","zip":"GZIP"}"#,
+        r#"{"alg":"dir","enc":"A128GCM","zip":"DEF","zip":"DEF"}"#,
         r#"{"alg":"dir","enc":"A128GCM","jku":"https://example.invalid/jwks"}"#,
         r#"{"alg":"dir","enc":"A128GCM","x5u":"https://example.invalid/cert"}"#,
         r#"{"alg":"dir","enc":"A128GCM","x5c":[]}"#,

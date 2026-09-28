@@ -34,7 +34,7 @@ fn decrypt_jwe_with_cek(case: &JweCase, compact: &CompactJwe, cek: &[u8]) -> Aud
     let nonce = <&Nonce<U12>>::try_from(iv.as_slice())
         .map_err(|_| general(AuditReason::InvalidIvLength))?;
 
-    match case.enc.as_str() {
+    let plaintext = match case.enc.as_str() {
         "A128GCM" => {
             ensure(cek.len() == 16, AuditReason::InvalidCekLength)?;
             let cipher = Aes128Gcm::new_from_slice(cek)
@@ -77,8 +77,33 @@ fn decrypt_jwe_with_cek(case: &JweCase, compact: &CompactJwe, cek: &[u8]) -> Aud
                 )
                 .map_err(|_| general(AuditReason::JweDecrypt))
         }
-        _ => Err(general(AuditReason::UnsupportedContentEncryptionAlgorithm)),
+        _ => return Err(general(AuditReason::UnsupportedContentEncryptionAlgorithm)),
+    }?;
+
+    match case.zip.as_deref() {
+        Some("DEF") => decompress_jwe_plaintext(&plaintext),
+        Some(_) => Err(general(AuditReason::UnsupportedAlgorithm)),
+        None => Ok(plaintext),
     }
+}
+
+fn decompress_jwe_plaintext(compressed: &[u8]) -> AuditResult<Vec<u8>> {
+    const MAX_PLAINTEXT_BYTES: usize = 1024 * 1024;
+    let limit = MAX_PLAINTEXT_BYTES
+        .checked_add(1)
+        .ok_or_else(|| general(AuditReason::JweDecompression))?;
+    let limit = u64::try_from(limit).map_err(|_| general(AuditReason::JweDecompression))?;
+    let mut decoder = flate2::bufread::DeflateDecoder::new(Cursor::new(compressed));
+    let mut plaintext = Vec::new();
+    decoder
+        .by_ref()
+        .take(limit)
+        .read_to_end(&mut plaintext)
+        .map_err(|_| general(AuditReason::JweDecompression))?;
+    if plaintext.len() > MAX_PLAINTEXT_BYTES {
+        return Err(general(AuditReason::JweDecompressedPlaintextTooLarge));
+    }
+    Ok(plaintext)
 }
 
 fn valid_cek_len(enc: &str, len: usize) -> bool {

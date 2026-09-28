@@ -4,6 +4,7 @@
 
 import { create } from "@bufbuild/protobuf";
 import {
+  JoseJweCompressionAlgorithm,
   JoseJweContentEncryptionAlgorithm,
   JoseJweKeyManagementAlgorithm,
   JoseOperationRequestSchema,
@@ -58,6 +59,7 @@ export type ReallyMeJoseJweHeaderPolicy = Readonly<{
   expectedContentType?: string;
   expectedAgreementPartyUInfo?: Uint8Array;
   expectedAgreementPartyVInfo?: Uint8Array;
+  allowedCompressionAlgorithms?: ReadonlyArray<JoseJweCompressionAlgorithm>;
 }>;
 
 export type ReallyMeJoseSignJwsOptions = Readonly<{
@@ -98,6 +100,7 @@ export type ReallyMeJoseEncryptJweOptions = Readonly<{
   agreementPartyVInfo?: Uint8Array;
   type?: string;
   contentType?: string;
+  compressionAlgorithm?: JoseJweCompressionAlgorithm;
 }>;
 
 export type ReallyMeJoseDecryptJweOptions = Readonly<{
@@ -265,6 +268,9 @@ export const ReallyMeJose = Object.freeze({
       JoseJweContentEncryptionAlgorithm.A192GCM,
       JoseJweContentEncryptionAlgorithm.A256GCM,
     ]);
+    if (options.compressionAlgorithm !== undefined) {
+      validateAlgorithm(options.compressionAlgorithm, [JoseJweCompressionAlgorithm.DEFLATE]);
+    }
     const owners: Uint8Array[] = [];
     try {
       const key = ownedBytes(options.key, owners);
@@ -296,6 +302,8 @@ export const ReallyMeJose = Object.freeze({
             apv,
             typ: type,
             cty: contentType,
+            compressionAlgorithm: options.compressionAlgorithm
+              ?? JoseJweCompressionAlgorithm.UNSPECIFIED,
           },
         },
       });

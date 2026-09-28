@@ -291,12 +291,18 @@ private func runJWEVector(_ vector: [String: Any], jose: ReallyMeJOSE) throws {
   default: contentEncryption = .a128GCM
   }
   let compact = try requiredString(vector, "compact")
+
+  let headerPolicy =
+    optionalString(vector, "zip") == "DEF"
+    ? ReallyMeJOSEJWEHeaderPolicy(allowedCompressionAlgorithms: [.deflate])
+    : nil
   if let expectedPlaintext = optionalObject(vector, "expected_plaintext_json") {
     var actual = try jose.decryptJWE(
       compact: compact,
       keyManagementAlgorithm: keyManagement,
       contentEncryptionAlgorithm: contentEncryption,
-      key: key
+      key: key,
+      headerPolicy: headerPolicy
     )
     defer { clearVectorBytes(&actual) }
     #expect(try canonicalJSONData(from: actual) == canonicalJSONData(expectedPlaintext))
@@ -307,7 +313,8 @@ private func runJWEVector(_ vector: [String: Any], jose: ReallyMeJOSE) throws {
         compact: compact,
         keyManagementAlgorithm: keyManagement,
         contentEncryptionAlgorithm: contentEncryption,
-        key: key
+        key: key,
+        headerPolicy: headerPolicy
       )
       clearVectorBytes(&output)
     }
@@ -362,6 +369,7 @@ private func expectedJWEError(_ name: String) throws -> ReallyMeJOSEErrorReason 
   case "InvalidHeader": return .jweInvalidHeader
   case "UnsupportedKeyManagementAlgorithm": return .jweUnsupportedKeyManagementAlgorithm
   case "UnsupportedContentEncryptionAlgorithm": return .jweUnsupportedContentEncryptionAlgorithm
+  case "UnsupportedCompressionAlgorithm": return .jweUnsupportedCompressionAlgorithm
   case "MissingRequiredHeaderParameter": return .jweMissingRequiredHeaderParameter
   case "HeaderPolicyMismatch": return .jweHeaderPolicyMismatch
   case "InvalidEncryptedKey": return .jweInvalidEncryptedKey
@@ -371,6 +379,9 @@ private func expectedJWEError(_ name: String) throws -> ReallyMeJOSEErrorReason 
   case "Encrypt": return .jweEncryptFailed
   case "InvalidKeyAgreementKey": return .jweInvalidKeyAgreementKey
   case "InvalidPayloadJson": return .jweInvalidPayloadJson
+  case "Compression": return .jweCompressionFailed
+  case "Decompression": return .jweDecompressionFailed
+  case "DecompressedPlaintextTooLarge": return .jweDecompressedPlaintextTooLarge
   default: throw VectorFixtureError.invalidFixture
   }
 }

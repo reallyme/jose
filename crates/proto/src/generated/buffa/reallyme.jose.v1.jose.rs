@@ -60,6 +60,7 @@ pub enum JoseErrorReason {
     JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH = 225i32,
     JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH = 226i32,
     JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH = 227i32,
+    JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM = 228i32,
     /// Compact JWE key-management and content-encryption failures: 240-259.
     JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY = 240i32,
     JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY = 241i32,
@@ -71,6 +72,9 @@ pub enum JoseErrorReason {
     JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET = 247i32,
     /// Compact JWE plaintext handling: 260-279.
     JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON = 260i32,
+    JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED = 261i32,
+    JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED = 262i32,
+    JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE = 263i32,
     /// JWT compact structure and encoding: 300-319.
     JOSE_ERROR_REASON_JWT_INVALID_COMPACT = 300i32,
     JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE = 301i32,
@@ -200,6 +204,9 @@ impl JoseErrorReason {
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const JweApvPolicyMismatch: Self = Self::JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JweUnsupportedCompressionAlgorithm: Self = Self::JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM;
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const JweInvalidEncryptedKey: Self = Self::JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY;
@@ -227,6 +234,15 @@ impl JoseErrorReason {
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const JweInvalidPayloadJson: Self = Self::JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JweCompressionFailed: Self = Self::JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JweDecompressionFailed: Self = Self::JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JweDecompressedPlaintextTooLarge: Self = Self::JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE;
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWT_INVALID_COMPACT`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const JwtInvalidCompact: Self = Self::JOSE_ERROR_REASON_JWT_INVALID_COMPACT;
@@ -542,6 +558,11 @@ impl ::buffa::Enumeration for JoseErrorReason {
                     Self::JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH,
                 )
             }
+            228i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM,
+                )
+            }
             240i32 => {
                 ::core::option::Option::Some(
                     Self::JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY,
@@ -579,6 +600,21 @@ impl ::buffa::Enumeration for JoseErrorReason {
             260i32 => {
                 ::core::option::Option::Some(
                     Self::JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON,
+                )
+            }
+            261i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED,
+                )
+            }
+            262i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED,
+                )
+            }
+            263i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE,
                 )
             }
             300i32 => {
@@ -843,6 +879,9 @@ impl ::buffa::Enumeration for JoseErrorReason {
             Self::JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH => {
                 "JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH"
             }
+            Self::JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM => {
+                "JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM"
+            }
             Self::JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY => {
                 "JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY"
             }
@@ -869,6 +908,15 @@ impl ::buffa::Enumeration for JoseErrorReason {
             }
             Self::JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON => {
                 "JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON"
+            }
+            Self::JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED => {
+                "JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED"
+            }
+            Self::JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED => {
+                "JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED"
+            }
+            Self::JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE => {
+                "JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE"
             }
             Self::JOSE_ERROR_REASON_JWT_INVALID_COMPACT => {
                 "JOSE_ERROR_REASON_JWT_INVALID_COMPACT"
@@ -1100,6 +1148,11 @@ impl ::buffa::Enumeration for JoseErrorReason {
                     Self::JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH,
                 )
             }
+            "JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM,
+                )
+            }
             "JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY" => {
                 ::core::option::Option::Some(
                     Self::JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY,
@@ -1137,6 +1190,21 @@ impl ::buffa::Enumeration for JoseErrorReason {
             "JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON" => {
                 ::core::option::Option::Some(
                     Self::JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON,
+                )
+            }
+            "JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED,
+                )
+            }
+            "JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED,
+                )
+            }
+            "JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE,
                 )
             }
             "JOSE_ERROR_REASON_JWT_INVALID_COMPACT" => {
@@ -1352,6 +1420,7 @@ impl ::buffa::Enumeration for JoseErrorReason {
             Self::JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH,
             Self::JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH,
             Self::JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH,
+            Self::JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM,
             Self::JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY,
             Self::JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY,
             Self::JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT,
@@ -1361,6 +1430,9 @@ impl ::buffa::Enumeration for JoseErrorReason {
             Self::JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW,
             Self::JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET,
             Self::JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON,
+            Self::JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED,
+            Self::JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED,
+            Self::JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE,
             Self::JOSE_ERROR_REASON_JWT_INVALID_COMPACT,
             Self::JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE,
             Self::JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED,
@@ -1957,6 +2029,159 @@ impl ::buffa::Enumeration for JoseJweContentEncryptionAlgorithm {
             Self::JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM,
             Self::JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM,
             Self::JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM,
+        ]
+    }
+}
+#[allow(non_camel_case_types)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[repr(i32)]
+pub enum JoseJweCompressionAlgorithm {
+    JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED = 0i32,
+    /// RFC 7518 raw DEFLATE compression: 100-199.
+    JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE = 100i32,
+}
+impl JoseJweCompressionAlgorithm {
+    ///Idiomatic alias for [`Self::JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Unspecified: Self = Self::JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED;
+    ///Idiomatic alias for [`Self::JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Deflate: Self = Self::JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE;
+}
+impl ::core::default::Default for JoseJweCompressionAlgorithm {
+    fn default() -> Self {
+        Self::JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED
+    }
+}
+impl ::serde::Serialize for JoseJweCompressionAlgorithm {
+    fn serialize<S: ::serde::Serializer>(
+        &self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        s.serialize_str(::buffa::Enumeration::proto_name(self))
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJweCompressionAlgorithm {
+    fn deserialize<D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        struct _V;
+        impl ::serde::de::Visitor<'_> for _V {
+            type Value = JoseJweCompressionAlgorithm;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str(
+                    concat!(
+                        "a string, integer, or null for ",
+                        stringify!(JoseJweCompressionAlgorithm)
+                    ),
+                )
+            }
+            fn visit_str<E: ::serde::de::Error>(
+                self,
+                v: &str,
+            ) -> ::core::result::Result<JoseJweCompressionAlgorithm, E> {
+                <JoseJweCompressionAlgorithm as ::buffa::Enumeration>::from_proto_name(v)
+                    .ok_or_else(|| { ::serde::de::Error::unknown_variant(v, &[]) })
+            }
+            fn visit_i64<E: ::serde::de::Error>(
+                self,
+                v: i64,
+            ) -> ::core::result::Result<JoseJweCompressionAlgorithm, E> {
+                let v32 = i32::try_from(v)
+                    .map_err(|_| {
+                        ::serde::de::Error::custom("enum value out of i32 range")
+                    })?;
+                <JoseJweCompressionAlgorithm as ::buffa::Enumeration>::from_i32(v32)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom("unknown enum value")
+                    })
+            }
+            fn visit_u64<E: ::serde::de::Error>(
+                self,
+                v: u64,
+            ) -> ::core::result::Result<JoseJweCompressionAlgorithm, E> {
+                let v32 = i32::try_from(v)
+                    .map_err(|_| {
+                        ::serde::de::Error::custom("enum value out of i32 range")
+                    })?;
+                <JoseJweCompressionAlgorithm as ::buffa::Enumeration>::from_i32(v32)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom("unknown enum value")
+                    })
+            }
+            fn visit_unit<E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJweCompressionAlgorithm, E> {
+                ::core::result::Result::Ok(::core::default::Default::default())
+            }
+        }
+        d.deserialize_any(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJweCompressionAlgorithm {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+impl ::buffa::Enumeration for JoseJweCompressionAlgorithm {
+    fn from_i32(value: i32) -> ::core::option::Option<Self> {
+        match value {
+            0i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED,
+                )
+            }
+            100i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE,
+                )
+            }
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn to_i32(&self) -> i32 {
+        *self as i32
+    }
+    fn proto_name(&self) -> &'static str {
+        match self {
+            Self::JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED => {
+                "JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED"
+            }
+            Self::JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE => {
+                "JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE"
+            }
+        }
+    }
+    fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
+        match name {
+            "JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED,
+                )
+            }
+            "JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE,
+                )
+            }
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn values() -> &'static [Self] {
+        &[
+            Self::JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED,
+            Self::JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE,
         ]
     }
 }
@@ -6957,6 +7182,16 @@ pub struct JoseJweEncryptRequest {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub cty: ::buffa::alloc::string::String,
+    /// Optional plaintext compression performed before content encryption.
+    ///
+    /// Field 10: `compression_algorithm`
+    #[serde(
+        rename = "compressionAlgorithm",
+        alias = "compression_algorithm",
+        with = "::buffa::json_helpers::proto_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    pub compression_algorithm: ::buffa::EnumValue<JoseJweCompressionAlgorithm>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -6973,6 +7208,7 @@ impl ::core::fmt::Debug for JoseJweEncryptRequest {
             .field("apv", &"<redacted>")
             .field("typ", &"<redacted>")
             .field("cty", &"<redacted>")
+            .field("compression_algorithm", &self.compression_algorithm)
             .finish()
     }
 }
@@ -7034,6 +7270,8 @@ impl<'de> ::serde::Deserialize<'de> for JoseJweEncryptRequest {
             typ: ::zeroize::Zeroizing<::buffa::alloc::string::String>,
             #[serde(rename = "cty", deserialize_with = "deserialize_zeroizing_string")]
             cty: ::zeroize::Zeroizing<::buffa::alloc::string::String>,
+            #[serde(rename = "compressionAlgorithm", alias = "compression_algorithm", with = "::buffa::json_helpers::proto_enum")]
+            compression_algorithm: ::buffa::EnumValue<JoseJweCompressionAlgorithm>,
         }
 
         let mut wire = Wire::deserialize(deserializer)?;
@@ -7047,6 +7285,7 @@ impl<'de> ::serde::Deserialize<'de> for JoseJweEncryptRequest {
             apv: ::core::mem::take(&mut *wire.apv),
             typ: ::core::mem::take(&mut *wire.typ),
             cty: ::core::mem::take(&mut *wire.cty),
+            compression_algorithm: wire.compression_algorithm,
             __buffa_unknown_fields: Default::default(),
         })
     }
@@ -7111,6 +7350,12 @@ impl ::buffa::Message for JoseJweEncryptRequest {
         if !self.cty.is_empty() {
             size += 1u64 + ::buffa::types::string_encoded_len(&self.cty) as u64;
         }
+        {
+            let val = self.compression_algorithm.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -7153,6 +7398,12 @@ impl ::buffa::Message for JoseJweEncryptRequest {
         }
         if !self.cty.is_empty() {
             ::buffa::types::put_string_field(9u32, &self.cty, buf);
+        }
+        {
+            let val = self.compression_algorithm.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(10u32, val, buf);
+            }
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -7234,6 +7485,15 @@ impl ::buffa::Message for JoseJweEncryptRequest {
                 )?;
                 ::buffa::types::merge_string(&mut self.cty, buf)?;
             }
+            10u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.compression_algorithm = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -7251,6 +7511,7 @@ impl ::buffa::Message for JoseJweEncryptRequest {
         ::zeroize::Zeroize::zeroize(&mut self.apv);
         ::zeroize::Zeroize::zeroize(&mut self.typ);
         ::zeroize::Zeroize::zeroize(&mut self.cty);
+        self.compression_algorithm = ::buffa::EnumValue::from(0);
         __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
     }
 }
@@ -7988,6 +8249,18 @@ pub struct JoseJweHeaderValidationPolicy {
         JoseExpectedBytes,
         ::buffa::Inline<JoseExpectedBytes>,
     >,
+    /// Empty means every protected-header zip value is rejected.
+    ///
+    /// Field 7: `allowed_compression_algorithms`
+    #[serde(
+        rename = "allowedCompressionAlgorithms",
+        alias = "allowed_compression_algorithms",
+        with = "::buffa::json_helpers::repeated_enum",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec"
+    )]
+    pub allowed_compression_algorithms: ::buffa::alloc::vec::Vec<
+        ::buffa::EnumValue<JoseJweCompressionAlgorithm>,
+    >,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -8001,6 +8274,10 @@ impl ::core::fmt::Debug for JoseJweHeaderValidationPolicy {
             .field("expected_cty", &self.expected_cty)
             .field("expected_apu", &self.expected_apu)
             .field("expected_apv", &self.expected_apv)
+            .field(
+                "allowed_compression_algorithms",
+                &self.allowed_compression_algorithms,
+            )
             .finish()
     }
 }
@@ -8074,6 +8351,14 @@ impl ::buffa::Message for JoseJweHeaderValidationPolicy {
                 += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
                     + inner_size as u64;
         }
+        if !self.allowed_compression_algorithms.is_empty() {
+            let payload: u64 = self
+                .allowed_compression_algorithms
+                .iter()
+                .map(|v| ::buffa::types::int32_encoded_len(v.to_i32()) as u64)
+                .sum::<u64>();
+            size += 1u64 + ::buffa::encoding::varint_len(payload) as u64 + payload;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
@@ -8126,6 +8411,17 @@ impl ::buffa::Message for JoseJweHeaderValidationPolicy {
                 buf,
             );
             self.expected_apv.write_to(__cache, buf);
+        }
+        if !self.allowed_compression_algorithms.is_empty() {
+            let payload: u64 = self
+                .allowed_compression_algorithms
+                .iter()
+                .map(|v| ::buffa::types::int32_encoded_len(v.to_i32()) as u64)
+                .sum::<u64>();
+            ::buffa::types::put_len_delimited_header(7u32, payload, buf);
+            for v in &self.allowed_compression_algorithms {
+                ::buffa::types::encode_int32(v.to_i32(), buf);
+            }
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -8202,6 +8498,44 @@ impl ::buffa::Message for JoseJweHeaderValidationPolicy {
                     ctx,
                 )?;
             }
+            7u32 => {
+                if tag.wire_type() == ::buffa::encoding::WireType::LengthDelimited {
+                    let len = ::buffa::encoding::decode_varint(buf)?;
+                    let len = usize::try_from(len)
+                        .map_err(|_| ::buffa::DecodeError::MessageTooLarge)?;
+                    if buf.remaining() < len {
+                        return ::core::result::Result::Err(
+                            ::buffa::DecodeError::UnexpectedEof,
+                        );
+                    }
+                    self.allowed_compression_algorithms.reserve(len);
+                    let mut limited = buf.take(len);
+                    while limited.has_remaining() {
+                        self.allowed_compression_algorithms
+                            .push(
+                                ::buffa::EnumValue::from(
+                                    ::buffa::types::decode_int32_packed(&mut limited)?,
+                                ),
+                            );
+                    }
+                    let leftover = limited.remaining();
+                    if leftover > 0 {
+                        limited.advance(leftover);
+                    }
+                } else if tag.wire_type() == ::buffa::encoding::WireType::Varint {
+                    self.allowed_compression_algorithms
+                        .push(
+                            ::buffa::EnumValue::from(::buffa::types::decode_int32(buf)?),
+                        );
+                } else {
+                    return ::core::result::Result::Err(
+                        ::buffa::encoding::wire_type_mismatch(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        ),
+                    );
+                }
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -8216,6 +8550,7 @@ impl ::buffa::Message for JoseJweHeaderValidationPolicy {
         self.expected_cty = ::buffa::MessageField::none();
         self.expected_apu = ::buffa::MessageField::none();
         self.expected_apv = ::buffa::MessageField::none();
+        self.allowed_compression_algorithms.clear();
         __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
     }
 }

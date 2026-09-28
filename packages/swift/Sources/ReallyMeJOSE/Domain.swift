@@ -20,6 +20,10 @@ public enum ReallyMeJOSEJWEContentEncryptionAlgorithm: Sendable, Equatable {
   case a256GCM
 }
 
+public enum ReallyMeJOSEJWECompressionAlgorithm: Sendable, Equatable {
+  case deflate
+}
+
 public struct ReallyMeJOSEJWTHeaderPolicy: Sendable, Equatable {
   public let allowMissingTyp: Bool
   public let allowEmbeddedKeyHeader: Bool
@@ -77,6 +81,7 @@ public struct ReallyMeJOSEJWEHeaderPolicy: Sendable, Equatable {
   public let expectedContentType: String?
   public let expectedAgreementPartyUInfo: [UInt8]?
   public let expectedAgreementPartyVInfo: [UInt8]?
+  public let allowedCompressionAlgorithms: [ReallyMeJOSEJWECompressionAlgorithm]
 
   public init(
     requireKeyIdentifier: Bool = false,
@@ -84,7 +89,8 @@ public struct ReallyMeJOSEJWEHeaderPolicy: Sendable, Equatable {
     expectedType: String? = nil,
     expectedContentType: String? = nil,
     expectedAgreementPartyUInfo: [UInt8]? = nil,
-    expectedAgreementPartyVInfo: [UInt8]? = nil
+    expectedAgreementPartyVInfo: [UInt8]? = nil,
+    allowedCompressionAlgorithms: [ReallyMeJOSEJWECompressionAlgorithm] = []
   ) {
     self.requireKeyIdentifier = requireKeyIdentifier
     self.expectedKeyIdentifier = expectedKeyIdentifier
@@ -92,5 +98,6 @@ public struct ReallyMeJOSEJWEHeaderPolicy: Sendable, Equatable {
     self.expectedContentType = expectedContentType
     self.expectedAgreementPartyUInfo = expectedAgreementPartyUInfo
     self.expectedAgreementPartyVInfo = expectedAgreementPartyVInfo
+    self.allowedCompressionAlgorithms = allowedCompressionAlgorithms
   }
 }

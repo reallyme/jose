@@ -143,6 +143,10 @@ public enum JoseErrorReason
    */
   JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH(227),
   /**
+   * <code>JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM = 228;</code>
+   */
+  JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM(228),
+  /**
    * <pre>
    * Compact JWE key-management and content-encryption failures: 240-259.
    * </pre>
@@ -186,6 +190,18 @@ public enum JoseErrorReason
    * <code>JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON = 260;</code>
    */
   JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON(260),
+  /**
+   * <code>JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED = 261;</code>
+   */
+  JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED(261),
+  /**
+   * <code>JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED = 262;</code>
+   */
+  JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED(262),
+  /**
+   * <code>JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE = 263;</code>
+   */
+  JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE(263),
   /**
    * <pre>
    * JWT compact structure and encoding: 300-319.
@@ -513,6 +529,10 @@ public enum JoseErrorReason
    */
   public static final int JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH_VALUE = 227;
   /**
+   * <code>JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM = 228;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM_VALUE = 228;
+  /**
    * <pre>
    * Compact JWE key-management and content-encryption failures: 240-259.
    * </pre>
@@ -556,6 +576,18 @@ public enum JoseErrorReason
    * <code>JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON = 260;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON_VALUE = 260;
+  /**
+   * <code>JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED = 261;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED_VALUE = 261;
+  /**
+   * <code>JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED = 262;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED_VALUE = 262;
+  /**
+   * <code>JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE = 263;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE_VALUE = 263;
   /**
    * <pre>
    * JWT compact structure and encoding: 300-319.
@@ -802,6 +834,7 @@ public enum JoseErrorReason
       case 225: return JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH;
       case 226: return JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH;
       case 227: return JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH;
+      case 228: return JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM;
       case 240: return JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY;
       case 241: return JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY;
       case 242: return JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT;
@@ -811,6 +844,9 @@ public enum JoseErrorReason
       case 246: return JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW;
       case 247: return JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET;
       case 260: return JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON;
+      case 261: return JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED;
+      case 262: return JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED;
+      case 263: return JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE;
       case 300: return JOSE_ERROR_REASON_JWT_INVALID_COMPACT;
       case 301: return JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE;
       case 302: return JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED;

@@ -101,7 +101,8 @@ private func bytes(hex: String) throws -> [UInt8] {
     contentEncryptionAlgorithm: .a128GCM,
     key: key,
     plaintext: plaintext,
-    keyIdentifier: "stage-14"
+    keyIdentifier: "stage-14",
+    compressionAlgorithm: .deflate
   )
   let decrypted = try jose.decryptJWE(
     compact: encrypted,
@@ -110,7 +111,8 @@ private func bytes(hex: String) throws -> [UInt8] {
     key: key,
     headerPolicy: ReallyMeJOSEJWEHeaderPolicy(
       requireKeyIdentifier: true,
-      expectedKeyIdentifier: "stage-14"
+      expectedKeyIdentifier: "stage-14",
+      allowedCompressionAlgorithms: [.deflate]
     )
   )
   #expect(decrypted == plaintext)

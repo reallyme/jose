@@ -1,6 +1,6 @@
 [package]
 name = "reallyme-jose"
-version = "0.4.1"
+version = "0.4.2"
 description = "JOSE, JWT, JWS, and JWE helpers for ReallyMe identity."
 edition.workspace = true
 rust-version.workspace = true
@@ -54,6 +54,7 @@ jose-crypto = [
 
 [dependencies]
 buffa = { workspace = true, optional = true }
+flate2 = { workspace = true }
 reallyme-codec = { workspace = true, features = ["base64", "base64url"] }
 reallyme-crypto = { workspace = true }
 reallyme-jose-proto = { workspace = true, features = ["generated"], optional = true }

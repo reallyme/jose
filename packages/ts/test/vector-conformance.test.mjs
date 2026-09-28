@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 import {
   installReallyMeJoseWasmProvider,
   JoseErrorReason,
+  JoseJweCompressionAlgorithm,
   JoseJweContentEncryptionAlgorithm,
   JoseJweKeyManagementAlgorithm,
   JoseSignatureAlgorithm,
@@ -98,11 +99,19 @@ const expectedJweReasons = new Map([
   ["Encrypt", JoseErrorReason.JWE_ENCRYPT_FAILED],
   ["InvalidKeyAgreementKey", JoseErrorReason.JWE_INVALID_KEY_AGREEMENT_KEY],
   ["InvalidPayloadJson", JoseErrorReason.JWE_INVALID_PAYLOAD_JSON],
+  ["UnsupportedCompressionAlgorithm", JoseErrorReason.JWE_UNSUPPORTED_COMPRESSION_ALGORITHM],
+  ["Compression", JoseErrorReason.JWE_COMPRESSION_FAILED],
+  ["Decompression", JoseErrorReason.JWE_DECOMPRESSION_FAILED],
+  ["DecompressedPlaintextTooLarge", JoseErrorReason.JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE],
 ]);
 
 const wasmUnsupportedVectorIds = new Set([
   "reallyme-jwe/ecdh-es-p384-a192gcm-json",
   "reallyme-jwe/ecdh-es-p521-a256gcm-json",
+  "reallyme-jwe/ecdh-es-p384-a192gcm-deflate",
+  "reallyme-jwe/ecdh-es-p521-a256gcm-deflate",
+  "reallyme-jwe/ecdh-es-p384-a192gcm-deflate-tampered-tag",
+  "reallyme-jwe/ecdh-es-p521-a256gcm-deflate-oversize",
 ]);
 
 const assertVectorError = (operation, reason, branch = "primitive") => {
@@ -216,6 +225,9 @@ const runJweCase = (vector) => {
       keyManagementAlgorithm,
       contentEncryptionAlgorithm: contentEncryptionAlgorithm(requireString(vector, "enc")),
       key,
+      headerPolicy: vector.zip === "DEF"
+        ? { allowedCompressionAlgorithms: [JoseJweCompressionAlgorithm.DEFLATE] }
+        : undefined,
     });
     const expected = optionalRecord(vector, "expected_plaintext_json");
     if (wasmUnsupportedVectorIds.has(requireString(vector, "id"))) {
@@ -233,7 +245,7 @@ const runJweCase = (vector) => {
   }
 };
 
-test("TypeScript/WASM executes all 96 cross-lane conformance vectors", async (suite) => {
+test("TypeScript/WASM executes all 102 cross-lane conformance vectors", async (suite) => {
   installReallyMeJoseWasmProvider(await initializeWasmProvider());
 
   const jwsCases = await loadCases("jws-compact.json");
@@ -243,7 +255,7 @@ test("TypeScript/WASM executes all 96 cross-lane conformance vectors", async (su
   const panvaCases = await loadCases("panva-jose.json");
   assert.equal(
     jwsCases.length + unsignedJwtCases.length + signedJwtCases.length + jweCases.length + panvaCases.length,
-    96,
+    102,
   );
 
   await suite.test("JWS corpus", () => {

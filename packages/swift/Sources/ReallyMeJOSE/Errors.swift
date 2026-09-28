@@ -35,6 +35,7 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
   case jweKidPolicyMismatch = 225
   case jweApuPolicyMismatch = 226
   case jweApvPolicyMismatch = 227
+  case jweUnsupportedCompressionAlgorithm = 228
   case jweInvalidEncryptedKey = 240
   case jweInvalidContentEncryptionKey = 241
   case jweInvalidContentCipherInput = 242
@@ -44,6 +45,9 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
   case jweLengthOverflow = 246
   case jweInvalidSharedSecret = 247
   case jweInvalidPayloadJson = 260
+  case jweCompressionFailed = 261
+  case jweDecompressionFailed = 262
+  case jweDecompressedPlaintextTooLarge = 263
   case jwtInvalidCompact = 300
   case jwtInputTooLarge = 301
   case jwtBase64URLDecodeFailed = 302

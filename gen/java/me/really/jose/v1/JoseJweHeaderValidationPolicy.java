@@ -31,6 +31,7 @@ public  final class JoseJweHeaderValidationPolicy extends
   }
 
   private JoseJweHeaderValidationPolicy() {
+    allowedCompressionAlgorithms_ = emptyIntList();
   }
   private int bitField0_;
   public static final int REQUIRE_KID_FIELD_NUMBER = 1;
@@ -292,6 +293,187 @@ public  final class JoseJweHeaderValidationPolicy extends
   private void clearExpectedApv() {
     expectedApv_ = null;
     bitField0_ = (bitField0_ & ~0x00000010);
+  }
+
+  public static final int ALLOWED_COMPRESSION_ALGORITHMS_FIELD_NUMBER = 7;
+  private com.google.protobuf.Internal.IntList allowedCompressionAlgorithms_;
+  private static final com.google.protobuf.Internal.IntListAdapter.IntConverter<
+      me.really.jose.v1.JoseJweCompressionAlgorithm> allowedCompressionAlgorithms_converter_ =
+          new com.google.protobuf.Internal.IntListAdapter.IntConverter<
+              me.really.jose.v1.JoseJweCompressionAlgorithm>() {
+            @java.lang.Override
+            public me.really.jose.v1.JoseJweCompressionAlgorithm convert(int from) {
+              me.really.jose.v1.JoseJweCompressionAlgorithm result = me.really.jose.v1.JoseJweCompressionAlgorithm.forNumber(from);
+              return result == null ? me.really.jose.v1.JoseJweCompressionAlgorithm.UNRECOGNIZED : result;
+            }
+          };
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @return A list containing the allowedCompressionAlgorithms.
+   */
+  @java.lang.Override
+  public java.util.List<me.really.jose.v1.JoseJweCompressionAlgorithm> getAllowedCompressionAlgorithmsList() {
+    return new com.google.protobuf.Internal.IntListAdapter<
+        me.really.jose.v1.JoseJweCompressionAlgorithm>(allowedCompressionAlgorithms_, allowedCompressionAlgorithms_converter_);
+  }
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @return The count of allowedCompressionAlgorithms.
+   */
+  @java.lang.Override
+  public int getAllowedCompressionAlgorithmsCount() {
+    return allowedCompressionAlgorithms_.size();
+  }
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @param index The index of the element to return.
+   * @return The allowedCompressionAlgorithms at the given index.
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJweCompressionAlgorithm getAllowedCompressionAlgorithms(int index) {
+    me.really.jose.v1.JoseJweCompressionAlgorithm result = me.really.jose.v1.JoseJweCompressionAlgorithm.forNumber(allowedCompressionAlgorithms_.getInt(index));
+    return result == null ? me.really.jose.v1.JoseJweCompressionAlgorithm.UNRECOGNIZED : result;
+  }
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @return A list containing the enum numeric values on the wire for allowedCompressionAlgorithms.
+   */
+  @java.lang.Override
+  public java.util.List<java.lang.Integer>
+  getAllowedCompressionAlgorithmsValueList() {
+    return allowedCompressionAlgorithms_;
+  }
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @param index The index of the value to return.
+   * @return The enum numeric value on the wire of allowedCompressionAlgorithms at the given index.
+   */
+  @java.lang.Override
+  public int getAllowedCompressionAlgorithmsValue(int index) {
+    return allowedCompressionAlgorithms_.getInt(index);
+  }
+  private int allowedCompressionAlgorithmsMemoizedSerializedSize;
+  private void ensureAllowedCompressionAlgorithmsIsMutable() {
+    com.google.protobuf.Internal.IntList tmp = allowedCompressionAlgorithms_;
+    if (!tmp.isModifiable()) {
+      allowedCompressionAlgorithms_ =
+          com.google.protobuf.GeneratedMessageLite.mutableCopy(tmp);
+    }
+  }
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @param index The index to set the value at.
+   * @param value The allowedCompressionAlgorithms to set.
+   * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+   */
+  private void setAllowedCompressionAlgorithms(
+      int index, me.really.jose.v1.JoseJweCompressionAlgorithm value) {
+    java.util.Objects.requireNonNull(value);
+    ensureAllowedCompressionAlgorithmsIsMutable();
+    allowedCompressionAlgorithms_.setInt(index, value.getNumber());
+  }
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @param value The allowedCompressionAlgorithms to add.
+   */
+  private void addAllowedCompressionAlgorithms(me.really.jose.v1.JoseJweCompressionAlgorithm value) {
+    java.util.Objects.requireNonNull(value);
+    ensureAllowedCompressionAlgorithmsIsMutable();
+    allowedCompressionAlgorithms_.addInt(value.getNumber());
+  }
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @param values The allowedCompressionAlgorithms to add.
+   * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+   */
+  private void addAllAllowedCompressionAlgorithms(
+      java.lang.Iterable<? extends me.really.jose.v1.JoseJweCompressionAlgorithm> values) {
+    ensureAllowedCompressionAlgorithmsIsMutable();
+    for (me.really.jose.v1.JoseJweCompressionAlgorithm value : values) {
+      allowedCompressionAlgorithms_.addInt(value.getNumber());
+    }
+  }
+  /**
+   * ```
+   * Empty means every protected-header zip value is rejected.
+   * ```
+   *
+   * `repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];`
+   */
+  private void clearAllowedCompressionAlgorithms() {
+    allowedCompressionAlgorithms_ = emptyIntList();
+  }
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @param value The enum numeric value on the wire for allowedCompressionAlgorithms to set.
+   */
+  private void setAllowedCompressionAlgorithmsValue(
+      int index, int value) {
+    ensureAllowedCompressionAlgorithmsIsMutable();
+    allowedCompressionAlgorithms_.setInt(index, value);
+  }
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @param value The enum numeric value on the wire for allowedCompressionAlgorithms to add.
+   */
+  private void addAllowedCompressionAlgorithmsValue(int value) {
+    ensureAllowedCompressionAlgorithmsIsMutable();
+    allowedCompressionAlgorithms_.addInt(value);
+  }
+  /**
+   * <pre>
+   * Empty means every protected-header zip value is rejected.
+   * </pre>
+   *
+   * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+   * @param values The enum numeric values on the wire for allowedCompressionAlgorithms to add.
+   */
+  private void addAllAllowedCompressionAlgorithmsValue(
+      java.lang.Iterable<java.lang.Integer> values) {
+    ensureAllowedCompressionAlgorithmsIsMutable();
+    for (int value : values) {
+      allowedCompressionAlgorithms_.addInt(value);
+    }
   }
 
   public static me.really.jose.v1.JoseJweHeaderValidationPolicy parseFrom(
@@ -654,6 +836,175 @@ public  final class JoseJweHeaderValidationPolicy extends
       return this;
     }
 
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @return A list containing the allowedCompressionAlgorithms.
+     */
+    @java.lang.Override
+    public java.util.List<me.really.jose.v1.JoseJweCompressionAlgorithm> getAllowedCompressionAlgorithmsList() {
+      return instance.getAllowedCompressionAlgorithmsList();
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @return The count of allowedCompressionAlgorithms.
+     */
+    @java.lang.Override
+    public int getAllowedCompressionAlgorithmsCount() {
+      return instance.getAllowedCompressionAlgorithmsCount();
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @param index The index of the element to return.
+     * @return The allowedCompressionAlgorithms at the given index.
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJweCompressionAlgorithm getAllowedCompressionAlgorithms(int index) {
+      return instance.getAllowedCompressionAlgorithms(index);
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @param index The index to set the value at.
+     * @param value The allowedCompressionAlgorithms to set.
+     * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+     * @return This builder for chaining.
+     */
+    public Builder setAllowedCompressionAlgorithms(
+        int index, me.really.jose.v1.JoseJweCompressionAlgorithm value) {
+      copyOnWrite();
+      instance.setAllowedCompressionAlgorithms(index, value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @param value The allowedCompressionAlgorithms to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllowedCompressionAlgorithms(me.really.jose.v1.JoseJweCompressionAlgorithm value) {
+      copyOnWrite();
+      instance.addAllowedCompressionAlgorithms(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @param values The allowedCompressionAlgorithms to add.
+     * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+     * @return This builder for chaining.
+     */
+    public Builder addAllAllowedCompressionAlgorithms(
+        java.lang.Iterable<? extends me.really.jose.v1.JoseJweCompressionAlgorithm> values) {
+      copyOnWrite();
+      instance.addAllAllowedCompressionAlgorithms(values);  return this;
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearAllowedCompressionAlgorithms() {
+      copyOnWrite();
+      instance.clearAllowedCompressionAlgorithms();
+      return this;
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @return A list containing the enum numeric values on the wire for allowedCompressionAlgorithms.
+     */
+    @java.lang.Override
+    public java.util.List<java.lang.Integer>
+    getAllowedCompressionAlgorithmsValueList() {
+      return java.util.Collections.unmodifiableList(
+          instance.getAllowedCompressionAlgorithmsValueList());
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @param index The index of the value to return.
+     * @return The enum numeric value on the wire of allowedCompressionAlgorithms at the given index.
+     */
+    @java.lang.Override
+    public int getAllowedCompressionAlgorithmsValue(int index) {
+      return instance.getAllowedCompressionAlgorithmsValue(index);
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @param index The index to set the value at.
+     * @param value The enum numeric value on the wire for allowedCompressionAlgorithms to set.
+     * @return This builder for chaining.
+     */
+    public Builder setAllowedCompressionAlgorithmsValue(
+        int index, int value) {
+      copyOnWrite();
+      instance.setAllowedCompressionAlgorithmsValue(index, value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @param value The enum numeric value on the wire for allowedCompressionAlgorithms to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllowedCompressionAlgorithmsValue(int value) {
+      copyOnWrite();
+      instance.addAllowedCompressionAlgorithmsValue(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Empty means every protected-header zip value is rejected.
+     * </pre>
+     *
+     * <code>repeated .reallyme.jose.v1.JoseJweCompressionAlgorithm allowed_compression_algorithms = 7 [json_name = "allowedCompressionAlgorithms"];</code>
+     * @param values The enum numeric values on the wire for allowedCompressionAlgorithms to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllAllowedCompressionAlgorithmsValue(
+        java.lang.Iterable<java.lang.Integer> values) {
+      copyOnWrite();
+      instance.addAllAllowedCompressionAlgorithmsValue(values);
+      return this;
+    }
+
     // @@protoc_insertion_point(builder_scope:reallyme.jose.v1.JoseJweHeaderValidationPolicy)
   }
   @java.lang.Override
@@ -677,10 +1028,12 @@ public  final class JoseJweHeaderValidationPolicy extends
             "expectedCty_",
             "expectedApu_",
             "expectedApv_",
+            "allowedCompressionAlgorithms_",
           };
           java.lang.String info =
-              "\u0000\u0006\u0000\u0001\u0001\u0006\u0006\u0000\u0000\u0000\u0001\u0007\u0002\u1009" +
-              "\u0000\u0003\u1009\u0001\u0004\u1009\u0002\u0005\u1009\u0003\u0006\u1009\u0004";
+              "\u0000\u0007\u0000\u0001\u0001\u0007\u0007\u0000\u0001\u0000\u0001\u0007\u0002\u1009" +
+              "\u0000\u0003\u1009\u0001\u0004\u1009\u0002\u0005\u1009\u0003\u0006\u1009\u0004\u0007" +
+              ",";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {
