@@ -12,7 +12,7 @@ publish = false
 
 [workspace.dependencies]
 reallyme-codec = { version = "0.3.1", default-features = false }
-reallyme-jose-proto = { version = "0.4.3", path = "crates/proto", default-features = false }
+reallyme-jose-proto = { version = "0.4.4", path = "crates/proto", default-features = false }
 reallyme-crypto = { version = "0.3.12", default-features = false }
 buffa = { version = "0.9.2", features = ["json"] }
 serde = "1.0"
