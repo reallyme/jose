@@ -6,7 +6,7 @@
 import Foundation
 import PackageDescription
 
-let ffiArtifactChecksum = "e22d701c74acd9a7018ed48a008306a2c3c6daabd51b5f48fee1f18f0623cf4c"
+let ffiArtifactChecksum = "483c8f7a120aa8dbe0274490896e957e0cae1c9f24fe33e7632e4470e61d560d"
 let ffiArtifactVersion = "0.4.4"
 let ffiArtifactLocalPathOverride = ""
 // Source-tree CI exercises runtime loading before testing the linked release
