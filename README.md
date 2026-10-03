@@ -121,11 +121,11 @@ service-discovery model. Those concerns belong to the embedding application.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.4.2"
+reallyme-jose = "0.4.3"
 ```
 
 ```sh
-npm install @reallyme/jose@0.4.2
+npm install @reallyme/jose@0.4.3
 ```
 
 ## Supported JOSE Surface
