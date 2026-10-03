@@ -1116,12 +1116,15 @@ assertContains(".github/workflows/rust-ci.yml", "CARGO_CHECK_EXTERNAL_TYPES_VERS
 assertContains(".github/workflows/rust-ci.yml", "EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20");
 assertContains(
   ".github/workflows/rust-ci.yml",
-  'cargo +"${EXTERNAL_TYPES_NIGHTLY}" check-external-types',
+  "run: scripts/check_public_external_types.sh",
 );
 assertContains(
-  ".github/workflows/rust-ci.yml",
+  "scripts/check_public_external_types.sh",
   "--manifest-path crates/jose/Cargo.toml --all-features",
 );
+assertContains("scripts/check_public_external_types.sh", 'readonly TOOLCHAIN="nightly-2026-03-20"');
+assertContains("scripts/check_public_external_types.sh", "rustdoc --locked --ignore-rust-version");
+assertContains("scripts/check_public_external_types.sh", "cargo-check-external-types check-external-types");
 assertContains(".github/workflows/rust-ci.yml", "CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER");
 assertContains(".github/workflows/rust-ci.yml", "--test panva_vectors");
 assertContains(
@@ -1144,11 +1147,7 @@ assertContains(
 assertContains(".github/workflows/crates-package-preflight.yml", "scripts/audit_committed_lockfiles.sh");
 assertContains(
   ".github/workflows/crates-package-preflight.yml",
-  'cargo +"${EXTERNAL_TYPES_NIGHTLY}" check-external-types',
-);
-assertContains(
-  ".github/workflows/crates-package-preflight.yml",
-  "--manifest-path crates/jose/Cargo.toml --all-features",
+  "run: scripts/check_public_external_types.sh",
 );
 assertContains(".github/workflows/rust-ci.yml", "CARGO_NEXTEST_VERSION: 0.9.146");
 assertContains(".github/workflows/crates-package-preflight.yml", "CARGO_NEXTEST_VERSION: 0.9.146");
@@ -1253,7 +1252,7 @@ assertContains("scripts/test_ffi_abi_release_artifact.sh", "-u CARGO_ENCODED_RUS
 assertContains("scripts/test_ffi_abi_release_artifact.sh", "--profile release-ffi");
 assertNotContains("scripts/test_ffi_abi_release_artifact.sh", "-C panic=unwind");
 assertContains("scripts/test_ffi_abi_release_artifact.sh", '"${NM_TOOL}" -g');
-assertContains("scripts/test_native_sanitizers.sh", "nightly-2026-07-01");
+assertContains("scripts/test_native_sanitizers.sh", "nightly-2026-09-15");
 assertContains("scripts/test_native_sanitizers.sh", "-Zsanitizer=address");
 assertContains("scripts/test_native_sanitizers.sh", "-Zub-checks=yes");
 assertContains("scripts/test_native_sanitizers.sh", "-Zextra-const-ub-checks=yes");
@@ -1933,7 +1932,9 @@ for (const target of [
 assertContains(".github/workflows/fuzz.yml", "pull_request:");
 assertContains(".github/workflows/fuzz.yml", "schedule:");
 assertContains(".github/workflows/fuzz.yml", "github.event_name == 'schedule'");
-assertContains(".github/workflows/fuzz.yml", "nightly-2026-07-01");
+assertContains(".github/workflows/fuzz.yml", "nightly-2026-09-15");
+assertContains("fuzz/README.md", "nightly-2026-09-15");
+assertNotContains("fuzz/README.md", "nightly-2026-07-01");
 assertNotContains(".github/workflows/fuzz.yml", "toolchain: nightly\n");
 assertContains(".github/workflows/fuzz.yml", "CARGO_FUZZ_VERSION: 0.13.2");
 assertContains(".github/workflows/fuzz.yml", "FUZZ_MAX_TOTAL_TIME_SECONDS: 900");

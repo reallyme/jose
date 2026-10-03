@@ -8,7 +8,7 @@ set -euo pipefail
 # Encoded flags take precedence over RUSTFLAGS and would disable instrumentation.
 unset CARGO_ENCODED_RUSTFLAGS
 
-readonly TOOLCHAIN="${REALLYME_JOSE_SANITIZER_TOOLCHAIN:-nightly-2026-07-01}"
+readonly TOOLCHAIN="${REALLYME_JOSE_SANITIZER_TOOLCHAIN:-nightly-2026-09-15}"
 readonly TARGET="${REALLYME_JOSE_SANITIZER_TARGET:-$(rustc +"${TOOLCHAIN}" -vV | sed -n 's/^host: //p')}"
 readonly TEST_ARGS=(
   test

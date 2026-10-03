@@ -78,7 +78,7 @@ jobs:
       - name: Install pinned sanitizer toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: nightly-2026-07-01
+          toolchain: nightly-2026-09-15
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
@@ -152,9 +152,7 @@ jobs:
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
       - name: Check public external-type provenance
-        run: >-
-          cargo +"${EXTERNAL_TYPES_NIGHTLY}" check-external-types
-          --manifest-path crates/jose/Cargo.toml --all-features
+        run: scripts/check_public_external_types.sh
 
       - name: Format vector audit tool
         run: cargo fmt --manifest-path tools/vector-audit/Cargo.toml --check
