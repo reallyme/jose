@@ -53,14 +53,16 @@ CI also executes the minified release consumer on an Android emulator.
 The `@reallyme/jose` TypeScript package exposes the same typed facade through
 the canonical operation contract compiled to WebAssembly. Provider setup is
 explicit, untrusted boundary values are validated before dispatch, and the
-package zeroizes its owned copies of keys, plaintext, claims, and wire buffers.
+package clears its owned byte arrays for keys, plaintext, claims, and wire
+responses after use. The protobuf writer and JavaScript runtime can retain
+additional copies, so this is best-effort erasure.
 
 Swift, Kotlin/JVM, the minified Android consumer, and TypeScript/WASM execute
-the same 102 checked-in JWS, JWT, JWE, and panva conformance cases as Rust. Their
+the same 104 checked-in JWS, JWT, JWE, and panva conformance cases as Rust. Their
 wire APIs additionally test byte-identical binary
 protobuf/ProtoJSON responses and exact typed negative mappings.
 
-The TypeScript/WASM lane implements 94 of those cases. The P-384 and P-521
+The TypeScript/WASM lane implements 98 of those cases. The P-384 and P-521
 ECDH-ES cases are retained in its matrix and must return the typed
 `providerUnsupported` result; there is no silent provider fallback.
 
@@ -143,8 +145,10 @@ npm install @reallyme/jose@0.4.3
 - ECDH-ES over P-256, P-384, and P-521 in the native lane;
 - opt-in compact-JWE compression with raw DEFLATE (`zip = "DEF"`).
 
-The profile follows RFC 7515, RFC 7516, RFC 7518, RFC 7519, RFC 8725, and
-RFC 9864. Algorithm identifiers map explicitly to ReallyMe crypto primitives;
+The profile follows RFC 7515, RFC 7516, RFC 7518, RFC 7519, and RFC 8725.
+It binds the `EdDSA` identifier to Ed25519, but does not yet accept RFC 9864's
+fully specified `Ed25519` identifier. Algorithm identifiers map explicitly to
+ReallyMe crypto primitives;
 caller-supplied JOSE headers never select arbitrary algorithms or keys. `EdDSA`
 identifies Ed25519 only; signed JWT verification checks the JWK algorithm and
 curve binding.
@@ -179,13 +183,18 @@ Direct-key JWE encryption generates a fresh 96-bit IV for every message, but a
 stateless encryptor cannot count all uses of a caller-owned CEK. Applications
 must maintain an AES-GCM per-key invocation budget and rotate the CEK before the
 applicable NIST SP 800-38D limit is reached.
+The Swift and Kotlin FFI adapters use a sizing call followed by a write call;
+each direct-key encryption request consumes two AES-GCM invocations under the
+caller-owned CEK. Count both when enforcing that budget.
 
 Compact-JWE compression is disabled by default. Encryption compresses with the
 raw DEFLATE format before AES-GCM encryption and serializes `zip = "DEF"` in the
 protected header. Decryption authenticates the complete compact JWE before it
 inflates plaintext, rejects trailing compressed data, and enforces a 1 MiB
-decompressed-plaintext ceiling. Compressed and decompressed plaintext buffers
-are zeroized on drop. Callers must opt in to `DEF` through the protected-header
+decompressed-plaintext ceiling. The live compressed and decompressed plaintext
+owners are zeroized on drop. Codec workspaces and allocator copies created
+during growth may retain data; strict erasure requirements should leave `DEF`
+disabled. Callers must opt in to `DEF` through the protected-header
 policy; an empty allowlist rejects every `zip` value.
 
 Compression changes the ciphertext length and can expose secret-dependent size
@@ -256,9 +265,9 @@ the exact `JoseErrorReason`. Malformed protobuf, malformed JSON, unsupported
 algorithms, provider failures, invalid keys, invalid lengths, authentication
 failures, and invalid signatures are kept distinct at this boundary.
 
-JWT wire header policy is presence-sensitive: an omitted policy uses the
-standard lenient `typ` behavior, while an explicitly default-constructed policy
-is strict because `allow_missing_typ` defaults to false in protobuf.
+JWT wire header policy is presence-sensitive: an omitted policy requires an
+explicit `typ: JWT` header. To accept tokens from a legacy issuer that omits
+`typ`, set `allow_missing_typ` in an explicit policy.
 
 JWT wire temporal validation is explicit: adapters must either set
 `signature_only` or provide `temporal_policy` with a nonzero

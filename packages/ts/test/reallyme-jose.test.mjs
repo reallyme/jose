@@ -60,7 +60,7 @@ test("production WASM provider and TypeScript facade", async (suite) => {
     });
     assert.throws(
       () => executeOperation(new Uint8Array(1_048_577)),
-      assertSdkError("invalid-input"),
+      assertSdkError("jose-failure", JoseErrorReason.COMMON_RESOURCE_LIMIT_EXCEEDED),
     );
     assert.equal(providerCalls, 0);
     assert.throws(
@@ -311,6 +311,76 @@ test("production WASM provider and TypeScript facade", async (suite) => {
     claims.fill(0);
     jwk.fill(0);
     verified.fill(0);
+  });
+
+  await suite.test("temporal JWT verification binds configured issuer and subject", () => {
+    const privateKey = fromHex("09".repeat(32));
+    const publicKey = fromHex(
+      "fd1724385aa0c75b64fb78cd602fa1d991fdebf76b13c58ed702eac835e9f618",
+    );
+    const jwk = textEncoder.encode(
+      '{"alg":"EdDSA","crv":"Ed25519","kid":"k-ed","kty":"OKP","use":"sig","x":"_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg"}',
+    );
+    const claims = textEncoder.encode(
+      '{"aud":"recipient","iss":"trusted","sub":"alice","exp":1720000100}',
+    );
+    const compact = ReallyMeJose.signJwt({ claimsJson: claims, jwkJson: jwk, privateKey });
+    const basePolicy = {
+      verificationTimeUnixSeconds: 1720000000n,
+      expectedAudience: "recipient",
+    };
+    const verify = (temporalPolicy) => ReallyMeJose.verifyJwt({
+      compact,
+      jwkJson: jwk,
+      publicKey,
+      temporalPolicy,
+    });
+
+    const unconstrained = verify(basePolicy);
+    assert.deepEqual(unconstrained, claims);
+    const constrained = verify({
+      ...basePolicy,
+      expectedIssuer: "trusted",
+      expectedSubject: "alice",
+    });
+    assert.deepEqual(constrained, claims);
+    for (const field of ["expectedIssuer", "expectedSubject"]) {
+      assert.throws(
+        () => verify({ ...basePolicy, [field]: "" }),
+        assertSdkError("jose-failure", JoseErrorReason.JWT_INVALID_VERIFICATION_POLICY),
+      );
+    }
+    assert.throws(
+      () => verify({ ...basePolicy, expectedIssuer: "other" }),
+      assertSdkError("jose-failure", JoseErrorReason.JWT_ISSUER_MISMATCH),
+    );
+    assert.throws(
+      () => verify({ ...basePolicy, expectedSubject: "bob" }),
+      assertSdkError("jose-failure", JoseErrorReason.JWT_SUBJECT_MISMATCH),
+    );
+
+    const noExpiration = textEncoder.encode('{"aud":"recipient"}');
+    const noExpirationCompact = ReallyMeJose.signJwt({
+      claimsJson: noExpiration,
+      jwkJson: jwk,
+      privateKey,
+    });
+    assert.throws(
+      () => ReallyMeJose.verifyJwt({
+        compact: noExpirationCompact,
+        jwkJson: jwk,
+        publicKey,
+        temporalPolicy: basePolicy,
+      }),
+      assertSdkError("jose-failure", JoseErrorReason.JWT_MISSING_REQUIRED_TEMPORAL_CLAIM),
+    );
+    privateKey.fill(0);
+    publicKey.fill(0);
+    jwk.fill(0);
+    claims.fill(0);
+    noExpiration.fill(0);
+    unconstrained.fill(0);
+    constrained.fill(0);
   });
 
   await suite.test("direct JWE round-trips and fails closed on a tampered tag", () => {

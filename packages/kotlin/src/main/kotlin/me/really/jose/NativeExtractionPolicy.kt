@@ -29,7 +29,10 @@ internal object NativeExtractionPolicy {
     ): Path? {
         return try {
             val rootValue = configuredRoot ?: return null
-            val root = Path.of(rootValue).toRealPath(LinkOption.NOFOLLOW_LINKS)
+            // Resolve every ancestor before checking permissions. NOFOLLOW_LINKS
+            // only checks the final component and leaves a writable ancestor
+            // available for replacement before the native library is loaded.
+            val root = Path.of(rootValue).toRealPath()
             if (!Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS)) {
                 return null
             }
@@ -39,17 +42,8 @@ internal object NativeExtractionPolicy {
                 LinkOption.NOFOLLOW_LINKS,
             )
             if (posixView != null) {
-                val attributes = posixView.readAttributes()
-                val mode = Files.getAttribute(
-                    root,
-                    "unix:mode",
-                    LinkOption.NOFOLLOW_LINKS,
-                ) as? Int ?: return null
                 val currentUser = System.getProperty("user.name") ?: return null
-                if (
-                    !isSecurePosixTempMode(mode) ||
-                    !isTrustedPosixTempOwner(attributes.owner().name, currentUser)
-                ) {
+                if (!hasSecurePosixAncestors(root, currentUser)) {
                     return null
                 }
                 Files.createTempDirectory(
@@ -66,7 +60,7 @@ internal object NativeExtractionPolicy {
                     LinkOption.NOFOLLOW_LINKS,
                 ) ?: return null
                 val currentUser = System.getProperty("user.name") ?: return null
-                if (!isSecureAclTempRoot(aclView, currentUser)) {
+                if (!hasSecureAclAncestors(root, currentUser)) {
                     return null
                 }
                 val directory = Files.createTempDirectory(root, "reallyme-jose-native-")
@@ -91,6 +85,48 @@ internal object NativeExtractionPolicy {
 
     internal fun isTrustedPosixTempOwner(owner: String, currentUser: String): Boolean =
         owner == currentUser || owner == "root" || owner == "0"
+
+    private fun hasSecurePosixAncestors(root: Path, currentUser: String): Boolean {
+        var ancestor: Path? = root
+        while (ancestor != null) {
+            val view = Files.getFileAttributeView(
+                ancestor,
+                PosixFileAttributeView::class.java,
+                LinkOption.NOFOLLOW_LINKS,
+            ) ?: return false
+            val mode = Files.getAttribute(
+                ancestor,
+                "unix:mode",
+                LinkOption.NOFOLLOW_LINKS,
+            ) as? Int ?: return false
+            if (!Files.isDirectory(ancestor, LinkOption.NOFOLLOW_LINKS) ||
+                !isSecurePosixTempMode(mode) ||
+                !isTrustedPosixTempOwner(view.readAttributes().owner().name, currentUser)
+            ) {
+                return false
+            }
+            ancestor = ancestor.parent
+        }
+        return true
+    }
+
+    private fun hasSecureAclAncestors(root: Path, currentUser: String): Boolean {
+        var ancestor: Path? = root
+        while (ancestor != null) {
+            val view = Files.getFileAttributeView(
+                ancestor,
+                AclFileAttributeView::class.java,
+                LinkOption.NOFOLLOW_LINKS,
+            ) ?: return false
+            if (!Files.isDirectory(ancestor, LinkOption.NOFOLLOW_LINKS) ||
+                !isSecureAclTempRoot(view, currentUser)
+            ) {
+                return false
+            }
+            ancestor = ancestor.parent
+        }
+        return true
+    }
 
     private fun isSecureAclTempRoot(
         view: AclFileAttributeView,

@@ -15,8 +15,10 @@ on:
       - "Package.resolved"
       - "packages/swift/**"
       - "gen/swift/**"
+      - "scripts/harden-generated-jose-swift.mjs"
       - "crates/ffi/**"
       - "crates/**"
+      - "vectors/**"
       - "scripts/build_swift_xcframework.sh"
       - "scripts/swift-xcframework-info.plist"
       - "scripts/verify_swift_release_artifact.mjs"
@@ -33,8 +35,10 @@ on:
       - "Package.resolved"
       - "packages/swift/**"
       - "gen/swift/**"
+      - "scripts/harden-generated-jose-swift.mjs"
       - "crates/ffi/**"
       - "crates/**"
+      - "vectors/**"
       - "scripts/build_swift_xcframework.sh"
       - "scripts/swift-xcframework-info.plist"
       - "scripts/verify_swift_release_artifact.mjs"
@@ -77,6 +81,9 @@ jobs:
 
       - name: Test Swift release tooling
         run: node --test scripts/prepare_swift_binary_manifest.test.mjs scripts/verify_swift_release_artifact.test.mjs
+
+      - name: Check generated Swift redaction
+        run: node scripts/harden-generated-jose-swift.mjs --check-idempotent
 
       - name: Build runtime-loaded native library
         run: cargo build --locked -p reallyme-jose-ffi

@@ -101,9 +101,29 @@ pub(crate) fn verify_jwt_request(
         }
         let expected_audience =
             Zeroizing::new(core::mem::take(&mut temporal_policy.expected_audience));
-        let expected_issuer = Zeroizing::new(core::mem::take(&mut temporal_policy.expected_issuer));
-        let expected_subject =
-            Zeroizing::new(core::mem::take(&mut temporal_policy.expected_subject));
+        let mut issuer_constraint = temporal_policy.expected_issuer_constraint.take();
+        let mut subject_constraint = temporal_policy.expected_subject_constraint.take();
+        if issuer_constraint
+            .as_ref()
+            .is_some_and(|constraint| constraint.value.is_empty())
+            || subject_constraint
+                .as_ref()
+                .is_some_and(|constraint| constraint.value.is_empty())
+            || (issuer_constraint.is_some() && !temporal_policy.expected_issuer.is_empty())
+            || (subject_constraint.is_some() && !temporal_policy.expected_subject.is_empty())
+        {
+            return Err(JoseWireError::primitive_internal(
+                JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY,
+            ));
+        }
+        let expected_issuer = Zeroizing::new(match issuer_constraint.as_mut() {
+            Some(constraint) => core::mem::take(&mut constraint.value),
+            None => core::mem::take(&mut temporal_policy.expected_issuer),
+        });
+        let expected_subject = Zeroizing::new(match subject_constraint.as_mut() {
+            Some(constraint) => core::mem::take(&mut constraint.value),
+            None => core::mem::take(&mut temporal_policy.expected_subject),
+        });
         let claims_policy = JwtClaimsValidationPolicy::new(
             temporal_policy_from_proto(&temporal_policy),
             &expected_audience,

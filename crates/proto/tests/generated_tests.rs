@@ -14,7 +14,7 @@ use reallyme_jose_proto::generated::{
             jose_error::Error as JoseErrorBranch,
             jose_operation_request::Operation as JoseOperation,
         },
-        JoseBackendError, JoseCompactResult, JoseError, JoseErrorReason,
+        JoseBackendError, JoseCompactResult, JoseError, JoseErrorReason, JoseExpectedString,
         JoseJweContentEncryptionAlgorithm, JoseJweEncryptRequest, JoseJweKeyManagementAlgorithm,
         JoseJwePlaintextResult, JoseJwePlaintextResultOwnedView, JoseJwsSignRequest,
         JoseJwsSignRequestOwnedView, JoseJwtTemporalValidationPolicy, JoseOperationRequest,
@@ -135,6 +135,49 @@ fn generated_jwt_claim_policy_identifiers_are_redacted_and_cleared() {
     assert!(policy.expected_audience.is_empty());
     assert!(policy.expected_issuer.is_empty());
     assert!(policy.expected_subject.is_empty());
+}
+
+#[test]
+fn jwt_temporal_policy_proto_json_round_trips_and_accepts_null_defaults(
+) -> Result<(), serde_json::Error> {
+    let mut policy = JoseJwtTemporalValidationPolicy::default();
+    policy.require_exp = true;
+    policy.require_nbf = true;
+    policy.require_iat = true;
+    policy.clock_skew_seconds = 30;
+    policy.max_future_iat_skew_seconds = 60;
+    policy.now_unix = 1_720_000_000;
+    policy.expected_audience = "recipient".to_owned();
+    policy.expected_issuer = "issuer".to_owned();
+    policy.expected_subject = "subject".to_owned();
+    policy.expected_issuer_constraint = JoseExpectedString {
+        value: "issuer".to_owned(),
+        __buffa_unknown_fields: Default::default(),
+    }
+    .into();
+    policy.expected_subject_constraint = JoseExpectedString {
+        value: "subject".to_owned(),
+        __buffa_unknown_fields: Default::default(),
+    }
+    .into();
+
+    let encoded = serde_json::to_vec(&policy)?;
+    let decoded: JoseJwtTemporalValidationPolicy = serde_json::from_slice(&encoded)?;
+    assert_eq!(decoded, policy);
+
+    let numeric: JoseJwtTemporalValidationPolicy = serde_json::from_str(
+        r#"{"requireExp":true,"clockSkewSeconds":30,"nowUnix":1720000000,"expectedAudience":"recipient"}"#,
+    )?;
+    assert_eq!(numeric.now_unix, policy.now_unix);
+
+    let nulls: JoseJwtTemporalValidationPolicy = serde_json::from_str(
+        r#"{"requireExp":null,"nowUnix":null,"expectedIssuer":null,"expectedSubject":null}"#,
+    )?;
+    assert!(!nulls.require_exp);
+    assert_eq!(nulls.now_unix, 0);
+    assert!(nulls.expected_issuer.is_empty());
+    assert!(nulls.expected_subject.is_empty());
+    Ok(())
 }
 
 #[test]

@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use super::support::{base_claims_json, gen_p256};
+use reallyme_crypto::p256::decompress_public_key;
 use reallyme_jose::jwt::{decode_verify_jwt_signature_only, encode_signed_jwt, JwtError};
 
 #[test]
@@ -17,6 +18,23 @@ fn p256_signed_jwt_roundtrip() {
         decode_verify_jwt_signature_only(&jwt, &k.jwk, &k.public).unwrap();
 
     assert_eq!(decoded["sub"], "alice");
+}
+
+#[test]
+fn p256_jwk_binding_accepts_same_point_in_uncompressed_sec1() {
+    let key = gen_p256();
+    let other = gen_p256();
+    let jwt = encode_signed_jwt(&base_claims_json(), &key.jwk, &key.private).unwrap();
+    let uncompressed = decompress_public_key(&key.public).unwrap();
+    let other_uncompressed = decompress_public_key(&other.public).unwrap();
+
+    let decoded: serde_json::Value =
+        decode_verify_jwt_signature_only(&jwt, &key.jwk, &uncompressed).unwrap();
+    assert_eq!(decoded["sub"], "alice");
+    assert!(matches!(
+        decode_verify_jwt_signature_only::<serde_json::Value>(&jwt, &key.jwk, &other_uncompressed,),
+        Err(JwtError::PublicKeyMismatch)
+    ));
 }
 
 #[test]

@@ -13,10 +13,12 @@ use reallyme_codec::base64url::{base64url_bytes_to_bytes, bytes_to_base64url};
 
 use super::{
     parse_compact::{parse_compact_jwt, MAX_COMPACT_JWT_BYTES},
-    strict_json::reject_duplicate_object_members,
+    strict_json::{parse_sensitive_json, reject_duplicate_object_members},
+    validate_registered_claims::validate_claims_for_encoding,
     JwtError,
 };
 use crate::measure_encoding::base64url_len;
+use crate::reject_duplicate_json_members::reject_duplicate_json_members;
 use crate::Zeroizing;
 
 /// Standard unsigned JWT header.
@@ -114,9 +116,8 @@ pub(crate) fn encode_unsigned_jwt_claims_json_core(claims_json: &[u8]) -> Result
         return Err(JwtError::InputTooLarge);
     }
     reject_duplicate_object_members(claims_json)?;
-    let mut deserializer = serde_json::Deserializer::from_slice(claims_json);
-    let _ = IgnoredAny::deserialize(&mut deserializer).map_err(|_| JwtError::InvalidClaims)?;
-    deserializer.end().map_err(|_| JwtError::InvalidClaims)?;
+    let claims = parse_sensitive_json(claims_json).map_err(|_| JwtError::InvalidClaims)?;
+    validate_claims_for_encoding(&claims)?;
     let header = UnsignedJwtHeader::default();
 
     let header_json =
@@ -189,6 +190,7 @@ pub(crate) fn decode_unsigned_jwt_claims_json_core(
         return Err(JwtError::InvalidJwtFormat);
     }
 
+    reject_duplicate_json_members(&header_bytes).map_err(|_| JwtError::InvalidJwtFormat)?;
     let header: UnsignedJwtHeader =
         serde_json::from_slice(&header_bytes).map_err(|_| JwtError::InvalidJwtFormat)?;
 
@@ -197,7 +199,7 @@ pub(crate) fn decode_unsigned_jwt_claims_json_core(
     }
 
     if let Some(typ) = header.typ.as_deref() {
-        if typ != "JWT" {
+        if !crate::match_media_type::match_media_type(typ, "JWT") {
             return Err(JwtError::InvalidJwtFormat);
         }
     }

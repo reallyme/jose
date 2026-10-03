@@ -228,10 +228,23 @@ export const jwtTemporalPolicyLength = (
   if (policy === undefined) return 0;
   const lengths = [
     utf8Length(policy.expectedAudience),
-    utf8Length(policy.expectedIssuer),
-    utf8Length(policy.expectedSubject),
+    utf8Length(policy.expectedIssuerConstraint?.value ?? ""),
+    utf8Length(policy.expectedSubjectConstraint?.value ?? ""),
   ];
   return ensureAggregateLength(...lengths);
+};
+
+const expectedClaimConstraint = (value: string | undefined): { value: string } | undefined => {
+  if (value === undefined) return undefined;
+  ensureString(value);
+  if (value.length === 0) {
+    throw new ReallyMeJoseError(
+      "jose-failure",
+      "primitive",
+      JoseErrorReason.JWT_INVALID_VERIFICATION_POLICY,
+    );
+  }
+  return { value };
 };
 
 export const jwtTemporalPolicy = (policy: ReallyMeJoseJwtTemporalPolicy | undefined) => {
@@ -242,15 +255,15 @@ export const jwtTemporalPolicy = (policy: ReallyMeJoseJwtTemporalPolicy | undefi
   ensureString(policy.expectedAudience);
   if (policy.expectedAudience.length === 0) invalidInput();
   return {
-    requireExp: optionalBoolean(policy.requireExpiration, false),
+    requireExp: optionalBoolean(policy.requireExpiration, true),
     requireNbf: optionalBoolean(policy.requireNotBefore, false),
     requireIat: optionalBoolean(policy.requireIssuedAt, false),
     clockSkewSeconds: optionalUint64(policy.clockSkewSeconds),
     maxFutureIatSkewSeconds: optionalUint64(policy.maximumFutureIssuedAtSkewSeconds),
     nowUnix: policy.verificationTimeUnixSeconds,
     expectedAudience: policy.expectedAudience,
-    expectedIssuer: optionalString(policy.expectedIssuer),
-    expectedSubject: optionalString(policy.expectedSubject),
+    expectedIssuerConstraint: expectedClaimConstraint(policy.expectedIssuer),
+    expectedSubjectConstraint: expectedClaimConstraint(policy.expectedSubject),
   };
 };
 

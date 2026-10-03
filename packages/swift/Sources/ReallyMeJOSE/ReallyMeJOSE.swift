@@ -28,8 +28,8 @@ public struct ReallyMeJOSE: Sendable {
     try requireAggregateInput([privateKey.count, payload.count])
     var operation = ReallyMeProtoJoseJwsSignRequest()
     operation.algorithm = protoSignatureAlgorithm(algorithm)
-    operation.privateKey = Data(privateKey)
-    operation.payload = Data(payload)
+    operation.privateKey = ReallyMeJOSEMemory.ownedData(privateKey)
+    operation.payload = ReallyMeJOSEMemory.ownedData(payload)
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jwsSign(operation)
     var response = try execute(&request)
@@ -61,36 +61,43 @@ public struct ReallyMeJOSE: Sendable {
     var operation = ReallyMeProtoJoseJwsVerifyRequest()
     operation.algorithm = protoSignatureAlgorithm(algorithm)
     operation.compact = compact
-    operation.publicKey = Data(publicKey)
+    operation.publicKey = ReallyMeJOSEMemory.ownedData(publicKey)
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jwsVerify(operation)
     var response = try execute(&request)
-    guard case .jwsVerify(var selected)? = response.response,
+    var responseCase = ReallyMeJOSEMemory.take(&response.response)
+    guard case .jwsVerify(var selected)? = responseCase,
       selected.unknownFields.data.isEmpty
     else {
       throw ReallyMeJOSEError.malformedProviderResponse
     }
-    response.response = nil
-    switch selected.outcome {
-    case .result(var result):
-      selected.outcome = nil
+    responseCase = nil
+    var outcome = ReallyMeJOSEMemory.take(&selected.outcome)
+    if case .result? = outcome {
+      guard case .result(var result)? = ReallyMeJOSEMemory.take(&outcome) else {
+        throw ReallyMeJOSEError.malformedProviderResponse
+      }
       let resultIsClean = result.unknownFields.data.isEmpty
       ReallyMeJOSEMemory.clearOwned(&result.protectedHeaderJson)
       ReallyMeJOSEMemory.clearOwned(&result.payload)
       guard resultIsClean else {
         throw ReallyMeJOSEError.malformedProviderResponse
       }
-    case .error(let error):
-      throw try sdkError(error)
-    case nil:
-      throw ReallyMeJOSEError.malformedProviderResponse
+      return
     }
+    if case .error? = outcome {
+      guard case .error(let error)? = ReallyMeJOSEMemory.take(&outcome) else {
+        throw ReallyMeJOSEError.malformedProviderResponse
+      }
+      throw try sdkError(error)
+    }
+    throw ReallyMeJOSEError.malformedProviderResponse
   }
 
   public func encodeUnsignedJWT(claimsJSON: [UInt8]) throws(ReallyMeJOSEError) -> String {
     try requireAggregateInput([claimsJSON.count])
     var operation = ReallyMeProtoJoseJwtEncodeUnsignedRequest()
-    operation.claimsJson = Data(claimsJSON)
+    operation.claimsJson = ReallyMeJOSEMemory.ownedData(claimsJSON)
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jwtEncodeUnsigned(operation)
     let response = try execute(&request)
@@ -117,23 +124,31 @@ public struct ReallyMeJOSE: Sendable {
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jwtDecodeUnsigned(operation)
     var response = try execute(&request)
-    guard case .jwtDecodeUnsigned(var selected)? = response.response,
+    var responseCase = ReallyMeJOSEMemory.take(&response.response)
+    guard case .jwtDecodeUnsigned(var selected)? = responseCase,
       selected.unknownFields.data.isEmpty
     else {
       throw ReallyMeJOSEError.malformedProviderResponse
     }
-    response.response = nil
-    switch selected.outcome {
-    case .result(var result):
+    responseCase = nil
+    var outcome = ReallyMeJOSEMemory.take(&selected.outcome)
+    if case .result? = outcome {
+      guard case .result(var result)? = ReallyMeJOSEMemory.take(&outcome) else {
+        throw ReallyMeJOSEError.malformedProviderResponse
+      }
       guard result.unknownFields.data.isEmpty else {
         throw ReallyMeJOSEError.malformedProviderResponse
       }
-      selected.outcome = nil
       defer { ReallyMeJOSEMemory.clearOwned(&result.claimsJson) }
       return [UInt8](result.claimsJson)
-    case .error(let error): throw try sdkError(error)
-    case nil: throw ReallyMeJOSEError.malformedProviderResponse
     }
+    if case .error? = outcome {
+      guard case .error(let error)? = ReallyMeJOSEMemory.take(&outcome) else {
+        throw ReallyMeJOSEError.malformedProviderResponse
+      }
+      throw try sdkError(error)
+    }
+    throw ReallyMeJOSEError.malformedProviderResponse
   }
 
   public func signJWT(
@@ -144,9 +159,9 @@ public struct ReallyMeJOSE: Sendable {
   ) throws(ReallyMeJOSEError) -> String {
     try requireAggregateInput([claimsJSON.count, jwkJSON.count, privateKey.count, type.utf8.count])
     var operation = ReallyMeProtoJoseJwtSignRequest()
-    operation.claimsJson = Data(claimsJSON)
-    operation.jwkJson = Data(jwkJSON)
-    operation.privateKey = Data(privateKey)
+    operation.claimsJson = ReallyMeJOSEMemory.ownedData(claimsJSON)
+    operation.jwkJson = ReallyMeJOSEMemory.ownedData(jwkJSON)
+    operation.privateKey = ReallyMeJOSEMemory.ownedData(privateKey)
     operation.typ = type
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jwtSign(operation)
@@ -178,31 +193,39 @@ public struct ReallyMeJOSE: Sendable {
     try requireAggregateInput([compact.utf8.count, jwkJSON.count, publicKey.count])
     var operation = ReallyMeProtoJoseJwtVerifyRequest()
     operation.compact = compact
-    operation.jwkJson = Data(jwkJSON)
-    operation.publicKey = Data(publicKey)
+    operation.jwkJson = ReallyMeJOSEMemory.ownedData(jwkJSON)
+    operation.publicKey = ReallyMeJOSEMemory.ownedData(publicKey)
     operation.signatureOnly = signatureOnly
     if let headerPolicy { operation.headerPolicy = protoJWTHeaderPolicy(headerPolicy) }
-    if let temporalPolicy { operation.temporalPolicy = protoJWTTemporalPolicy(temporalPolicy) }
+    if let temporalPolicy { operation.temporalPolicy = try protoJWTTemporalPolicy(temporalPolicy) }
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jwtVerify(operation)
     var response = try execute(&request)
-    guard case .jwtVerify(var selected)? = response.response,
+    var responseCase = ReallyMeJOSEMemory.take(&response.response)
+    guard case .jwtVerify(var selected)? = responseCase,
       selected.unknownFields.data.isEmpty
     else {
       throw ReallyMeJOSEError.malformedProviderResponse
     }
-    response.response = nil
-    switch selected.outcome {
-    case .result(var result):
+    responseCase = nil
+    var outcome = ReallyMeJOSEMemory.take(&selected.outcome)
+    if case .result? = outcome {
+      guard case .result(var result)? = ReallyMeJOSEMemory.take(&outcome) else {
+        throw ReallyMeJOSEError.malformedProviderResponse
+      }
       guard result.unknownFields.data.isEmpty else {
         throw ReallyMeJOSEError.malformedProviderResponse
       }
-      selected.outcome = nil
       defer { ReallyMeJOSEMemory.clearOwned(&result.claimsJson) }
       return [UInt8](result.claimsJson)
-    case .error(let error): throw try sdkError(error)
-    case nil: throw ReallyMeJOSEError.malformedProviderResponse
     }
+    if case .error? = outcome {
+      guard case .error(let error)? = ReallyMeJOSEMemory.take(&outcome) else {
+        throw ReallyMeJOSEError.malformedProviderResponse
+      }
+      throw try sdkError(error)
+    }
+    throw ReallyMeJOSEError.malformedProviderResponse
   }
 
   public func encryptJWE(
@@ -226,11 +249,11 @@ public struct ReallyMeJOSE: Sendable {
     operation.keyManagementAlgorithm = protoKeyManagementAlgorithm(keyManagementAlgorithm)
     operation.contentEncryptionAlgorithm = protoContentEncryptionAlgorithm(
       contentEncryptionAlgorithm)
-    operation.key = Data(key)
-    operation.plaintext = Data(plaintext)
+    operation.key = ReallyMeJOSEMemory.ownedData(key)
+    operation.plaintext = ReallyMeJOSEMemory.ownedData(plaintext)
     operation.kid = keyIdentifier
-    operation.apu = Data(agreementPartyUInfo)
-    operation.apv = Data(agreementPartyVInfo)
+    operation.apu = ReallyMeJOSEMemory.ownedData(agreementPartyUInfo)
+    operation.apv = ReallyMeJOSEMemory.ownedData(agreementPartyVInfo)
     operation.typ = type
     operation.cty = contentType
     if let compressionAlgorithm {
@@ -268,28 +291,36 @@ public struct ReallyMeJOSE: Sendable {
     operation.keyManagementAlgorithm = protoKeyManagementAlgorithm(keyManagementAlgorithm)
     operation.contentEncryptionAlgorithm = protoContentEncryptionAlgorithm(
       contentEncryptionAlgorithm)
-    operation.key = Data(key)
+    operation.key = ReallyMeJOSEMemory.ownedData(key)
     if let headerPolicy { operation.headerPolicy = protoJWEHeaderPolicy(headerPolicy) }
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jweDecrypt(operation)
     var response = try execute(&request)
-    guard case .jweDecrypt(var selected)? = response.response,
+    var responseCase = ReallyMeJOSEMemory.take(&response.response)
+    guard case .jweDecrypt(var selected)? = responseCase,
       selected.unknownFields.data.isEmpty
     else {
       throw ReallyMeJOSEError.malformedProviderResponse
     }
-    response.response = nil
-    switch selected.outcome {
-    case .result(var result):
+    responseCase = nil
+    var outcome = ReallyMeJOSEMemory.take(&selected.outcome)
+    if case .result? = outcome {
+      guard case .result(var result)? = ReallyMeJOSEMemory.take(&outcome) else {
+        throw ReallyMeJOSEError.malformedProviderResponse
+      }
       guard result.unknownFields.data.isEmpty else {
         throw ReallyMeJOSEError.malformedProviderResponse
       }
-      selected.outcome = nil
       defer { ReallyMeJOSEMemory.clearOwned(&result.plaintext) }
       return [UInt8](result.plaintext)
-    case .error(let error): throw try sdkError(error)
-    case nil: throw ReallyMeJOSEError.malformedProviderResponse
     }
+    if case .error? = outcome {
+      guard case .error(let error)? = ReallyMeJOSEMemory.take(&outcome) else {
+        throw ReallyMeJOSEError.malformedProviderResponse
+      }
+      throw try sdkError(error)
+    }
+    throw ReallyMeJOSEError.malformedProviderResponse
   }
 
   /// Explicit wire-level API. The caller owns and must clear returned bytes.
@@ -350,134 +381,4 @@ public struct ReallyMeJOSE: Sendable {
       aggregate = sum
     }
   }
-}
-
-private func protoSignatureAlgorithm(
-  _ value: ReallyMeJOSESignatureAlgorithm
-) -> ReallyMeProtoJoseSignatureAlgorithm {
-  switch value {
-  case .edDSA: .eddsa
-  case .es256: .es256
-  }
-}
-
-private func protoKeyManagementAlgorithm(
-  _ value: ReallyMeJOSEJWEKeyManagementAlgorithm
-) -> ReallyMeProtoJoseJweKeyManagementAlgorithm {
-  switch value {
-  case .direct: .direct
-  case .ecdhESP256: .ecdhEsP256
-  case .ecdhESP384: .ecdhEsP384
-  case .ecdhESP521: .ecdhEsP521
-  }
-}
-
-private func protoContentEncryptionAlgorithm(
-  _ value: ReallyMeJOSEJWEContentEncryptionAlgorithm
-) -> ReallyMeProtoJoseJweContentEncryptionAlgorithm {
-  switch value {
-  case .a128GCM: .a128Gcm
-  case .a192GCM: .a192Gcm
-  case .a256GCM: .a256Gcm
-  }
-}
-
-private func protoCompressionAlgorithm(
-  _ value: ReallyMeJOSEJWECompressionAlgorithm
-) -> ReallyMeProtoJoseJweCompressionAlgorithm {
-  switch value {
-  case .deflate: .deflate
-  }
-}
-
-private func protoJWTHeaderPolicy(
-  _ value: ReallyMeJOSEJWTHeaderPolicy
-) -> ReallyMeProtoJoseJwtHeaderValidationPolicy {
-  var result = ReallyMeProtoJoseJwtHeaderValidationPolicy()
-  result.allowMissingTyp = value.allowMissingTyp
-  result.allowEmbeddedKeyHeader = value.allowEmbeddedKeyHeader
-  result.acceptedTypValues = value.acceptedTypValues
-  return result
-}
-
-private func protoJWTTemporalPolicy(
-  _ value: ReallyMeJOSEJWTTemporalPolicy
-) -> ReallyMeProtoJoseJwtTemporalValidationPolicy {
-  var result = ReallyMeProtoJoseJwtTemporalValidationPolicy()
-  result.requireExp = value.requireExpiration
-  result.requireNbf = value.requireNotBefore
-  result.requireIat = value.requireIssuedAt
-  result.clockSkewSeconds = value.clockSkewSeconds
-  result.maxFutureIatSkewSeconds = value.maximumFutureIssuedAtSkewSeconds
-  result.nowUnix = value.nowUnix
-  result.expectedAudience = value.expectedAudience
-  result.expectedIssuer = value.expectedIssuer ?? ""
-  result.expectedSubject = value.expectedSubject ?? ""
-  return result
-}
-
-private func protoJWEHeaderPolicy(
-  _ value: ReallyMeJOSEJWEHeaderPolicy
-) -> ReallyMeProtoJoseJweHeaderValidationPolicy {
-  var result = ReallyMeProtoJoseJweHeaderValidationPolicy()
-  result.requireKid = value.requireKeyIdentifier
-  if let expected = value.expectedKeyIdentifier {
-    var wrapped = ReallyMeProtoJoseExpectedString()
-    wrapped.value = expected
-    result.expectedKid = wrapped
-  }
-  if let expected = value.expectedType {
-    var wrapped = ReallyMeProtoJoseExpectedString()
-    wrapped.value = expected
-    result.expectedTyp = wrapped
-  }
-  if let expected = value.expectedContentType {
-    var wrapped = ReallyMeProtoJoseExpectedString()
-    wrapped.value = expected
-    result.expectedCty = wrapped
-  }
-  if let expected = value.expectedAgreementPartyUInfo {
-    var wrapped = ReallyMeProtoJoseExpectedBytes()
-    wrapped.value = Data(expected)
-    result.expectedApu = wrapped
-  }
-  if let expected = value.expectedAgreementPartyVInfo {
-    var wrapped = ReallyMeProtoJoseExpectedBytes()
-    wrapped.value = Data(expected)
-    result.expectedApv = wrapped
-  }
-  result.allowedCompressionAlgorithms = value.allowedCompressionAlgorithms.map(
-    protoCompressionAlgorithm)
-  return result
-}
-
-private func wipeRequest(_ request: inout ReallyMeProtoJoseOperationRequest) {
-  switch request.operation {
-  case .jwsSign:
-    ReallyMeJOSEMemory.clearOwned(&request.jwsSign.privateKey)
-    ReallyMeJOSEMemory.clearOwned(&request.jwsSign.payload)
-  case .jwsVerify:
-    ReallyMeJOSEMemory.clearOwned(&request.jwsVerify.publicKey)
-  case .jwtEncodeUnsigned:
-    ReallyMeJOSEMemory.clearOwned(&request.jwtEncodeUnsigned.claimsJson)
-  case .jwtDecodeUnsigned:
-    break
-  case .jwtSign:
-    ReallyMeJOSEMemory.clearOwned(&request.jwtSign.claimsJson)
-    ReallyMeJOSEMemory.clearOwned(&request.jwtSign.jwkJson)
-    ReallyMeJOSEMemory.clearOwned(&request.jwtSign.privateKey)
-  case .jwtVerify:
-    ReallyMeJOSEMemory.clearOwned(&request.jwtVerify.jwkJson)
-    ReallyMeJOSEMemory.clearOwned(&request.jwtVerify.publicKey)
-  case .jweEncrypt:
-    ReallyMeJOSEMemory.clearOwned(&request.jweEncrypt.key)
-    ReallyMeJOSEMemory.clearOwned(&request.jweEncrypt.plaintext)
-    ReallyMeJOSEMemory.clearOwned(&request.jweEncrypt.apu)
-    ReallyMeJOSEMemory.clearOwned(&request.jweEncrypt.apv)
-  case .jweDecrypt:
-    ReallyMeJOSEMemory.clearOwned(&request.jweDecrypt.key)
-  case nil:
-    break
-  }
-  request.operation = nil
 }

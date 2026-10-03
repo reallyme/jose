@@ -7,14 +7,9 @@ suspected vulnerabilities privately rather than opening a public issue.
 
 **Do not open a public issue for a security vulnerability.**
 
-Report privately through either channel:
-
-- GitHub private vulnerability reporting: use the **"Report a vulnerability"**
-  button under this repository's **Security** tab
-  (`Security` -> `Advisories` -> `Report a vulnerability`).
-- Email: **security@really.me**. For end-to-end encrypted disclosure, request
-  our current PGP key in a first, contentless message; we will reply with it
-  before you send details.
+Report privately to **security@really.me**. For end-to-end encrypted
+disclosure, request our current PGP key in a first, contentless message; we
+will reply with it before you send details.
 
 Please include, to the extent you can:
 
@@ -69,7 +64,8 @@ sender can choose those public header values.
 Compact-JWE compression is opt-in and supports only raw DEFLATE through the
 typed `DEF` algorithm. Compression occurs before encryption. Decryption verifies
 the AES-GCM tag before any inflate work, rejects malformed or trailing data, and
-enforces a 1 MiB decompressed-plaintext ceiling to bound memory amplification.
+enforces a 1 MiB decompressed-plaintext ceiling and a DEFLATE input-work bound
+to limit memory and CPU amplification.
 Intermediate compressed and decompressed plaintext buffers are zeroized on
 drop. Applications must not compress plaintext that combines secrets with
 attacker-controlled values when the resulting ciphertext length is observable;

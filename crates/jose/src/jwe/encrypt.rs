@@ -164,6 +164,9 @@ pub use key_management::{
 /// ephemeral keypairs independently through the cryptographic backend's
 /// CSPRNG, so injecting a deterministic IV source does not make ECDH key
 /// generation deterministic.
+/// Use [`crate::OsSecureRandom`] in production. Reusing an IV with the same
+/// direct CEK repeats an AES-GCM nonce and compromises confidentiality and
+/// integrity; deterministic sources belong only in isolated tests.
 ///
 /// # Errors
 ///
@@ -184,6 +187,9 @@ pub(crate) fn encrypt_compact_jwe_bytes_core<R: SecureRandom + ?Sized>(
     key_encryptor: &mut dyn JweContentEncryptionKeyEncryptor,
     rng: &mut R,
 ) -> Result<String, JweError> {
+    if request.apu().is_some() && request.apu() == request.apv() {
+        return Err(JweError::InvalidHeader);
+    }
     // Bound caller-controlled input before key agreement or encoding. Each
     // component must fit even before JSON and Base64URL expansion.
     let input_lengths = [

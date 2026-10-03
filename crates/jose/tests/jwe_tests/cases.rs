@@ -26,6 +26,47 @@ fn decrypts_compact_dir_a128gcm_json() -> Result<(), JweError> {
 }
 
 #[test]
+fn rejects_duplicate_json_members_in_decrypted_payload() -> Result<(), JweError> {
+    let key = [7_u8; 16];
+    let compact = compact_jwe_dir_a128gcm(
+        &key,
+        &[9_u8; 12],
+        br#"{"vp_token":"attacker","vp_token":"honest"}"#,
+    )?;
+
+    let error = require_jwe_error(decrypt_compact_jwe_json::<Value>(
+        &compact,
+        &CompactJwePolicy::openid4vp_direct_post_jwt(),
+        &DirectJweKeyResolver::new(&key),
+    ))?;
+    assert!(matches!(error, JweError::InvalidPayloadJson));
+    Ok(())
+}
+
+#[test]
+fn rejects_malformed_or_duplicate_nested_protected_header_json() -> Result<(), JweError> {
+    let key = [7_u8; 16];
+    let compact = compact_jwe_dir_a128gcm(&key, &[9_u8; 12], b"plaintext")?;
+    let invalid_headers: [&[u8]; 3] = [
+        b"{\"alg\":\"dir\",\"enc\":\"A128GCM\",\"ignored\":\"\xff\"}",
+        br#"{"alg":"dir","enc":"A128GCM","ignored":"\ud800"}"#,
+        br#"{"alg":"dir","enc":"A128GCM","ignored":{"x":1,"x":2}}"#,
+    ];
+
+    for header in invalid_headers {
+        let (_, body) = compact.split_once('.').ok_or(JweError::InvalidCompact)?;
+        let tampered = format!("{}.{}", bytes_to_base64url(header), body);
+        let error = require_jwe_error(decrypt_compact_jwe_bytes(
+            &tampered,
+            &CompactJwePolicy::openid4vp_direct_post_jwt(),
+            &DirectJweKeyResolver::new(&key),
+        ))?;
+        assert!(matches!(error, JweError::InvalidHeader));
+    }
+    Ok(())
+}
+
+#[test]
 fn decrypts_compact_dir_a256gcm_bytes() -> Result<(), JweError> {
     let key = [3u8; 32];
     let nonce = [4u8; 12];
@@ -211,6 +252,126 @@ fn encrypts_and_decrypts_p256_ecdh_es_with_fresh_ephemeral_key() -> Result<(), J
     Ok(())
 }
 
+#[cfg(feature = "native")]
+#[test]
+fn encrypts_and_decrypts_p384_ecdh_es_a192gcm_json() -> Result<(), JweError> {
+    let recipient_secret = private_scalar_with_len::<48>(7);
+    let (recipient_public, recipient_private) =
+        reallyme_crypto::p384::generate_p384_keypair_from_secret_key(&recipient_secret)
+            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
+    let mut encryptor = P384EcdhEsJweKeyEncryptor::new(&recipient_public);
+    let compact = encrypt_compact_jwe_bytes(
+        &CompactJweEncryptRequest::new(payload, JweContentEncryptionAlgorithm::A192Gcm)
+            .with_kid("recipient-key-p384")
+            .with_apu(b"wallet")
+            .with_apv(b"issuer"),
+        &mut encryptor,
+        &mut FixedRandom::new([6_u8; 12]),
+    )?;
+    let decoded: DirectPostPayload = decrypt_compact_jwe_json(
+        &compact,
+        &CompactJwePolicy::openid4vp_direct_post_jwt(),
+        &P384EcdhEsJweKeyResolver::new(&recipient_private),
+    )?;
+    assert_eq!(decoded.vp_token, "presented");
+    assert_eq!(decoded.state, "abc");
+    Ok(())
+}
+
+#[cfg(feature = "native")]
+#[test]
+fn encrypts_and_decrypts_p521_ecdh_es_a256gcm_json() -> Result<(), JweError> {
+    let recipient_secret = private_scalar_with_len::<66>(11);
+    let (recipient_public, recipient_private) =
+        reallyme_crypto::p521::generate_p521_keypair_from_secret_key(&recipient_secret)
+            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
+    let mut encryptor = P521EcdhEsJweKeyEncryptor::new(&recipient_public);
+    let compact = encrypt_compact_jwe_bytes(
+        &CompactJweEncryptRequest::new(payload, JweContentEncryptionAlgorithm::A256Gcm)
+            .with_kid("recipient-key-p521")
+            .with_apu(b"wallet")
+            .with_apv(b"issuer"),
+        &mut encryptor,
+        &mut FixedRandom::new([8_u8; 12]),
+    )?;
+    let decoded: DirectPostPayload = decrypt_compact_jwe_json(
+        &compact,
+        &CompactJwePolicy::openid4vp_direct_post_jwt(),
+        &P521EcdhEsJweKeyResolver::new(&recipient_private),
+    )?;
+    assert_eq!(decoded.vp_token, "presented");
+    assert_eq!(decoded.state, "abc");
+    Ok(())
+}
+
+#[test]
+fn ecdh_es_rejects_wrong_recipient_private_key() -> Result<(), JweError> {
+    let recipient_secret = private_scalar(5);
+    let wrong_secret = private_scalar(6);
+    let (recipient_public, _) =
+        reallyme_crypto::p256::generate_p256_keypair_from_secret_key(&recipient_secret)
+            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+    let (_, wrong_private) =
+        reallyme_crypto::p256::generate_p256_keypair_from_secret_key(&wrong_secret)
+            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+    let mut encryptor = P256EcdhEsJweKeyEncryptor::new(&recipient_public);
+    let compact = encrypt_compact_jwe_bytes(
+        &CompactJweEncryptRequest::new(b"plaintext", JweContentEncryptionAlgorithm::A128Gcm),
+        &mut encryptor,
+        &mut FixedRandom::new([4_u8; 12]),
+    )?;
+    let error = require_jwe_error(decrypt_compact_jwe_bytes(
+        &compact,
+        &CompactJwePolicy::openid4vp_direct_post_jwt(),
+        &P256EcdhEsJweKeyResolver::new(&wrong_private),
+    ))?;
+    assert!(matches!(error, JweError::Decrypt));
+    Ok(())
+}
+
+#[test]
+fn ecdh_es_rejects_identical_party_info_on_encrypt_and_decrypt() -> Result<(), JweError> {
+    let recipient_secret = private_scalar(5);
+    let (recipient_public, recipient_private) =
+        reallyme_crypto::p256::generate_p256_keypair_from_secret_key(&recipient_secret)
+            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+    let mut encryptor = P256EcdhEsJweKeyEncryptor::new(&recipient_public);
+    let mut rng = FixedRandom::new([4_u8; 12]);
+    let error = require_jwe_error(encrypt_compact_jwe_bytes(
+        &CompactJweEncryptRequest::new(b"plaintext", JweContentEncryptionAlgorithm::A128Gcm)
+            .with_apu(b"same")
+            .with_apv(b"same"),
+        &mut encryptor,
+        &mut rng,
+    ))?;
+    assert!(matches!(error, JweError::InvalidHeader));
+
+    let compact = encrypt_compact_jwe_bytes(
+        &CompactJweEncryptRequest::new(b"plaintext", JweContentEncryptionAlgorithm::A128Gcm)
+            .with_apu(b"sender")
+            .with_apv(b"recipient"),
+        &mut encryptor,
+        &mut rng,
+    )?;
+    let (protected, body) = compact.split_once('.').ok_or(JweError::InvalidCompact)?;
+    let mut header: Value = serde_json::from_slice(
+        &base64url_to_bytes(protected).map_err(|_| JweError::InvalidEncoding)?,
+    )
+    .map_err(|_| JweError::InvalidHeader)?;
+    header["apv"] = header["apu"].clone();
+    let modified = serde_json::to_vec(&header).map_err(|_| JweError::InvalidHeader)?;
+    let tampered = format!("{}.{}", bytes_to_base64url(&modified), body);
+    let error = require_jwe_error(decrypt_compact_jwe_bytes(
+        &tampered,
+        &CompactJwePolicy::openid4vp_direct_post_jwt(),
+        &P256EcdhEsJweKeyResolver::new(&recipient_private),
+    ))?;
+    assert!(matches!(error, JweError::InvalidHeader));
+    Ok(())
+}
+
 #[test]
 fn rejects_ecdh_es_epk_with_invalid_y_coordinate() -> Result<(), JweError> {
     let recipient_secret = private_scalar(5);
@@ -384,9 +545,9 @@ fn jwe_compact_vectors_decrypt_or_fail_closed() -> Result<(), JweError> {
     }
 
     #[cfg(target_arch = "wasm32")]
-    assert_eq!(executed_cases, 28);
+    assert_eq!(executed_cases, 30);
     #[cfg(not(target_arch = "wasm32"))]
-    assert_eq!(executed_cases, 34);
+    assert_eq!(executed_cases, 36);
 
     Ok(())
 }
@@ -398,374 +559,4 @@ fn is_native_only_jwe_vector(case: &JweVectorCase) -> bool {
             .recipient_private_key_hex
             .as_ref()
             .is_some_and(|key| matches!(key.len(), 96 | 132))
-}
-
-#[test]
-fn rejects_key_management_algorithm_outside_policy() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_header(
-        &json!({"alg":"dir","enc":"A128GCM"}),
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-    let policy = CompactJwePolicy::new(
-        &[reallyme_jose::jwe::JweKeyManagementAlgorithm::EcdhEs],
-        &[JweContentEncryptionAlgorithm::A128Gcm],
-    );
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &policy,
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::UnsupportedKeyManagementAlgorithm));
-    Ok(())
-}
-
-#[test]
-fn rejects_tampered_authentication_tag() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_dir_a128gcm(&key, &nonce, payload)?;
-    let mut parts: Vec<&str> = compact.split('.').collect();
-    assert_eq!(parts.len(), 5);
-    parts[4] = "AAAAAAAAAAAAAAAAAAAAAA";
-    let tampered = parts.join(".");
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &tampered,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::Decrypt));
-    Ok(())
-}
-
-#[test]
-fn rejects_non_empty_encrypted_key_for_dir() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_dir_a128gcm(&key, &nonce, payload)?;
-    let mut parts: Vec<&str> = compact.split('.').collect();
-    assert_eq!(parts.len(), 5);
-    parts[1] = "AA";
-    let invalid = parts.join(".");
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &invalid,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::InvalidEncryptedKey));
-    Ok(())
-}
-
-#[test]
-fn rejects_duplicate_protected_header_parameter() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_protected_header_json(
-        br#"{"alg":"dir","alg":"dir","enc":"A128GCM"}"#,
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::InvalidHeader));
-    Ok(())
-}
-
-#[test]
-fn rejects_duplicate_epk_member() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_protected_header_json(
-        br#"{"alg":"ECDH-ES","enc":"A128GCM","epk":{"kty":"EC","crv":"P-256","x":"AA","x":"AQ","y":"AA"}}"#,
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::InvalidHeader));
-    Ok(())
-}
-
-#[test]
-fn rejects_direct_jwe_with_ecdh_ephemeral_key_headers() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_header(
-        &json!({
-            "alg":"dir",
-            "enc":"A128GCM",
-            "epk":{"kty":"EC","crv":"P-256","x":"AA","y":"AA"},
-            "apu": bytes_to_base64url(b"sender"),
-            "apv": bytes_to_base64url(b"recipient")
-        }),
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::InvalidHeader));
-    Ok(())
-}
-
-#[test]
-fn rejects_missing_key_management_algorithm() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_header(
-        &json!({"enc":"A128GCM"}),
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::InvalidHeader));
-    Ok(())
-}
-
-#[test]
-fn rejects_compression_without_explicit_policy() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_header(
-        &json!({"alg":"dir","enc":"A128GCM","zip":"DEF"}),
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::UnsupportedCompressionAlgorithm));
-    Ok(())
-}
-
-#[test]
-fn rejects_unsupported_critical_header() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_header(
-        &json!({"alg":"dir","enc":"A128GCM","crit":["exp"]}),
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::InvalidHeader));
-    Ok(())
-}
-
-#[test]
-fn rejects_remote_key_header() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_header(
-        &json!({"alg":"dir","enc":"A128GCM","jku":"https://example.test/jwks.json"}),
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::InvalidHeader));
-    Ok(())
-}
-
-#[test]
-fn rejects_certificate_url_header() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_header(
-        &json!({"alg":"dir","enc":"A128GCM","x5u":"https://example.test/cert.pem"}),
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::InvalidHeader));
-    Ok(())
-}
-
-#[test]
-fn rejects_certificate_chain_header() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_header(
-        &json!({"alg":"dir","enc":"A128GCM","x5c":["AA"]}),
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::InvalidHeader));
-    Ok(())
-}
-
-#[test]
-fn rejects_embedded_jwk_header() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_with_header(
-        &json!({"alg":"dir","enc":"A128GCM","jwk":{"kty":"oct","k":"AA"}}),
-        &key,
-        &nonce,
-        payload,
-        JweContentEncryptionAlgorithm::A128Gcm,
-    )?;
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &compact,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::InvalidHeader));
-    Ok(())
-}
-
-#[test]
-fn rejects_modified_protected_header_aad() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_dir_a128gcm(&key, &nonce, payload)?;
-    let mut parts: Vec<&str> = compact.split('.').collect();
-    assert_eq!(parts.len(), 5);
-    let modified_header = bytes_to_base64url(br#"{"alg":"dir","enc":"A128GCM","typ":"JWT"}"#);
-    parts[0] = modified_header.as_str();
-    let tampered = parts.join(".");
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &tampered,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::Decrypt));
-    Ok(())
-}
-
-#[test]
-fn rejects_modified_ciphertext() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_dir_a128gcm(&key, &nonce, payload)?;
-    let mut parts: Vec<&str> = compact.split('.').collect();
-    assert_eq!(parts.len(), 5);
-    parts[3] = "AA";
-    let tampered = parts.join(".");
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &tampered,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::Decrypt));
-    Ok(())
-}
-
-#[test]
-fn rejects_modified_iv() -> Result<(), JweError> {
-    let key = [7u8; 16];
-    let nonce = [9u8; 12];
-    let payload = br#"{"vp_token":"presented","state":"abc"}"#;
-    let compact = compact_jwe_dir_a128gcm(&key, &nonce, payload)?;
-    let mut parts: Vec<&str> = compact.split('.').collect();
-    assert_eq!(parts.len(), 5);
-    let modified_iv = bytes_to_base64url(&[8u8; 12]);
-    parts[2] = modified_iv.as_str();
-    let tampered = parts.join(".");
-
-    let err = require_jwe_error(decrypt_compact_jwe_bytes(
-        &tampered,
-        &CompactJwePolicy::openid4vp_direct_post_jwt(),
-        &DirectJweKeyResolver::new(&key),
-    ))?;
-
-    assert!(matches!(err, JweError::Decrypt));
-    Ok(())
 }

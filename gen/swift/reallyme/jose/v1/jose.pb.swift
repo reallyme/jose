@@ -1049,55 +1049,66 @@ public nonisolated struct ReallyMeProtoJoseJwtSignRequest: Sendable {
   public init() {}
 }
 
-public nonisolated struct ReallyMeProtoJoseJwtVerifyRequest: Sendable {
+public nonisolated struct ReallyMeProtoJoseJwtVerifyRequest: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var compact: String = String()
+  public var compact: String {
+    get {_storage._compact}
+    set {_uniqueStorage()._compact = newValue}
+  }
 
   /// JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
   /// this as sensitive boundary input and avoid logging it.
-  public var jwkJson: Data = Data()
+  public var jwkJson: Data {
+    get {_storage._jwkJson}
+    set {_uniqueStorage()._jwkJson = newValue}
+  }
 
   /// Public verification key bytes. Public material is still boundary data and
   /// must not be copied into errors or telemetry.
-  public var publicKey: Data = Data()
+  public var publicKey: Data {
+    get {_storage._publicKey}
+    set {_uniqueStorage()._publicKey = newValue}
+  }
 
   /// Presence-sensitive policy. If absent/unset, the standard JWT header policy
   /// is used. If present, every field is interpreted literally; in particular,
   /// an empty accepted_typ_values list means no present typ value is accepted.
   public var headerPolicy: ReallyMeProtoJoseJwtHeaderValidationPolicy {
-    get {_headerPolicy ?? ReallyMeProtoJoseJwtHeaderValidationPolicy()}
-    set {_headerPolicy = newValue}
+    get {_storage._headerPolicy ?? ReallyMeProtoJoseJwtHeaderValidationPolicy()}
+    set {_uniqueStorage()._headerPolicy = newValue}
   }
   /// Returns true if `headerPolicy` has been explicitly set.
-  public var hasHeaderPolicy: Bool {self._headerPolicy != nil}
+  public var hasHeaderPolicy: Bool {_storage._headerPolicy != nil}
   /// Clears the value of `headerPolicy`. Subsequent reads from it will return its default value.
-  public mutating func clearHeaderPolicy() {self._headerPolicy = nil}
+  public mutating func clearHeaderPolicy() {_uniqueStorage()._headerPolicy = nil}
 
   /// Presence-sensitive temporal policy. If absent/unset, signature-only
   /// verification is performed only when signature_only is true. If present,
   /// every boolean, skew, and timestamp field is interpreted literally.
   public var temporalPolicy: ReallyMeProtoJoseJwtTemporalValidationPolicy {
-    get {_temporalPolicy ?? ReallyMeProtoJoseJwtTemporalValidationPolicy()}
-    set {_temporalPolicy = newValue}
+    get {_storage._temporalPolicy ?? ReallyMeProtoJoseJwtTemporalValidationPolicy()}
+    set {_uniqueStorage()._temporalPolicy = newValue}
   }
   /// Returns true if `temporalPolicy` has been explicitly set.
-  public var hasTemporalPolicy: Bool {self._temporalPolicy != nil}
+  public var hasTemporalPolicy: Bool {_storage._temporalPolicy != nil}
   /// Clears the value of `temporalPolicy`. Subsequent reads from it will return its default value.
-  public mutating func clearTemporalPolicy() {self._temporalPolicy = nil}
+  public mutating func clearTemporalPolicy() {_uniqueStorage()._temporalPolicy = nil}
 
   /// Required when temporal_policy is absent. This makes signature-only
   /// verification an explicit adapter choice rather than a proto3 default.
-  public var signatureOnly: Bool = false
+  public var signatureOnly: Bool {
+    get {_storage._signatureOnly}
+    set {_uniqueStorage()._signatureOnly = newValue}
+  }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _headerPolicy: ReallyMeProtoJoseJwtHeaderValidationPolicy? = nil
-  fileprivate var _temporalPolicy: ReallyMeProtoJoseJwtTemporalValidationPolicy? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public nonisolated struct ReallyMeProtoJoseJwtHeaderValidationPolicy: Sendable {
@@ -1140,15 +1151,40 @@ public nonisolated struct ReallyMeProtoJoseJwtTemporalValidationPolicy: Sendable
   /// this value is empty or the JWT aud claim does not contain it.
   public var expectedAudience: String = String()
 
-  /// Optional exact issuer constraint. Empty means no issuer constraint.
+  /// Legacy issuer constraint. Empty means absent for older clients that cannot
+  /// express presence. New clients use expected_issuer_constraint.
   public var expectedIssuer: String = String()
 
-  /// Optional exact subject constraint. Empty means no subject constraint.
+  /// Legacy subject constraint with the same absence ambiguity.
   public var expectedSubject: String = String()
+
+  /// Presence-sensitive exact issuer constraint. A present empty value is
+  /// invalid, so an empty caller configuration cannot disable verification.
+  public var expectedIssuerConstraint: ReallyMeProtoJoseExpectedString {
+    get {_expectedIssuerConstraint ?? ReallyMeProtoJoseExpectedString()}
+    set {_expectedIssuerConstraint = newValue}
+  }
+  /// Returns true if `expectedIssuerConstraint` has been explicitly set.
+  public var hasExpectedIssuerConstraint: Bool {self._expectedIssuerConstraint != nil}
+  /// Clears the value of `expectedIssuerConstraint`. Subsequent reads from it will return its default value.
+  public mutating func clearExpectedIssuerConstraint() {self._expectedIssuerConstraint = nil}
+
+  /// Presence-sensitive exact subject constraint.
+  public var expectedSubjectConstraint: ReallyMeProtoJoseExpectedString {
+    get {_expectedSubjectConstraint ?? ReallyMeProtoJoseExpectedString()}
+    set {_expectedSubjectConstraint = newValue}
+  }
+  /// Returns true if `expectedSubjectConstraint` has been explicitly set.
+  public var hasExpectedSubjectConstraint: Bool {self._expectedSubjectConstraint != nil}
+  /// Clears the value of `expectedSubjectConstraint`. Subsequent reads from it will return its default value.
+  public mutating func clearExpectedSubjectConstraint() {self._expectedSubjectConstraint = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _expectedIssuerConstraint: ReallyMeProtoJoseExpectedString? = nil
+  fileprivate var _expectedSubjectConstraint: ReallyMeProtoJoseExpectedString? = nil
 }
 
 public nonisolated struct ReallyMeProtoJoseJweEncryptRequest: Sendable {
@@ -2445,56 +2481,102 @@ nonisolated extension ReallyMeProtoJoseJwtVerifyRequest: SwiftProtobuf.Message, 
   public static let protoMessageName: String = _protobuf_package + ".JoseJwtVerifyRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}compact\0\u{3}jwk_json\0\u{3}public_key\0\u{3}header_policy\0\u{3}temporal_policy\0\u{3}signature_only\0")
 
+  fileprivate class _StorageClass {
+    var _compact: String = String()
+    var _jwkJson: Data = Data()
+    var _publicKey: Data = Data()
+    var _headerPolicy: ReallyMeProtoJoseJwtHeaderValidationPolicy? = nil
+    var _temporalPolicy: ReallyMeProtoJoseJwtTemporalValidationPolicy? = nil
+    var _signatureOnly: Bool = false
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _compact = source._compact
+      _jwkJson = source._jwkJson
+      _publicKey = source._publicKey
+      _headerPolicy = source._headerPolicy
+      _temporalPolicy = source._temporalPolicy
+      _signatureOnly = source._signatureOnly
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.compact) }()
-      case 2: try { try decoder.decodeSingularBytesField(value: &self.jwkJson) }()
-      case 3: try { try decoder.decodeSingularBytesField(value: &self.publicKey) }()
-      case 4: try { try decoder.decodeSingularMessageField(value: &self._headerPolicy) }()
-      case 5: try { try decoder.decodeSingularMessageField(value: &self._temporalPolicy) }()
-      case 6: try { try decoder.decodeSingularBoolField(value: &self.signatureOnly) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._compact) }()
+        case 2: try { try decoder.decodeSingularBytesField(value: &_storage._jwkJson) }()
+        case 3: try { try decoder.decodeSingularBytesField(value: &_storage._publicKey) }()
+        case 4: try { try decoder.decodeSingularMessageField(value: &_storage._headerPolicy) }()
+        case 5: try { try decoder.decodeSingularMessageField(value: &_storage._temporalPolicy) }()
+        case 6: try { try decoder.decodeSingularBoolField(value: &_storage._signatureOnly) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.compact.isEmpty {
-      try visitor.visitSingularStringField(value: self.compact, fieldNumber: 1)
-    }
-    if !self.jwkJson.isEmpty {
-      try visitor.visitSingularBytesField(value: self.jwkJson, fieldNumber: 2)
-    }
-    if !self.publicKey.isEmpty {
-      try visitor.visitSingularBytesField(value: self.publicKey, fieldNumber: 3)
-    }
-    try { if let v = self._headerPolicy {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
-    } }()
-    try { if let v = self._temporalPolicy {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
-    } }()
-    if self.signatureOnly != false {
-      try visitor.visitSingularBoolField(value: self.signatureOnly, fieldNumber: 6)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._compact.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._compact, fieldNumber: 1)
+      }
+      if !_storage._jwkJson.isEmpty {
+        try visitor.visitSingularBytesField(value: _storage._jwkJson, fieldNumber: 2)
+      }
+      if !_storage._publicKey.isEmpty {
+        try visitor.visitSingularBytesField(value: _storage._publicKey, fieldNumber: 3)
+      }
+      try { if let v = _storage._headerPolicy {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+      } }()
+      try { if let v = _storage._temporalPolicy {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+      } }()
+      if _storage._signatureOnly != false {
+        try visitor.visitSingularBoolField(value: _storage._signatureOnly, fieldNumber: 6)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: ReallyMeProtoJoseJwtVerifyRequest, rhs: ReallyMeProtoJoseJwtVerifyRequest) -> Bool {
-    if lhs.compact != rhs.compact {return false}
-    if lhs.jwkJson != rhs.jwkJson {return false}
-    if lhs.publicKey != rhs.publicKey {return false}
-    if lhs._headerPolicy != rhs._headerPolicy {return false}
-    if lhs._temporalPolicy != rhs._temporalPolicy {return false}
-    if lhs.signatureOnly != rhs.signatureOnly {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._compact != rhs_storage._compact {return false}
+        if _storage._jwkJson != rhs_storage._jwkJson {return false}
+        if _storage._publicKey != rhs_storage._publicKey {return false}
+        if _storage._headerPolicy != rhs_storage._headerPolicy {return false}
+        if _storage._temporalPolicy != rhs_storage._temporalPolicy {return false}
+        if _storage._signatureOnly != rhs_storage._signatureOnly {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2542,7 +2624,7 @@ nonisolated extension ReallyMeProtoJoseJwtHeaderValidationPolicy: SwiftProtobuf.
 
 nonisolated extension ReallyMeProtoJoseJwtTemporalValidationPolicy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".JoseJwtTemporalValidationPolicy"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}require_exp\0\u{3}require_nbf\0\u{3}require_iat\0\u{3}clock_skew_seconds\0\u{3}max_future_iat_skew_seconds\0\u{3}now_unix\0\u{3}expected_audience\0\u{3}expected_issuer\0\u{3}expected_subject\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}require_exp\0\u{3}require_nbf\0\u{3}require_iat\0\u{3}clock_skew_seconds\0\u{3}max_future_iat_skew_seconds\0\u{3}now_unix\0\u{3}expected_audience\0\u{3}expected_issuer\0\u{3}expected_subject\0\u{3}expected_issuer_constraint\0\u{3}expected_subject_constraint\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2559,12 +2641,18 @@ nonisolated extension ReallyMeProtoJoseJwtTemporalValidationPolicy: SwiftProtobu
       case 7: try { try decoder.decodeSingularStringField(value: &self.expectedAudience) }()
       case 8: try { try decoder.decodeSingularStringField(value: &self.expectedIssuer) }()
       case 9: try { try decoder.decodeSingularStringField(value: &self.expectedSubject) }()
+      case 10: try { try decoder.decodeSingularMessageField(value: &self._expectedIssuerConstraint) }()
+      case 11: try { try decoder.decodeSingularMessageField(value: &self._expectedSubjectConstraint) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.requireExp != false {
       try visitor.visitSingularBoolField(value: self.requireExp, fieldNumber: 1)
     }
@@ -2592,6 +2680,12 @@ nonisolated extension ReallyMeProtoJoseJwtTemporalValidationPolicy: SwiftProtobu
     if !self.expectedSubject.isEmpty {
       try visitor.visitSingularStringField(value: self.expectedSubject, fieldNumber: 9)
     }
+    try { if let v = self._expectedIssuerConstraint {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+    } }()
+    try { if let v = self._expectedSubjectConstraint {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2605,6 +2699,8 @@ nonisolated extension ReallyMeProtoJoseJwtTemporalValidationPolicy: SwiftProtobu
     if lhs.expectedAudience != rhs.expectedAudience {return false}
     if lhs.expectedIssuer != rhs.expectedIssuer {return false}
     if lhs.expectedSubject != rhs.expectedSubject {return false}
+    if lhs._expectedIssuerConstraint != rhs._expectedIssuerConstraint {return false}
+    if lhs._expectedSubjectConstraint != rhs._expectedSubjectConstraint {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3426,5 +3522,216 @@ nonisolated extension ReallyMeProtoJoseJweDecryptResponse: SwiftProtobuf.Message
     if lhs.outcome != rhs.outcome {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
+  }
+}
+
+// Generated JOSE message reflection redaction.
+nonisolated extension ReallyMeProtoJoseError: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseError(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJosePrimitiveError: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJosePrimitiveError(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseProviderError: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseProviderError(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseBackendError: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseBackendError(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseOperationResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseOperationResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseOperationRequest: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseOperationRequest(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsSignRequest: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsSignRequest(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseCompactResult: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseCompactResult(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsVerifyRequest: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsVerifyRequest(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseVerifyResult: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseVerifyResult(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwtEncodeUnsignedRequest: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwtEncodeUnsignedRequest(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwtDecodeUnsignedRequest: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwtDecodeUnsignedRequest(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwtClaimsResult: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwtClaimsResult(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwtSignRequest: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwtSignRequest(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwtHeaderValidationPolicy: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwtHeaderValidationPolicy(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwtTemporalValidationPolicy: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwtTemporalValidationPolicy(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJweEncryptRequest: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJweEncryptRequest(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJweDecryptRequest: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJweDecryptRequest(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseExpectedString: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseExpectedString(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseExpectedBytes: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseExpectedBytes(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJweHeaderValidationPolicy: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJweHeaderValidationPolicy(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwePlaintextResult: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwePlaintextResult(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsSignResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsSignResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsVerifyResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsVerifyResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwtEncodeUnsignedResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwtEncodeUnsignedResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwtDecodeUnsignedResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwtDecodeUnsignedResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwtSignResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwtSignResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwtVerifyResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwtVerifyResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJweEncryptResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJweEncryptResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJweDecryptResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJweDecryptResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
   }
 }

@@ -101,3 +101,17 @@ public struct ReallyMeJOSEJWEHeaderPolicy: Sendable, Equatable {
     self.allowedCompressionAlgorithms = allowedCompressionAlgorithms
   }
 }
+
+// These policies can carry user identifiers and correlating protocol values.
+// Incidental logging and reflection must not reveal their stored fields.
+extension ReallyMeJOSEJWTHeaderPolicy: CustomReflectable {
+  public var customMirror: Mirror { Mirror(self, children: [("value", "<redacted>")]) }
+}
+
+extension ReallyMeJOSEJWTTemporalPolicy: CustomReflectable {
+  public var customMirror: Mirror { Mirror(self, children: [("value", "<redacted>")]) }
+}
+
+extension ReallyMeJOSEJWEHeaderPolicy: CustomReflectable {
+  public var customMirror: Mirror { Mirror(self, children: [("value", "<redacted>")]) }
+}

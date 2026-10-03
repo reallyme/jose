@@ -3,7 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::support::gen_ed25519;
+use super::support::{gen_ed25519, sign_raw_ed25519_jwt_claims};
+use reallyme_crypto::jwk::Jwk;
 use reallyme_jose::jwt::{
     decode_verify_jwt_with_temporal_validation, encode_signed_jwt, encode_unsigned_jwt, JwtError,
     JwtTemporalClaim, JwtTemporalValidationPolicy,
@@ -316,10 +317,16 @@ fn verify_claims(
     policy: JwtTemporalValidationPolicy,
 ) -> Result<serde_json::Value, JwtError> {
     let k = gen_ed25519();
-    let jwt = encode_signed_jwt(claims, &k.jwk, &k.private).unwrap();
+    // External issuers can still supply malformed signed claims, even though
+    // the local JWT encoder now rejects them before signing.
+    let jwt = sign_raw_ed25519_jwt_claims(&k.private, claims);
+    let mut jwk = k.jwk;
+    if let Jwk::Okp(ref mut key) = jwk {
+        key.kid = None;
+    }
 
     decode_verify_jwt_with_temporal_validation::<serde_json::Value>(
-        &jwt, &k.jwk, &k.public, NOW_UNIX, policy,
+        &jwt, &jwk, &k.public, NOW_UNIX, policy,
     )
 }
 

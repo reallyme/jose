@@ -343,6 +343,24 @@ fn compact_jwe_dir_a128gcm(
     )
 }
 
+fn stored_deflate_with_empty_blocks(empty_blocks: usize, plaintext: &[u8]) -> Result<Vec<u8>, JweError> {
+    let plaintext_len = u16::try_from(plaintext.len()).map_err(|_| JweError::LengthOverflow)?;
+    let capacity = empty_blocks
+        .checked_mul(5)
+        .and_then(|size| size.checked_add(5))
+        .and_then(|size| size.checked_add(plaintext.len()))
+        .ok_or(JweError::LengthOverflow)?;
+    let mut compressed = Vec::with_capacity(capacity);
+    for _ in 0..empty_blocks {
+        compressed.extend_from_slice(&[0, 0, 0, 0xff, 0xff]);
+    }
+    compressed.push(1);
+    compressed.extend_from_slice(&plaintext_len.to_le_bytes());
+    compressed.extend_from_slice(&(!plaintext_len).to_le_bytes());
+    compressed.extend_from_slice(plaintext);
+    Ok(compressed)
+}
+
 fn require_jwe_error<T>(result: Result<T, JweError>) -> Result<JweError, JweError> {
     match result {
         Ok(_) => Err(JweError::HeaderPolicyMismatch),
@@ -541,6 +559,44 @@ fn oversized_jwe_is_rejected_before_randomness_is_consumed() {
         Err(JweError::InputTooLarge)
     ));
     assert_eq!(random.0, 0);
+}
+
+#[test]
+fn authenticated_deflate_rejects_excessive_empty_blocks() -> Result<(), JweError> {
+    const COMPRESSION: [JweCompressionAlgorithm; 1] = [JweCompressionAlgorithm::Deflate];
+    let key = [7_u8; 16];
+    let nonce = [9_u8; 12];
+    let header = json!({"alg":"dir","enc":"A128GCM","zip":"DEF"});
+    let policy = CompactJwePolicy::new(
+        &[JweKeyManagementAlgorithm::Direct],
+        &[JweContentEncryptionAlgorithm::A128Gcm],
+    )
+    .with_allowed_compression_algorithms(&COMPRESSION);
+
+    let accepted = compact_jwe_with_header(
+        &header,
+        &key,
+        &nonce,
+        &stored_deflate_with_empty_blocks(2, b"ok")?,
+        JweContentEncryptionAlgorithm::A128Gcm,
+    )?;
+    let plaintext = decrypt_compact_jwe_bytes(&accepted, &policy, &DirectJweKeyResolver::new(&key))?;
+    assert_eq!(&plaintext[..], b"ok");
+
+    let excessive = compact_jwe_with_header(
+        &header,
+        &key,
+        &nonce,
+        &stored_deflate_with_empty_blocks(5_000, b"ok")?,
+        JweContentEncryptionAlgorithm::A128Gcm,
+    )?;
+    let error = require_jwe_error(decrypt_compact_jwe_bytes(
+        &excessive,
+        &policy,
+        &DirectJweKeyResolver::new(&key),
+    ))?;
+    assert!(matches!(error, JweError::Decompression));
+    Ok(())
 }
 
 #[test]

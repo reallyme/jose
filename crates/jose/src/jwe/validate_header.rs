@@ -16,6 +16,7 @@ use reallyme_codec::base64url::bytes_to_base64url;
 use super::JweError;
 
 mod algorithms;
+mod policy_debug;
 
 pub use algorithms::{
     JweCompressionAlgorithm, JweContentEncryptionAlgorithm, JweKeyManagementAlgorithm,
@@ -189,6 +190,9 @@ impl TryFrom<RawCompactJweProtectedHeader> for CompactJweProtectedHeader {
 
     fn try_from(mut value: RawCompactJweProtectedHeader) -> Result<Self, Self::Error> {
         let alg = JweKeyManagementAlgorithm::parse(&value.alg)?;
+        if value.apu.is_some() && value.apu == value.apv {
+            return Err(JweError::InvalidHeader);
+        }
         validate_jwe_header_structure(
             alg,
             value.epk.is_some(),
@@ -288,7 +292,7 @@ impl<'de> Visitor<'de> for PublicEpkJwkVisitor {
 /// `alg` fail closed even when they would be legal in a standalone JWK. EC
 /// coordinates must use the curve's full fixed-width representation; this
 /// boundary does not left-pad shortened coordinates from lenient producers.
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct CompactJwePolicy<'a> {
     /// Permitted key-management algorithms.
     allowed_key_management_algorithms: &'a [JweKeyManagementAlgorithm],
@@ -432,12 +436,20 @@ impl<'a> CompactJwePolicy<'a> {
             }
         }
         if let Some(expected) = self.expected_typ {
-            if header.typ.as_deref() != Some(expected) {
+            if !header
+                .typ
+                .as_deref()
+                .is_some_and(|actual| crate::match_media_type::match_media_type(actual, expected))
+            {
                 return Err(JweError::TypPolicyMismatch);
             }
         }
         if let Some(expected) = self.expected_cty {
-            if header.cty.as_deref() != Some(expected) {
+            if !header
+                .cty
+                .as_deref()
+                .is_some_and(|actual| crate::match_media_type::match_media_type(actual, expected))
+            {
                 return Err(JweError::CtyPolicyMismatch);
             }
         }

@@ -38,7 +38,12 @@ compile_error!("reallyme-jose requires a supported runtime lane: enable feature 
 /// `reallyme-crypto`; that keeps the algorithm type identical to the one used
 /// by `reallyme-jose`.
 #[cfg(any(feature = "native", feature = "wasm"))]
-pub use reallyme_crypto::{core::Algorithm, csprng::SecureRandom, jwk::Jwk, signer::Signer};
+pub use reallyme_crypto::{
+    core::Algorithm,
+    csprng::{OsSecureRandom, SecureRandom},
+    jwk::Jwk,
+    signer::Signer,
+};
 
 /// JSON value type used by claim maps and protected-header values.
 #[cfg(any(feature = "native", feature = "wasm"))]
@@ -48,6 +53,9 @@ pub use serde_json::Value as JsonValue;
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub use zeroize::Zeroizing;
 
+mod match_media_type;
+#[cfg(test)]
+mod match_media_type_tests;
 #[cfg(any(feature = "native", feature = "wasm"))]
 mod measure_encoding;
 #[cfg(test)]

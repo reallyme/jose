@@ -5,8 +5,32 @@
 //! Public compact-JWE protected-header deserialization tests.
 
 use reallyme_jose::jwe::{
-    CompactJweProtectedHeader, JweCompressionAlgorithm, JweKeyManagementAlgorithm,
+    CompactJwePolicy, CompactJweProtectedHeader, JweCompressionAlgorithm,
+    JweContentEncryptionAlgorithm, JweKeyManagementAlgorithm,
 };
+
+#[test]
+fn policy_debug_redacts_bound_identifiers_and_party_info() {
+    const ALGORITHMS: [JweKeyManagementAlgorithm; 1] = [JweKeyManagementAlgorithm::EcdhEs];
+    const CIPHERS: [JweContentEncryptionAlgorithm; 1] = [JweContentEncryptionAlgorithm::A128Gcm];
+    let policy = CompactJwePolicy::new(&ALGORITHMS, &CIPHERS)
+        .with_expected_kid("secret-kid")
+        .with_expected_typ("secret-type")
+        .with_expected_cty("secret-content")
+        .with_expected_apu(b"secret-u")
+        .with_expected_apv(b"secret-v");
+    let debug = format!("{policy:?}");
+    assert!(debug.contains("<redacted>"));
+    for secret in [
+        "secret-kid",
+        "secret-type",
+        "secret-content",
+        "secret-u",
+        "secret-v",
+    ] {
+        assert!(!debug.contains(secret));
+    }
+}
 
 #[test]
 fn public_header_deserialization_accepts_a_hardened_direct_header() {

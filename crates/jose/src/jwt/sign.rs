@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use serde::Deserialize;
 use serde::Serialize;
 
 use reallyme_crypto::dispatch::{sign, verify};
@@ -17,11 +16,12 @@ use crate::{
     Algorithm, Jwk, Signer,
 };
 
-use super::strict_json::reject_duplicate_object_members;
+use super::strict_json::{parse_sensitive_json, reject_duplicate_object_members};
 use super::{
     algorithm_from_jwt_alg,
     parse_compact::MAX_COMPACT_JWT_BYTES,
     validate_header::{select_jwk_algorithm, select_jwk_key_id, JwtHeader, JwtHeaderEncodeOptions},
+    validate_registered_claims::validate_claims_for_encoding,
     JwtError,
 };
 
@@ -122,9 +122,8 @@ pub(crate) fn encode_signed_jwt_claims_json_core(
         return Err(JwtError::InputTooLarge);
     }
     reject_duplicate_object_members(claims_json)?;
-    let mut deserializer = serde_json::Deserializer::from_slice(claims_json);
-    serde::de::IgnoredAny::deserialize(&mut deserializer).map_err(|_| JwtError::InvalidClaims)?;
-    deserializer.end().map_err(|_| JwtError::InvalidClaims)?;
+    let claims = parse_sensitive_json(claims_json).map_err(|_| JwtError::InvalidClaims)?;
+    validate_claims_for_encoding(&claims)?;
 
     let alg = select_jwk_algorithm(jwk)?;
     let signing_input =
@@ -145,9 +144,8 @@ pub(crate) fn encode_signed_jwt_claims_json_with_signer_core(
         return Err(JwtError::InputTooLarge);
     }
     reject_duplicate_object_members(claims_json)?;
-    let mut deserializer = serde_json::Deserializer::from_slice(claims_json);
-    serde::de::IgnoredAny::deserialize(&mut deserializer).map_err(|_| JwtError::InvalidClaims)?;
-    deserializer.end().map_err(|_| JwtError::InvalidClaims)?;
+    let claims = parse_sensitive_json(claims_json).map_err(|_| JwtError::InvalidClaims)?;
+    validate_claims_for_encoding(&claims)?;
 
     let alg = select_jwk_algorithm(jwk)?;
     let signing_input =

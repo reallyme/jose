@@ -201,6 +201,14 @@ jobs:
       - name: Check native lane
         run: cargo check --locked --workspace --no-default-features --features native
 
+      # Workspace feature unification can enable wasm in the native job.
+      # Compile and test JOSE alone to keep its native-only cfg paths live.
+      - name: Check native-only JOSE lanes
+        run: |
+          cargo check --locked -p reallyme-jose --no-default-features --features native
+          cargo clippy --locked -p reallyme-jose --all-targets --no-default-features --features native,wire -- -D warnings
+          cargo nextest run --locked -p reallyme-jose --no-default-features --features native,wire
+
       - name: Check wasm32 lane
         run: cargo check --locked --workspace --no-default-features --features wasm --target wasm32-unknown-unknown
 

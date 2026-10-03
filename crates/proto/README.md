@@ -60,17 +60,28 @@ plaintext, or correlating protocol metadata. Generated-SDK and host adapters
 must treat those bytes as sensitive, avoid logging them, and zeroize owned
 buffers after use.
 
+Buffa's message trait requires generated `Clone` and `PartialEq` implementations.
+Cloning a secret-bearing message creates another sensitive owner, and equality
+on those messages is not a constant-time cryptographic comparison. The Rust
+message hardener clears owned fields on drop, but Buffa `OwnedView` handles use
+shared immutable `Bytes` storage that cannot be wiped by this crate. Do not
+construct `OwnedView` handles for secret-bearing requests or results; decode
+through the bounded JOSE wire adapter and clear caller-owned encoded buffers.
+Explicit ProtoJSON and text serialization can also reveal fields by design.
+
 JWE decrypt requests include a presence-sensitive protected-header validation
 policy. `kid` can be required, and exact `kid`, `typ`, `cty`, `apu`, and `apv`
 values can be bound to the protocol context. Message wrappers preserve the
 difference between an absent expectation and an explicitly expected empty
 value.
+The wire reason `JWE_HEADER_POLICY_MISMATCH` covers both `typ` and `cty`
+mismatches; `kid`, `apu`, and `apv` retain their separate reason codes.
 
 The protobuf and Rust crates are released as one versioned boundary. Pre-1.0
 minor releases may intentionally change message contracts; consumers should
-regenerate adapters and update both crates together. CI enforces schema linting
-and checked-in generated-code freshness rather than compatibility with earlier
-pre-1.0 releases.
+regenerate adapters and update both crates together. CI enforces schema linting,
+breaking-change checks against the published 0.4.3 baseline, and checked-in
+generated-code freshness.
 
 Generated code is checked in rather than produced by `build.rs`. Refresh it with
 the repository-level `buf.gen.yaml`:
@@ -79,6 +90,7 @@ the repository-level `buf.gen.yaml`:
 buf generate
 node scripts/harden-generated-jose-proto.mjs
 node scripts/harden-generated-jose-jvm.mjs
+node scripts/harden-generated-jose-swift.mjs
 cargo fmt --package reallyme-jose-proto
 ```
 

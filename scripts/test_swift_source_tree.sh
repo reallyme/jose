@@ -8,6 +8,7 @@ set -euo pipefail
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 runtime_marker="${repository_root}/.reallyme-jose-runtime-ffi"
 native_library="${repository_root}/target/debug/libreallyme_jose_ffi.dylib"
+export CARGO_TARGET_DIR="${repository_root}/target"
 created_marker=0
 
 # The published Swift facade targets Apple platforms, and its runtime loader is
@@ -24,6 +25,7 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
+rm -f -- "${native_library}"
 cargo build --locked --manifest-path "${repository_root}/Cargo.toml" -p reallyme-jose-ffi
 if [[ ! -e "${runtime_marker}" ]]; then
   touch "${runtime_marker}"

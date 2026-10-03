@@ -4,6 +4,8 @@
 
 package me.really.jose
 
+import com.google.protobuf.ByteString
+import com.google.protobuf.UnsafeByteOperations
 import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.attribute.PosixFileAttributeView
@@ -15,8 +17,25 @@ import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import me.really.jose.v1.JoseJwePlaintextResult
 
 class NativeProviderSecurityTest {
+    @Test
+    fun protobufResponseBytesAliasTheWipedJniBufferUntilExtraction() {
+        val message = JoseJwePlaintextResult.newBuilder()
+            .setPlaintext(ByteString.copyFrom(ByteArray(16_384) { 0x5a }))
+            .build()
+        val encoded = message.toByteArray()
+        val input = UnsafeByteOperations.unsafeWrap(encoded).newCodedInput()
+        input.enableAliasing(true)
+        val parsed = JoseJwePlaintextResult.parseFrom(input)
+        val extracted = parsed.plaintext.toByteArray()
+        encoded.fill(0)
+        assertEquals(0, parsed.plaintext.byteAt(0).toInt())
+        assertEquals(0x5a, extracted[0].toInt())
+        extracted.fill(0)
+    }
+
     @Test
     fun providerLoadingAndContractValidationFailClosed() {
         assertFailsWith<ReallyMeJoseException.InvalidInput> {
@@ -103,6 +122,32 @@ class NativeProviderSecurityTest {
             extracted?.let { Files.deleteIfExists(it) }
             Files.setPosixFilePermissions(root, PosixFilePermissions.fromString("rwx------"))
             Files.deleteIfExists(root)
+        }
+    }
+
+    @Test
+    fun extractionRejectsWritableAncestorEvenWhenRootIsPrivate() {
+        val parent = Files.createTempDirectory("reallyme-jose-loader-parent-")
+        val posix = Files.getFileAttributeView(
+            parent,
+            PosixFileAttributeView::class.java,
+            LinkOption.NOFOLLOW_LINKS,
+        )
+        if (posix == null) {
+            Files.deleteIfExists(parent)
+            return
+        }
+        val child = Files.createDirectory(parent.resolve("private"))
+        try {
+            Files.setPosixFilePermissions(child, PosixFilePermissions.fromString("rwx------"))
+            Files.setPosixFilePermissions(parent, PosixFilePermissions.fromString("rwxrwxrwx"))
+            assertNull(
+                ReallyMeJoseRustNativeProvider.createPrivateExtractionDirectory(child.toString()),
+            )
+        } finally {
+            Files.setPosixFilePermissions(parent, PosixFilePermissions.fromString("rwx------"))
+            Files.deleteIfExists(child)
+            Files.deleteIfExists(parent)
         }
     }
 }

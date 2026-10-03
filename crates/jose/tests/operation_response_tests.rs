@@ -28,13 +28,14 @@ use reallyme_jose::wire::proto::proto::reallyme::jose::v1::{
         jose_jwt_verify_response::Outcome as JwtVerifyOutcome,
         jose_operation_request::Operation as RequestOperation, jose_operation_response::Response,
     },
-    JoseCompactResult, JoseError, JoseErrorReason, JoseJweContentEncryptionAlgorithm,
-    JoseJweDecryptRequest, JoseJweDecryptResponse, JoseJweEncryptRequest,
-    JoseJweKeyManagementAlgorithm, JoseJwePlaintextResult, JoseJwsSignRequest,
-    JoseJwsVerifyRequest, JoseJwsVerifyResponse, JoseJwtClaimsResult, JoseJwtDecodeUnsignedRequest,
-    JoseJwtEncodeUnsignedRequest, JoseJwtSignRequest, JoseJwtTemporalValidationPolicy,
-    JoseJwtVerifyRequest, JoseOperationContractVersion, JoseOperationRequest,
-    JoseOperationResponse, JoseProviderError, JoseSignatureAlgorithm, JoseVerifyResult,
+    JoseCompactResult, JoseError, JoseErrorReason, JoseExpectedBytes, JoseExpectedString,
+    JoseJweContentEncryptionAlgorithm, JoseJweDecryptRequest, JoseJweDecryptResponse,
+    JoseJweEncryptRequest, JoseJweHeaderValidationPolicy, JoseJweKeyManagementAlgorithm,
+    JoseJwePlaintextResult, JoseJwsSignRequest, JoseJwsVerifyRequest, JoseJwsVerifyResponse,
+    JoseJwtClaimsResult, JoseJwtDecodeUnsignedRequest, JoseJwtEncodeUnsignedRequest,
+    JoseJwtSignRequest, JoseJwtTemporalValidationPolicy, JoseJwtVerifyRequest,
+    JoseOperationContractVersion, JoseOperationRequest, JoseOperationResponse, JoseProviderError,
+    JoseSignatureAlgorithm, JoseVerifyResult,
 };
 use reallyme_jose::wire::{
     decode_operation_response_v1, encode_json, encode_protobuf, execute_operation_json_v1,
@@ -42,6 +43,8 @@ use reallyme_jose::wire::{
     MAX_JOSE_PROTO_MESSAGE_BYTES, MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES,
 };
 use reallyme_jose::Jwk;
+
+include!("operation_response_tests/jwe_policy.rs");
 
 #[test]
 fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std::error::Error>> {
@@ -297,6 +300,8 @@ fn jwt_wire_temporal_policy_rejects_audience_mismatch() -> Result<(), Box<dyn st
                 expected_audience: "service-b".to_owned(),
                 expected_issuer: String::new(),
                 expected_subject: String::new(),
+                expected_issuer_constraint: Default::default(),
+                expected_subject_constraint: Default::default(),
                 __buffa_unknown_fields: Default::default(),
             }
             .into(),
@@ -314,6 +319,103 @@ fn jwt_wire_temporal_policy_rejects_audience_mismatch() -> Result<(), Box<dyn st
         JoseWireErrorBranch::Primitive,
         JoseErrorReason::JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH,
     );
+    Ok(())
+}
+
+#[test]
+fn jwt_wire_expected_claim_presence_is_fail_closed() -> Result<(), Box<dyn std::error::Error>> {
+    const NOW_UNIX: u64 = 1_720_000_000;
+    let secret = [19_u8; 32];
+    let (public_key, private_key) = generate_p256_keypair_from_secret_key(&secret)?;
+    let jwk = Jwk::Ec(p256_public_key_to_jwk(
+        &public_key,
+        JwkOptions {
+            alg: true,
+            use_sig: true,
+            use_enc: false,
+            kid: Some("claim-policy-key".to_owned()),
+        },
+    )?);
+    let compact = encode_signed_jwt(
+        &serde_json::json!({
+            "aud": "service-a",
+            "iss": "trusted",
+            "sub": "alice",
+            "exp": NOW_UNIX + 300,
+        }),
+        &jwk,
+        &private_key,
+    )?;
+    let jwk_json = serde_json::to_vec(&jwk)?;
+    let constraint = |value: &str| JoseExpectedString {
+        value: value.to_owned(),
+        __buffa_unknown_fields: Default::default(),
+    };
+
+    for (issuer, subject, expected_error) in [
+        (None, None, None),
+        (Some("trusted"), Some("alice"), None),
+        (
+            Some(""),
+            None,
+            Some(JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY),
+        ),
+        (
+            None,
+            Some(""),
+            Some(JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY),
+        ),
+        (
+            Some("other"),
+            None,
+            Some(JoseErrorReason::JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH),
+        ),
+        (
+            None,
+            Some("bob"),
+            Some(JoseErrorReason::JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH),
+        ),
+    ] {
+        let mut policy = JoseJwtTemporalValidationPolicy::default();
+        policy.require_exp = true;
+        policy.now_unix = NOW_UNIX;
+        policy.expected_audience = "service-a".to_owned();
+        policy.expected_issuer_constraint = issuer.map(constraint).into();
+        policy.expected_subject_constraint = subject.map(constraint).into();
+        let request = operation(RequestOperation::JwtVerify(Box::new(
+            JoseJwtVerifyRequest {
+                compact: compact.clone(),
+                jwk_json: jwk_json.clone(),
+                public_key: public_key.clone(),
+                header_policy: Default::default(),
+                temporal_policy: policy.into(),
+                signature_only: false,
+                __buffa_unknown_fields: Default::default(),
+            },
+        )));
+        let binary = execute_operation_v1(
+            &encode_protobuf(&request),
+            &mut FixedRandom::new([1_u8; 12]),
+        );
+        let json =
+            execute_operation_json_v1(&encode_json(&request)?, &mut FixedRandom::new([1_u8; 12]));
+        assert_eq!(binary, json);
+        let response = decode_operation_response_v1(&binary, JoseOperationKind::JwtVerify)?;
+        if let Some(reason) = expected_error {
+            assert_response_error(
+                response,
+                Some(JoseOperationKind::JwtVerify),
+                JoseWireErrorBranch::Primitive,
+                reason,
+            );
+        } else {
+            assert!(matches!(
+                response.response.as_ref(),
+                Some(Response::JwtVerify(result))
+                    if matches!(result.outcome.as_ref(), Some(JwtVerifyOutcome::Result(_)))
+            ));
+        }
+    }
     Ok(())
 }
 
@@ -546,6 +648,18 @@ fn assert_response_error(
             match response.outcome.take() {
                 Some(JwtVerifyOutcome::Error(error)) => error,
                 _ => panic!("JWT verify response did not contain an error"),
+            }
+        }
+        (Some(JoseOperationKind::JweEncrypt), Response::JweEncrypt(mut response)) => {
+            match response.outcome.take() {
+                Some(JweEncryptOutcome::Error(error)) => error,
+                _ => panic!("JWE encrypt response did not contain an error"),
+            }
+        }
+        (Some(JoseOperationKind::JweDecrypt), Response::JweDecrypt(mut response)) => {
+            match response.outcome.take() {
+                Some(JweDecryptOutcome::Error(error)) => error,
+                _ => panic!("JWE decrypt response did not contain an error"),
             }
         }
         _ => panic!("response error used the wrong operation variant"),

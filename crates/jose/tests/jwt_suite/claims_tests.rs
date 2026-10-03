@@ -6,6 +6,37 @@
 use reallyme_jose::jwt::{AnyClaims, NumericDate, RegisteredClaims, StringOrURI};
 
 #[test]
+fn claim_debug_output_redacts_identifiers_and_values() {
+    let claims = RegisteredClaims {
+        iss: Some(StringOrURI("issuer-secret".to_owned())),
+        sub: Some(StringOrURI("subject-secret".to_owned())),
+        aud: Some(vec![StringOrURI("audience-secret".to_owned())]),
+        jti: Some("token-secret".to_owned()),
+        ..Default::default()
+    };
+    let mut arbitrary = AnyClaims::default();
+    arbitrary.insert("private".to_owned(), serde_json::json!("claim-secret"));
+
+    for output in [
+        format!("{claims:?}"),
+        format!("{arbitrary:?}"),
+        format!("{:?}", StringOrURI("value-secret".to_owned())),
+    ] {
+        assert!(output.contains("<redacted>"));
+        for secret in [
+            "issuer-secret",
+            "subject-secret",
+            "audience-secret",
+            "token-secret",
+            "claim-secret",
+            "value-secret",
+        ] {
+            assert!(!output.contains(secret));
+        }
+    }
+}
+
+#[test]
 fn registered_claims_roundtrip() {
     let claims = RegisteredClaims {
         iss: Some(StringOrURI("https://issuer.example".into())),

@@ -3,13 +3,35 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::support::{base_claims_json, gen_ed25519, gen_p256, gen_secp256k1};
+use super::support::{
+    base_claims_json, gen_ed25519, gen_p256, gen_secp256k1, sign_raw_ed25519_jwt_claims,
+};
 use reallyme_codec::base64url::bytes_to_base64url;
 use reallyme_crypto::jwk::Jwk;
 use reallyme_jose::jws::suites::es256::sign_p256_jose_prehash;
 use reallyme_jose::jwt::{
     decode_verify_jwt_signature_only, encode_signed_jwt, JwtError, MAX_COMPACT_JWT_BYTES,
 };
+
+#[test]
+fn reject_signed_jwt_with_invalid_registered_claim_shapes() {
+    let key = gen_ed25519();
+    for claims in [
+        serde_json::json!({"exp": -5}),
+        serde_json::json!({"exp": 0}),
+        serde_json::json!({"exp": 2_000_000_000.5}),
+        serde_json::json!({"aud": ""}),
+        serde_json::json!({"aud": 5}),
+        serde_json::json!({"aud": ["valid", ""]}),
+        serde_json::json!({"sub": ""}),
+        serde_json::json!({"jti": false}),
+    ] {
+        assert!(matches!(
+            encode_signed_jwt(&claims, &key.jwk, &key.private),
+            Err(JwtError::InvalidClaims)
+        ));
+    }
+}
 
 #[test]
 fn reject_non_three_part_jwt() {
@@ -268,17 +290,38 @@ fn reject_signed_jwt_with_nested_content_type() {
 }
 
 #[test]
+fn reject_signed_jwt_with_invalid_ignored_header_content() {
+    let key = gen_p256();
+    let payload = br#"{"aud":"example"}"#;
+    for header in [
+        br#"{"alg":"ES256","typ":"JWT","ignored":"\ud800"}"#.as_slice(),
+        b"{\"alg\":\"ES256\",\"typ\":\"JWT\",\"ignored\":\"\xff\"}".as_slice(),
+        br#"{"alg":"ES256","typ":"JWT","ignored":{"x":1,"x":2}}"#.as_slice(),
+    ] {
+        let jwt = signed_jwt_with_header(header, payload, &key.private);
+        assert!(matches!(
+            decode_verify_jwt_signature_only::<serde_json::Value>(&jwt, &key.jwk, &key.public),
+            Err(JwtError::InvalidHeader)
+        ));
+    }
+}
+
+#[test]
 fn reject_signed_jwt_with_non_object_claims_set() {
     let key = gen_ed25519();
-    let jwt = encode_signed_jwt(
-        &serde_json::json!(["not", "claims"]),
-        &key.jwk,
-        &key.private,
-    )
-    .unwrap();
+    let claims = serde_json::json!(["not", "claims"]);
+    assert!(matches!(
+        encode_signed_jwt(&claims, &key.jwk, &key.private),
+        Err(JwtError::InvalidClaims)
+    ));
+    let jwt = sign_raw_ed25519_jwt_claims(&key.private, &claims);
+    let mut jwk = key.jwk;
+    if let Jwk::Okp(ref mut value) = jwk {
+        value.kid = None;
+    }
 
     let result: Result<serde_json::Value, JwtError> =
-        decode_verify_jwt_signature_only(&jwt, &key.jwk, &key.public);
+        decode_verify_jwt_signature_only(&jwt, &jwk, &key.public);
 
     assert!(matches!(result, Err(JwtError::InvalidClaims)));
 }
@@ -327,7 +370,7 @@ fn oversized_jwt_is_rejected_before_accessing_the_signing_key() {
 #[test]
 fn signed_jwt_size_preflight_preserves_each_suite_boundary() {
     for key in [gen_ed25519(), gen_p256(), gen_secp256k1()] {
-        let empty_claims = serde_json::json!({"sub": ""});
+        let empty_claims = serde_json::json!({"data": ""});
         let empty = encode_signed_jwt(&empty_claims, &key.jwk, &key.private).unwrap();
         let encoded_empty = empty.split('.').nth(1).unwrap().len();
         let overhead = empty.len().checked_sub(encoded_empty).unwrap();
@@ -346,14 +389,14 @@ fn signed_jwt_size_preflight_preserves_each_suite_boundary() {
         let padding = raw_limit
             .checked_sub(serde_json::to_vec(&empty_claims).unwrap().len())
             .unwrap();
-        let claims = serde_json::json!({"sub": "a".repeat(padding)});
+        let claims = serde_json::json!({"data": "a".repeat(padding)});
         let compact = encode_signed_jwt(&claims, &key.jwk, &key.private).unwrap();
         assert!(compact.len() <= MAX_COMPACT_JWT_BYTES);
         assert!(MAX_COMPACT_JWT_BYTES.checked_sub(compact.len()).unwrap() <= 1);
         let decoded: serde_json::Value =
             decode_verify_jwt_signature_only(&compact, &key.jwk, &key.public).unwrap();
         assert_eq!(decoded, claims);
-        let too_large = serde_json::json!({"sub": "a".repeat(padding.checked_add(1).unwrap())});
+        let too_large = serde_json::json!({"data": "a".repeat(padding.checked_add(1).unwrap())});
         assert!(matches!(
             encode_signed_jwt(&too_large, &key.jwk, &key.private),
             Err(JwtError::InputTooLarge)

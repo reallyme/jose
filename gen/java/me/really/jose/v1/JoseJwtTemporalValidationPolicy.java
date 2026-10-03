@@ -35,6 +35,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
     expectedIssuer_ = "";
     expectedSubject_ = "";
   }
+  private int bitField0_;
   public static final int REQUIRE_EXP_FIELD_NUMBER = 1;
   private boolean requireExp_;
   /**
@@ -285,7 +286,8 @@ public  final class JoseJwtTemporalValidationPolicy extends
   private java.lang.String expectedIssuer_;
   /**
    * <pre>
-   * Optional exact issuer constraint. Empty means no issuer constraint.
+   * Legacy issuer constraint. Empty means absent for older clients that cannot
+   * express presence. New clients use expected_issuer_constraint.
    * </pre>
    *
    * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -297,7 +299,8 @@ public  final class JoseJwtTemporalValidationPolicy extends
   }
   /**
    * <pre>
-   * Optional exact issuer constraint. Empty means no issuer constraint.
+   * Legacy issuer constraint. Empty means absent for older clients that cannot
+   * express presence. New clients use expected_issuer_constraint.
    * </pre>
    *
    * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -310,7 +313,8 @@ public  final class JoseJwtTemporalValidationPolicy extends
   }
   /**
    * <pre>
-   * Optional exact issuer constraint. Empty means no issuer constraint.
+   * Legacy issuer constraint. Empty means absent for older clients that cannot
+   * express presence. New clients use expected_issuer_constraint.
    * </pre>
    *
    * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -324,7 +328,8 @@ public  final class JoseJwtTemporalValidationPolicy extends
   }
   /**
    * <pre>
-   * Optional exact issuer constraint. Empty means no issuer constraint.
+   * Legacy issuer constraint. Empty means absent for older clients that cannot
+   * express presence. New clients use expected_issuer_constraint.
    * </pre>
    *
    * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -335,7 +340,8 @@ public  final class JoseJwtTemporalValidationPolicy extends
   }
   /**
    * <pre>
-   * Optional exact issuer constraint. Empty means no issuer constraint.
+   * Legacy issuer constraint. Empty means absent for older clients that cannot
+   * express presence. New clients use expected_issuer_constraint.
    * </pre>
    *
    * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -352,7 +358,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
   private java.lang.String expectedSubject_;
   /**
    * <pre>
-   * Optional exact subject constraint. Empty means no subject constraint.
+   * Legacy subject constraint with the same absence ambiguity.
    * </pre>
    *
    * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -364,7 +370,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
   }
   /**
    * <pre>
-   * Optional exact subject constraint. Empty means no subject constraint.
+   * Legacy subject constraint with the same absence ambiguity.
    * </pre>
    *
    * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -377,7 +383,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
   }
   /**
    * <pre>
-   * Optional exact subject constraint. Empty means no subject constraint.
+   * Legacy subject constraint with the same absence ambiguity.
    * </pre>
    *
    * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -391,7 +397,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
   }
   /**
    * <pre>
-   * Optional exact subject constraint. Empty means no subject constraint.
+   * Legacy subject constraint with the same absence ambiguity.
    * </pre>
    *
    * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -402,7 +408,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
   }
   /**
    * <pre>
-   * Optional exact subject constraint. Empty means no subject constraint.
+   * Legacy subject constraint with the same absence ambiguity.
    * </pre>
    *
    * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -413,6 +419,145 @@ public  final class JoseJwtTemporalValidationPolicy extends
     checkByteStringIsUtf8(value);
     expectedSubject_ = value.toStringUtf8();
 
+  }
+
+  public static final int EXPECTED_ISSUER_CONSTRAINT_FIELD_NUMBER = 10;
+  private me.really.jose.v1.JoseExpectedString expectedIssuerConstraint_;
+  /**
+   * <pre>
+   * Presence-sensitive exact issuer constraint. A present empty value is
+   * invalid, so an empty caller configuration cannot disable verification.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+   */
+  @java.lang.Override
+  public boolean hasExpectedIssuerConstraint() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <pre>
+   * Presence-sensitive exact issuer constraint. A present empty value is
+   * invalid, so an empty caller configuration cannot disable verification.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseExpectedString getExpectedIssuerConstraint() {
+    return expectedIssuerConstraint_ == null ? me.really.jose.v1.JoseExpectedString.getDefaultInstance() : expectedIssuerConstraint_;
+  }
+  /**
+   * <pre>
+   * Presence-sensitive exact issuer constraint. A present empty value is
+   * invalid, so an empty caller configuration cannot disable verification.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+   */
+  private void setExpectedIssuerConstraint(me.really.jose.v1.JoseExpectedString value) {
+    java.util.Objects.requireNonNull(value);
+    expectedIssuerConstraint_ = value;
+    bitField0_ |= 0x00000001;
+  }
+  /**
+   * <pre>
+   * Presence-sensitive exact issuer constraint. A present empty value is
+   * invalid, so an empty caller configuration cannot disable verification.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+   */
+  @java.lang.SuppressWarnings("ReferenceEquality")
+  private void mergeExpectedIssuerConstraint(me.really.jose.v1.JoseExpectedString value) {
+    java.util.Objects.requireNonNull(value);
+    if (expectedIssuerConstraint_ != null &&
+        expectedIssuerConstraint_ != me.really.jose.v1.JoseExpectedString.getDefaultInstance()) {
+      expectedIssuerConstraint_ =
+        me.really.jose.v1.JoseExpectedString.newBuilder(expectedIssuerConstraint_).mergeFrom(value).buildPartial();
+    } else {
+      expectedIssuerConstraint_ = value;
+    }
+    bitField0_ |= 0x00000001;
+  }
+  /**
+   * <pre>
+   * Presence-sensitive exact issuer constraint. A present empty value is
+   * invalid, so an empty caller configuration cannot disable verification.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+   */
+  private void clearExpectedIssuerConstraint() {
+    expectedIssuerConstraint_ = null;
+    bitField0_ = (bitField0_ & ~0x00000001);
+  }
+
+  public static final int EXPECTED_SUBJECT_CONSTRAINT_FIELD_NUMBER = 11;
+  private me.really.jose.v1.JoseExpectedString expectedSubjectConstraint_;
+  /**
+   * <pre>
+   * Presence-sensitive exact subject constraint.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+   */
+  @java.lang.Override
+  public boolean hasExpectedSubjectConstraint() {
+    return ((bitField0_ & 0x00000002) != 0);
+  }
+  /**
+   * <pre>
+   * Presence-sensitive exact subject constraint.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseExpectedString getExpectedSubjectConstraint() {
+    return expectedSubjectConstraint_ == null ? me.really.jose.v1.JoseExpectedString.getDefaultInstance() : expectedSubjectConstraint_;
+  }
+  /**
+   * <pre>
+   * Presence-sensitive exact subject constraint.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+   */
+  private void setExpectedSubjectConstraint(me.really.jose.v1.JoseExpectedString value) {
+    java.util.Objects.requireNonNull(value);
+    expectedSubjectConstraint_ = value;
+    bitField0_ |= 0x00000002;
+  }
+  /**
+   * <pre>
+   * Presence-sensitive exact subject constraint.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+   */
+  @java.lang.SuppressWarnings("ReferenceEquality")
+  private void mergeExpectedSubjectConstraint(me.really.jose.v1.JoseExpectedString value) {
+    java.util.Objects.requireNonNull(value);
+    if (expectedSubjectConstraint_ != null &&
+        expectedSubjectConstraint_ != me.really.jose.v1.JoseExpectedString.getDefaultInstance()) {
+      expectedSubjectConstraint_ =
+        me.really.jose.v1.JoseExpectedString.newBuilder(expectedSubjectConstraint_).mergeFrom(value).buildPartial();
+    } else {
+      expectedSubjectConstraint_ = value;
+    }
+    bitField0_ |= 0x00000002;
+  }
+  /**
+   * <pre>
+   * Presence-sensitive exact subject constraint.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+   */
+  private void clearExpectedSubjectConstraint() {
+    expectedSubjectConstraint_ = null;
+    bitField0_ = (bitField0_ & ~0x00000002);
   }
 
   public static me.really.jose.v1.JoseJwtTemporalValidationPolicy parseFrom(
@@ -774,7 +919,8 @@ public  final class JoseJwtTemporalValidationPolicy extends
 
     /**
      * <pre>
-     * Optional exact issuer constraint. Empty means no issuer constraint.
+     * Legacy issuer constraint. Empty means absent for older clients that cannot
+     * express presence. New clients use expected_issuer_constraint.
      * </pre>
      *
      * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -786,7 +932,8 @@ public  final class JoseJwtTemporalValidationPolicy extends
     }
     /**
      * <pre>
-     * Optional exact issuer constraint. Empty means no issuer constraint.
+     * Legacy issuer constraint. Empty means absent for older clients that cannot
+     * express presence. New clients use expected_issuer_constraint.
      * </pre>
      *
      * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -799,7 +946,8 @@ public  final class JoseJwtTemporalValidationPolicy extends
     }
     /**
      * <pre>
-     * Optional exact issuer constraint. Empty means no issuer constraint.
+     * Legacy issuer constraint. Empty means absent for older clients that cannot
+     * express presence. New clients use expected_issuer_constraint.
      * </pre>
      *
      * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -814,7 +962,8 @@ public  final class JoseJwtTemporalValidationPolicy extends
     }
     /**
      * <pre>
-     * Optional exact issuer constraint. Empty means no issuer constraint.
+     * Legacy issuer constraint. Empty means absent for older clients that cannot
+     * express presence. New clients use expected_issuer_constraint.
      * </pre>
      *
      * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -827,7 +976,8 @@ public  final class JoseJwtTemporalValidationPolicy extends
     }
     /**
      * <pre>
-     * Optional exact issuer constraint. Empty means no issuer constraint.
+     * Legacy issuer constraint. Empty means absent for older clients that cannot
+     * express presence. New clients use expected_issuer_constraint.
      * </pre>
      *
      * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -843,7 +993,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
 
     /**
      * <pre>
-     * Optional exact subject constraint. Empty means no subject constraint.
+     * Legacy subject constraint with the same absence ambiguity.
      * </pre>
      *
      * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -855,7 +1005,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
     }
     /**
      * <pre>
-     * Optional exact subject constraint. Empty means no subject constraint.
+     * Legacy subject constraint with the same absence ambiguity.
      * </pre>
      *
      * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -868,7 +1018,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
     }
     /**
      * <pre>
-     * Optional exact subject constraint. Empty means no subject constraint.
+     * Legacy subject constraint with the same absence ambiguity.
      * </pre>
      *
      * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -883,7 +1033,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
     }
     /**
      * <pre>
-     * Optional exact subject constraint. Empty means no subject constraint.
+     * Legacy subject constraint with the same absence ambiguity.
      * </pre>
      *
      * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -896,7 +1046,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
     }
     /**
      * <pre>
-     * Optional exact subject constraint. Empty means no subject constraint.
+     * Legacy subject constraint with the same absence ambiguity.
      * </pre>
      *
      * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -907,6 +1057,154 @@ public  final class JoseJwtTemporalValidationPolicy extends
         com.google.protobuf.ByteString value) {
       copyOnWrite();
       instance.setExpectedSubjectBytes(value);
+      return this;
+    }
+
+    /**
+     * <pre>
+     * Presence-sensitive exact issuer constraint. A present empty value is
+     * invalid, so an empty caller configuration cannot disable verification.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+     */
+    @java.lang.Override
+    public boolean hasExpectedIssuerConstraint() {
+      return instance.hasExpectedIssuerConstraint();
+    }
+    /**
+     * <pre>
+     * Presence-sensitive exact issuer constraint. A present empty value is
+     * invalid, so an empty caller configuration cannot disable verification.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseExpectedString getExpectedIssuerConstraint() {
+      return instance.getExpectedIssuerConstraint();
+    }
+    /**
+     * <pre>
+     * Presence-sensitive exact issuer constraint. A present empty value is
+     * invalid, so an empty caller configuration cannot disable verification.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+     */
+    public Builder setExpectedIssuerConstraint(me.really.jose.v1.JoseExpectedString value) {
+      copyOnWrite();
+      instance.setExpectedIssuerConstraint(value);
+      return this;
+      }
+    /**
+     * <pre>
+     * Presence-sensitive exact issuer constraint. A present empty value is
+     * invalid, so an empty caller configuration cannot disable verification.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+     */
+    public Builder setExpectedIssuerConstraint(
+        me.really.jose.v1.JoseExpectedString.Builder builderForValue) {
+      copyOnWrite();
+      instance.setExpectedIssuerConstraint(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Presence-sensitive exact issuer constraint. A present empty value is
+     * invalid, so an empty caller configuration cannot disable verification.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+     */
+    public Builder mergeExpectedIssuerConstraint(me.really.jose.v1.JoseExpectedString value) {
+      copyOnWrite();
+      instance.mergeExpectedIssuerConstraint(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Presence-sensitive exact issuer constraint. A present empty value is
+     * invalid, so an empty caller configuration cannot disable verification.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+     */
+    public Builder clearExpectedIssuerConstraint() {  copyOnWrite();
+      instance.clearExpectedIssuerConstraint();
+      return this;
+    }
+
+    /**
+     * <pre>
+     * Presence-sensitive exact subject constraint.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+     */
+    @java.lang.Override
+    public boolean hasExpectedSubjectConstraint() {
+      return instance.hasExpectedSubjectConstraint();
+    }
+    /**
+     * <pre>
+     * Presence-sensitive exact subject constraint.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseExpectedString getExpectedSubjectConstraint() {
+      return instance.getExpectedSubjectConstraint();
+    }
+    /**
+     * <pre>
+     * Presence-sensitive exact subject constraint.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+     */
+    public Builder setExpectedSubjectConstraint(me.really.jose.v1.JoseExpectedString value) {
+      copyOnWrite();
+      instance.setExpectedSubjectConstraint(value);
+      return this;
+      }
+    /**
+     * <pre>
+     * Presence-sensitive exact subject constraint.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+     */
+    public Builder setExpectedSubjectConstraint(
+        me.really.jose.v1.JoseExpectedString.Builder builderForValue) {
+      copyOnWrite();
+      instance.setExpectedSubjectConstraint(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Presence-sensitive exact subject constraint.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+     */
+    public Builder mergeExpectedSubjectConstraint(me.really.jose.v1.JoseExpectedString value) {
+      copyOnWrite();
+      instance.mergeExpectedSubjectConstraint(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Presence-sensitive exact subject constraint.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+     */
+    public Builder clearExpectedSubjectConstraint() {  copyOnWrite();
+      instance.clearExpectedSubjectConstraint();
       return this;
     }
 
@@ -926,6 +1224,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
       }
       case BUILD_MESSAGE_INFO: {
           java.lang.Object[] objects = new java.lang.Object[] {
+            "bitField0_",
             "requireExp_",
             "requireNbf_",
             "requireIat_",
@@ -935,10 +1234,13 @@ public  final class JoseJwtTemporalValidationPolicy extends
             "expectedAudience_",
             "expectedIssuer_",
             "expectedSubject_",
+            "expectedIssuerConstraint_",
+            "expectedSubjectConstraint_",
           };
           java.lang.String info =
-              "\u0000\t\u0000\u0000\u0001\t\t\u0000\u0000\u0000\u0001\u0007\u0002\u0007\u0003\u0007" +
-              "\u0004\u0003\u0005\u0003\u0006\u0003\u0007\u0208\b\u0208\t\u0208";
+              "\u0000\u000b\u0000\u0001\u0001\u000b\u000b\u0000\u0000\u0000\u0001\u0007\u0002\u0007" +
+              "\u0003\u0007\u0004\u0003\u0005\u0003\u0006\u0003\u0007\u0208\b\u0208\t\u0208\n\u1009" +
+              "\u0000\u000b\u1009\u0001";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

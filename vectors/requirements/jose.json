@@ -100,7 +100,7 @@
     "implementation": ["reallyme_jose::jwe::derive_ecdh_es_content_encryption_key"],
     "positive_tests": ["derives_ecdh_es_a128gcm_cek_from_header_party_info"],
     "negative_tests": [
-      "rejects_key_management_algorithm_outside_policy",
+      "ecdh_es_rejects_identical_party_info_on_encrypt_and_decrypt",
       "rejects_ecdh_es_unexpected_party_info"
     ],
     "applicable": true,
@@ -185,7 +185,6 @@
     "implementation": ["crates/jose/src/jwe/encrypt.rs", "crates/jose/src/jwe/derive_key.rs", "reallyme_crypto::p256", "reallyme_crypto::p384", "reallyme_crypto::p521"],
     "positive_tests": [
       "encrypts_and_decrypts_p256_ecdh_es_with_fresh_ephemeral_key",
-      "encrypts_and_decrypts_p256_ecdh_es_a128gcm_json",
       "encrypts_and_decrypts_p384_ecdh_es_a192gcm_json",
       "encrypts_and_decrypts_p521_ecdh_es_a256gcm_json",
       "jwe_compact_vectors_decrypt_or_fail_closed"

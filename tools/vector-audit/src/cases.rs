@@ -12,6 +12,10 @@ fn audit_jws_case(case: &JwsCase) -> AuditResult<()> {
             return Err(error);
         }
     };
+    ensure(
+        case.expected_error.as_deref() != Some("InvalidCompactEncoding"),
+        AuditReason::NegativeCompactShape,
+    )?;
     let public_key = decode_hex(&case.public_key_hex)?;
     let protected = decode_json_segment(&compact.protected)?;
     let signing_input = jws_signing_input(&compact.protected, &compact.payload);
@@ -24,6 +28,10 @@ fn audit_jws_case(case: &JwsCase) -> AuditResult<()> {
             return Err(error);
         }
     };
+    ensure(
+        case.expected_error.as_deref() != Some("BadSignatureBase64"),
+        AuditReason::NegativeCompactShape,
+    )?;
     let payload = decode_base64url(&compact.payload)?;
     let signature_ok = verify_signature(
         SignatureAlgorithm::parse(&case.alg)?,
@@ -72,6 +80,10 @@ fn audit_signed_jwt_case(case: &SignedJwtCase) -> AuditResult<()> {
             return Err(error);
         }
     };
+    ensure(
+        case.expected_error.as_deref() != Some("InvalidJwtFormat"),
+        AuditReason::NegativeCompactShape,
+    )?;
     let protected = decode_json_segment(&compact.protected)?;
     audit_jwk_binding(case, &protected)?;
     if case.expected_error.as_deref() == Some("AlgorithmMismatch") {
@@ -288,7 +300,9 @@ fn audit_jws_negative(
         "HeaderMismatch" => {
             audit_unsafe_or_mismatched_header(protected, has_duplicate_header, expected_alg)
         }
-        "BadSignatureBase64" | "InvalidCompactEncoding" => Ok(()),
+        "BadSignatureBase64" | "InvalidCompactEncoding" => {
+            Err(general(AuditReason::NegativeCompactShape))
+        }
         _ => Err(general(AuditReason::UnsupportedExpectedError)),
     }
 }
@@ -307,7 +321,13 @@ fn audit_signed_jwt_negative(
         }
         "UnsupportedAlgorithm" => audit_unsupported_algorithm_header(protected),
         "AlgorithmMismatch" => Ok(()),
-        "KeyIdMismatch" | "PublicKeyMismatch" | "InvalidPublicKey" => Ok(()),
+        "KeyIdMismatch" => Ok(()),
+        // These reasons need an independent JWK/point parser before they can
+        // be certified here. Failing closed prevents a relabeled valid token
+        // from being counted as a negative vector.
+        "PublicKeyMismatch" | "InvalidPublicKey" => {
+            Err(general(AuditReason::UnsupportedExpectedError))
+        }
         "Expired"
         | "NotYetValid"
         | "IssuedAtInFuture"
@@ -315,7 +335,7 @@ fn audit_signed_jwt_negative(
         | "InvalidTemporalClaimValue:Exp" => {
             ensure(signature_ok, AuditReason::SignatureDidNotVerify)
         }
-        "InvalidJwtFormat" => Ok(()),
+        "InvalidJwtFormat" => Err(general(AuditReason::NegativeCompactShape)),
         _ => Err(general(AuditReason::UnsupportedExpectedError)),
     }
 }

@@ -5,6 +5,8 @@
 use reallyme_codec::base64url::base64url_bytes_to_bytes;
 use zeroize::Zeroizing;
 
+use crate::reject_duplicate_json_members::reject_duplicate_json_members;
+
 use super::parse_header::{JwsAlgorithm, JwsProtectedHeader};
 
 pub(crate) fn decode_and_validate_header<E: Copy>(
@@ -18,6 +20,7 @@ pub(crate) fn decode_and_validate_header<E: Copy>(
         base64url_bytes_to_bytes(protected_header.as_bytes()).map_err(|_| bad_base64)?,
     );
     let header_text = core::str::from_utf8(&header_bytes).map_err(|_| bad_utf8)?;
+    reject_duplicate_json_members(&header_bytes).map_err(|_| mismatch)?;
     let header: JwsProtectedHeader = serde_json::from_str(header_text).map_err(|_| mismatch)?;
     if header.alg != algorithm {
         return Err(mismatch);

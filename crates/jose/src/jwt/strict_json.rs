@@ -34,7 +34,7 @@ pub(crate) fn parse_sensitive_json(bytes: &[u8]) -> Result<SensitiveJsonValue, J
         .map_err(|_| JwtError::Serialization)
 }
 
-fn zeroize_json_value(value: JsonValue) {
+pub(crate) fn zeroize_json_value(value: JsonValue) {
     match value {
         JsonValue::String(mut value) => value.zeroize(),
         JsonValue::Array(values) => values.into_iter().for_each(zeroize_json_value),

@@ -172,7 +172,8 @@ public object JoseJwtTemporalValidationPolicyKt {
 
     /**
      * ```
-     * Optional exact issuer constraint. Empty means no issuer constraint.
+     * Legacy issuer constraint. Empty means absent for older clients that cannot
+     * express presence. New clients use expected_issuer_constraint.
      * ```
      *
      * `string expected_issuer = 8 [json_name = "expectedIssuer"];`
@@ -186,7 +187,8 @@ public object JoseJwtTemporalValidationPolicyKt {
       }
     /**
      * ```
-     * Optional exact issuer constraint. Empty means no issuer constraint.
+     * Legacy issuer constraint. Empty means absent for older clients that cannot
+     * express presence. New clients use expected_issuer_constraint.
      * ```
      *
      * `string expected_issuer = 8 [json_name = "expectedIssuer"];`
@@ -197,7 +199,7 @@ public object JoseJwtTemporalValidationPolicyKt {
 
     /**
      * ```
-     * Optional exact subject constraint. Empty means no subject constraint.
+     * Legacy subject constraint with the same absence ambiguity.
      * ```
      *
      * `string expected_subject = 9 [json_name = "expectedSubject"];`
@@ -211,7 +213,7 @@ public object JoseJwtTemporalValidationPolicyKt {
       }
     /**
      * ```
-     * Optional exact subject constraint. Empty means no subject constraint.
+     * Legacy subject constraint with the same absence ambiguity.
      * ```
      *
      * `string expected_subject = 9 [json_name = "expectedSubject"];`
@@ -219,7 +221,94 @@ public object JoseJwtTemporalValidationPolicyKt {
     public fun clearExpectedSubject() {
       _builder.clearExpectedSubject()
     }
+
+    /**
+     * ```
+     * Presence-sensitive exact issuer constraint. A present empty value is
+     * invalid, so an empty caller configuration cannot disable verification.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];`
+     */
+    public var expectedIssuerConstraint: me.really.jose.v1.JoseExpectedString
+      @kotlin.jvm.JvmName("getExpectedIssuerConstraint")
+        get() = _builder.expectedIssuerConstraint
+      @kotlin.jvm.JvmName("setExpectedIssuerConstraint")
+        set(value) {
+        _builder.expectedIssuerConstraint = value
+      }
+    /**
+     * ```
+     * Presence-sensitive exact issuer constraint. A present empty value is
+     * invalid, so an empty caller configuration cannot disable verification.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];`
+     */
+    public fun clearExpectedIssuerConstraint() {
+      _builder.clearExpectedIssuerConstraint()
+    }
+    /**
+     * ```
+     * Presence-sensitive exact issuer constraint. A present empty value is
+     * invalid, so an empty caller configuration cannot disable verification.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];`
+     * @return Whether the expectedIssuerConstraint field is set.
+     */
+    public fun hasExpectedIssuerConstraint(): kotlin.Boolean {
+      return _builder.hasExpectedIssuerConstraint()
+    }
+
+    public val JoseJwtTemporalValidationPolicyKt.Dsl.expectedIssuerConstraintOrNull: me.really.jose.v1.JoseExpectedString?
+      get() = _builder.expectedIssuerConstraintOrNull
+
+    /**
+     * ```
+     * Presence-sensitive exact subject constraint.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];`
+     */
+    public var expectedSubjectConstraint: me.really.jose.v1.JoseExpectedString
+      @kotlin.jvm.JvmName("getExpectedSubjectConstraint")
+        get() = _builder.expectedSubjectConstraint
+      @kotlin.jvm.JvmName("setExpectedSubjectConstraint")
+        set(value) {
+        _builder.expectedSubjectConstraint = value
+      }
+    /**
+     * ```
+     * Presence-sensitive exact subject constraint.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];`
+     */
+    public fun clearExpectedSubjectConstraint() {
+      _builder.clearExpectedSubjectConstraint()
+    }
+    /**
+     * ```
+     * Presence-sensitive exact subject constraint.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];`
+     * @return Whether the expectedSubjectConstraint field is set.
+     */
+    public fun hasExpectedSubjectConstraint(): kotlin.Boolean {
+      return _builder.hasExpectedSubjectConstraint()
+    }
+
+    public val JoseJwtTemporalValidationPolicyKt.Dsl.expectedSubjectConstraintOrNull: me.really.jose.v1.JoseExpectedString?
+      get() = _builder.expectedSubjectConstraintOrNull
   }
 }
 public inline fun me.really.jose.v1.JoseJwtTemporalValidationPolicy.copy(block: `me.really.jose.v1`.JoseJwtTemporalValidationPolicyKt.Dsl.() -> kotlin.Unit): me.really.jose.v1.JoseJwtTemporalValidationPolicy =
   `me.really.jose.v1`.JoseJwtTemporalValidationPolicyKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+
+public val me.really.jose.v1.JoseJwtTemporalValidationPolicyOrBuilder.expectedIssuerConstraintOrNull: me.really.jose.v1.JoseExpectedString?
+  get() = if (hasExpectedIssuerConstraint()) getExpectedIssuerConstraint() else null
+
+public val me.really.jose.v1.JoseJwtTemporalValidationPolicyOrBuilder.expectedSubjectConstraintOrNull: me.really.jose.v1.JoseExpectedString?
+  get() = if (hasExpectedSubjectConstraint()) getExpectedSubjectConstraint() else null

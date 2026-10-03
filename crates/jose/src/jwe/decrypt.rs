@@ -5,6 +5,7 @@
 use reallyme_codec::base64url::base64url_to_bytes;
 use serde::de::DeserializeOwned;
 
+use crate::reject_duplicate_json_members::reject_duplicate_json_members;
 use crate::Zeroizing;
 
 use super::validate_header::RawCompactJweProtectedHeader;
@@ -78,6 +79,7 @@ pub(crate) fn decrypt_compact_jwe_bytes_core(
     let protected_bytes = Zeroizing::new(
         base64url_to_bytes(parts.protected_header).map_err(|_| JweError::InvalidEncoding)?,
     );
+    reject_duplicate_json_members(&protected_bytes).map_err(|_| JweError::InvalidHeader)?;
     let raw_header: RawCompactJweProtectedHeader =
         serde_json::from_slice(&protected_bytes).map_err(|_| JweError::InvalidHeader)?;
     let header = CompactJweProtectedHeader::try_from(raw_header)?;
@@ -129,6 +131,7 @@ pub fn decrypt_compact_jwe_json<T: DeserializeOwned>(
     key_resolver: &dyn JweContentEncryptionKeyResolver,
 ) -> Result<T, JweError> {
     let plaintext = crate::operation_contract::jwe::decrypt_jwe(compact_jwe, policy, key_resolver)?;
+    reject_duplicate_json_members(&plaintext).map_err(|_| JweError::InvalidPayloadJson)?;
     serde_json::from_slice(&plaintext).map_err(|_| JweError::InvalidPayloadJson)
 }
 

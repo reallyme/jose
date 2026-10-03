@@ -5,6 +5,8 @@
 
 use super::support::{base_claims_json, gen_ed25519};
 use reallyme_codec::base64url::base64url_to_bytes;
+use reallyme_crypto::jwk::Jwk;
+use reallyme_jose::jws::suites::eddsa::sign_eddsa_jws;
 use reallyme_jose::jwt::{
     decode_verify_jwt_signature_only, decode_verify_jwt_signature_only_with_header_validation,
     encode_signed_jwt_with_header_options, JwtError, JwtHeaderEncodeOptions,
@@ -113,6 +115,30 @@ fn can_require_typ_presence() {
         );
 
     assert!(decoded.is_err());
+}
+
+#[test]
+fn default_jwt_verifier_rejects_generic_jws_signed_with_the_same_key() {
+    let key = gen_ed25519();
+    let claims = base_claims_json();
+    let compact = sign_eddsa_jws(&key.private, &claims.to_string()).expect("sign raw JWS");
+    let mut jwk = key.jwk;
+    if let Jwk::Okp(ref mut value) = jwk {
+        value.kid = None;
+    }
+
+    let standard: Result<serde_json::Value, JwtError> =
+        decode_verify_jwt_signature_only(&compact, &jwk, &key.public);
+    assert!(matches!(standard, Err(JwtError::InvalidHeader)));
+
+    let compatible: Result<serde_json::Value, JwtError> =
+        decode_verify_jwt_signature_only_with_header_validation(
+            &compact,
+            &jwk,
+            &key.public,
+            &JwtHeaderValidationOptions::new(true, false, &["JWT"]),
+        );
+    assert_eq!(compatible.expect("explicit compatibility policy"), claims);
 }
 
 #[test]

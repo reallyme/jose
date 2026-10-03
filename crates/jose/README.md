@@ -64,10 +64,14 @@ reallyme-jose = "0.4.3"
 - Direct-key JWE encryption generates a fresh 96-bit IV but cannot count uses of
   a caller-owned CEK. Callers must enforce an AES-GCM per-key invocation budget
   and rotate the CEK before the applicable NIST SP 800-38D limit.
+  Swift and Kotlin FFI adapters use two AES-GCM invocations for each direct-key
+  request because they perform a sizing call and a write call.
 - Raw DEFLATE compression, when requested, runs before encryption. Decryption
   authenticates AES-GCM before inflating, rejects trailing compressed data, and
   caps decompressed plaintext at 1 MiB. Intermediate compressed and
-  decompressed plaintext buffers zeroize on drop. Compression remains disabled
+  decompressed plaintext owners zeroize on drop. Codec workspaces and allocator
+  copies created during growth can retain data; strict erasure requirements
+  should leave compression disabled. Compression remains disabled
   by default because ciphertext length can expose secret-dependent information;
   do not mix attacker-controlled and confidential values in compressed content.
   OpenID4VCI adapters may advertise `zip_values_supported: ["DEF"]` only when
@@ -87,9 +91,12 @@ reallyme-jose = "0.4.3"
   The host supplies secure randomness through the Web Crypto integration.
 - JWK parsing, validation, and thumbprints are delegated to `reallyme-crypto`;
   this crate only consumes validated key metadata for JOSE policy decisions.
-- JOSE algorithm policy follows RFC 7515, RFC 7516, RFC 7518, RFC 7519,
-  RFC 8725, and RFC 9864. The current `EdDSA` support is bound to Ed25519 key
-  metadata and is not treated as an open-ended polymorphic choice.
+  The upstream native JWK deserializer rejects unrecognized members, including
+  `key_ops`, `x5c`, and `ext`. The operation-contract JSON adapter accepts
+  additional public members and applies its own operation policy.
+- JOSE algorithm policy follows RFC 7515, RFC 7516, RFC 7518, RFC 7519, and
+  RFC 8725. The `EdDSA` identifier is bound to Ed25519 key metadata. RFC 9864's
+  fully specified `Ed25519` identifier is not yet accepted.
 
 ## Unsupported JOSE Features
 
@@ -122,9 +129,9 @@ release, but not as the preferred application SDK surface. Pre-1.0 minor
 releases may intentionally revise the schema, so adapters should keep the
 protobuf and Rust crates on the same release line.
 
-JWT wire header policy is presence-sensitive. Omitting the policy uses the
-standard verifier behavior; explicitly sending a default policy is stricter
-because protobuf boolean defaults set `allow_missing_typ` to false.
+JWT wire header policy is presence-sensitive. Omitting the policy requires an
+explicit `typ: JWT` header. An explicit policy may accept missing `typ` for a
+legacy issuer by setting `allow_missing_typ` to true.
 
 JWT wire temporal validation is also explicit. A verify request must either set
 `signature_only` or provide `temporal_policy` with a nonzero

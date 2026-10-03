@@ -22,12 +22,16 @@ use reallyme_jose::jwe::{
     decrypt_compact_jwe_bytes, decrypt_compact_jwe_json, derive_ecdh_es_content_encryption_key,
     encrypt_compact_jwe_bytes, CompactJweEncryptRequest, CompactJwePolicy,
     CompactJweProtectedHeader, DirectJweKeyEncryptor, DirectJweKeyResolver,
-    JweCompressionAlgorithm, JweContentEncryptionAlgorithm, JweContentEncryptionKeyResolver,
-    JweError, JweKeyManagementAlgorithm, P256EcdhEsJweKeyEncryptor, P256EcdhEsJweKeyResolver,
-    PreparedJweEncryptionKey, MAX_COMPACT_JWE_BYTES, MAX_DECOMPRESSED_JWE_BYTES,
+    JweCompressionAlgorithm, JweContentEncryptionAlgorithm, JweContentEncryptionKeyEncryptor,
+    JweContentEncryptionKeyResolver, JweError, JweKeyManagementAlgorithm,
+    P256EcdhEsJweKeyEncryptor, P256EcdhEsJweKeyResolver, PreparedJweEncryptionKey,
+    MAX_COMPACT_JWE_BYTES, MAX_DECOMPRESSED_JWE_BYTES,
 };
 #[cfg(feature = "native")]
-use reallyme_jose::jwe::{P384EcdhEsJweKeyResolver, P521EcdhEsJweKeyResolver};
+use reallyme_jose::jwe::{
+    P384EcdhEsJweKeyEncryptor, P384EcdhEsJweKeyResolver, P521EcdhEsJweKeyEncryptor,
+    P521EcdhEsJweKeyResolver,
+};
 
 #[derive(Debug, Deserialize, PartialEq, Eq)]
 struct DirectPostPayload {
@@ -46,13 +50,19 @@ struct JweVectorCase {
     alg: String,
     enc: String,
     cek_hex: Option<String>,
+    iv_hex: Option<String>,
     recipient_private_key_hex: Option<String>,
+    recipient_public_key_sec1_hex: Option<String>,
+    ephemeral_private_key_hex: Option<String>,
     protected_header: Value,
     compact: String,
+    plaintext_json_utf8: Option<String>,
     expected_plaintext_json: Option<Value>,
     expected_error: Option<String>,
     derived_cek_hex: Option<String>,
 }
 
 include!("jwe_tests/cases.rs");
+include!("jwe_tests/encrypt_vectors.rs");
+include!("jwe_tests/negative_cases.rs");
 include!("jwe_tests/support_and_boundaries.rs");

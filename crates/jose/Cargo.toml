@@ -21,6 +21,7 @@ allowed_external_types = [
     "codec_base64url::error::Base64UrlError",
     "crypto_core::algorithm::Algorithm",
     "crypto_csprng::rng::SecureRandom",
+    "crypto_csprng::rng::OsSecureRandom",
     "crypto_dispatch::error::AlgorithmError",
     "crypto_signer::signer::Signer",
     "envelopes_jwk::jwk::Jwk",

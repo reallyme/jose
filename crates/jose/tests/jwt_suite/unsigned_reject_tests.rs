@@ -9,6 +9,22 @@ use reallyme_jose::jwt::{
 };
 
 #[test]
+fn reject_unsigned_jwt_with_invalid_registered_claim_shapes() {
+    for claims in [
+        serde_json::json!({"exp": -5}),
+        serde_json::json!({"iat": 0}),
+        serde_json::json!({"aud": []}),
+        serde_json::json!({"aud": ["valid", 5]}),
+        serde_json::json!({"iss": null}),
+    ] {
+        assert!(matches!(
+            encode_unsigned_jwt(&claims),
+            Err(JwtError::InvalidClaims)
+        ));
+    }
+}
+
+#[test]
 fn reject_two_part_jwt() {
     let jwt = "header.payload";
     let res: Result<RegisteredClaims, _> = decode_unsigned_jwt(jwt);
@@ -57,6 +73,21 @@ fn reject_unsigned_with_duplicate_header_member() {
     let res: Result<RegisteredClaims, _> = decode_unsigned_jwt(&jwt);
 
     assert!(matches!(res, Err(JwtError::InvalidJwtFormat)));
+}
+
+#[test]
+fn reject_unsigned_with_invalid_ignored_header_content() {
+    for header in [
+        br#"{"alg":"none","typ":"JWT","ignored":"\ud800"}"#.as_slice(),
+        b"{\"alg\":\"none\",\"typ\":\"JWT\",\"ignored\":\"\xff\"}".as_slice(),
+        br#"{"alg":"none","typ":"JWT","ignored":{"x":1,"x":2}}"#.as_slice(),
+    ] {
+        let jwt = format!("{}.e30.", bytes_to_base64url(header));
+        assert!(matches!(
+            decode_unsigned_jwt::<serde_json::Value>(&jwt),
+            Err(JwtError::InvalidJwtFormat)
+        ));
+    }
 }
 
 #[test]

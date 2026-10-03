@@ -369,10 +369,16 @@ message JoseJwtTemporalValidationPolicy {
   // Required recipient identifier. Temporal verification fails closed when
   // this value is empty or the JWT aud claim does not contain it.
   string expected_audience = 7;
-  // Optional exact issuer constraint. Empty means no issuer constraint.
+  // Legacy issuer constraint. Empty means absent for older clients that cannot
+  // express presence. New clients use expected_issuer_constraint.
   string expected_issuer = 8;
-  // Optional exact subject constraint. Empty means no subject constraint.
+  // Legacy subject constraint with the same absence ambiguity.
   string expected_subject = 9;
+  // Presence-sensitive exact issuer constraint. A present empty value is
+  // invalid, so an empty caller configuration cannot disable verification.
+  JoseExpectedString expected_issuer_constraint = 10;
+  // Presence-sensitive exact subject constraint.
+  JoseExpectedString expected_subject_constraint = 11;
 }
 
 message JoseJweEncryptRequest {

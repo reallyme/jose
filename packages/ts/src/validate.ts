@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { ReallyMeJoseError } from "./errors.js";
+import { JoseErrorReason } from "./proto/generated/reallyme/jose/v1/jose_pb.js";
 
 export const MAX_JOSE_BINARY_REQUEST_BYTES = 1_048_576;
 export const MAX_JOSE_JSON_REQUEST_BYTES = 1_572_864;
@@ -10,6 +11,14 @@ export const MAX_JOSE_RESPONSE_BYTES = 1_048_608;
 
 export const invalidInput = (): never => {
   throw new ReallyMeJoseError("invalid-input");
+};
+
+export const resourceLimit = (): never => {
+  throw new ReallyMeJoseError(
+    "jose-failure",
+    "primitive",
+    JoseErrorReason.COMMON_RESOURCE_LIMIT_EXCEEDED,
+  );
 };
 
 export const ensureObject = (value: unknown): void => {
@@ -64,7 +73,7 @@ export const utf8Length = (value: string): number => {
     } else {
       width = 3;
     }
-    if (length > Number.MAX_SAFE_INTEGER - width) invalidInput();
+    if (length > Number.MAX_SAFE_INTEGER - width) resourceLimit();
     length += width;
   }
   return length;
@@ -74,7 +83,7 @@ export const ensureAggregateLength = (...lengths: ReadonlyArray<number>): number
   let aggregate = 0;
   for (const length of lengths) {
     if (!Number.isSafeInteger(length) || length < 0) invalidInput();
-    if (aggregate > MAX_JOSE_BINARY_REQUEST_BYTES - length) invalidInput();
+    if (aggregate > MAX_JOSE_BINARY_REQUEST_BYTES - length) resourceLimit();
     aggregate += length;
   }
   return aggregate;
