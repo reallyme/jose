@@ -1163,7 +1163,9 @@ assertContains(
 assertContains("deny.toml", "unknown-registry = \"deny\"");
 assertContains("deny.toml", 'yanked = "deny"');
 assertContains("deny.toml", 'multiple-versions = "deny"');
-assertContains("deny.toml", 'name = "getrandom", version = "0.2.17"');
+assertNotContains("Cargo.toml", "getrandom02");
+assertNotContains("crates/jose/Cargo.toml", "getrandom02");
+assertNotContains("deny.toml", 'name = "getrandom", version = "0.2.17"');
 assertContains("deny.toml", 'name = "syn", version = "2.0.119"');
 
 assertContains("crates/ffi/src/lib.rs", '#![allow(unsafe_code)]');
@@ -1562,6 +1564,8 @@ assertContains("packages/kotlin/build.gradle.kts", 'kotlin("jvm") version "2.4.2
 assertContains("packages/kotlin/build.gradle.kts", "jvmToolchain(21)");
 assertContains("packages/kotlin/build.gradle.kts", "lockAllConfigurations()");
 assertContains("packages/kotlin/build.gradle.kts", 'api("com.google.protobuf:protobuf-javalite:4.36.2")');
+assertContains("packages/kotlin/build.gradle.kts", 'val bouncyCastleToolVersion = "1.86"');
+assertContains("packages/kotlin/gradle.lockfile", "org.bouncycastle:bcprov-jdk18on:1.86=kotlinBouncyCastleConfiguration");
 assertContains("packages/kotlin/build.gradle.kts", "verifyJarContainsNativeResources");
 assertContains("packages/kotlin/build.gradle.kts", "verifyJvmNativeManifest(");
 assertContains("packages/kotlin/build.gradle.kts", "JVM native manifest source SHA does not match the checkout");
@@ -1634,6 +1638,12 @@ assertContains("scripts/verify_maven_release_repository.mjs", "Selected Maven pu
 assertContains("scripts/verify_maven_release_repository.mjs", "native manifest is not bound to the release source SHA");
 
 assertContains("packages/kotlin-android/build.gradle.kts", 'id("com.android.library") version "9.4.0"');
+assertContains("packages/kotlin-android/build.gradle.kts", 'val bouncyCastleToolVersion = "1.86"');
+assertContains("packages/kotlin-android/build.gradle.kts", 'val commonsLangToolVersion = "3.21.0"');
+assertContains("packages/kotlin-android/build.gradle.kts", 'val apacheHttpClientToolVersion = "4.5.14"');
+assertContains("packages/kotlin-android/gradle.lockfile", "org.bouncycastle:bcprov-jdk18on:1.86=androidLintTool");
+assertContains("packages/kotlin-android/gradle.lockfile", "org.apache.commons:commons-lang3:3.21.0=androidLintTool");
+assertContains("packages/kotlin-android/gradle.lockfile", "org.apache.httpcomponents:httpclient:4.5.14=androidLintTool");
 assertContains("packages/kotlin-android/build.gradle.kts", "compileSdk = 36");
 assertContains("packages/kotlin-android/build.gradle.kts", "minSdk = 24");
 assertContains("packages/kotlin-android/build.gradle.kts", 'artifactId = "jose-android"');

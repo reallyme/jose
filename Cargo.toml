@@ -19,7 +19,6 @@ serde = "1.0"
 serde_json = "1.0"
 thiserror = "2.0"
 zeroize = "1.9"
-getrandom02 = { package = "getrandom", version = "0.2.17", features = ["js"] }
 flate2 = { version = "1.1.10", default-features = false, features = ["rust_backend"] }
 jni = "0.22.4"
 wasm-bindgen-test = "=0.3.79"

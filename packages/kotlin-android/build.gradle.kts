@@ -23,6 +23,29 @@ dependencyLocking {
     lockAllConfigurations()
 }
 
+// AGP's lint tool resolves older crypto and HTTP libraries. Constrain these
+// build-time modules without changing the published runtime API.
+val bouncyCastleToolVersion = "1.86"
+val commonsLangToolVersion = "3.21.0"
+val apacheHttpClientToolVersion = "4.5.14"
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.bouncycastle" && requested.name.endsWith("-jdk18on")) {
+            useVersion(bouncyCastleToolVersion)
+            because("AGP tool configurations otherwise select vulnerable Bouncy Castle versions")
+        } else if (requested.group == "org.apache.commons" && requested.name == "commons-lang3") {
+            useVersion(commonsLangToolVersion)
+            because("AGP lint tooling otherwise selects a vulnerable Commons Lang version")
+        } else if (
+            requested.group == "org.apache.httpcomponents" &&
+            requested.name in setOf("httpclient", "httpmime")
+        ) {
+            useVersion(apacheHttpClientToolVersion)
+            because("AGP lint tooling otherwise selects an outdated HttpComponents client")
+        }
+    }
+}
+
 val configuredAndroidJniLibsDir = providers.gradleProperty("reallyme.jose.androidJniLibsDir")
     .map { file(it) }
 val jniLibsDir = configuredAndroidJniLibsDir
