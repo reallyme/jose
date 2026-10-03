@@ -32,9 +32,9 @@ env:
   CARGO_AUDIT_VERSION: 0.22.2
   CARGO_CHECK_EXTERNAL_TYPES_VERSION: 0.5.0
   CARGO_DENY_VERSION: 0.20.2
-  CARGO_NEXTEST_VERSION: 0.9.143
+  CARGO_NEXTEST_VERSION: 0.9.146
   EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20
-  WASM_BINDGEN_CLI_VERSION: 0.2.127
+  WASM_BINDGEN_CLI_VERSION: 0.2.129
   WASM_PACK_VERSION: 0.15.0
 
 jobs:
@@ -231,7 +231,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: bdedc88f3f25fcc14242730d4dec6ce6a0c75531
+          ref: 5c2da5e5d5795c2c895d0dca0819287ee7101207
           path: .release-readiness
           persist-credentials: false
 

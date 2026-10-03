@@ -42,7 +42,7 @@ external-default-features = "allow"
 # upstream dependencies that carry them internally.
 deny = []
 skip = [
-    # Buffa 0.9.2 still uses Base64 0.22 while ReallyMe Codec 0.2.3 uses
+    # Buffa 0.9.2 still uses Base64 0.22 while ReallyMe Codec 0.3.0 uses
     # Base64 0.23. Both are current direct dependencies; remove this exact
     # exception when Buffa adopts Base64 0.23 or the dependency trees converge.
     { name = "base64", version = "0.22.1" },

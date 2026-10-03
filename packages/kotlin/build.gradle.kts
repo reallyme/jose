@@ -12,7 +12,7 @@ import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 plugins {
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.20"
     `java-library`
     `maven-publish`
     signing
@@ -279,8 +279,8 @@ val writeHostNativeDigest = tasks.register("writeHostNativeDigest") {
 }
 
 dependencies {
-    api("com.google.protobuf:protobuf-javalite:4.36.1")
-    api("com.google.protobuf:protobuf-kotlin-lite:4.36.1")
+    api("com.google.protobuf:protobuf-javalite:4.36.2")
+    api("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
     testImplementation("com.google.code.gson:gson:2.14.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testImplementation(kotlin("test"))

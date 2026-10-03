@@ -274,8 +274,8 @@ android {
 }
 
 dependencies {
-    api("com.google.protobuf:protobuf-javalite:4.36.1")
-    api("com.google.protobuf:protobuf-kotlin-lite:4.36.1")
+    api("com.google.protobuf:protobuf-javalite:4.36.2")
+    api("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
 }
 
 val generateAndroidNativeManifest = tasks.register("generateAndroidNativeManifest") {

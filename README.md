@@ -104,7 +104,7 @@ node .release-readiness/scripts/run-consumer-check.mjs
 ```
 
 The `.release-readiness` checkout is pinned to commit
-`bdedc88f3f25fcc14242730d4dec6ce6a0c75531` (release v0.6.6) before execution.
+`5c2da5e5d5795c2c895d0dca0819287ee7101207` (release v0.6.7) before execution.
 
 Release readiness requires the declared crates.io versions and rejects path or
 Git overrides. Local sibling dependency substitutions must be removed before
