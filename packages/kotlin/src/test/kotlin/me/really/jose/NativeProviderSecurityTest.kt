@@ -8,13 +8,19 @@ import com.google.protobuf.ByteString
 import com.google.protobuf.UnsafeByteOperations
 import java.nio.file.Files
 import java.nio.file.LinkOption
+import java.nio.file.attribute.AclEntry
+import java.nio.file.attribute.AclEntryFlag
+import java.nio.file.attribute.AclEntryPermission
+import java.nio.file.attribute.AclEntryType
 import java.nio.file.attribute.PosixFileAttributeView
 import java.nio.file.attribute.PosixFilePermissions
+import java.nio.file.attribute.UserPrincipal
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import me.really.jose.v1.JoseJwePlaintextResult
@@ -149,5 +155,55 @@ class NativeProviderSecurityTest {
             Files.deleteIfExists(child)
             Files.deleteIfExists(parent)
         }
+    }
+
+    @Test
+    fun defaultTemporaryDirectorySupportsPrivateNativeExtraction() {
+        val extracted = assertNotNull(
+            ReallyMeJoseRustNativeProvider.createPrivateExtractionDirectory(),
+        )
+        try {
+            assertTrue(Files.isDirectory(extracted, LinkOption.NOFOLLOW_LINKS))
+        } finally {
+            Files.deleteIfExists(extracted)
+        }
+    }
+
+    @Test
+    fun windowsAncestorAclAllowsSiblingCreationButForbidsReplacement() {
+        val untrusted = UserPrincipal { "OtherUser" }
+        fun entry(permission: AclEntryPermission): AclEntry = AclEntry.newBuilder()
+            .setType(AclEntryType.ALLOW)
+            .setPrincipal(untrusted)
+            .setPermissions(permission)
+            .build()
+
+        val addSibling = entry(AclEntryPermission.ADD_SUBDIRECTORY)
+        assertFalse(NativeExtractionPolicy.isUntrustedAclMutation(addSibling, "CurrentUser", false))
+        assertTrue(NativeExtractionPolicy.isUntrustedAclMutation(addSibling, "CurrentUser", true))
+        for (permission in listOf(
+            AclEntryPermission.ADD_FILE,
+            AclEntryPermission.DELETE,
+            AclEntryPermission.DELETE_CHILD,
+            AclEntryPermission.WRITE_ACL,
+            AclEntryPermission.WRITE_ATTRIBUTES,
+            AclEntryPermission.WRITE_DATA,
+            AclEntryPermission.WRITE_OWNER,
+        )) {
+            assertTrue(NativeExtractionPolicy.isUntrustedAclMutation(entry(permission), "CurrentUser", false))
+        }
+        val inheritedOnly = AclEntry.newBuilder()
+            .setType(AclEntryType.ALLOW)
+            .setPrincipal(untrusted)
+            .setPermissions(AclEntryPermission.DELETE_CHILD)
+            .setFlags(AclEntryFlag.INHERIT_ONLY)
+            .build()
+        assertFalse(NativeExtractionPolicy.isUntrustedAclMutation(inheritedOnly, "CurrentUser", false))
+        assertTrue(
+            NativeExtractionPolicy.isTrustedAclPrincipal("NT SERVICE\\TrustedInstaller", "CurrentUser"),
+        )
+        assertFalse(
+            NativeExtractionPolicy.isTrustedAclPrincipal("OtherUser\\TrustedInstaller", "CurrentUser"),
+        )
     }
 }
