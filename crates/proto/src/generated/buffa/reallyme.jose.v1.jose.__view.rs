@@ -6174,14 +6174,28 @@ pub struct JoseJwtTemporalValidationPolicyView<'a> {
     ///
     /// Field 7: `expected_audience`
     pub expected_audience: &'a str,
-    /// Optional exact issuer constraint. Empty means no issuer constraint.
+    /// Legacy issuer constraint. Empty means absent for older clients that cannot
+    /// express presence. New clients use expected_issuer_constraint.
     ///
     /// Field 8: `expected_issuer`
     pub expected_issuer: &'a str,
-    /// Optional exact subject constraint. Empty means no subject constraint.
+    /// Legacy subject constraint with the same absence ambiguity.
     ///
     /// Field 9: `expected_subject`
     pub expected_subject: &'a str,
+    /// Presence-sensitive exact issuer constraint. A present empty value is
+    /// invalid, so an empty caller configuration cannot disable verification.
+    ///
+    /// Field 10: `expected_issuer_constraint`
+    pub expected_issuer_constraint: ::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseExpectedStringView<'a>,
+    >,
+    /// Presence-sensitive exact subject constraint.
+    ///
+    /// Field 11: `expected_subject_constraint`
+    pub expected_subject_constraint: ::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseExpectedStringView<'a>,
+    >,
     pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
 }
 impl<'a> ::buffa::MessageView<'a> for JoseJwtTemporalValidationPolicyView<'a> {
@@ -6279,6 +6293,48 @@ impl<'a> ::buffa::MessageView<'a> for JoseJwtTemporalValidationPolicyView<'a> {
                 )?;
                 view.expected_subject = ::buffa::types::borrow_str(&mut cur)?;
             }
+            10u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.expected_issuer_constraint.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.expected_issuer_constraint = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::JoseExpectedStringView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            11u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.expected_subject_constraint.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.expected_subject_constraint = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::JoseExpectedStringView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
             _ => {
                 ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                 let span_len = before_tag.len() - cur.len();
@@ -6316,6 +6372,28 @@ impl<'a> ::buffa::MessageView<'a> for JoseJwtTemporalValidationPolicyView<'a> {
             expected_audience: self.expected_audience.to_string(),
             expected_issuer: self.expected_issuer.to_string(),
             expected_subject: self.expected_subject.to_string(),
+            expected_issuer_constraint: match self.expected_issuer_constraint.as_option()
+            {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::JoseExpectedString,
+                        ::buffa::Inline<super::super::JoseExpectedString>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
+            expected_subject_constraint: match self
+                .expected_subject_constraint
+                .as_option()
+            {
+                Some(v) => {
+                    ::buffa::MessageField::<
+                        super::super::JoseExpectedString,
+                        ::buffa::Inline<super::super::JoseExpectedString>,
+                    >::some(v.to_owned_from_source(__buffa_src)?)
+                }
+                None => ::buffa::MessageField::none(),
+            },
             __buffa_unknown_fields: self.__buffa_unknown_fields.to_owned()?.into(),
             ..::core::default::Default::default()
         })
@@ -6323,7 +6401,7 @@ impl<'a> ::buffa::MessageView<'a> for JoseJwtTemporalValidationPolicyView<'a> {
 }
 impl<'a> ::buffa::ViewEncode<'a> for JoseJwtTemporalValidationPolicyView<'a> {
     #[allow(clippy::needless_borrow, clippy::let_and_return)]
-    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
@@ -6366,13 +6444,29 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseJwtTemporalValidationPolicyView<'a> {
                 += 1u64
                     + ::buffa::types::string_encoded_len(&self.expected_subject) as u64;
         }
+        if self.expected_issuer_constraint.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.expected_issuer_constraint.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.expected_subject_constraint.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.expected_subject_constraint.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
     #[allow(clippy::needless_borrow)]
     fn write_to(
         &self,
-        _cache: &mut ::buffa::SizeCache,
+        __cache: &mut ::buffa::SizeCache,
         buf: &mut impl ::buffa::EncodeSink,
     ) {
         #[allow(unused_imports)]
@@ -6407,6 +6501,22 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseJwtTemporalValidationPolicyView<'a> {
         }
         if !self.expected_subject.is_empty() {
             ::buffa::types::put_string_field(9u32, &self.expected_subject, buf);
+        }
+        if self.expected_issuer_constraint.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                10u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.expected_issuer_constraint.write_to(__cache, buf);
+        }
+        if self.expected_subject_constraint.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                11u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.expected_subject_constraint.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -6469,6 +6579,22 @@ impl<'__a> ::serde::Serialize for JoseJwtTemporalValidationPolicyView<'__a> {
         }
         if !::buffa::json_helpers::skip_if::is_empty_str(self.expected_subject) {
             __map.serialize_entry("expectedSubject", self.expected_subject)?;
+        }
+        {
+            if let ::core::option::Option::Some(__v) = self
+                .expected_issuer_constraint
+                .as_option()
+            {
+                __map.serialize_entry("expectedIssuerConstraint", __v)?;
+            }
+        }
+        {
+            if let ::core::option::Option::Some(__v) = self
+                .expected_subject_constraint
+                .as_option()
+            {
+                __map.serialize_entry("expectedSubjectConstraint", __v)?;
+            }
         }
         __map.end()
     }
@@ -6609,19 +6735,43 @@ impl JoseJwtTemporalValidationPolicyOwnedView {
     pub fn expected_audience(&self) -> &'_ str {
         self.0.reborrow().expected_audience
     }
-    /// Optional exact issuer constraint. Empty means no issuer constraint.
+    /// Legacy issuer constraint. Empty means absent for older clients that cannot
+    /// express presence. New clients use expected_issuer_constraint.
     ///
     /// Field 8: `expected_issuer`
     #[must_use]
     pub fn expected_issuer(&self) -> &'_ str {
         self.0.reborrow().expected_issuer
     }
-    /// Optional exact subject constraint. Empty means no subject constraint.
+    /// Legacy subject constraint with the same absence ambiguity.
     ///
     /// Field 9: `expected_subject`
     #[must_use]
     pub fn expected_subject(&self) -> &'_ str {
         self.0.reborrow().expected_subject
+    }
+    /// Presence-sensitive exact issuer constraint. A present empty value is
+    /// invalid, so an empty caller configuration cannot disable verification.
+    ///
+    /// Field 10: `expected_issuer_constraint`
+    #[must_use]
+    pub fn expected_issuer_constraint(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseExpectedStringView<'_>,
+    > {
+        &self.0.reborrow().expected_issuer_constraint
+    }
+    /// Presence-sensitive exact subject constraint.
+    ///
+    /// Field 11: `expected_subject_constraint`
+    #[must_use]
+    pub fn expected_subject_constraint(
+        &self,
+    ) -> &::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseExpectedStringView<'_>,
+    > {
+        &self.0.reborrow().expected_subject_constraint
     }
 }
 impl ::core::convert::From<

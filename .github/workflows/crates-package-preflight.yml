@@ -190,6 +190,8 @@ jobs:
           node scripts/harden-generated-jose-proto.mjs --check-idempotent
           node scripts/harden-generated-jose-jvm.mjs
           node scripts/harden-generated-jose-jvm.mjs --check-idempotent
+          node scripts/harden-generated-jose-swift.mjs
+          node scripts/harden-generated-jose-swift.mjs --check-idempotent
           cargo fmt --package reallyme-jose-proto
           git diff --exit-code -- crates/proto/proto crates/proto/src gen/swift gen/java gen/kotlin packages/ts/src/proto/generated
           test -z "$(git status --porcelain -- crates/proto/proto crates/proto/src gen/swift gen/java gen/kotlin packages/ts/src/proto/generated)"

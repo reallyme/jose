@@ -4,8 +4,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use reallyme_codec::base64url::bytes_to_base64url;
 use reallyme_crypto::core::Algorithm;
-use reallyme_crypto::dispatch::generate_keypair;
+use reallyme_crypto::dispatch::{generate_keypair, sign};
 use reallyme_crypto::jwk::{Jwk, JwkOptions};
 
 use reallyme_crypto::jwk::{
@@ -88,4 +89,12 @@ pub fn base_claims_json() -> serde_json::Value {
         "sub": "alice",
         "aud": "example",
     })
+}
+
+pub fn sign_raw_ed25519_jwt_claims(private_key: &[u8], claims: &serde_json::Value) -> String {
+    let header = bytes_to_base64url(br#"{"alg":"EdDSA","typ":"JWT"}"#);
+    let payload = bytes_to_base64url(claims.to_string().as_bytes());
+    let signing_input = format!("{header}.{payload}");
+    let signature = sign(Algorithm::Ed25519, private_key, signing_input.as_bytes()).unwrap();
+    format!("{signing_input}.{}", bytes_to_base64url(&signature))
 }

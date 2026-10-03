@@ -32,9 +32,9 @@ implementation catches bugs that local round-trips can miss. The Node tool is a
 maintenance generator only; normal Rust tests consume the checked-in JSON.
 
 The native Rust, Swift, Kotlin/JVM, and minified Android emulator lanes execute
-all 102 checked-in cases through their supported facades, including the panva
-anchors. The WASM lane executes all 94 applicable cases under a JavaScript host;
-the two native-only P-384 and P-521 ECDH-ES cases are also exercised and must
+all 104 checked-in cases through their supported facades, including the panva
+anchors. The WASM lane executes all 98 applicable cases under a JavaScript host;
+the six native-only P-384 and P-521 ECDH-ES cases are also exercised and must
 return the typed `providerUnsupported` reason. No cases are silently skipped.
 The SDK runners also compare binary protobuf and generated ProtoJSON responses
 byte for byte and assert exact typed failures for malformed transports,

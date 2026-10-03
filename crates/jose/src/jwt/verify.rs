@@ -5,6 +5,7 @@
 use serde::de::DeserializeOwned;
 
 use crate::jws::{parse_compact::build_sig_structure, suites::es256::verify_p256_jose_prehash};
+use crate::reject_duplicate_json_members::reject_duplicate_json_members;
 use crate::{Algorithm, Jwk, Zeroizing};
 use reallyme_codec::base64url::base64url_bytes_to_bytes;
 use reallyme_crypto::dispatch::verify;
@@ -333,6 +334,7 @@ fn decode_verify_jwt_payload_bytes(
     let parts = parse_compact_jwt(jwt)?;
 
     let header_bytes = Zeroizing::new(base64url_bytes_to_bytes(parts.protected_header.as_bytes())?);
+    reject_duplicate_json_members(&header_bytes).map_err(|_| JwtError::InvalidHeader)?;
     let header: JwtHeader =
         serde_json::from_slice(&header_bytes).map_err(|_| JwtError::InvalidHeader)?;
 
@@ -370,7 +372,17 @@ fn validate_jwk_key_binding(
     }
 
     let expected_public_key = jwk.public_key_bytes().map_err(map_jwk_public_key_error)?;
-    if expected_public_key.as_slice() != public_key {
+    // WebCrypto commonly exports the same P-256 point in uncompressed SEC1.
+    // Canonicalize that representation before comparing it with JWK bytes.
+    let normalized_public_key = if header.alg == "ES256" && public_key.len() == 65 {
+        std::borrow::Cow::Owned(
+            reallyme_crypto::p256::compress_public_key(public_key)
+                .map_err(|_| JwtError::InvalidPublicKey)?,
+        )
+    } else {
+        std::borrow::Cow::Borrowed(public_key)
+    };
+    if expected_public_key.as_slice() != normalized_public_key.as_ref() {
         return Err(JwtError::PublicKeyMismatch);
     }
     Ok(())

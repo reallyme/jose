@@ -7,6 +7,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly ROOT_DIR
+export CARGO_TARGET_DIR="${ROOT_DIR}/target"
 readonly SYMBOLS=(
   rm_jose_abi_version
   rm_jose_max_request_bytes
@@ -51,6 +52,7 @@ if env -u CARGO_ENCODED_RUSTFLAGS -u RUSTFLAGS \
   exit 1
 fi
 
+rm -f -- "${LIBRARY_PATH}"
 env -u CARGO_ENCODED_RUSTFLAGS RUSTFLAGS="" \
   cargo build --locked -p reallyme-jose-ffi --profile release-ffi
 

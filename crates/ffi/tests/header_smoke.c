@@ -12,7 +12,20 @@ _Static_assert(RM_JOSE_UNSUPPORTED_ABI == -6, "status values must remain stable"
 
 int reallyme_jose_header_smoke(void) {
   uint32_t (*version)(void) = rm_jose_abi_version;
-  rm_jose_status_t (*execute)(uint32_t, const uint8_t *, size_t, uint8_t *,
-                              size_t, size_t *) = rm_jose_execute_operation_v1;
-  return version != NULL && execute != NULL ? 0 : 1;
+  size_t (*max_request)(void) = rm_jose_max_request_bytes;
+  size_t (*max_json_request)(void) = rm_jose_max_json_request_bytes;
+  size_t (*max_response)(void) = rm_jose_max_response_bytes;
+  rm_jose_status_t (*execute_binary)(uint32_t, const uint8_t *, size_t,
+                                     uint8_t *, size_t, size_t *) =
+      rm_jose_execute_operation_v1;
+  rm_jose_status_t (*execute_json)(uint32_t, const uint8_t *, size_t,
+                                   uint8_t *, size_t, size_t *) =
+      rm_jose_execute_operation_json_v1;
+  rm_jose_status_t (*zeroize)(uint32_t, uint8_t *, size_t) =
+      rm_jose_zeroize_buffer;
+  return version != NULL && max_request != NULL && max_json_request != NULL &&
+                 max_response != NULL && execute_binary != NULL &&
+                 execute_json != NULL && zeroize != NULL
+             ? 0
+             : 1;
 }

@@ -6,13 +6,21 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export CARGO_TARGET_DIR="${ROOT_DIR}/target"
 JNI_LIBS_ROOT="${1:-${ROOT_DIR}/packages/kotlin-android/build/generated/android-jniLibs}"
 ANDROID_API="${ANDROID_API:-24}"
 
 # Packaged FFI binaries must be governed only by the reviewed workspace
 # profile; inherited codegen flags could silently change its unwind contract.
 unset CARGO_ENCODED_RUSTFLAGS
-unset RUSTFLAGS
+RUSTFLAGS=""
+export RUSTFLAGS
+for variable in ${!CARGO_@}; do
+  case "${variable}" in
+    CARGO_BUILD_RUSTFLAGS|CARGO_BUILD_TARGET|CARGO_TARGET_*_RUSTFLAGS|CARGO_PROFILE_*)
+      unset "${variable}" ;;
+  esac
+done
 
 if [ -z "${ANDROID_NDK_HOME:-}" ]; then
   printf 'ANDROID_NDK_HOME must point to an installed Android NDK\n' >&2
@@ -50,6 +58,7 @@ build_android_target() {
   export "${ar_var}=${TOOLCHAIN_BIN}/llvm-ar"
   (
     cd "${ROOT_DIR}"
+    rm -f -- "${CARGO_TARGET_DIR}/${rust_target}/release-ffi/libreallyme_jose_ffi.so"
     cargo build --locked -p reallyme-jose-ffi --profile release-ffi --target "${rust_target}"
   )
 

@@ -11,6 +11,7 @@ import {
   MAX_JOSE_BINARY_REQUEST_BYTES,
   MAX_JOSE_JSON_REQUEST_BYTES,
   MAX_JOSE_RESPONSE_BYTES,
+  resourceLimit,
 } from "./validate.js";
 
 const execute = (
@@ -21,7 +22,7 @@ const execute = (
 ): Uint8Array => {
   ensureBytes(request);
   if (request.length > maximum) {
-    throw new ReallyMeJoseError("invalid-input");
+    resourceLimit();
   }
   const result = json
     ? provider.executeOperationJson(request)

@@ -184,16 +184,19 @@ struct Suite<T> {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct Manifest {
     schema: String,
     suites: Vec<ManifestSuite>,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ManifestSuite {
     id: String,
     path: String,
     case_count: usize,
+    source: String,
 }
 
 #[derive(Debug, Deserialize)]

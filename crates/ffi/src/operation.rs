@@ -4,6 +4,9 @@
 
 //! Canonical operation-contract C exports.
 
+// Every exported raw-pointer entry point validates the ABI boundary below.
+#![allow(unsafe_code)]
+
 use reallyme_jose::wire::{
     execute_operation_json_v1, execute_operation_v1, MAX_JOSE_PROTO_JSON_BYTES,
     MAX_JOSE_PROTO_MESSAGE_BYTES, MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES,

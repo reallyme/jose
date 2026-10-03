@@ -8,11 +8,19 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly ROOT_DIR
 readonly RESOURCES_ROOT="${1:-${ROOT_DIR}/build/kotlin-native-resources}"
+export CARGO_TARGET_DIR="${ROOT_DIR}/target"
 
 # Packaged FFI binaries must be governed only by the reviewed workspace
 # profile; inherited codegen flags could silently change its unwind contract.
 unset CARGO_ENCODED_RUSTFLAGS
-unset RUSTFLAGS
+RUSTFLAGS=""
+export RUSTFLAGS
+for variable in ${!CARGO_@}; do
+  case "${variable}" in
+    CARGO_BUILD_RUSTFLAGS|CARGO_BUILD_TARGET|CARGO_TARGET_*_RUSTFLAGS|CARGO_PROFILE_*)
+      unset "${variable}" ;;
+  esac
+done
 
 case "$(uname -s):$(uname -m)" in
   Darwin:x86_64) platform="macos-x86_64"; library="libreallyme_jose_ffi.dylib" ;;
@@ -26,6 +34,7 @@ esac
 
 (
   cd "${ROOT_DIR}"
+  rm -f -- "${CARGO_TARGET_DIR}/release-ffi/${library}"
   cargo build --locked -p reallyme-jose-ffi --profile release-ffi
 )
 readonly OUTPUT_DIR="${RESOURCES_ROOT}/me/really/jose/native/${platform}"

@@ -692,6 +692,60 @@
       "recipient_private_key_hex": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b",
       "derived_cek_hex": "c98bc1392a9ceff04cf07bd4d2bcb54cfbfe8d181a2e9b5b2de98e8e391b95df",
       "expected_error": "DecompressedPlaintextTooLarge"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p256-a128gcm-deflate-tampered-tag",
+      "source": "RFC7516 Section 4.1.3 and RFC7518 Section 7.3",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A128GCM",
+      "zip": "DEF",
+      "iv_hex": "050505050505050505050505",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "kid": "recipient-key-1",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy",
+        "epk": {
+          "crv": "P-256",
+          "kty": "EC",
+          "x": "6mjXtv7fC3GHiTjVHXH4cp4Ky4wsbfiz156KS5CUnuA",
+          "y": "KidEyXLJ_OeHAUqWSo6gyE1xT-qk3oI_6FoiSk3QSPo"
+        },
+        "zip": "DEF"
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTEyOEdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktMSIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkiLCJlcGsiOnsiY3J2IjoiUC0yNTYiLCJrdHkiOiJFQyIsIngiOiI2bWpYdHY3ZkMzR0hpVGpWSFhINGNwNEt5NHdzYmZpejE1NktTNUNVbnVBIiwieSI6IktpZEV5WExKX09lSEFVcVdTbzZneUUxeFQtcWszb0lfNkZvaVNrM1FTUG8ifSwiemlwIjoiREVGIn0..BQUFBQUFBQUFBQUF.PNiL2VYLJbZo4W4tXIVxMT-ZDiCtDDOAFm7HMlcEzvapSiuPeK94Pw.R6R4IRflYaup83frecqj2A",
+      "recipient_private_key_hex": "0000000000000000000000000000000000000000000000000000000000000005",
+      "derived_cek_hex": "7b833a1e047ab7aafb11a084fd32b419",
+      "expected_error": "Decrypt"
+    },
+    {
+      "id": "reallyme-jwe/ecdh-es-p256-a128gcm-deflate-oversize",
+      "source": "RFC7516 Section 4.1.3 and RFC7518 Section 7.3",
+      "format": "jwe-compact",
+      "alg": "ECDH-ES",
+      "enc": "A128GCM",
+      "zip": "DEF",
+      "iv_hex": "4a4a4a4a4a4a4a4a4a4a4a4a",
+      "protected_header": {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "kid": "recipient-key-1",
+        "apu": "d2FsbGV0",
+        "apv": "aXNzdWVy",
+        "epk": {
+          "crv": "P-256",
+          "kty": "EC",
+          "x": "6mjXtv7fC3GHiTjVHXH4cp4Ky4wsbfiz156KS5CUnuA",
+          "y": "KidEyXLJ_OeHAUqWSo6gyE1xT-qk3oI_6FoiSk3QSPo"
+        },
+        "zip": "DEF"
+      },
+      "compact": "eyJhbGciOiJFQ0RILUVTIiwiZW5jIjoiQTEyOEdDTSIsImtpZCI6InJlY2lwaWVudC1rZXktMSIsImFwdSI6ImQyRnNiR1YwIiwiYXB2IjoiYVhOemRXVnkiLCJlcGsiOnsiY3J2IjoiUC0yNTYiLCJrdHkiOiJFQyIsIngiOiI2bWpYdHY3ZkMzR0hpVGpWSFhINGNwNEt5NHdzYmZpejE1NktTNUNVbnVBIiwieSI6IktpZEV5WExKX09lSEFVcVdTbzZneUUxeFQtcWszb0lfNkZvaVNrM1FTUG8ifSwiemlwIjoiREVGIn0..SkpKSkpKSkpKSkpK.G1nJdvtIdlhaLHZrlqhH_WlY0bY0QsUk6JYHS5Hpvw0MAihwaDxHFiVNfAdcKoOROahxDh_zUucCtgjWQZagbX9pmR-6du-5Eo_koOmP4JsrlHpQ4XvNLxvHqZbMBE0ZykVn67BoxbzEGIoEEzxwx0UEy4a7QNZ3rvRUhzsPM4iTjD5aRD1I1HT1HFzVqWUxbVIxTGyJtRj3a2eN8Ja0ZV22qsnSlfIimAeEynTsTgyCRNt2mBJKvEAAgHcyx7-AcFaxfJIYYRudFQYsx4fEz92f_4pn7nW9m7zy93f9L0iKD22N_XTX18dwnasSGd5SyHp1cdoK_NuOhnXVb4VgBOnFApektdit7zlWsP__yG9dhM1HgBL-VHSF82qOfG4FzzbjHSc6RATPW6yWwnHTtUwq1OCWVE0mbXiV9d2YTLJHk3LlSu6ISUPWqf-imLjcMC5NdVGB-ddqe5xYGXCstE5dTjsuoiHjsyQzq6GqK_A_f_TajPRPFOWq3_N0ezIrt-EsYQI6H33iVfdnd8xIhzfOsH3vKXQiQQ-7LrAD7rFRAWASxeUdAbWKKNX7nNXe56jyYblhIa9bWgWTfTmH0LTqN-sCBVeJvrWr_-8VXOAFp3bs4pIzKy0gc726GF55FdYjUP-obXe7sjr6CnsWgktW7mj2SDsNbHk64FMZk3V7KE1gKBAeCIJ4lUsnr4MenzgoPX30u4GCatzZNSuzvR97FBXUqEqGlJmxWMS_8qJV5KANVy2L_TxvxGUj8AOi4cnNi6U0FoGhJn0y7MHDHHMyQIvLcFjXBpxYrp39PjLjBqB08xbT-FvEa_se0cTDoRij9KHlghPQFoCIQwj7DaDQ7WzPkXF4g9liS1NgjG2Yo5Icth2CRV0VVifBPg6Nd4r5yr69rjZjlhu0hkrEc_raXPrk6dS9EMXKNOadpwnAWNFqxQ9dQt2lMctinxLKGy8P35SFnPnnnquYvaK5ZPbU3xhpXVvxYAlBTesYLH5y9h2B9j2tpShhutMRk4vWw7USVu-2Epjv0aMkl3IynE0o4nL6UyG3BRCHyUBhAmPWyfquXzTukQ22wj0O0Aq152bNEkSW5qOH9y_-XdiWjuuTi4aHbu0MCoA_bai6JnwoLEMVC5jwNRtJGOtGYUqCddvbHxGTji7GxgiqJIx2N6u0-zKVlM0MTCv5vhIL0t70ks-5CAuB5KnWWCmL3E8INpOzMxvoMZKB69UqoDB0hUl63eKoa4JUg7of3NpEKGsXPwTRzUS4YKd9I-T6smzcrJTdluotVXoTKihVQq87S6VdG-_HdYU7nrZYHIrDKMg4bq6Jk5Svv_Z38bB5KTCBq4Qt2yCmXGHaVi_milsnCl0QlFy7zIayNl4.qIIf8Y7RSFl1xP3qW-_l6w",
+      "recipient_private_key_hex": "0000000000000000000000000000000000000000000000000000000000000005",
+      "derived_cek_hex": "7b833a1e047ab7aafb11a084fd32b419",
+      "expected_error": "DecompressedPlaintextTooLarge"
     }
   ]
 }

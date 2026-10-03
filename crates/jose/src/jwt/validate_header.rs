@@ -138,19 +138,7 @@ impl JwtHeader {
 }
 
 fn jwt_typ_matches(actual: &str, accepted: &str) -> bool {
-    normalized_jwt_typ(actual).eq_ignore_ascii_case(normalized_jwt_typ(accepted))
-}
-
-fn normalized_jwt_typ(value: &str) -> &str {
-    const APPLICATION_PREFIX: &str = "application/";
-
-    let Some(prefix) = value.get(..APPLICATION_PREFIX.len()) else {
-        return value;
-    };
-    if !prefix.eq_ignore_ascii_case(APPLICATION_PREFIX) {
-        return value;
-    }
-    value.get(APPLICATION_PREFIX.len()..).unwrap_or(value)
+    crate::match_media_type::match_media_type(actual, accepted)
 }
 
 /// JOSE header options used when encoding signed JWTs.
@@ -209,11 +197,12 @@ impl<'a> JwtHeaderValidationOptions<'a> {
 
     /// Returns the default signed-JWT policy used by verifier helpers.
     ///
-    /// Missing `typ` is accepted for compatibility with deployed JWT issuers,
-    /// but embedded sender-controlled key material remains rejected.
+    /// Require explicit `typ: JWT` so a signature issued for a generic JWS
+    /// cannot be reused as a JWT with the same key. Legacy issuers can opt in
+    /// to missing `typ` through [`Self::new`].
     #[must_use]
     pub const fn standard_jwt() -> Self {
-        Self::new(true, false, &["JWT"])
+        Self::new(false, false, &["JWT"])
     }
 
     /// Allows signed JWTs that omit `typ`.

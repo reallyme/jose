@@ -13,12 +13,48 @@ import Foundation
 #endif
 
 enum ReallyMeJOSEMemory {
+  static func take<Value>(_ slot: inout Value?) -> Value? {
+    var value: Value? = nil
+    swap(&slot, &value)
+    return value
+  }
+
+  // SwiftProtobuf value copies can share Data storage. Give every facade-owned
+  // request field a wiping storage owner so the original allocation is erased
+  // when its last alias is released, even if later mutations trigger COW.
+  static func ownedData(
+    _ bytes: [UInt8],
+    observeWipe: (@Sendable (UnsafeRawBufferPointer) -> Void)? = nil
+  ) -> Data {
+    guard bytes.isEmpty == false else { return Data() }
+    let storage = UnsafeMutableRawPointer.allocate(
+      byteCount: bytes.count,
+      alignment: MemoryLayout<UInt8>.alignment)
+    let destination = UnsafeMutableRawBufferPointer(start: storage, count: bytes.count)
+    _ = bytes.withUnsafeBytes { source in
+      source.copyBytes(to: destination)
+    }
+    return Data(
+      bytesNoCopy: storage, count: bytes.count,
+      deallocator: .custom { pointer, length in
+        clear(UnsafeMutableRawBufferPointer(start: pointer, count: length))
+        observeWipe?(UnsafeRawBufferPointer(start: pointer, count: length))
+        pointer.deallocate()
+      })
+  }
+
   static func clearOwned(_ bytes: inout [UInt8]) {
     bytes.withUnsafeMutableBytes { buffer in clear(buffer) }
   }
 
-  static func clearOwned(_ bytes: inout Data) {
-    bytes.withUnsafeMutableBytes { buffer in clear(buffer) }
+  static func clearOwned(
+    _ bytes: inout Data,
+    observeWipe: ((UnsafeRawBufferPointer) -> Void)? = nil
+  ) {
+    bytes.withUnsafeMutableBytes { buffer in
+      clear(buffer)
+      observeWipe?(UnsafeRawBufferPointer(buffer))
+    }
   }
 
   private static func clear(_ buffer: UnsafeMutableRawBufferPointer) {

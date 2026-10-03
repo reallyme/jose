@@ -194,10 +194,16 @@ internal fun protoJwtTemporalPolicy(value: ReallyMeJoseJwtTemporalPolicy): JoseJ
             ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_POLICY,
         )
     }
+    if (value.expectedIssuer?.isEmpty() == true || value.expectedSubject?.isEmpty() == true) {
+        throw ReallyMeJoseException.JoseFailure(
+            ReallyMeJoseErrorBranch.PRIMITIVE,
+            ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_POLICY,
+        )
+    }
     utf8Length(value.expectedAudience)
     value.expectedIssuer?.let { utf8Length(it) }
     value.expectedSubject?.let { utf8Length(it) }
-    return JoseJwtTemporalValidationPolicy.newBuilder()
+    val builder = JoseJwtTemporalValidationPolicy.newBuilder()
         .setRequireExp(value.requireExpiration)
         .setRequireNbf(value.requireNotBefore)
         .setRequireIat(value.requireIssuedAt)
@@ -205,9 +211,13 @@ internal fun protoJwtTemporalPolicy(value: ReallyMeJoseJwtTemporalPolicy): JoseJ
         .setMaxFutureIatSkewSeconds(value.maximumFutureIssuedAtSkewSeconds)
         .setNowUnix(value.nowUnix)
         .setExpectedAudience(value.expectedAudience)
-        .setExpectedIssuer(value.expectedIssuer ?: "")
-        .setExpectedSubject(value.expectedSubject ?: "")
-        .build()
+    value.expectedIssuer?.let {
+        builder.setExpectedIssuerConstraint(JoseExpectedString.newBuilder().setValue(it).build())
+    }
+    value.expectedSubject?.let {
+        builder.setExpectedSubjectConstraint(JoseExpectedString.newBuilder().setValue(it).build())
+    }
+    return builder.build()
 }
 
 internal fun protoJweHeaderPolicy(

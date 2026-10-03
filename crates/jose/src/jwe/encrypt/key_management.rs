@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use reallyme_crypto::core::CryptoError;
 use zeroize::Zeroize;
 
 use crate::jwe::{
@@ -17,6 +18,17 @@ use super::ec_keys::{
     p521_public_key_from_jwk,
 };
 use super::{encode_optional_base64url, CompactJweEncryptRequest};
+
+const fn map_keypair_generation_error(error: CryptoError) -> JweError {
+    match error {
+        CryptoError::Rng { .. } => JweError::Randomness,
+        _ => JweError::InvalidKeyAgreementKey,
+    }
+}
+
+#[cfg(test)]
+#[path = "key_management_tests.rs"]
+mod key_management_tests;
 
 /// Prepared CEK and protected-header additions from a JWE key-management step.
 pub struct PreparedJweEncryptionKey {
@@ -151,8 +163,7 @@ impl JweContentEncryptionKeyEncryptor for P256EcdhEsJweKeyEncryptor<'_> {
         request: &CompactJweEncryptRequest<'_>,
     ) -> Result<PreparedJweEncryptionKey, JweError> {
         let (ephemeral_public, mut ephemeral_private) =
-            reallyme_crypto::p256::generate_p256_keypair()
-                .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+            reallyme_crypto::p256::generate_p256_keypair().map_err(map_keypair_generation_error)?;
         let mut shared_secret = reallyme_crypto::p256::derive_p256_shared_secret(
             &ephemeral_private,
             self.recipient_public_key_sec1,
@@ -252,8 +263,7 @@ impl JweContentEncryptionKeyEncryptor for P384EcdhEsJweKeyEncryptor<'_> {
         request: &CompactJweEncryptRequest<'_>,
     ) -> Result<PreparedJweEncryptionKey, JweError> {
         let (ephemeral_public, mut ephemeral_private) =
-            reallyme_crypto::p384::generate_p384_keypair()
-                .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+            reallyme_crypto::p384::generate_p384_keypair().map_err(map_keypair_generation_error)?;
         let mut shared_secret = reallyme_crypto::p384::derive_p384_shared_secret(
             &ephemeral_private,
             self.recipient_public_key_sec1,
@@ -356,8 +366,7 @@ impl JweContentEncryptionKeyEncryptor for P521EcdhEsJweKeyEncryptor<'_> {
         request: &CompactJweEncryptRequest<'_>,
     ) -> Result<PreparedJweEncryptionKey, JweError> {
         let (ephemeral_public, mut ephemeral_private) =
-            reallyme_crypto::p521::generate_p521_keypair()
-                .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+            reallyme_crypto::p521::generate_p521_keypair().map_err(map_keypair_generation_error)?;
         let mut shared_secret = reallyme_crypto::p521::derive_p521_shared_secret(
             &ephemeral_private,
             self.recipient_public_key_sec1,

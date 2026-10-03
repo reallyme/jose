@@ -227,6 +227,7 @@ function parseStructFields(body) {
           type,
           jsonName: extractSerdeValue(serdeAttr, "rename") ?? collectingField.name,
           aliases: extractSerdeAliases(serdeAttr),
+          with: extractSerdeValue(serdeAttr, "with"),
         });
         collectingField = null;
         serdeAttr = "";
@@ -245,6 +246,7 @@ function parseStructFields(body) {
         type: typeStart.trim().replace(/,$/u, ""),
         jsonName: extractSerdeValue(serdeAttr, "rename") ?? name,
         aliases: extractSerdeAliases(serdeAttr),
+        with: extractSerdeValue(serdeAttr, "with"),
       });
       serdeAttr = "";
     } else {
@@ -262,17 +264,32 @@ function serdeAttrForWireField(field) {
   }
 
   if (field.type === "::buffa::alloc::vec::Vec<u8>") {
+    if (field.with !== "::buffa::json_helpers::bytes") {
+      fail(`unsupported bytes JSON adapter on ${field.name}`);
+    }
     parts.push('deserialize_with = "deserialize_zeroizing_bytes"');
   } else if (field.type === "::buffa::alloc::string::String") {
+    if (field.with !== "::buffa::json_helpers::proto_string") {
+      fail(`unsupported string JSON adapter on ${field.name}`);
+    }
     parts.push('deserialize_with = "deserialize_zeroizing_string"');
   } else if (field.type.startsWith("::buffa::EnumValue<")) {
-    parts.push('with = "::buffa::json_helpers::proto_enum"');
-  } else if (
-    field.type.startsWith("::buffa::MessageField<") ||
-    field.type === "bool" ||
-    field.type === "u64"
-  ) {
-    // These generated field shapes use serde's default representation.
+    if (field.with !== "::buffa::json_helpers::proto_enum") {
+      fail(`unsupported enum JSON adapter on ${field.name}`);
+    }
+    parts.push(`with = "${field.with}"`);
+  } else if (field.type === "bool" || field.type === "u64") {
+    const expected = field.type === "bool"
+      ? "::buffa::json_helpers::proto_bool"
+      : "::buffa::json_helpers::uint64";
+    if (field.with !== expected) {
+      fail(`unsupported scalar JSON adapter on ${field.name}`);
+    }
+    parts.push(`deserialize_with = "${field.with}::deserialize"`);
+  } else if (field.type.startsWith("::buffa::MessageField<")) {
+    if (field.with !== null) {
+      fail(`unsupported message JSON adapter on ${field.name}`);
+    }
   } else {
     fail(`unsupported generated field type ${field.type} on ${field.name}`);
   }
@@ -337,7 +354,7 @@ ${hasSensitiveString ? `        fn deserialize_zeroizing_string<'de, D>(
         where
             D: ::serde::Deserializer<'de>,
         {
-            <::buffa::alloc::string::String as ::serde::Deserialize>::deserialize(deserializer)
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
 
@@ -649,6 +666,25 @@ ${debugFields}
         source.slice(0, ownedImplIndex) +
         ownedDebugImpl +
         source.slice(ownedImplIndex);
+    }
+    const viewImplStart = source.indexOf(`impl<'a> ::core::fmt::Debug for ${viewName}<'a> {`);
+    const viewImplEnd = source.indexOf("\n}\n", viewImplStart);
+    if (viewImplStart < 0 || viewImplEnd < 0) {
+      fail(`missing redacting Debug implementation for ${viewName}`);
+    }
+    const viewDebug = source.slice(viewImplStart, viewImplEnd);
+    for (const field of sensitiveFields) {
+      if (!viewDebug.includes(`.field("${field}", &"<redacted>")`)) {
+        fail(`${viewName} Debug does not redact ${field}`);
+      }
+    }
+    if (
+      !source.includes(
+        `f.write_str("${ownedViewName}(<redacted>)")`,
+      ) ||
+      source.includes(`#[derive(Clone, Debug)]\npub struct ${ownedViewName}(`)
+    ) {
+      fail(`${ownedViewName} Debug is not redacted`);
     }
   }
   writeFileSync(generatedViewPath, source);

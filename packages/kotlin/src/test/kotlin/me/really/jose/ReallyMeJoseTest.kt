@@ -57,6 +57,55 @@ class ReallyMeJoseTest {
     }
 
     @Test
+    fun expectedJwtIssuerAndSubjectCannotBeDisabledByEmptyValues() {
+        val privateKey = decodeHex(PRIVATE_KEY_HEX)
+        val publicKey = decodeHex(PUBLIC_KEY_HEX)
+        val jwk =
+            """{"alg":"EdDSA","crv":"Ed25519","kid":"k-ed","kty":"OKP","use":"sig","x":"_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg"}"""
+                .toByteArray()
+        val claims = """{"aud":"recipient","iss":"trusted","sub":"alice","exp":1720000100}"""
+            .toByteArray()
+        try {
+            val compact = ReallyMeJose.signJwt(claims, jwk, privateKey)
+            fun policy(issuer: String?, subject: String?): ReallyMeJoseJwtTemporalPolicy =
+                ReallyMeJoseJwtTemporalPolicy(
+                    true, false, false, 0, 0, 1_720_000_000, "recipient", issuer, subject,
+                )
+
+            val unconstrained = ReallyMeJose.verifyJwt(
+                compact, jwk, publicKey, temporalPolicy = policy(null, null),
+            )
+            assertContentEquals(claims, unconstrained)
+            unconstrained.fill(0)
+            val constrained = ReallyMeJose.verifyJwt(
+                compact, jwk, publicKey, temporalPolicy = policy("trusted", "alice"),
+            )
+            assertContentEquals(claims, constrained)
+            constrained.fill(0)
+
+            for ((issuer, subject) in listOf("" to null, null to "")) {
+                val failure = assertFailsWith<ReallyMeJoseException.JoseFailure> {
+                    ReallyMeJose.verifyJwt(
+                        compact, jwk, publicKey, temporalPolicy = policy(issuer, subject),
+                    ).fill(0)
+                }
+                assertEquals(ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_POLICY, failure.reason)
+            }
+            val mismatch = assertFailsWith<ReallyMeJoseException.JoseFailure> {
+                ReallyMeJose.verifyJwt(
+                    compact, jwk, publicKey, temporalPolicy = policy("trusted", "other"),
+                ).fill(0)
+            }
+            assertEquals(ReallyMeJoseErrorReason.JWT_SUBJECT_MISMATCH, mismatch.reason)
+        } finally {
+            privateKey.fill(0)
+            publicKey.fill(0)
+            jwk.fill(0)
+            claims.fill(0)
+        }
+    }
+
+    @Test
     fun unsignedJwtAndDirectJweRoundTrip() {
         val claims = """{"sub":"stage-15"}""".toByteArray()
         val unsigned = ReallyMeJose.encodeUnsignedJwt(claims)

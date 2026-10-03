@@ -14,6 +14,9 @@ on:
       - "scripts/check_release_readiness.mjs"
       - "scripts/harden-generated-jose-proto.mjs"
       - "crates/proto/**"
+      - "gen/**"
+      - "scripts/harden-generated-jose-jvm.mjs"
+      - "scripts/harden-generated-jose-swift.mjs"
       - "packages/ts/src/proto/generated/**"
   push:
     branches:
@@ -25,6 +28,9 @@ on:
       - "scripts/check_release_readiness.mjs"
       - "scripts/harden-generated-jose-proto.mjs"
       - "crates/proto/**"
+      - "gen/**"
+      - "scripts/harden-generated-jose-jvm.mjs"
+      - "scripts/harden-generated-jose-swift.mjs"
       - "packages/ts/src/proto/generated/**"
 
 permissions:
@@ -34,6 +40,7 @@ env:
   BUFFA_VERSION: 0.9.2
   BUF_VERSION: 1.73.0
   BUF_LINUX_X86_64_SHA256: 8f2986298ad08f0cc1bf999b9797b7c383adf32d7edf0f73d6f1e1a701baeac1
+  PROTOBUF_BASELINE_COMMIT: 873990d
 
 jobs:
   protobuf:
@@ -80,6 +87,9 @@ jobs:
         run: |
           cargo install protoc-gen-buffa --version "$BUFFA_VERSION" --locked
           cargo install protoc-gen-buffa-packaging --version "$BUFFA_VERSION" --locked
+
+      - name: Check protobuf compatibility with the published schema
+        run: buf breaking --against ".git#ref=${PROTOBUF_BASELINE_COMMIT},subdir=crates/proto/proto"
 
       - name: Checkout release-readiness runner
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

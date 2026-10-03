@@ -38,9 +38,11 @@ into a `Uint8Array`, and call `wasm.initSync({ module: bytes })` before provider
 installation. Node.js integrations require version 20.19 or newer.
 
 Provider installation is explicit. Calls fail closed when no WASM provider is
-installed; applications must select a trusted module. Sensitive inputs are
-copied into bounded owners and cleared after dispatch; callers remain
-responsible for clearing their own `Uint8Array` values.
+installed; applications must select a trusted module. The facade clears the
+request and response byte arrays it owns after dispatch. The protobuf encoder
+can make internal copies during buffer growth that JavaScript cannot clear
+through its public API, so this is best-effort cleanup rather than guaranteed
+erasure. Callers remain responsible for clearing their own `Uint8Array` values.
 
 The WASM provider supports compact JWS with EdDSA and ES256, JWT with EdDSA,
 ES256, and ES256K, direct-key JWE with A128GCM/A192GCM/A256GCM, and ECDH-ES

@@ -258,7 +258,16 @@ val buildHostNativeLibrary = tasks.register<Exec>("buildHostNativeLibrary") {
     // FFI unwinding is a workspace-owned release invariant. Ambient codegen
     // flags must not override the audited profile used for packaged binaries.
     environment.remove("CARGO_ENCODED_RUSTFLAGS")
-    environment.remove("RUSTFLAGS")
+    environment["RUSTFLAGS"] = ""
+    environment["CARGO_TARGET_DIR"] = layout.projectDirectory.dir("../../target").asFile.absolutePath
+    environment.keys.filter { key ->
+        key == "CARGO_BUILD_RUSTFLAGS" || key == "CARGO_BUILD_TARGET" ||
+            (key.startsWith("CARGO_TARGET_") && key.endsWith("_RUSTFLAGS")) ||
+            key.startsWith("CARGO_PROFILE_")
+    }.forEach { key -> environment.remove(key) }
+    doFirst {
+        layout.projectDirectory.file("../../target/release-ffi/$hostNativeLibraryName").asFile.delete()
+    }
     commandLine("cargo", "build", "--locked", "-p", "reallyme-jose-ffi", "--profile", "release-ffi")
 }
 

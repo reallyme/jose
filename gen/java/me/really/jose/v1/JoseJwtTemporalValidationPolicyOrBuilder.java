@@ -76,7 +76,8 @@ public interface JoseJwtTemporalValidationPolicyOrBuilder extends
 
   /**
    * <pre>
-   * Optional exact issuer constraint. Empty means no issuer constraint.
+   * Legacy issuer constraint. Empty means absent for older clients that cannot
+   * express presence. New clients use expected_issuer_constraint.
    * </pre>
    *
    * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -85,7 +86,8 @@ public interface JoseJwtTemporalValidationPolicyOrBuilder extends
   java.lang.String getExpectedIssuer();
   /**
    * <pre>
-   * Optional exact issuer constraint. Empty means no issuer constraint.
+   * Legacy issuer constraint. Empty means absent for older clients that cannot
+   * express presence. New clients use expected_issuer_constraint.
    * </pre>
    *
    * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
@@ -96,7 +98,7 @@ public interface JoseJwtTemporalValidationPolicyOrBuilder extends
 
   /**
    * <pre>
-   * Optional exact subject constraint. Empty means no subject constraint.
+   * Legacy subject constraint with the same absence ambiguity.
    * </pre>
    *
    * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -105,7 +107,7 @@ public interface JoseJwtTemporalValidationPolicyOrBuilder extends
   java.lang.String getExpectedSubject();
   /**
    * <pre>
-   * Optional exact subject constraint. Empty means no subject constraint.
+   * Legacy subject constraint with the same absence ambiguity.
    * </pre>
    *
    * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
@@ -113,4 +115,44 @@ public interface JoseJwtTemporalValidationPolicyOrBuilder extends
    */
   com.google.protobuf.ByteString
       getExpectedSubjectBytes();
+
+  /**
+   * <pre>
+   * Presence-sensitive exact issuer constraint. A present empty value is
+   * invalid, so an empty caller configuration cannot disable verification.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+   * @return Whether the expectedIssuerConstraint field is set.
+   */
+  boolean hasExpectedIssuerConstraint();
+  /**
+   * <pre>
+   * Presence-sensitive exact issuer constraint. A present empty value is
+   * invalid, so an empty caller configuration cannot disable verification.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_issuer_constraint = 10 [json_name = "expectedIssuerConstraint"];</code>
+   * @return The expectedIssuerConstraint.
+   */
+  me.really.jose.v1.JoseExpectedString getExpectedIssuerConstraint();
+
+  /**
+   * <pre>
+   * Presence-sensitive exact subject constraint.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+   * @return Whether the expectedSubjectConstraint field is set.
+   */
+  boolean hasExpectedSubjectConstraint();
+  /**
+   * <pre>
+   * Presence-sensitive exact subject constraint.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseExpectedString expected_subject_constraint = 11 [json_name = "expectedSubjectConstraint"];</code>
+   * @return The expectedSubjectConstraint.
+   */
+  me.really.jose.v1.JoseExpectedString getExpectedSubjectConstraint();
 }

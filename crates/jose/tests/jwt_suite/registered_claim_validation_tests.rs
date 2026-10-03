@@ -3,10 +3,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use super::support::gen_ed25519;
+use super::support::{gen_ed25519, sign_raw_ed25519_jwt_claims};
+use reallyme_crypto::jwk::Jwk;
 use reallyme_jose::jwt::{
-    decode_verify_jwt_with_claims_validation, encode_signed_jwt, JwtClaimsValidationPolicy,
-    JwtError, JwtRegisteredClaim, JwtTemporalValidationPolicy,
+    decode_verify_jwt_with_claims_validation, JwtClaimsValidationPolicy, JwtError,
+    JwtRegisteredClaim, JwtTemporalValidationPolicy,
 };
 
 const NOW_UNIX: u64 = 1_720_000_000;
@@ -194,7 +195,13 @@ fn verify_claims(
     policy: JwtClaimsValidationPolicy<'_>,
 ) -> Result<serde_json::Value, JwtError> {
     let key = gen_ed25519();
-    let compact = encode_signed_jwt(claims, &key.jwk, &key.private).unwrap();
+    // A raw JWS signer models tokens created outside the JWT encoder, which
+    // must remain rejectable by this verifier even if our issuer refuses them.
+    let compact = sign_raw_ed25519_jwt_claims(&key.private, claims);
+    let mut jwk = key.jwk;
+    if let Jwk::Okp(ref mut key) = jwk {
+        key.kid = None;
+    }
 
-    decode_verify_jwt_with_claims_validation(&compact, &key.jwk, &key.public, NOW_UNIX, policy)
+    decode_verify_jwt_with_claims_validation(&compact, &jwk, &key.public, NOW_UNIX, policy)
 }

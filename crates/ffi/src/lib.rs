@@ -9,11 +9,6 @@
 //! the generated response; C status codes describe only ABI transport state.
 
 #![cfg(not(target_arch = "wasm32"))]
-// Raw pointers exist only in the reviewed boundary modules. Each dereference
-// is preceded by the shared validation helpers and a local `SAFETY:` proof.
-#![allow(unsafe_code)]
-#![allow(clippy::missing_safety_doc)]
-
 // A panic firewall is ineffective under panic=abort. Native artifact builders
 // select the workspace's release-ffi profile, and this check rejects any
 // incorrectly configured build.

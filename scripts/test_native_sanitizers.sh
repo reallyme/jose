@@ -14,7 +14,9 @@ readonly TEST_ARGS=(
   test
   --locked
   -p reallyme-jose-ffi
+  -p reallyme-jose
   --tests
+  --all-features
   --target "${TARGET}"
 )
 

@@ -4,6 +4,9 @@
 
 //! Shared pointer, length, alignment, and alias validation.
 
+// This module alone turns validated caller pointers into Rust references.
+#![allow(unsafe_code)]
+
 use crate::status::JoseFfiStatus;
 
 const MAX_FFI_SLICE_LEN: usize = isize::MAX.unsigned_abs();

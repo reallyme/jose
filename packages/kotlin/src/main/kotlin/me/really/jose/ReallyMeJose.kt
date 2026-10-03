@@ -4,8 +4,8 @@
 
 package me.really.jose
 
-import com.google.protobuf.CodedInputStream
 import com.google.protobuf.InvalidProtocolBufferException
+import com.google.protobuf.UnsafeByteOperations
 import me.really.jose.v1.JoseJweDecryptRequest
 import me.really.jose.v1.JoseJweDecryptResponse
 import me.really.jose.v1.JoseJweEncryptRequest
@@ -43,14 +43,15 @@ public object ReallyMeJose {
             .setPrivateKey(wrap(owned[0]))
             .setPayload(wrap(owned[1]))
             .build()
-        val response = execute(JoseOperationRequest.newBuilder().setJwsSign(operation).build())
-        if (response.responseCase != JoseOperationResponse.ResponseCase.JWS_SIGN) malformed()
-        val selected = response.jwsSign
-        requireClean(selected)
-        when (selected.outcomeCase) {
-            JoseJwsSignResponse.OutcomeCase.RESULT -> compact(selected.result)
-            JoseJwsSignResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
-            else -> malformed()
+        execute(JoseOperationRequest.newBuilder().setJwsSign(operation).build()) { response ->
+            if (response.responseCase != JoseOperationResponse.ResponseCase.JWS_SIGN) malformed()
+            val selected = response.jwsSign
+            requireClean(selected)
+            when (selected.outcomeCase) {
+                JoseJwsSignResponse.OutcomeCase.RESULT -> compact(selected.result)
+                JoseJwsSignResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
+                else -> malformed()
+            }
         }
     }
 
@@ -66,14 +67,15 @@ public object ReallyMeJose {
             .setCompact(compact)
             .setPublicKey(wrap(owned[0]))
             .build()
-        val response = execute(JoseOperationRequest.newBuilder().setJwsVerify(operation).build())
-        if (response.responseCase != JoseOperationResponse.ResponseCase.JWS_VERIFY) malformed()
-        val selected = response.jwsVerify
-        requireClean(selected)
-        when (selected.outcomeCase) {
-            JoseJwsVerifyResponse.OutcomeCase.RESULT -> requireClean(selected.result)
-            JoseJwsVerifyResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
-            else -> malformed()
+        execute(JoseOperationRequest.newBuilder().setJwsVerify(operation).build()) { response ->
+            if (response.responseCase != JoseOperationResponse.ResponseCase.JWS_VERIFY) malformed()
+            val selected = response.jwsVerify
+            requireClean(selected)
+            when (selected.outcomeCase) {
+                JoseJwsVerifyResponse.OutcomeCase.RESULT -> requireClean(selected.result)
+                JoseJwsVerifyResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
+                else -> malformed()
+            }
         }
     }
 
@@ -83,14 +85,15 @@ public object ReallyMeJose {
         val operation = JoseJwtEncodeUnsignedRequest.newBuilder()
             .setClaimsJson(wrap(owned[0]))
             .build()
-        val response = execute(JoseOperationRequest.newBuilder().setJwtEncodeUnsigned(operation).build())
-        if (response.responseCase != JoseOperationResponse.ResponseCase.JWT_ENCODE_UNSIGNED) malformed()
-        val selected = response.jwtEncodeUnsigned
-        requireClean(selected)
-        when (selected.outcomeCase) {
-            JoseJwtEncodeUnsignedResponse.OutcomeCase.RESULT -> compact(selected.result)
-            JoseJwtEncodeUnsignedResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
-            else -> malformed()
+        execute(JoseOperationRequest.newBuilder().setJwtEncodeUnsigned(operation).build()) { response ->
+            if (response.responseCase != JoseOperationResponse.ResponseCase.JWT_ENCODE_UNSIGNED) malformed()
+            val selected = response.jwtEncodeUnsigned
+            requireClean(selected)
+            when (selected.outcomeCase) {
+                JoseJwtEncodeUnsignedResponse.OutcomeCase.RESULT -> compact(selected.result)
+                JoseJwtEncodeUnsignedResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
+                else -> malformed()
+            }
         }
     }
 
@@ -98,17 +101,18 @@ public object ReallyMeJose {
     public fun decodeUnsignedJwt(compact: String): ByteArray {
         requireAggregate(utf8Length(compact))
         val operation = JoseJwtDecodeUnsignedRequest.newBuilder().setCompact(compact).build()
-        val response = execute(JoseOperationRequest.newBuilder().setJwtDecodeUnsigned(operation).build())
-        if (response.responseCase != JoseOperationResponse.ResponseCase.JWT_DECODE_UNSIGNED) malformed()
-        val selected = response.jwtDecodeUnsigned
-        requireClean(selected)
-        return when (selected.outcomeCase) {
-            JoseJwtDecodeUnsignedResponse.OutcomeCase.RESULT -> {
-                requireClean(selected.result)
-                selected.result.claimsJson.toByteArray()
+        return execute(JoseOperationRequest.newBuilder().setJwtDecodeUnsigned(operation).build()) { response ->
+            if (response.responseCase != JoseOperationResponse.ResponseCase.JWT_DECODE_UNSIGNED) malformed()
+            val selected = response.jwtDecodeUnsigned
+            requireClean(selected)
+            when (selected.outcomeCase) {
+                JoseJwtDecodeUnsignedResponse.OutcomeCase.RESULT -> {
+                    requireClean(selected.result)
+                    selected.result.claimsJson.toByteArray()
+                }
+                JoseJwtDecodeUnsignedResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
+                else -> malformed()
             }
-            JoseJwtDecodeUnsignedResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
-            else -> malformed()
         }
     }
 
@@ -127,14 +131,15 @@ public object ReallyMeJose {
             .setPrivateKey(wrap(owned[2]))
             .setTyp(type)
             .build()
-        val response = execute(JoseOperationRequest.newBuilder().setJwtSign(operation).build())
-        if (response.responseCase != JoseOperationResponse.ResponseCase.JWT_SIGN) malformed()
-        val selected = response.jwtSign
-        requireClean(selected)
-        when (selected.outcomeCase) {
-            JoseJwtSignResponse.OutcomeCase.RESULT -> compact(selected.result)
-            JoseJwtSignResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
-            else -> malformed()
+        execute(JoseOperationRequest.newBuilder().setJwtSign(operation).build()) { response ->
+            if (response.responseCase != JoseOperationResponse.ResponseCase.JWT_SIGN) malformed()
+            val selected = response.jwtSign
+            requireClean(selected)
+            when (selected.outcomeCase) {
+                JoseJwtSignResponse.OutcomeCase.RESULT -> compact(selected.result)
+                JoseJwtSignResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
+                else -> malformed()
+            }
         }
     }
 
@@ -156,17 +161,18 @@ public object ReallyMeJose {
             .setSignatureOnly(signatureOnly)
         if (headerPolicy != null) builder.setHeaderPolicy(protoJwtHeaderPolicy(headerPolicy))
         if (temporalPolicy != null) builder.setTemporalPolicy(protoJwtTemporalPolicy(temporalPolicy))
-        val response = execute(JoseOperationRequest.newBuilder().setJwtVerify(builder.build()).build())
-        if (response.responseCase != JoseOperationResponse.ResponseCase.JWT_VERIFY) malformed()
-        val selected = response.jwtVerify
-        requireClean(selected)
-        when (selected.outcomeCase) {
-            JoseJwtVerifyResponse.OutcomeCase.RESULT -> {
-                requireClean(selected.result)
-                selected.result.claimsJson.toByteArray()
+        execute(JoseOperationRequest.newBuilder().setJwtVerify(builder.build()).build()) { response ->
+            if (response.responseCase != JoseOperationResponse.ResponseCase.JWT_VERIFY) malformed()
+            val selected = response.jwtVerify
+            requireClean(selected)
+            when (selected.outcomeCase) {
+                JoseJwtVerifyResponse.OutcomeCase.RESULT -> {
+                    requireClean(selected.result)
+                    selected.result.claimsJson.toByteArray()
+                }
+                JoseJwtVerifyResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
+                else -> malformed()
             }
-            JoseJwtVerifyResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
-            else -> malformed()
         }
     }
 
@@ -202,14 +208,15 @@ public object ReallyMeJose {
             operationBuilder.setCompressionAlgorithm(protoCompressionAlgorithm(compressionAlgorithm))
         }
         val operation = operationBuilder.build()
-        val response = execute(JoseOperationRequest.newBuilder().setJweEncrypt(operation).build())
-        if (response.responseCase != JoseOperationResponse.ResponseCase.JWE_ENCRYPT) malformed()
-        val selected = response.jweEncrypt
-        requireClean(selected)
-        when (selected.outcomeCase) {
-            JoseJweEncryptResponse.OutcomeCase.RESULT -> compact(selected.result)
-            JoseJweEncryptResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
-            else -> malformed()
+        execute(JoseOperationRequest.newBuilder().setJweEncrypt(operation).build()) { response ->
+            if (response.responseCase != JoseOperationResponse.ResponseCase.JWE_ENCRYPT) malformed()
+            val selected = response.jweEncrypt
+            requireClean(selected)
+            when (selected.outcomeCase) {
+                JoseJweEncryptResponse.OutcomeCase.RESULT -> compact(selected.result)
+                JoseJweEncryptResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
+                else -> malformed()
+            }
         }
     }
 
@@ -231,17 +238,18 @@ public object ReallyMeJose {
                 .setContentEncryptionAlgorithm(protoContentEncryptionAlgorithm(contentEncryptionAlgorithm))
                 .setKey(wrap(owned[0]))
             if (headerPolicy != null) builder.setHeaderPolicy(protoJweHeaderPolicy(headerPolicy, policyOwned))
-            val response = execute(JoseOperationRequest.newBuilder().setJweDecrypt(builder.build()).build())
-            if (response.responseCase != JoseOperationResponse.ResponseCase.JWE_DECRYPT) malformed()
-            val selected = response.jweDecrypt
-            requireClean(selected)
-            when (selected.outcomeCase) {
-                JoseJweDecryptResponse.OutcomeCase.RESULT -> {
-                    requireClean(selected.result)
-                    selected.result.plaintext.toByteArray()
+            execute(JoseOperationRequest.newBuilder().setJweDecrypt(builder.build()).build()) { response ->
+                if (response.responseCase != JoseOperationResponse.ResponseCase.JWE_DECRYPT) malformed()
+                val selected = response.jweDecrypt
+                requireClean(selected)
+                when (selected.outcomeCase) {
+                    JoseJweDecryptResponse.OutcomeCase.RESULT -> {
+                        requireClean(selected.result)
+                        selected.result.plaintext.toByteArray()
+                    }
+                    JoseJweDecryptResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
+                    else -> malformed()
                 }
-                JoseJweDecryptResponse.OutcomeCase.ERROR -> throw sdkError(selected.error)
-                else -> malformed()
             }
         } finally {
             policyOwned.forEach { it.fill(0) }
@@ -256,7 +264,7 @@ public object ReallyMeJose {
     @JvmStatic
     public fun executeWireJsonRequest(request: ByteArray): ByteArray = executeOwned(request, true)
 
-    private fun execute(request: JoseOperationRequest): JoseOperationResponse {
+    private fun <T> execute(request: JoseOperationRequest, consume: (JoseOperationResponse) -> T): T {
         if (request.serializedSize > ReallyMeJoseRustNativeProvider.binaryRequestLimit()) {
             throw resourceLimit()
         }
@@ -268,7 +276,10 @@ public object ReallyMeJose {
             requestBytes.fill(0)
         }
         try {
-            val input = CodedInputStream.newInstance(responseBytes)
+            // Alias the owned JNI response during parsing so protobuf bytes
+            // fields remain backed by the array we wipe after extraction.
+            val input = UnsafeByteOperations.unsafeWrap(responseBytes).newCodedInput()
+            input.enableAliasing(true)
             input.setRecursionLimit(MAX_PROTOBUF_RECURSION_DEPTH)
             input.setSizeLimit(ReallyMeJoseRustNativeProvider.responseLimit())
             val response = JoseOperationResponse.parseFrom(input)
@@ -279,7 +290,7 @@ public object ReallyMeJose {
             if (response.responseCase == JoseOperationResponse.ResponseCase.BOUNDARY_ERROR) {
                 throw sdkError(response.boundaryError)
             }
-            return response
+            return consume(response)
         } catch (_: InvalidProtocolBufferException) {
             malformed()
         } finally {

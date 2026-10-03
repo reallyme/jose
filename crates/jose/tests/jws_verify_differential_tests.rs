@@ -87,6 +87,9 @@ fn all_wire_routes_match_for_applicable_panva_vectors() {
 #[test]
 fn all_wire_routes_match_for_pilot_specific_failure_reasons() {
     let invalid_utf8_header = bytes_to_base64url(&[0xff]);
+    let invalid_ignored_utf8 = bytes_to_base64url(b"{\"alg\":\"ES256\",\"ignored\":\"\xff\"}");
+    let lone_surrogate = bytes_to_base64url(br#"{"alg":"ES256","ignored":"\ud800"}"#);
+    let duplicate_nested = bytes_to_base64url(br#"{"alg":"ES256","ignored":{"x":1,"x":2}}"#);
     let es256_header = bytes_to_base64url(br#"{"alg":"ES256"}"#);
     let zero_signature = bytes_to_base64url(&[0u8; 64]);
     let cases = [
@@ -97,6 +100,18 @@ fn all_wire_routes_match_for_pilot_specific_failure_reasons() {
         (
             format!("{invalid_utf8_header}.payload.signature"),
             JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8,
+        ),
+        (
+            format!("{invalid_ignored_utf8}.payload.signature"),
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8,
+        ),
+        (
+            format!("{lone_surrogate}.payload.signature"),
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_HEADER_MISMATCH,
+        ),
+        (
+            format!("{duplicate_nested}.payload.signature"),
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_HEADER_MISMATCH,
         ),
         (
             format!("{es256_header}.payload.{zero_signature}"),

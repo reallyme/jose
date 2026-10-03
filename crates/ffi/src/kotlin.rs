@@ -8,6 +8,9 @@
 //! request is executed through the frozen C ABI so JVM and Swift cannot drift
 //! onto a second semantic path.
 
+// JNI pointer use is confined to this adapter and reviewed at each call site.
+#![allow(unsafe_code)]
+
 use std::ptr;
 
 use jni::objects::{JByteArray, JObject};

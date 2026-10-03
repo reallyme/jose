@@ -245,7 +245,7 @@ const runJweCase = (vector) => {
   }
 };
 
-test("TypeScript/WASM executes all 102 cross-lane conformance vectors", async (suite) => {
+test("TypeScript/WASM executes all 104 cross-lane conformance vectors", async (suite) => {
   installReallyMeJoseWasmProvider(await initializeWasmProvider());
 
   const jwsCases = await loadCases("jws-compact.json");
@@ -255,7 +255,7 @@ test("TypeScript/WASM executes all 102 cross-lane conformance vectors", async (s
   const panvaCases = await loadCases("panva-jose.json");
   assert.equal(
     jwsCases.length + unsignedJwtCases.length + signedJwtCases.length + jweCases.length + panvaCases.length,
-    102,
+    104,
   );
 
   await suite.test("JWS corpus", () => {

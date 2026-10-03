@@ -46,7 +46,18 @@ const before = argumentsSeen.has("--check-idempotent")
 for (const path of generatedPaths()) {
   let source = readFileSync(path, "utf8");
   if (path.endsWith(".java")) {
+    const messageClassCount = [...source.matchAll(
+      /\bclass\s+[A-Z][A-Za-z0-9]*\s+extends\s+com\.google\.protobuf\.GeneratedMessageLite\s*</gu,
+    )].length;
+    // The redaction below is per file. Reject a generator change that adds
+    // nested messages until every generated message gets its own redaction.
+    if (messageClassCount > 1) {
+      fail(`nested generated messages require individual hardening in ${path}`);
+    }
     const declaration = /public\s+final\s+class\s+([A-Z][A-Za-z0-9]*)\s+extends/u.exec(source);
+    if ((declaration === null) !== (messageClassCount === 0)) {
+      fail(`generated message declaration mismatch in ${path}`);
+    }
     if (declaration !== null) {
       const messageName = declaration[1];
       const constructor = `  private ${messageName}()`;

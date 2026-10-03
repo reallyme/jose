@@ -23,7 +23,7 @@
       "id": "jwe-compact",
       "source": "RFC7516/RFC7518 and ReallyMe deterministic fixtures",
       "path": "jwe-compact.json",
-      "case_count": 34
+      "case_count": 36
     },
     {
       "id": "panva-jose",

@@ -4838,7 +4838,7 @@ impl<'de> ::serde::Deserialize<'de> for JoseCompactResult {
         where
             D: ::serde::Deserializer<'de>,
         {
-            <::buffa::alloc::string::String as ::serde::Deserialize>::deserialize(deserializer)
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
 
@@ -5030,7 +5030,7 @@ impl<'de> ::serde::Deserialize<'de> for JoseJwsVerifyRequest {
         where
             D: ::serde::Deserializer<'de>,
         {
-            <::buffa::alloc::string::String as ::serde::Deserialize>::deserialize(deserializer)
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
 
@@ -5612,7 +5612,7 @@ impl<'de> ::serde::Deserialize<'de> for JoseJwtDecodeUnsignedRequest {
         where
             D: ::serde::Deserializer<'de>,
         {
-            <::buffa::alloc::string::String as ::serde::Deserialize>::deserialize(deserializer)
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
 
@@ -5988,7 +5988,7 @@ impl<'de> ::serde::Deserialize<'de> for JoseJwtSignRequest {
         where
             D: ::serde::Deserializer<'de>,
         {
-            <::buffa::alloc::string::String as ::serde::Deserialize>::deserialize(deserializer)
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
 
@@ -6278,7 +6278,7 @@ impl<'de> ::serde::Deserialize<'de> for JoseJwtVerifyRequest {
         where
             D: ::serde::Deserializer<'de>,
         {
-            <::buffa::alloc::string::String as ::serde::Deserialize>::deserialize(deserializer)
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
 
@@ -6295,7 +6295,7 @@ impl<'de> ::serde::Deserialize<'de> for JoseJwtVerifyRequest {
             header_policy: ::buffa::MessageField< JoseJwtHeaderValidationPolicy, ::buffa::Inline<JoseJwtHeaderValidationPolicy>, >,
             #[serde(rename = "temporalPolicy", alias = "temporal_policy")]
             temporal_policy: ::buffa::MessageField< JoseJwtTemporalValidationPolicy, ::buffa::Inline<JoseJwtTemporalValidationPolicy>, >,
-            #[serde(rename = "signatureOnly", alias = "signature_only")]
+            #[serde(rename = "signatureOnly", alias = "signature_only", deserialize_with = "::buffa::json_helpers::proto_bool::deserialize")]
             signature_only: bool,
         }
 
@@ -6757,7 +6757,8 @@ pub struct JoseJwtTemporalValidationPolicy {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub expected_audience: ::buffa::alloc::string::String,
-    /// Optional exact issuer constraint. Empty means no issuer constraint.
+    /// Legacy issuer constraint. Empty means absent for older clients that cannot
+    /// express presence. New clients use expected_issuer_constraint.
     ///
     /// Field 8: `expected_issuer`
     #[serde(
@@ -6767,7 +6768,7 @@ pub struct JoseJwtTemporalValidationPolicy {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub expected_issuer: ::buffa::alloc::string::String,
-    /// Optional exact subject constraint. Empty means no subject constraint.
+    /// Legacy subject constraint with the same absence ambiguity.
     ///
     /// Field 9: `expected_subject`
     #[serde(
@@ -6777,6 +6778,31 @@ pub struct JoseJwtTemporalValidationPolicy {
         skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
     )]
     pub expected_subject: ::buffa::alloc::string::String,
+    /// Presence-sensitive exact issuer constraint. A present empty value is
+    /// invalid, so an empty caller configuration cannot disable verification.
+    ///
+    /// Field 10: `expected_issuer_constraint`
+    #[serde(
+        rename = "expectedIssuerConstraint",
+        alias = "expected_issuer_constraint",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub expected_issuer_constraint: ::buffa::MessageField<
+        JoseExpectedString,
+        ::buffa::Inline<JoseExpectedString>,
+    >,
+    /// Presence-sensitive exact subject constraint.
+    ///
+    /// Field 11: `expected_subject_constraint`
+    #[serde(
+        rename = "expectedSubjectConstraint",
+        alias = "expected_subject_constraint",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    pub expected_subject_constraint: ::buffa::MessageField<
+        JoseExpectedString,
+        ::buffa::Inline<JoseExpectedString>,
+    >,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -6793,6 +6819,8 @@ impl ::core::fmt::Debug for JoseJwtTemporalValidationPolicy {
             .field("expected_audience", &"<redacted>")
             .field("expected_issuer", &"<redacted>")
             .field("expected_subject", &"<redacted>")
+            .field("expected_issuer_constraint", &self.expected_issuer_constraint)
+            .field("expected_subject_constraint", &self.expected_subject_constraint)
             .finish()
     }
 }
@@ -6825,24 +6853,24 @@ impl<'de> ::serde::Deserialize<'de> for JoseJwtTemporalValidationPolicy {
         where
             D: ::serde::Deserializer<'de>,
         {
-            <::buffa::alloc::string::String as ::serde::Deserialize>::deserialize(deserializer)
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
 
         #[derive(Default, ::serde::Deserialize)]
         #[serde(default, deny_unknown_fields)]
         struct Wire {
-            #[serde(rename = "requireExp", alias = "require_exp")]
+            #[serde(rename = "requireExp", alias = "require_exp", deserialize_with = "::buffa::json_helpers::proto_bool::deserialize")]
             require_exp: bool,
-            #[serde(rename = "requireNbf", alias = "require_nbf")]
+            #[serde(rename = "requireNbf", alias = "require_nbf", deserialize_with = "::buffa::json_helpers::proto_bool::deserialize")]
             require_nbf: bool,
-            #[serde(rename = "requireIat", alias = "require_iat")]
+            #[serde(rename = "requireIat", alias = "require_iat", deserialize_with = "::buffa::json_helpers::proto_bool::deserialize")]
             require_iat: bool,
-            #[serde(rename = "clockSkewSeconds", alias = "clock_skew_seconds")]
+            #[serde(rename = "clockSkewSeconds", alias = "clock_skew_seconds", deserialize_with = "::buffa::json_helpers::uint64::deserialize")]
             clock_skew_seconds: u64,
-            #[serde(rename = "maxFutureIatSkewSeconds", alias = "max_future_iat_skew_seconds")]
+            #[serde(rename = "maxFutureIatSkewSeconds", alias = "max_future_iat_skew_seconds", deserialize_with = "::buffa::json_helpers::uint64::deserialize")]
             max_future_iat_skew_seconds: u64,
-            #[serde(rename = "nowUnix", alias = "now_unix")]
+            #[serde(rename = "nowUnix", alias = "now_unix", deserialize_with = "::buffa::json_helpers::uint64::deserialize")]
             now_unix: u64,
             #[serde(rename = "expectedAudience", alias = "expected_audience", deserialize_with = "deserialize_zeroizing_string")]
             expected_audience: ::zeroize::Zeroizing<::buffa::alloc::string::String>,
@@ -6850,6 +6878,10 @@ impl<'de> ::serde::Deserialize<'de> for JoseJwtTemporalValidationPolicy {
             expected_issuer: ::zeroize::Zeroizing<::buffa::alloc::string::String>,
             #[serde(rename = "expectedSubject", alias = "expected_subject", deserialize_with = "deserialize_zeroizing_string")]
             expected_subject: ::zeroize::Zeroizing<::buffa::alloc::string::String>,
+            #[serde(rename = "expectedIssuerConstraint", alias = "expected_issuer_constraint")]
+            expected_issuer_constraint: ::buffa::MessageField< JoseExpectedString, ::buffa::Inline<JoseExpectedString>, >,
+            #[serde(rename = "expectedSubjectConstraint", alias = "expected_subject_constraint")]
+            expected_subject_constraint: ::buffa::MessageField< JoseExpectedString, ::buffa::Inline<JoseExpectedString>, >,
         }
 
         let mut wire = Wire::deserialize(deserializer)?;
@@ -6863,6 +6895,8 @@ impl<'de> ::serde::Deserialize<'de> for JoseJwtTemporalValidationPolicy {
             expected_audience: ::core::mem::take(&mut *wire.expected_audience),
             expected_issuer: ::core::mem::take(&mut *wire.expected_issuer),
             expected_subject: ::core::mem::take(&mut *wire.expected_subject),
+            expected_issuer_constraint: wire.expected_issuer_constraint,
+            expected_subject_constraint: wire.expected_subject_constraint,
             __buffa_unknown_fields: Default::default(),
         })
     }
@@ -6890,7 +6924,7 @@ impl ::buffa::Message for JoseJwtTemporalValidationPolicy {
     /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
     /// points reject, never a silently wrapped size.
     #[allow(clippy::let_and_return)]
-    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u64;
@@ -6933,12 +6967,28 @@ impl ::buffa::Message for JoseJwtTemporalValidationPolicy {
                 += 1u64
                     + ::buffa::types::string_encoded_len(&self.expected_subject) as u64;
         }
+        if self.expected_issuer_constraint.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.expected_issuer_constraint.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if self.expected_subject_constraint.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.expected_subject_constraint.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u64;
         ::buffa::saturate_size(size)
     }
     fn write_to(
         &self,
-        _cache: &mut ::buffa::SizeCache,
+        __cache: &mut ::buffa::SizeCache,
         buf: &mut impl ::buffa::EncodeSink,
     ) {
         #[allow(unused_imports)]
@@ -6973,6 +7023,22 @@ impl ::buffa::Message for JoseJwtTemporalValidationPolicy {
         }
         if !self.expected_subject.is_empty() {
             ::buffa::types::put_string_field(9u32, &self.expected_subject, buf);
+        }
+        if self.expected_issuer_constraint.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                10u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.expected_issuer_constraint.write_to(__cache, buf);
+        }
+        if self.expected_subject_constraint.is_set() {
+            ::buffa::types::put_len_delimited_header(
+                11u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            self.expected_subject_constraint.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -7050,6 +7116,28 @@ impl ::buffa::Message for JoseJwtTemporalValidationPolicy {
                 )?;
                 ::buffa::types::merge_string(&mut self.expected_subject, buf)?;
             }
+            10u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.expected_issuer_constraint.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            11u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.expected_subject_constraint.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -7067,6 +7155,8 @@ impl ::buffa::Message for JoseJwtTemporalValidationPolicy {
         ::zeroize::Zeroize::zeroize(&mut self.expected_audience);
         ::zeroize::Zeroize::zeroize(&mut self.expected_issuer);
         ::zeroize::Zeroize::zeroize(&mut self.expected_subject);
+        self.expected_issuer_constraint = ::buffa::MessageField::none();
+        self.expected_subject_constraint = ::buffa::MessageField::none();
         __reallyme_zeroize_unknown_fields(&mut self.__buffa_unknown_fields);
     }
 }
@@ -7245,7 +7335,7 @@ impl<'de> ::serde::Deserialize<'de> for JoseJweEncryptRequest {
         where
             D: ::serde::Deserializer<'de>,
         {
-            <::buffa::alloc::string::String as ::serde::Deserialize>::deserialize(deserializer)
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
 
@@ -7639,7 +7729,7 @@ impl<'de> ::serde::Deserialize<'de> for JoseJweDecryptRequest {
         where
             D: ::serde::Deserializer<'de>,
         {
-            <::buffa::alloc::string::String as ::serde::Deserialize>::deserialize(deserializer)
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
 
@@ -7906,7 +7996,7 @@ impl<'de> ::serde::Deserialize<'de> for JoseExpectedString {
         where
             D: ::serde::Deserializer<'de>,
         {
-            <::buffa::alloc::string::String as ::serde::Deserialize>::deserialize(deserializer)
+            ::buffa::json_helpers::proto_string::deserialize(deserializer)
                 .map(::zeroize::Zeroizing::new)
         }
 

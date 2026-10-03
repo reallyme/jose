@@ -49,29 +49,43 @@ fn audit_manifest(
         reason: error.reason,
     })?;
 
-    for suite in &manifest.suites {
-        let (expected_path, actual_count) = match suite.id.as_str() {
-            "jws-compact" => ("jws-compact.json", jws.cases.len()),
-            "signed-jwt" => ("signed-jwt.json", signed_jwt.cases.len()),
-            "unsigned-jwt" => ("unsigned-jwt.json", unsigned_jwt.cases.len()),
-            "jwe-compact" => ("jwe-compact.json", jwe.cases.len()),
-            "panva-jose" => ("panva-jose.json", panva.cases.len()),
-            _ => return Err(manifest_error(AuditReason::UnknownManifestSuite)),
-        };
-        ensure(suite.path == expected_path, AuditReason::ManifestPath).map_err(|error| {
+    // The manifest is an inventory, not merely a list of optional checks.
+    // Requiring every suite and its previous minimum count prevents an empty
+    // manifest from certifying a repository with missing vectors.
+    let expected = [
+        ("jws-compact", "jws-compact.json", 26_usize, jws.cases.len()),
+        ("signed-jwt", "signed-jwt.json", 32, signed_jwt.cases.len()),
+        ("unsigned-jwt", "unsigned-jwt.json", 6, unsigned_jwt.cases.len()),
+        ("jwe-compact", "jwe-compact.json", 36, jwe.cases.len()),
+        ("panva-jose", "panva-jose.json", 4, panva.cases.len()),
+    ];
+    ensure(
+        manifest.suites.len() == expected.len(),
+        AuditReason::ManifestCaseCount,
+    )
+    .map_err(|error| manifest_error(error.reason))?;
+
+    for ((id, path, minimum_count, actual_count), suite) in
+        expected.iter().zip(&manifest.suites)
+    {
+        ensure(suite.id == *id, AuditReason::UnknownManifestSuite)
+            .map_err(|error| manifest_error(error.reason))?;
+        ensure(suite.path == *path, AuditReason::ManifestPath).map_err(|error| {
             AuditError {
                 context: AuditContext::Manifest,
                 reason: error.reason,
             }
         })?;
         ensure(
-            suite.case_count == actual_count,
+            suite.case_count == *actual_count && suite.case_count >= *minimum_count,
             AuditReason::ManifestCaseCount,
         )
         .map_err(|error| AuditError {
             context: AuditContext::Manifest,
             reason: error.reason,
         })?;
+        ensure(!suite.source.is_empty(), AuditReason::MissingField)
+            .map_err(|error| manifest_error(error.reason))?;
     }
     Ok(())
 }

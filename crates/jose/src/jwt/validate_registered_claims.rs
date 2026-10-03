@@ -91,6 +91,40 @@ pub(super) fn validate_claims_set(
     payload.as_object().ok_or(JwtError::InvalidClaims)
 }
 
+/// Reject claim shapes that the verifier cannot interpret before authenticating
+/// the bytes. Issuers must not create tokens that this crate would reject.
+pub(super) fn validate_claims_for_encoding(payload: &JsonValue) -> Result<(), JwtError> {
+    let claims = validate_claims_set(payload)?;
+    for name in ["exp", "nbf", "iat"] {
+        if claims
+            .get(name)
+            .is_some_and(|value| value.as_u64().is_none_or(|time| time == 0))
+        {
+            return Err(JwtError::InvalidClaims);
+        }
+    }
+    for name in ["iss", "sub", "jti"] {
+        if claims
+            .get(name)
+            .is_some_and(|value| value.as_str().is_none_or(str::is_empty))
+        {
+            return Err(JwtError::InvalidClaims);
+        }
+    }
+    if let Some(audience) = claims.get("aud") {
+        match audience {
+            JsonValue::String(value) if !value.is_empty() => {}
+            JsonValue::Array(values)
+                if !values.is_empty()
+                    && values
+                        .iter()
+                        .all(|value| value.as_str().is_some_and(|s| !s.is_empty())) => {}
+            _ => return Err(JwtError::InvalidClaims),
+        }
+    }
+    Ok(())
+}
+
 pub(super) fn validate_registered_claims(
     payload: &JsonValue,
     policy: JwtClaimsValidationPolicy<'_>,

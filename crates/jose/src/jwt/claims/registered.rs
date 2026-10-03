@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use serde::{Deserialize, Serialize};
+use zeroize::Zeroize;
 
 use super::super::datatype::{NumericDate, StringOrURI};
 use super::deserialize_audience::{deserialize_audience, serialize_audience};
@@ -10,7 +11,9 @@ use super::deserialize_audience::{deserialize_audience, serialize_audience};
 /// Registered JWT claims (RFC 7519).
 ///
 /// All fields are optional by spec.
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// Cloning creates another PII owner; each owner clears its string fields on
+/// drop. Avoid retaining clones beyond the verification operation.
+#[derive(Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RegisteredClaims {
     /// Issuer claim (`iss`).
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -44,4 +47,17 @@ pub struct RegisteredClaims {
     /// JWT identifier (`jti`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub jti: Option<String>,
+}
+
+impl core::fmt::Debug for RegisteredClaims {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        formatter.write_str("RegisteredClaims(<redacted>)")
+    }
+}
+
+impl Drop for RegisteredClaims {
+    fn drop(&mut self) {
+        self.jti.zeroize();
+        // StringOrURI clears issuer, subject, and each audience on drop.
+    }
 }

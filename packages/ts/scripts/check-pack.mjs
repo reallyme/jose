@@ -4,7 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { lstatSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,11 +25,63 @@ const requiredFiles = [
   "package/README.md",
   "package/package.json",
 ];
+const allowedFiles = new Set([
+  "package/LICENSE", "package/NOTICE", "package/README.md", "package/package.json",
+  "package/dist/boundary.d.ts", "package/dist/boundary.js",
+  "package/dist/errors.d.ts", "package/dist/errors.js",
+  "package/dist/facade-support.d.ts", "package/dist/facade-support.js",
+  "package/dist/facade.d.ts", "package/dist/facade.js",
+  "package/dist/index.d.ts", "package/dist/index.js",
+  "package/dist/memory.d.ts", "package/dist/memory.js",
+  "package/dist/proto.d.ts", "package/dist/proto.js",
+  "package/dist/proto/generated/reallyme/jose/v1/jose_pb.d.ts",
+  "package/dist/proto/generated/reallyme/jose/v1/jose_pb.js",
+  "package/dist/provider.d.ts", "package/dist/provider.js",
+  "package/dist/validate.d.ts", "package/dist/validate.js",
+  "package/dist/wasm/LICENSE", "package/dist/wasm/reallyme_jose_wasm_bg.wasm",
+  "package/dist/wasm/reallyme_jose_wasm.js",
+  "package/dist/wasmModuleTypes.d.ts", "package/dist/wasmModuleTypes.js",
+]);
 
 const fail = (message) => {
   process.stderr.write(`${message}\n`);
   process.exit(1);
 };
+
+const snapshotDist = () => {
+  const files = [];
+  const visit = (directory, relative) => {
+    for (const name of readdirSync(directory).sort()) {
+      const nextRelative = relative ? `${relative}/${name}` : name;
+      const path = join(directory, name);
+      const metadata = lstatSync(path);
+      if (metadata.isSymbolicLink()) fail("dist must not contain symbolic links.");
+      if (metadata.isDirectory()) {
+        visit(path, nextRelative);
+      } else if (metadata.isFile()) {
+        files.push([nextRelative, createHash("sha256").update(readFileSync(path)).digest("hex")]);
+      } else {
+        fail("dist contains an unsupported filesystem entry.");
+      }
+    }
+  };
+  visit(resolve(packageDirectory, "dist"), "");
+  return JSON.stringify(files);
+};
+
+const beforeBuild = snapshotDist();
+const build = spawnSync("npm", ["run", "build"], {
+  cwd: packageDirectory,
+  encoding: "utf8",
+});
+if (build.status !== 0) {
+  process.stdout.write(build.stdout);
+  process.stderr.write(build.stderr);
+  fail("package rebuild failed.");
+}
+if (beforeBuild !== snapshotDist()) {
+  fail("dist differs from a clean rebuild of the source tree.");
+}
 
 const packageJson = JSON.parse(readUtf8(resolve(packageDirectory, "package.json")));
 const packageExports = packageJson.exports;
@@ -79,6 +132,10 @@ const names = new Set(
 const missingFiles = requiredFiles.filter((file) => !names.has(file));
 if (missingFiles.length !== 0) {
   fail(`npm package is missing required release artifacts:\n- ${missingFiles.join("\n- ")}`);
+}
+const unexpectedFiles = [...names].filter((file) => !allowedFiles.has(file));
+if (unexpectedFiles.length !== 0 || names.size !== allowedFiles.size) {
+  fail(`npm package contains an unreviewed file inventory: ${unexpectedFiles.join(", ")}`);
 }
 
 const declarations = readUtf8(resolve(packageDirectory, "dist", "wasmModuleTypes.d.ts"));

@@ -111,6 +111,10 @@ for (const workflow of listFiles(".github/workflows").filter(
       continue;
     }
     for (const line of readinessLines) {
+      if (workflow === ".github/workflows/readiness.yml"
+          && line.trim() !== `run: ${releaseReadinessCommand}`) {
+        fail("readiness workflow must run the full consumer check");
+      }
       if (workflow !== ".github/workflows/readiness.yml" && !line.includes("--policy-only")) {
         fail(`${workflow} job ${header[1]} must keep local release readiness policy-only`);
       }
@@ -143,6 +147,7 @@ for (const build of ["packages/kotlin/build.gradle.kts", "packages/kotlin-androi
 assertContains("Cargo.toml", 'members = ["crates/jose", "crates/ffi", "crates/proto", "crates/wasm"]');
 assertContains("Cargo.toml", 'exclude = ["fuzz"]');
 assertContains("Cargo.toml", "overflow-checks = true");
+assertContains("crates/wasm/Cargo.toml", "wasm-opt = false");
 assertContains("Cargo.toml", "[profile.release-ffi]");
 assertContains("Cargo.toml", 'inherits = "release"');
 assertContains("Cargo.toml", 'panic = "unwind"');
@@ -319,7 +324,7 @@ assertContains("packages/ts/src/facade-support.ts", "outcome.value.payload.fill(
 assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_PACK_VERSION = "0.15.0"');
 assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_BINDGEN_VERSION = "0.2.129"');
 assertContains("packages/ts/scripts/check-pack.mjs", "unreviewed semantic export");
-assertContains("packages/ts/test/vector-conformance.test.mjs", "all 102 cross-lane conformance vectors");
+assertContains("packages/ts/test/vector-conformance.test.mjs", "all 104 cross-lane conformance vectors");
 assertContains("packages/ts/test/vector-conformance.test.mjs", "PROVIDER_UNSUPPORTED");
 assertContains("scripts/verify_sdk_release_version.mjs", '"crates/wasm/Cargo.toml"');
 assertContains("scripts/verify_sdk_release_version.mjs", '"packages/ts/package.json"');
@@ -337,7 +342,7 @@ for (const forbidden of ["@ts-ignore", ": any", "Result<string", "processProto"]
   }
 }
 
-assertContains("crates/jose/src/lib.rs", "pub use reallyme_crypto::{core::Algorithm, csprng::SecureRandom, jwk::Jwk, signer::Signer};");
+assertContains("crates/jose/src/lib.rs", "csprng::{OsSecureRandom, SecureRandom}");
 assertContains("crates/jose/src/lib.rs", "pub use serde_json::Value as JsonValue;");
 assertContains("crates/jose/src/lib.rs", "pub use zeroize::Zeroizing;");
 assertContains(
@@ -559,7 +564,7 @@ assertContains("vectors/panva-jose.json", "deterministic low scalars");
 assertContains("vectors/README.md", "`tools/panva-goldens`");
 assertContains("vectors/README.md", "`panva/jose@6.2.12`");
 assertContains("vectors/README.md", "native Rust, Swift, Kotlin/JVM, and minified Android emulator lanes");
-assertContains("vectors/README.md", "WASM lane executes all 94 applicable cases");
+assertContains("vectors/README.md", "WASM lane executes all 98 applicable cases");
 assertContains("vectors/README.md", "not a curve-by-content-encryption matrix");
 assertContains("vectors/README.md", "panva/WebCrypto does not provide");
 assertContains("vectors/README.md", "secp256k1 JOSE signing support");
@@ -659,7 +664,7 @@ assertContains("scripts/publish_crates_in_order.mjs", "CRATES_IO_DEFAULT_RATE_LI
 assertContains("scripts/publish_crates_in_order.mjs", "rate-limited");
 assertNotContains("scripts/publish_crates_in_order.mjs", 'const PACKAGE = "reallyme-jose"');
 assertContains("SECURITY.md", "security@really.me");
-assertContains("SECURITY.md", "Report a vulnerability");
+assertNotContains("SECURITY.md", "Report a vulnerability");
 assertContains("SECURITY.md", "scripts/check_release_readiness.mjs");
 assertContains("NOTICE", "ReallyMe JOSE");
 assertNotContains("NOTICE", "ReallyMe Crypto");
@@ -680,7 +685,8 @@ assertContains("buf.gen.yaml", "out: packages/ts/src/proto/generated");
 assertContains(".gitignore", "!crates/proto/src/generated/");
 assertContains(".gitignore", "!crates/proto/src/generated/**");
 assertContains(".github/workflows/protobuf-ci.yml", `BUFFA_VERSION: ${buffaVersion}`);
-assertNotContains(".github/workflows/protobuf-ci.yml", "buf breaking");
+assertContains(".github/workflows/protobuf-ci.yml", "buf breaking --against");
+assertContains("buf.gen.yaml", "clean: true");
 assertContains(".github/workflows/crates-package-preflight.yml", "buf generate");
 for (const needle of releaseReadinessCheckoutRequired) {
   assertContains(".github/workflows/protobuf-ci.yml", needle);
@@ -844,6 +850,8 @@ printf '%s\\n' "$install_dir" >> "$GITHUB_PATH"
       ["node", ["scripts/harden-generated-jose-proto.mjs", "--check-idempotent"]],
       ["node", ["scripts/harden-generated-jose-jvm.mjs"]],
       ["node", ["scripts/harden-generated-jose-jvm.mjs", "--check-idempotent"]],
+      ["node", ["scripts/harden-generated-jose-swift.mjs"]],
+      ["node", ["scripts/harden-generated-jose-swift.mjs", "--check-idempotent"]],
       ["cargo", ["fmt", "--package", "reallyme-jose-proto"]],
     ],
   },
@@ -853,6 +861,11 @@ assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "node scripts/harden-generated-jose-jvm.mjs --check-idempotent",
 );
+assertContains(
+  ".github/workflows/crates-package-preflight.yml",
+  "node scripts/harden-generated-jose-swift.mjs --check-idempotent",
+);
+assertContains("gen/swift/reallyme/jose/v1/jose.pb.swift", "ReallyMeProtoJoseJwsSignRequest(<redacted>)");
 assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "crates/proto/src gen/swift gen/java gen/kotlin packages/ts/src/proto/generated",
@@ -1075,8 +1088,8 @@ assertContains("crates/jose/tests/jwt_suite/unsigned_reject_tests.rs", "reject_u
 assertContains("crates/jose/tests/jwt_suite/signed_reject_tests.rs", "reject_signed_jwt_with_duplicate_claim_members");
 assertContains("crates/jose/tests/jwt_suite/signed_reject_tests.rs", "reject_signed_eddsa_jwt_with_wrong_signature_length");
 assertContains("crates/jose/tests/jwe_tests/cases.rs", "rejects_ecdh_es_epk_with_private_member");
-assertContains("crates/jose/tests/jwe_tests/cases.rs", "rejects_duplicate_epk_member");
-assertContains("crates/jose/tests/jwe_tests/cases.rs", "rejects_direct_jwe_with_ecdh_ephemeral_key_headers");
+assertContains("crates/jose/tests/jwe_tests/negative_cases.rs", "rejects_duplicate_epk_member");
+assertContains("crates/jose/tests/jwe_tests/negative_cases.rs", "rejects_direct_jwe_with_ecdh_ephemeral_key_headers");
 assertContains(
   "crates/jose/tests/jwe_tests/support_and_boundaries.rs",
   "rejects_invalid_ecdh_es_shared_secret_length_before_kdf",
@@ -1167,7 +1180,10 @@ assertNotContains("crates/jose/Cargo.toml", "getrandom02");
 assertNotContains("deny.toml", 'name = "getrandom", version = "0.2.17"');
 assertContains("deny.toml", 'name = "syn", version = "2.0.119"');
 
-assertContains("crates/ffi/src/lib.rs", '#![allow(unsafe_code)]');
+assertNotContains("crates/ffi/src/lib.rs", '#![allow(unsafe_code)]');
+for (const boundaryModule of ["pointer", "operation", "kotlin"]) {
+  assertContains(`crates/ffi/src/${boundaryModule}.rs`, '#![allow(unsafe_code)]');
+}
 assertContains("crates/ffi/src/lib.rs", '#[cfg(not(panic = "unwind"))]');
 assertContains("crates/ffi/src/lib.rs", "compile_error!");
 assertNotContains("crates/ffi/src/lib.rs", "#![allow(warnings)]");
@@ -1632,13 +1648,13 @@ assertContains(".github/workflows/kotlin-ci.yml", "windows-2025");
 assertContains(".github/workflows/kotlin-ci.yml", "verifyJarContainsNativeResources");
 assertContains("packages/kotlin/build.gradle.kts", '"--profile", "release-ffi"');
 assertContains("packages/kotlin/build.gradle.kts", 'environment.remove("CARGO_ENCODED_RUSTFLAGS")');
-assertContains("packages/kotlin/build.gradle.kts", 'environment.remove("RUSTFLAGS")');
+assertContains("packages/kotlin/build.gradle.kts", 'environment["RUSTFLAGS"] = ""');
 assertContains("packages/kotlin/build.gradle.kts", "../../target/release-ffi/");
 assertNotContains("packages/kotlin/build.gradle.kts", "-C panic=unwind");
 assertContains("scripts/build_kotlin_native_resource.sh", "windows-x86_64");
 assertContains("scripts/build_kotlin_native_resource.sh", "--profile release-ffi");
 assertContains("scripts/build_kotlin_native_resource.sh", "unset CARGO_ENCODED_RUSTFLAGS");
-assertContains("scripts/build_kotlin_native_resource.sh", "unset RUSTFLAGS");
+assertContains("scripts/build_kotlin_native_resource.sh", 'RUSTFLAGS=""');
 assertContains("scripts/build_kotlin_native_resource.sh", "target/release-ffi/");
 assertNotContains("scripts/build_kotlin_native_resource.sh", "-C panic=unwind");
 assertContains("scripts/verify_native_artifact_handoff.mjs", "exact expected file set");
@@ -1688,7 +1704,7 @@ assertContains("scripts/build_android_native_resources.sh", "x86_64-linux-androi
 assertContains("scripts/build_android_native_resources.sh", "i686-linux-android");
 assertContains("scripts/build_android_native_resources.sh", "--profile release-ffi");
 assertContains("scripts/build_android_native_resources.sh", "unset CARGO_ENCODED_RUSTFLAGS");
-assertContains("scripts/build_android_native_resources.sh", "unset RUSTFLAGS");
+assertContains("scripts/build_android_native_resources.sh", 'RUSTFLAGS=""');
 assertContains("scripts/build_android_native_resources.sh", "release-ffi/libreallyme_jose_ffi.so");
 assertNotContains("scripts/build_android_native_resources.sh", "-C panic=unwind");
 assertContains("scripts/build_android_native_resources.sh", "llvm-strip");
@@ -1703,9 +1719,24 @@ assertContains("packages/kotlin-android/gradlew", "../kotlin/gradlew");
 assertContains("packages/kotlin-android/gradlew.bat", "..\\kotlin\\gradlew.bat");
 assertNotContains("packages/kotlin-android/gradlew", 'cd "${SCRIPT_DIR}"');
 assertNotContains("packages/kotlin-android/gradlew.bat", 'pushd "%SCRIPT_DIR%"');
-assertContains("vectors/README.md", "all 102 checked-in cases");
+assertContains("vectors/README.md", "all 104 checked-in cases");
+const requirementTestNames = new Set(
+  listFiles("crates")
+    .filter((path) => path.endsWith(".rs"))
+    .flatMap((path) => [...readText(path).matchAll(/\bfn\s+([A-Za-z0-9_]+)\s*\(/gu)]
+      .map((match) => match[1])),
+);
+for (const requirement of readJson("vectors/requirements/jose.json")) {
+  for (const name of [...requirement.positive_tests, ...requirement.negative_tests]) {
+    if (!requirementTestNames.has(name)) {
+      fail(`${requirement.id} names a missing test ${name}`);
+    }
+  }
+}
 for (const vectorId of [
   "reallyme-jwe/ecdh-es-p256-a128gcm-deflate",
+  "reallyme-jwe/ecdh-es-p256-a128gcm-deflate-tampered-tag",
+  "reallyme-jwe/ecdh-es-p256-a128gcm-deflate-oversize",
   "reallyme-jwe/ecdh-es-p384-a192gcm-deflate",
   "reallyme-jwe/ecdh-es-p521-a256gcm-deflate",
   "reallyme-jwe/ecdh-es-p384-a192gcm-deflate-tampered-tag",
@@ -2002,6 +2033,23 @@ assertContains(".gitignore", "!packages/ts/src/proto/generated/**");
 assertNotContains(".gitignore", "packages/ts/wasm/");
 assertContains(".gitignore", "/AGENTS.md");
 assertContains(".github/workflows/readiness.yml", releaseReadinessCommand);
+for (const directory of [
+  "crates/jose/tests",
+  "crates/proto/tests",
+  "crates/ffi/tests",
+  "packages/swift/Tests",
+  "packages/kotlin/src/test",
+  "packages/ts/test",
+]) {
+  for (const path of listFiles(directory)) {
+    if (!/\.(?:rs|swift|kt|mjs)$/u.test(path)) continue;
+    if (/#\[ignore(?:\s|\]|\()/u.test(readText(path))
+        || /@Disabled\b/u.test(readText(path))
+        || /\.(?:disabled|skip|todo|only)\s*\(/u.test(readText(path))) {
+      fail(`${path} contains a disabled or exclusive test`);
+    }
+  }
+}
 for (const workflow of [
   ".github/workflows/crates-package-preflight.yml",
   ".github/workflows/fuzz.yml",
