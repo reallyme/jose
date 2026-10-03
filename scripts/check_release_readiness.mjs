@@ -55,7 +55,7 @@ runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 const crateVersion = "0.4.3";
 const protoCrateVersion = "0.4.3";
 const buffaVersion = "0.9.2";
-const cryptoVersion = "0.3.11";
+const cryptoVersion = "0.3.12";
 const codecVersion = "0.3.1";
 const npmPackageVersion = "0.4.3";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
