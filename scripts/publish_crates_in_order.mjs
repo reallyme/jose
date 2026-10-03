@@ -249,6 +249,11 @@ const inspectionEnvironment = {
 };
 
 if (mode === MODE_INSPECT) {
+  // Extracted archives reuse the same paths and version numbers between runs.
+  // Clear their compiled artifacts so Cargo cannot reuse a prior archive's
+  // generated-code dependency when checking the current source tree.
+  fs.rmSync(inspectionTargetDirectory, { force: true, recursive: true });
+
   // Package only public release artifacts. Workspace-wide packaging also
   // normalizes the private FFI and WASM crates even though Cargo will never
   // upload them.

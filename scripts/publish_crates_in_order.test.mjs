@@ -5,6 +5,7 @@
 import assert from "node:assert/strict";
 import {
   chmodSync,
+  existsSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
@@ -214,6 +215,9 @@ test("inspect mode does not re-resolve archive listings through the registry", (
   const root = mkdtempSync(join(tmpdir(), "reallyme-jose-inspect-test-"));
   try {
     const workspace = writeFakeInspectWorkspace(root);
+    const staleArtifact = join(root, "target", "package", "release-preflight-target", "stale");
+    mkdirSync(join(root, "target", "package", "release-preflight-target"), { recursive: true });
+    writeFileSync(staleArtifact, "prior archive");
     const result = spawnSync(process.execPath, [publisher, "inspect"], {
       cwd: root,
       encoding: "utf8",
@@ -222,6 +226,7 @@ test("inspect mode does not re-resolve archive listings through the registry", (
     });
 
     assert.equal(result.status, 0, result.stderr);
+    assert.equal(existsSync(staleArtifact), false);
     assert.match(
       result.stdout,
       /reallyme-jose dry-run reached unpublished ordered workspace dependencies: reallyme-jose-proto/u,
