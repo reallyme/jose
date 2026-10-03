@@ -5,7 +5,7 @@
     "generate": "node generate.mjs"
   },
   "dependencies": {
-    "jose": "6.2.10"
+    "jose": "6.2.12"
   },
   "license": "MIT OR Apache-2.0"
 }

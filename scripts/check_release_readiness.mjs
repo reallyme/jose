@@ -46,7 +46,7 @@ const assertRawContains = (path, needle, description) => {
   }
 };
 
-assertReallyMeReleasePackagePolicy({ version: "0.6.6" });
+assertReallyMeReleasePackagePolicy({ version: "0.6.7" });
 assertWorkflowActionsPinned();
 assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
 assertOperationContractArchitecture({ readText, listFiles, fail });
@@ -55,11 +55,11 @@ runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 const crateVersion = "0.4.2";
 const protoCrateVersion = "0.4.2";
 const buffaVersion = "0.9.2";
-const cryptoVersion = "0.3.9";
-const codecVersion = "0.2.3";
+const cryptoVersion = "0.3.10";
+const codecVersion = "0.3.0";
 const npmPackageVersion = "0.4.2";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
-const releaseReadinessCommit = "bdedc88f3f25fcc14242730d4dec6ce6a0c75531";
+const releaseReadinessCommit = "5c2da5e5d5795c2c895d0dca0819287ee7101207";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -303,7 +303,7 @@ if (npmPackage.name !== "@reallyme/jose" || npmPackage.version !== npmPackageVer
 if (npmPackage.publishConfig?.registry !== "https://registry.npmjs.org/") {
   fail("TypeScript package registry must be the public npm registry");
 }
-assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.14.1"');
+assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.16.0"');
 assertContains("packages/ts/package-lock.json", '"name": "@reallyme/jose"');
 assertContains("packages/ts/package-lock.json", '"version": "0.4.2"');
 assertContains("packages/ts/tsconfig.json", '"strict": true');
@@ -317,7 +317,7 @@ assertContains("packages/ts/src/facade.ts", "export const ReallyMeJose = Object.
 assertContains("packages/ts/src/facade-support.ts", "outcome.value.protectedHeaderJson.fill(0)");
 assertContains("packages/ts/src/facade-support.ts", "outcome.value.payload.fill(0)");
 assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_PACK_VERSION = "0.15.0"');
-assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_BINDGEN_VERSION = "0.2.127"');
+assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_BINDGEN_VERSION = "0.2.129"');
 assertContains("packages/ts/scripts/check-pack.mjs", "unreviewed semantic export");
 assertContains("packages/ts/test/vector-conformance.test.mjs", "all 102 cross-lane conformance vectors");
 assertContains("packages/ts/test/vector-conformance.test.mjs", "PROVIDER_UNSUPPORTED");
@@ -552,12 +552,12 @@ assertContains("vectors/manifest.json", "reallyme.jose.conformance.vector_manife
 assertContains("vectors/manifest.json", '"id": "panva-jose"');
 assertContains("vectors/manifest.json", '"case_count": 4');
 assertContains("vectors/panva-jose.json", '"suite": "panva-jose"');
-assertContains("vectors/panva-jose.json", '"source": "panva/jose@6.2.10"');
+assertContains("vectors/panva-jose.json", '"source": "panva/jose@6.2.12"');
 assertContains("vectors/panva-jose.json", "panva-jose/jwe-ecdh-es-p256-a128gcm");
 assertContains("vectors/panva-jose.json", "not a full algorithm matrix");
 assertContains("vectors/panva-jose.json", "deterministic low scalars");
 assertContains("vectors/README.md", "`tools/panva-goldens`");
-assertContains("vectors/README.md", "`panva/jose@6.2.10`");
+assertContains("vectors/README.md", "`panva/jose@6.2.12`");
 assertContains("vectors/README.md", "native Rust, Swift, Kotlin/JVM, and minified Android emulator lanes");
 assertContains("vectors/README.md", "WASM lane executes all 94 applicable cases");
 assertContains("vectors/README.md", "not a curve-by-content-encryption matrix");
@@ -567,8 +567,8 @@ assertContains("vectors/README.md", "does not add a JOSE-specific low-S normaliz
 assertContains("vectors/README.md", "Face ID or Secure Enclave protected P-256 key");
 assertContains("vectors/signed-jwt.json", "reallyme-jwt/kid-mismatch");
 assertContains("README.md", "small native and WASM interop anchor");
-assertContains("tools/panva-goldens/package.json", '"jose": "6.2.10"');
-assertContains("tools/panva-goldens/package-lock.json", '"version": "6.2.10"');
+assertContains("tools/panva-goldens/package.json", '"jose": "6.2.12"');
+assertContains("tools/panva-goldens/package-lock.json", '"version": "6.2.12"');
 assertContains("tools/panva-goldens/generate.mjs", "setKeyManagementParameters");
 assertContains("tools/vector-audit/Cargo.toml", 'name = "reallyme-jose-vector-audit"');
 assertContains("tools/vector-audit/src/main.rs", "PANVA_FILE");
@@ -671,11 +671,11 @@ assertContains("buf.gen.yaml", "protoc-gen-buffa-packaging");
 assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.38.1");
 assertContains("buf.gen.yaml", "out: gen/swift");
 assertContains("buf.gen.yaml", "Visibility=Public");
-assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v36.1");
-assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v36.1");
+assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v36.2");
+assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v36.2");
 assertContains("buf.gen.yaml", "out: gen/java");
 assertContains("buf.gen.yaml", "out: gen/kotlin");
-assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.14.1");
+assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.16.0");
 assertContains("buf.gen.yaml", "out: packages/ts/src/proto/generated");
 assertContains(".gitignore", "!crates/proto/src/generated/");
 assertContains(".gitignore", "!crates/proto/src/generated/**");
@@ -694,7 +694,7 @@ assertContains(
 assertContains(".github/workflows/rust-ci.yml", releaseReadinessCommand);
 assertContains(".github/workflows/readiness.yml", releaseReadinessCommand);
 assertContains(".github/workflows/readiness.yml", "runs-on: macos-26");
-assertContains(".github/workflows/readiness.yml", "WASM_BINDGEN_CLI_VERSION: 0.2.127");
+assertContains(".github/workflows/readiness.yml", "WASM_BINDGEN_CLI_VERSION: 0.2.129");
 assertContains(".github/workflows/readiness.yml", "WASM_PACK_VERSION: 0.15.0");
 assertContains(
   ".github/workflows/readiness.yml",
@@ -745,7 +745,7 @@ assertContains("scripts/harden-generated-jose-proto.mjs", "generatedModulePath")
 assertContains("scripts/harden-generated-jose-proto.mjs", "expectedAllowAttributeCount = 4");
 assertContains("crates/proto/Cargo.toml", 'zeroize = { workspace = true, optional = true }');
 assertReallyMeProtobufReleasePolicy({
-  bufVersion: "1.72.0",
+  bufVersion: "1.73.0",
   buffaVersion,
   generatedFreshnessMode,
   workflowMode: "delegated",
@@ -1150,8 +1150,8 @@ assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "--manifest-path crates/jose/Cargo.toml --all-features",
 );
-assertContains(".github/workflows/rust-ci.yml", "CARGO_NEXTEST_VERSION: 0.9.143");
-assertContains(".github/workflows/crates-package-preflight.yml", "CARGO_NEXTEST_VERSION: 0.9.143");
+assertContains(".github/workflows/rust-ci.yml", "CARGO_NEXTEST_VERSION: 0.9.146");
+assertContains(".github/workflows/crates-package-preflight.yml", "CARGO_NEXTEST_VERSION: 0.9.146");
 assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "cargo-deny@${{ env.CARGO_DENY_VERSION }}",
@@ -1418,7 +1418,7 @@ assertContains(
   swiftReleaseWorkflow,
   "- add positive, tamper, unsupported-algorithm, and decompression-limit vectors across every supported ECDH-ES curve and AES-GCM size",
 );
-assertContains(swiftReleaseWorkflow, "- update the pinned shared release-readiness policy to v0.6.6");
+assertContains(swiftReleaseWorkflow, "- update the pinned shared release-readiness policy to v0.6.7");
 assertContains(swiftReleaseWorkflow, 'git tag "v${RELEASE_VERSION}" "${tag_target}"');
 assertContains(swiftReleaseWorkflow, "--verify-tag");
 assertContains(
@@ -1558,10 +1558,10 @@ assertContains("crates/ffi/src/lib.rs", "pub mod kotlin;");
 assertContains("crates/ffi/src/kotlin.rs", "Java_me_really_jose_ReallyMeJoseNative_executeOperationNative");
 assertContains("crates/ffi/src/kotlin.rs", "rm_jose_execute_operation_v1");
 assertContains("crates/ffi/src/kotlin.rs", "Zeroizing<Vec<u8>>");
-assertContains("packages/kotlin/build.gradle.kts", 'kotlin("jvm") version "2.4.10"');
+assertContains("packages/kotlin/build.gradle.kts", 'kotlin("jvm") version "2.4.20"');
 assertContains("packages/kotlin/build.gradle.kts", "jvmToolchain(21)");
 assertContains("packages/kotlin/build.gradle.kts", "lockAllConfigurations()");
-assertContains("packages/kotlin/build.gradle.kts", 'api("com.google.protobuf:protobuf-javalite:4.36.1")');
+assertContains("packages/kotlin/build.gradle.kts", 'api("com.google.protobuf:protobuf-javalite:4.36.2")');
 assertContains("packages/kotlin/build.gradle.kts", "verifyJarContainsNativeResources");
 assertContains("packages/kotlin/build.gradle.kts", "verifyJvmNativeManifest(");
 assertContains("packages/kotlin/build.gradle.kts", "JVM native manifest source SHA does not match the checkout");
@@ -2034,12 +2034,12 @@ for (const workflow of [
 }
 
 const pinnedBufDigest =
-  "BUF_LINUX_X86_64_SHA256: 8720830e26a733da55bb89bcd3cb44849c0965fc0c44fb5d691cccdc64dca5af";
+  "BUF_LINUX_X86_64_SHA256: 8f2986298ad08f0cc1bf999b9797b7c383adf32d7edf0f73d6f1e1a701baeac1";
 for (const workflow of [
   ".github/workflows/crates-package-preflight.yml",
   ".github/workflows/protobuf-ci.yml",
 ]) {
-  assertContains(workflow, "BUF_VERSION: 1.72.0");
+  assertContains(workflow, "BUF_VERSION: 1.73.0");
   assertContains(workflow, pinnedBufDigest);
   assertContains(workflow, "--proto '=https' --tlsv1.2");
   assertContains(workflow, "sha256sum --check --strict");

@@ -49,7 +49,7 @@ downloads every published file for byte verification. Remote publication
 requires an HTTPS repository, credentials, and in-memory signing material.
 
 The Android package launcher delegates to the repository's single pinned
-Gradle 9.7.1 wrapper, avoiding a second wrapper JAR and distribution checksum
+Gradle 9.8.0 wrapper, avoiding a second wrapper JAR and distribution checksum
 that could drift independently.
 
 ## License
