@@ -39,7 +39,7 @@ env:
 
 jobs:
   msrv:
-    name: MSRV 1.96
+    name: MSRV 1.99
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -50,15 +50,14 @@ jobs:
       - name: Install minimum supported Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.96.0
+          toolchain: 1.99.0
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
-      # Keep the published rust-version honest without holding routine CI back
-      # from the correctness and diagnostics improvements in current stable.
+      # Keep the published rust-version honest on the exact supported release.
       - name: Check minimum supported Rust version
-        run: cargo +1.96.0 check --locked --workspace --all-features
+        run: cargo +1.99.0 check --locked --workspace --all-features
 
   rust:
     name: fmt, lint, test, audit, package
@@ -72,7 +71,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.98.1
+          toolchain: 1.99.0
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 

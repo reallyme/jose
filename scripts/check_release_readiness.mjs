@@ -1352,9 +1352,18 @@ assertContains("scripts/build_swift_xcframework.sh", "swift package compute-chec
 assertContains("scripts/verify_swift_release_artifact.mjs", "archive and sidecar checksums differ");
 assertContains("scripts/verify_swift_release_artifact.mjs", "requiredSymbols");
 assertContains("scripts/verify_swift_release_artifact.mjs", "Rust LLVM symbol inspector");
-assertContains("Cargo.toml", 'rust-version = "1.96"');
-assertContains("rust-toolchain.toml", 'channel = "1.98.1"');
+assertContains("Cargo.toml", 'rust-version = "1.99"');
+assertContains("fuzz/Cargo.toml", 'rust-version = "1.99"');
+assertContains("tools/vector-audit/Cargo.toml", 'rust-version = "1.99"');
+assertContains("rust-toolchain.toml", 'channel = "1.99.0"');
 assertContains("rust-toolchain.toml", 'components = ["clippy", "llvm-tools-preview", "rustfmt"]');
+for (const workflow of listFiles(".github/workflows").filter((path) => path.endsWith(".yml"))) {
+  for (const [, version] of readText(workflow).matchAll(/^[ \t]+toolchain:[ \t]+(1\.\d+\.\d+)[ \t]*$/gmu)) {
+    if (version !== "1.99.0") {
+      fail(`${workflow} pins Rust ${version} instead of the supported 1.99.0 release`);
+    }
+  }
+}
 assertContains("scripts/prepare_swift_binary_manifest.mjs", "invalid-local-artifact-path");
 assertContains("scripts/prepare_swift_release_candidate.sh", "scripts/build_swift_xcframework.sh");
 assertContains(".github/workflows/swift-ci.yml", "runs-on: macos-26");
@@ -1372,10 +1381,10 @@ assertContains(
   `${releaseReadinessCommand} --release-packages --policy-only`,
 );
 assertContains(".github/workflows/rust-ci.yml", "--profile release-ffi");
-assertContains(".github/workflows/rust-ci.yml", "name: MSRV 1.96");
+assertContains(".github/workflows/rust-ci.yml", "name: MSRV 1.99");
 assertContains(
   ".github/workflows/rust-ci.yml",
-  "cargo +1.96.0 check --locked --workspace --all-features",
+  "cargo +1.99.0 check --locked --workspace --all-features",
 );
 const swiftPreflightSource = readText(".github/workflows/swift-package-preflight.yml");
 if (
