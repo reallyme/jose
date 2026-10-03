@@ -32,7 +32,7 @@ permissions:
 
 env:
   CARGO_FUZZ_VERSION: 0.13.2
-  NIGHTLY_TOOLCHAIN: nightly-2026-07-01
+  NIGHTLY_TOOLCHAIN: nightly-2026-09-15
   FUZZ_MAX_TOTAL_TIME_SECONDS: 900
 
 jobs:
@@ -60,7 +60,7 @@ jobs:
         run: cargo metadata --manifest-path fuzz/Cargo.toml --locked --no-deps --format-version 1
 
       - name: Build fuzz targets
-        run: cargo +nightly-2026-07-01 fuzz build
+        run: cargo +nightly-2026-09-15 fuzz build
 
       - name: Verify fuzz build did not rewrite the lockfile
         run: git diff --exit-code -- fuzz/Cargo.lock
@@ -113,7 +113,7 @@ jobs:
 
       - name: Run time-boxed fuzz target
         run: >-
-          cargo +nightly-2026-07-01 fuzz run ${{ matrix.target }} --
+          cargo +nightly-2026-09-15 fuzz run ${{ matrix.target }} --
           -max_total_time="$FUZZ_MAX_TOTAL_TIME_SECONDS" -rss_limit_mb=4096
 
       - name: Upload crash artifacts

@@ -32,22 +32,22 @@ from scratch.
 ## Running
 
 ```sh
-rustup toolchain install nightly-2026-07-01
+rustup toolchain install nightly-2026-09-15
 cargo install cargo-fuzz --version 0.13.2 --locked
 
-cargo +nightly-2026-07-01 fuzz build
-cargo +nightly-2026-07-01 fuzz run compact_jwe -- -max_total_time=60
-cargo +nightly-2026-07-01 fuzz run compact_jwe_ecdh_es -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
-cargo +nightly-2026-07-01 fuzz run signed_jwt -- -max_total_time=60
-cargo +nightly-2026-07-01 fuzz run operation_wire -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
-cargo +nightly-2026-07-01 fuzz run operation_response -- -max_total_time=60
-cargo +nightly-2026-07-01 fuzz run ffi_operation -- -max_total_time=60
+cargo +nightly-2026-09-15 fuzz build
+cargo +nightly-2026-09-15 fuzz run compact_jwe -- -max_total_time=60
+cargo +nightly-2026-09-15 fuzz run compact_jwe_ecdh_es -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
+cargo +nightly-2026-09-15 fuzz run signed_jwt -- -max_total_time=60
+cargo +nightly-2026-09-15 fuzz run operation_wire -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
+cargo +nightly-2026-09-15 fuzz run operation_response -- -max_total_time=60
+cargo +nightly-2026-09-15 fuzz run ffi_operation -- -max_total_time=60
 ```
 
 Reproduce a crash artifact with:
 
 ```sh
-cargo +nightly-2026-07-01 fuzz run <target> fuzz/artifacts/<target>/<crash-file>
+cargo +nightly-2026-09-15 fuzz run <target> fuzz/artifacts/<target>/<crash-file>
 ```
 
 ## License

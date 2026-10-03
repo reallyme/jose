@@ -204,9 +204,7 @@ jobs:
         run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 
       - name: Check public external-type provenance
-        run: >-
-          cargo +"${EXTERNAL_TYPES_NIGHTLY}" check-external-types
-          --manifest-path crates/jose/Cargo.toml --all-features
+        run: scripts/check_public_external_types.sh
 
       - name: Test all features
         run: cargo nextest run --locked --workspace --all-features
