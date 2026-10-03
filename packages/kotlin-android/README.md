@@ -1,6 +1,6 @@
 # ReallyMe JOSE for Android
 
-`me.really:jose-android:0.4.3` is the Android AAR form of the typed Kotlin/JVM
+`me.really:jose-android:0.4.4` is the Android AAR form of the typed Kotlin/JVM
 JOSE facade. It packages the same Java/Kotlin API and Rust JNI boundary for
 API 24 or newer. The normal Android loader uses the packaged native library;
 the public `loadLibrary(path)` entry point remains available for explicit
