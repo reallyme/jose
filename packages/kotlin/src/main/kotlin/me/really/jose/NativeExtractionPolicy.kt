@@ -9,6 +9,7 @@ import java.nio.file.Files
 import java.nio.file.LinkOption
 import java.nio.file.Path
 import java.nio.file.attribute.AclEntry
+import java.nio.file.attribute.AclEntryFlag
 import java.nio.file.attribute.AclEntryPermission
 import java.nio.file.attribute.AclEntryType
 import java.nio.file.attribute.AclFileAttributeView
@@ -23,6 +24,28 @@ internal object NativeExtractionPolicy {
     private const val POSIX_STICKY: Int = 0x200
     private val trustedWindowsSidPattern: Regex =
         Regex("(?:^|[^0-9])(?:s-1-5-18|s-1-5-32-544)(?:$|[^0-9])")
+    private val aclRootMutationPermissions: Set<AclEntryPermission> = EnumSet.of(
+        AclEntryPermission.ADD_FILE,
+        AclEntryPermission.ADD_SUBDIRECTORY,
+        AclEntryPermission.APPEND_DATA,
+        AclEntryPermission.DELETE,
+        AclEntryPermission.DELETE_CHILD,
+        AclEntryPermission.WRITE_ACL,
+        AclEntryPermission.WRITE_ATTRIBUTES,
+        AclEntryPermission.WRITE_DATA,
+        AclEntryPermission.WRITE_NAMED_ATTRS,
+        AclEntryPermission.WRITE_OWNER,
+    )
+    private val aclAncestorReplacementPermissions: Set<AclEntryPermission> = EnumSet.of(
+        AclEntryPermission.ADD_FILE,
+        AclEntryPermission.DELETE,
+        AclEntryPermission.DELETE_CHILD,
+        AclEntryPermission.WRITE_ACL,
+        AclEntryPermission.WRITE_ATTRIBUTES,
+        AclEntryPermission.WRITE_DATA,
+        AclEntryPermission.WRITE_NAMED_ATTRS,
+        AclEntryPermission.WRITE_OWNER,
+    )
 
     internal fun createPrivateExtractionDirectory(
         configuredRoot: String? = System.getProperty("java.io.tmpdir"),
@@ -112,6 +135,7 @@ internal object NativeExtractionPolicy {
 
     private fun hasSecureAclAncestors(root: Path, currentUser: String): Boolean {
         var ancestor: Path? = root
+        var isExtractionRoot = true
         while (ancestor != null) {
             val view = Files.getFileAttributeView(
                 ancestor,
@@ -119,44 +143,51 @@ internal object NativeExtractionPolicy {
                 LinkOption.NOFOLLOW_LINKS,
             ) ?: return false
             if (!Files.isDirectory(ancestor, LinkOption.NOFOLLOW_LINKS) ||
-                !isSecureAclTempRoot(view, currentUser)
+                !isSecureAclDirectory(view, currentUser, isExtractionRoot)
             ) {
                 return false
             }
+            isExtractionRoot = false
             ancestor = ancestor.parent
         }
         return true
     }
 
-    private fun isSecureAclTempRoot(
+    private fun isSecureAclDirectory(
         view: AclFileAttributeView,
         currentUser: String,
+        isExtractionRoot: Boolean,
     ): Boolean {
         val owner = view.owner
         if (!isTrustedAclPrincipal(owner.name, currentUser, owner.toString())) {
             return false
         }
-        val mutatingPermissions = EnumSet.of(
-            AclEntryPermission.ADD_FILE,
-            AclEntryPermission.ADD_SUBDIRECTORY,
-            AclEntryPermission.APPEND_DATA,
-            AclEntryPermission.DELETE,
-            AclEntryPermission.DELETE_CHILD,
-            AclEntryPermission.WRITE_ACL,
-            AclEntryPermission.WRITE_ATTRIBUTES,
-            AclEntryPermission.WRITE_DATA,
-            AclEntryPermission.WRITE_NAMED_ATTRS,
-            AclEntryPermission.WRITE_OWNER,
-        )
+        // Windows commonly permits users to create siblings under a profile
+        // ancestor. That cannot replace an existing protected path component.
+        // The extraction root itself must forbid all untrusted creation because
+        // its new child briefly inherits that root's ACL before restriction.
         return view.acl.none { entry ->
-            entry.type() == AclEntryType.ALLOW &&
-                !isTrustedAclPrincipal(
-                    entry.principal().name,
-                    currentUser,
-                    entry.principal().toString(),
-                ) &&
-                entry.permissions().any { it in mutatingPermissions }
+            isUntrustedAclMutation(entry, currentUser, isExtractionRoot)
         }
+    }
+
+    internal fun isUntrustedAclMutation(
+        entry: AclEntry,
+        currentUser: String,
+        isExtractionRoot: Boolean,
+    ): Boolean {
+        if (entry.type() != AclEntryType.ALLOW || AclEntryFlag.INHERIT_ONLY in entry.flags()) {
+            return false
+        }
+        if (isTrustedAclPrincipal(entry.principal().name, currentUser, entry.principal().toString())) {
+            return false
+        }
+        val mutatingPermissions = if (isExtractionRoot) {
+            aclRootMutationPermissions
+        } else {
+            aclAncestorReplacementPermissions
+        }
+        return entry.permissions().any { it in mutatingPermissions }
     }
 
     internal fun isTrustedAclPrincipal(
@@ -171,6 +202,7 @@ internal object NativeExtractionPolicy {
             normalizedPrincipal.endsWith("\\$normalizedUser") ||
             normalizedPrincipal == "builtin\\administrators" ||
             normalizedPrincipal == "nt authority\\system" ||
+            normalizedPrincipal == "nt service\\trustedinstaller" ||
             trustedWindowsSidPattern.containsMatchIn(normalizedDescription)
     }
 
