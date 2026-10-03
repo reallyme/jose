@@ -25,6 +25,18 @@ dependencyLocking {
     lockAllConfigurations()
 }
 
+// The Kotlin compiler resolves Bouncy Castle independently of this library's
+// runtime graph. Keep its build-time crypto modules on the patched release.
+val bouncyCastleToolVersion = "1.86"
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.bouncycastle" && requested.name.endsWith("-jdk18on")) {
+            useVersion(bouncyCastleToolVersion)
+            because("The compiler's bundled Bouncy Castle version has published security advisories")
+        }
+    }
+}
+
 val remoteMavenRepositoryUrl = providers.gradleProperty("reallyme.maven.repositoryUrl")
     .orElse(providers.environmentVariable("REALLYME_MAVEN_REPOSITORY_URL"))
 val remoteMavenUsername = providers.gradleProperty("reallyme.maven.username")

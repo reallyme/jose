@@ -46,7 +46,6 @@ skip = [
     # Base64 0.23. Both are current direct dependencies; remove this exact
     # exception when Buffa adopts Base64 0.23 or the dependency trees converge.
     { name = "base64", version = "0.22.1" },
-    { name = "getrandom", version = "0.2.17" },
     # Serde 1.0.229 moved its derive implementation to Syn 3 while JNI,
     # zeroize, and WASM proc-macros still require Syn 2. Both versions are
     # compile-time-only; remove this exact exception when those trees converge.
