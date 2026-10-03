@@ -6,8 +6,8 @@
 import Foundation
 import PackageDescription
 
-let ffiArtifactChecksum = "f167efa19cb8e1fdbaf231ccedb2ae395c6b0119600b5d4dd2600ed2f9b4b261"
-let ffiArtifactVersion = "0.4.2"
+let ffiArtifactChecksum = "dbcef80d3d26310524c0c068567589318eb17c5a1d86c966b888f6a61141efd5"
+let ffiArtifactVersion = "0.4.3"
 let ffiArtifactLocalPathOverride = ""
 // Source-tree CI exercises runtime loading before testing the linked release
 // artifact. Require a repository-local marker as a second gate so an inherited
