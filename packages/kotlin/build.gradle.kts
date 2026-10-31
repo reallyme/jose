@@ -335,6 +335,7 @@ tasks.withType<Javadoc>().configureEach {
 val verifyBundledNativeResources = tasks.register("verifyBundledNativeResources") {
     group = "verification"
     description = "Verifies that release JVM artifacts include every supported native FFI library."
+    dependsOn(writeHostNativeDigest)
     inputs.dir(nativeResourcesDir)
     doLast {
         val root = nativeResourcesDir.get()
