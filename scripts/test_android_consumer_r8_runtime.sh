@@ -97,6 +97,19 @@ ensure_avd_exists() {
 [[ -x "$ADB" ]] || fail "adb is required at $ADB"
 [[ -d "$ANDROID_NDK_HOME_VALUE" ]] || fail "ANDROID_NDK_HOME is required at $ANDROID_NDK_HOME_VALUE"
 
+# Keep the emulator out of the CPU- and memory-intensive native and R8 builds.
+# Hosted runners can otherwise lose Android system services while Gradle and
+# rustc are active even though the emulator process itself remains reachable.
+ANDROID_NDK_HOME="$ANDROID_NDK_HOME_VALUE" "$REPO_ROOT/scripts/build_android_native_resources.sh" "$JNILIBS_DIR"
+node "$REPO_ROOT/scripts/write_native_manifest.mjs" "$JNILIBS_DIR" "$NATIVE_ASSETS_DIR/reallyme-jose/native-manifest.json"
+
+ANDROID_NDK_HOME="$ANDROID_NDK_HOME_VALUE" "$REPO_ROOT/packages/kotlin/gradlew" \
+    -p "$REPO_ROOT/packages/kotlin-android" \
+    :consumer-r8-runtime:assembleRelease \
+    -Preallyme.jose.androidJniLibsDir="$JNILIBS_DIR" \
+    -Preallyme.jose.androidNativeAssetsDir="$NATIVE_ASSETS_DIR" \
+    -Preallyme.jose.requireAndroidJniLibs=true
+
 if [[ -n "$AVD_NAME" ]]; then
     ensure_avd_exists
     "$EMULATOR" \
@@ -126,6 +139,10 @@ done
 
 boot_deadline=$((SECONDS + 240))
 while [[ "$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]]; do
+    if [[ -n "$emulator_pid" ]] && ! kill -0 "$emulator_pid" >/dev/null 2>&1; then
+        dump_emulator_log
+        fail "Android emulator exited before boot completed"
+    fi
     if (( SECONDS > boot_deadline )); then
         dump_emulator_log
         fail "Android device did not finish booting"
@@ -133,15 +150,20 @@ while [[ "$("$ADB" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" !
     sleep 2
 done
 
-ANDROID_NDK_HOME="$ANDROID_NDK_HOME_VALUE" "$REPO_ROOT/scripts/build_android_native_resources.sh" "$JNILIBS_DIR"
-node "$REPO_ROOT/scripts/write_native_manifest.mjs" "$JNILIBS_DIR" "$NATIVE_ASSETS_DIR/reallyme-jose/native-manifest.json"
-
-ANDROID_NDK_HOME="$ANDROID_NDK_HOME_VALUE" "$REPO_ROOT/packages/kotlin/gradlew" \
-    -p "$REPO_ROOT/packages/kotlin-android" \
-    :consumer-r8-runtime:assembleRelease \
-    -Preallyme.jose.androidJniLibsDir="$JNILIBS_DIR" \
-    -Preallyme.jose.androidNativeAssetsDir="$NATIVE_ASSETS_DIR" \
-    -Preallyme.jose.requireAndroidJniLibs=true
+# sys.boot_completed can be set before the package manager is ready to accept
+# installs. Treat the package service as a separate bounded readiness condition.
+package_deadline=$((SECONDS + 120))
+while [[ "$("$ADB" shell service check package 2>/dev/null | tr -d '\r')" != "Service package: found" ]]; do
+    if [[ -n "$emulator_pid" ]] && ! kill -0 "$emulator_pid" >/dev/null 2>&1; then
+        dump_emulator_log
+        fail "Android emulator exited before the package manager became available"
+    fi
+    if (( SECONDS > package_deadline )); then
+        dump_emulator_log
+        fail "Android package manager did not become available"
+    fi
+    sleep 2
+done
 
 "$ADB" install -r "$APK_PATH" >/dev/null
 app_installed="true"
