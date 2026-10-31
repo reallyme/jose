@@ -98,7 +98,7 @@ ensure_avd_exists() {
 
 if [[ -n "$AVD_NAME" ]]; then
     ensure_avd_exists
-    "$EMULATOR" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect >"$LOG_DIR/emulator.log" 2>&1 &
+    "$EMULATOR" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader >"$LOG_DIR/emulator.log" 2>&1 &
     emulator_pid="$!"
 fi
 
