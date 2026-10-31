@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!--
+        These shared JVM sources contain the hardened desktop extraction path.
+        Android loads the AAR-packaged library with System.loadLibrary and
+        returns before any java.nio.file extraction API can be reached.
+    -->
+    <issue id="NewApi">
+        <ignore path="../kotlin/src/main/kotlin/me/really/jose/NativeExtractionPolicy.kt" />
+        <ignore path="../kotlin/src/main/kotlin/me/really/jose/RustNativeProvider.kt" />
+    </issue>
+
+    <!--
+        The provider's System.load calls implement the explicit local-library
+        development API and the verified desktop extraction path. Production
+        Android loading uses System.loadLibrary for the packaged JNI library.
+    -->
+    <issue id="UnsafeDynamicallyLoadedCode">
+        <ignore path="../kotlin/src/main/kotlin/me/really/jose/RustNativeProvider.kt" />
+    </issue>
+</lint>
