@@ -1719,6 +1719,8 @@ assertContains("scripts/test_android_consumer_r8_runtime.sh", 'platforms;android
 assertContains("scripts/test_android_consumer_r8_runtime.sh", 'system-images;android-37.0;google_apis;x86_64');
 assertContains("scripts/test_android_consumer_r8_runtime.sh", "-gpu swiftshader");
 assertNotContains("scripts/test_android_consumer_r8_runtime.sh", "swiftshader_indirect");
+assertContains("scripts/test_android_consumer_r8_runtime.sh", 'ANDROID_R8_DATA_PARTITION_MIB="4096"');
+assertContains("scripts/test_android_consumer_r8_runtime.sh", '-partition-size "$ANDROID_R8_DATA_PARTITION_MIB"');
 assertContains("packages/kotlin-android/README.md", "API 24 or newer");
 assertContains("packages/kotlin-android/README.md", "minified consumer APK");
 assertContains("packages/kotlin-android/README.md", "16 KiB");
