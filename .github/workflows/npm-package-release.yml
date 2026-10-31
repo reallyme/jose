@@ -22,8 +22,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  WASM_BINDGEN_CLI_VERSION: 0.2.129
-  WASM_PACK_VERSION: 0.15.0
+  WASM_BINDGEN_CLI_VERSION: 0.2.130
+  WASM_PACK_VERSION: 0.15.1
 
 jobs:
   verify-release-sha:
@@ -91,7 +91,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.99.0
+          toolchain: 1.99.1
           targets: wasm32-unknown-unknown
       - name: Install wasm-pack
         uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4

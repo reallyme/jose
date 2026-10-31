@@ -7,8 +7,8 @@ import { rmSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const REQUIRED_WASM_PACK_VERSION = "0.15.0";
-const REQUIRED_WASM_BINDGEN_VERSION = "0.2.129";
+const REQUIRED_WASM_PACK_VERSION = "0.15.1";
+const REQUIRED_WASM_BINDGEN_VERSION = "0.2.130";
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const packageDirectory = resolve(scriptDirectory, "..");
 const repositoryDirectory = resolve(packageDirectory, "..", "..");

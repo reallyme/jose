@@ -55,7 +55,7 @@ runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 const crateVersion = "0.4.4";
 const protoCrateVersion = "0.4.4";
 const buffaVersion = "0.9.2";
-const cryptoVersion = "0.3.12";
+const cryptoVersion = "0.3.16";
 const codecVersion = "0.3.1";
 const npmPackageVersion = "0.4.4";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
@@ -321,8 +321,8 @@ assertContains("packages/ts/src/provider.ts", "installReallyMeJoseWasmProvider")
 assertContains("packages/ts/src/facade.ts", "export const ReallyMeJose = Object.freeze");
 assertContains("packages/ts/src/facade-support.ts", "outcome.value.protectedHeaderJson.fill(0)");
 assertContains("packages/ts/src/facade-support.ts", "outcome.value.payload.fill(0)");
-assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_PACK_VERSION = "0.15.0"');
-assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_BINDGEN_VERSION = "0.2.129"');
+assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_PACK_VERSION = "0.15.1"');
+assertContains("packages/ts/scripts/build-wasm.mjs", 'const REQUIRED_WASM_BINDGEN_VERSION = "0.2.130"');
 assertContains("packages/ts/scripts/check-pack.mjs", "unreviewed semantic export");
 assertContains("packages/ts/test/vector-conformance.test.mjs", "all 104 cross-lane conformance vectors");
 assertContains("packages/ts/test/vector-conformance.test.mjs", "PROVIDER_UNSUPPORTED");
@@ -700,8 +700,8 @@ assertContains(
 assertContains(".github/workflows/rust-ci.yml", releaseReadinessCommand);
 assertContains(".github/workflows/readiness.yml", releaseReadinessCommand);
 assertContains(".github/workflows/readiness.yml", "runs-on: macos-26");
-assertContains(".github/workflows/readiness.yml", "WASM_BINDGEN_CLI_VERSION: 0.2.129");
-assertContains(".github/workflows/readiness.yml", "WASM_PACK_VERSION: 0.15.0");
+assertContains(".github/workflows/readiness.yml", "WASM_BINDGEN_CLI_VERSION: 0.2.130");
+assertContains(".github/workflows/readiness.yml", "WASM_PACK_VERSION: 0.15.1");
 assertContains(
   ".github/workflows/readiness.yml",
   'tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}',
@@ -1370,12 +1370,12 @@ assertContains("scripts/verify_swift_release_artifact.mjs", "Rust LLVM symbol in
 assertContains("Cargo.toml", 'rust-version = "1.99"');
 assertContains("fuzz/Cargo.toml", 'rust-version = "1.99"');
 assertContains("tools/vector-audit/Cargo.toml", 'rust-version = "1.99"');
-assertContains("rust-toolchain.toml", 'channel = "1.99.0"');
+assertContains("rust-toolchain.toml", 'channel = "1.99.1"');
 assertContains("rust-toolchain.toml", 'components = ["clippy", "llvm-tools-preview", "rustfmt"]');
 for (const workflow of listFiles(".github/workflows").filter((path) => path.endsWith(".yml"))) {
   for (const [, version] of readText(workflow).matchAll(/^[ \t]+toolchain:[ \t]+(1\.\d+\.\d+)[ \t]*$/gmu)) {
-    if (version !== "1.99.0") {
-      fail(`${workflow} pins Rust ${version} instead of the supported 1.99.0 release`);
+    if (version !== "1.99.1") {
+      fail(`${workflow} pins Rust ${version} instead of the supported 1.99.1 release`);
     }
   }
 }
@@ -1399,7 +1399,7 @@ assertContains(".github/workflows/rust-ci.yml", "--profile release-ffi");
 assertContains(".github/workflows/rust-ci.yml", "name: MSRV 1.99");
 assertContains(
   ".github/workflows/rust-ci.yml",
-  "cargo +1.99.0 check --locked --workspace --all-features",
+  "cargo +1.99.1 check --locked --workspace --all-features",
 );
 const swiftPreflightSource = readText(".github/workflows/swift-package-preflight.yml");
 if (
