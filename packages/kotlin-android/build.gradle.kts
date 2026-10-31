@@ -10,8 +10,8 @@ import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 plugins {
-    id("com.android.library") version "9.4.0"
-    id("com.android.application") version "9.4.0" apply false
+    id("com.android.library") version "9.5.0"
+    id("com.android.application") version "9.5.0" apply false
     `maven-publish`
     signing
 }
@@ -250,14 +250,14 @@ fun verifyElf64LoadAlignment(file: File, relativePath: String, requiredAlignment
 
 android {
     namespace = "me.really.jose"
-    compileSdk = 36
+    compileSdk = 37
     ndkVersion = androidNdkVersion
 
     defaultConfig {
         minSdk = 24
         consumerProguardFiles("consumer-rules.pro")
         aarMetadata {
-            minCompileSdk = 36
+            minCompileSdk = 37
         }
     }
 

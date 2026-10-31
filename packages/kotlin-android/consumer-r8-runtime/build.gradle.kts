@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "me.really.jose.consumer.r8"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "me.really.jose.consumer.r8"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "0.4.4"
     }
