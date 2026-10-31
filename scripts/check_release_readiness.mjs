@@ -1717,6 +1717,8 @@ assertContains("scripts/test_android_consumer_r8_runtime.sh", "Android consumer 
 assertContains("scripts/test_android_consumer_r8_runtime.sh", "app_installed");
 assertContains("scripts/test_android_consumer_r8_runtime.sh", 'platforms;android-37.0');
 assertContains("scripts/test_android_consumer_r8_runtime.sh", 'system-images;android-37.0;google_apis;x86_64');
+assertContains("scripts/test_android_consumer_r8_runtime.sh", "-gpu swiftshader");
+assertNotContains("scripts/test_android_consumer_r8_runtime.sh", "swiftshader_indirect");
 assertContains("packages/kotlin-android/README.md", "API 24 or newer");
 assertContains("packages/kotlin-android/README.md", "minified consumer APK");
 assertContains("packages/kotlin-android/README.md", "16 KiB");
