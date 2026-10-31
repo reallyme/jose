@@ -1721,6 +1721,21 @@ assertContains("scripts/test_android_consumer_r8_runtime.sh", "-gpu swiftshader"
 assertNotContains("scripts/test_android_consumer_r8_runtime.sh", "swiftshader_indirect");
 assertContains("scripts/test_android_consumer_r8_runtime.sh", 'ANDROID_R8_DATA_PARTITION_MIB="4096"');
 assertContains("scripts/test_android_consumer_r8_runtime.sh", '-partition-size "$ANDROID_R8_DATA_PARTITION_MIB"');
+assertContains("scripts/test_android_consumer_r8_runtime.sh", "shell service check package");
+assertContains("scripts/test_android_consumer_r8_runtime.sh", "Android package manager did not become available");
+const androidRuntimeScript = readText("scripts/test_android_consumer_r8_runtime.sh");
+if (
+  androidRuntimeScript.indexOf(":consumer-r8-runtime:assembleRelease") >=
+  androidRuntimeScript.indexOf('        -avd "$AVD_NAME"')
+) {
+  fail("Android runtime gate must build before starting the emulator");
+}
+if (
+  androidRuntimeScript.indexOf("shell service check package") >=
+  androidRuntimeScript.indexOf('"$ADB" install -r "$APK_PATH"')
+) {
+  fail("Android runtime gate must wait for the package manager before installation");
+}
 assertContains("packages/kotlin-android/README.md", "API 24 or newer");
 assertContains("packages/kotlin-android/README.md", "minified consumer APK");
 assertContains("packages/kotlin-android/README.md", "16 KiB");

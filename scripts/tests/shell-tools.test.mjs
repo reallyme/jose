@@ -110,9 +110,28 @@ for (const script of ["build_kotlin_native_resource.sh", "build_android_native_r
 test("Android AVD failure uses private logs and removes its temporary directory", () => {
   const root = mkdtempSync(join(tmpdir(), "jose-android-test-"));
   try {
+    const checkout = join(root, "checkout");
+    const scriptDirectory = join(checkout, "scripts");
+    const kotlinDirectory = join(checkout, "packages/kotlin");
     const scratch = join(root, "scratch");
     const observed = join(root, "observed.json");
+    mkdirSync(scriptDirectory, { recursive: true });
+    mkdirSync(kotlinDirectory, { recursive: true });
     mkdirSync(scratch);
+    copyFileSync(
+      join(scripts, "test_android_consumer_r8_runtime.sh"),
+      join(scriptDirectory, "test_android_consumer_r8_runtime.sh"),
+    );
+    for (const path of [
+      join(scriptDirectory, "build_android_native_resources.sh"),
+      join(kotlinDirectory, "gradlew"),
+    ]) {
+      executable(path, "#!/bin/sh\nexit 0\n");
+    }
+    executable(
+      join(scriptDirectory, "write_native_manifest.mjs"),
+      "#!/usr/bin/env node\nprocess.exit(0);\n",
+    );
     const stub = join(root, "stub");
     executable(stub, "#!/bin/sh\nexit 0\n");
     const avdmanager = join(root, "avdmanager");
@@ -127,7 +146,7 @@ fs.writeFileSync(process.env.TEST_OBSERVED, JSON.stringify(entries));
 process.stdout.write("AVD fixture failure\\n");
 process.exit(77);
 `);
-    const result = spawnSync("bash", [join(scripts, "test_android_consumer_r8_runtime.sh")], {
+    const result = spawnSync("bash", [join(scriptDirectory, "test_android_consumer_r8_runtime.sh")], {
       encoding: "utf8",
       env: {
         ...process.env,
@@ -149,4 +168,17 @@ process.exit(77);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("Android runtime gate builds before emulator startup and waits for package services", () => {
+  const source = readFileSync(join(scripts, "test_android_consumer_r8_runtime.sh"), "utf8");
+  const buildOffset = source.indexOf(":consumer-r8-runtime:assembleRelease");
+  const emulatorOffset = source.indexOf('        -avd "$AVD_NAME"');
+  const packageServiceOffset = source.indexOf("shell service check package");
+  const installOffset = source.indexOf('"$ADB" install -r "$APK_PATH"');
+
+  assert.ok(buildOffset >= 0);
+  assert.ok(emulatorOffset > buildOffset);
+  assert.ok(packageServiceOffset > emulatorOffset);
+  assert.ok(installOffset > packageServiceOffset);
 });
