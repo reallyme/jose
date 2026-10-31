@@ -34,7 +34,7 @@ env:
   CARGO_NEXTEST_VERSION: 0.9.146
   CARGO_SEMVER_CHECKS_VERSION: 0.50.0
   EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20
-  WASM_BINDGEN_CLI_VERSION: 0.2.129
+  WASM_BINDGEN_CLI_VERSION: 0.2.130
   BUFFA_VERSION: 0.9.2
   BUF_VERSION: 1.73.0
   BUF_LINUX_X86_64_SHA256: 8f2986298ad08f0cc1bf999b9797b7c383adf32d7edf0f73d6f1e1a701baeac1
@@ -93,7 +93,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.99.0
+          toolchain: 1.99.1
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 
