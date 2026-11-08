@@ -9,7 +9,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CompactEncrypt, CompactSign, SignJWT, importJWK } from "jose";
 
-const source = "panva/jose@6.2.12";
+const source = "panva/jose@6.2.16";
 const payloadUtf8 = "reallyme-panva-interop";
 const claims = {
   iss: "panva",

@@ -22,7 +22,7 @@ protobuf code by default.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.4.5"
+reallyme-jose = "0.4.6"
 ```
 
 ## Security Model

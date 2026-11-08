@@ -10,14 +10,14 @@ import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 plugins {
-    id("com.android.library") version "9.5.0"
-    id("com.android.application") version "9.5.0" apply false
+    id("com.android.library") version "9.5.1"
+    id("com.android.application") version "9.5.1" apply false
     `maven-publish`
     signing
 }
 
 group = "me.really"
-version = "0.4.5"
+version = "0.4.6"
 
 dependencyLocking {
     lockAllConfigurations()

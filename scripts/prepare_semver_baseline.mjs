@@ -17,7 +17,7 @@ const BASELINE_LOCKFILE_SHA256 =
   "9a89a83fd6566fc68eb7005e4c08b0a34bc4b95b0d139c3263c28ccc0323e8e8";
 const CRATE_DEPENDENCY_MARKER = "\n[target.'cfg(target_arch = \"wasm32\")'.dependencies]\n";
 
-// Freeze direct ReallyMe dependencies at the versions reviewed with the 0.3.1
+// Freeze direct ReallyMe dependencies at the versions reviewed with the 0.3.2
 // release. Without exact requirements, Cargo may resolve newer 0.x releases
 // while rustdoc is constructing the historical API baseline.
 const BASELINE_DEPENDENCIES = Object.freeze([
