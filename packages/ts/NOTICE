@@ -1,11 +1,11 @@
-SPDX-FileCopyrightText: 2026 ReallyMe LLC
+SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 
 SPDX-License-Identifier: MIT OR Apache-2.0
 
 ReallyMe JOSE
-Copyright © 2026 ReallyMe LLC. All rights reserved.
+Copyright © 2026 ReallyMe Technologies Limited. All rights reserved.
 
-This package includes JOSE, JWT, JWS, and JWE helpers developed by ReallyMe LLC.
+This package includes JOSE, JWT, JWS, and JWE helpers developed by ReallyMe Technologies Limited.
 Except as otherwise noted, they are distributed under either the MIT License
 or the Apache License, Version 2.0, at your option.
 

@@ -22,7 +22,7 @@ protobuf code by default.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.4.5"
+reallyme-jose = "0.4.6"
 ```
 
 ## Security Model
@@ -168,6 +168,6 @@ option. See [LICENSE](LICENSE) and
 
 ## Copyright And Trademarks
 
-Copyright © 2026 by ReallyMe LLC.
+Copyright © 2026 by ReallyMe Technologies Limited.
 
-ReallyMe<sup>®</sup> is a registered trademark of ReallyMe LLC.
+ReallyMe<sup>®</sup> is a registered trademark of ReallyMe Technologies Limited.

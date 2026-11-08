@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "me.really"
-version = "0.4.5"
+version = "0.4.6"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -302,7 +302,7 @@ val writeHostNativeDigest = tasks.register("writeHostNativeDigest") {
 dependencies {
     api("com.google.protobuf:protobuf-javalite:4.36.2")
     api("com.google.protobuf:protobuf-kotlin-lite:4.36.2")
-    testImplementation("com.google.code.gson:gson:2.14.0")
+    testImplementation("com.google.code.gson:gson:2.15.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:6.1.3")
     testImplementation(kotlin("test"))
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.1.3")
@@ -521,8 +521,8 @@ publishing {
                 developers {
                     developer {
                         id.set("reallyme")
-                        name.set("ReallyMe LLC")
-                        organization.set("ReallyMe LLC")
+                        name.set("ReallyMe Technologies Limited")
+                        organization.set("ReallyMe Technologies Limited")
                         organizationUrl.set("https://github.com/reallyme")
                     }
                 }

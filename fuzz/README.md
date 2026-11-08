@@ -58,6 +58,6 @@ Licensed under either the [MIT License](../LICENSE-MIT) or the
 
 ## Copyright And Trademarks
 
-Copyright © 2026 by ReallyMe LLC.
+Copyright © 2026 by ReallyMe Technologies Limited.
 
-ReallyMe<sup>®</sup> is a registered trademark of ReallyMe LLC.
+ReallyMe<sup>®</sup> is a registered trademark of ReallyMe Technologies Limited.

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -9,7 +9,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CompactEncrypt, CompactSign, SignJWT, importJWK } from "jose";
 
-const source = "panva/jose@6.2.12";
+const source = "panva/jose@6.2.16";
 const payloadUtf8 = "reallyme-panva-interop";
 const claims = {
   iss: "panva",

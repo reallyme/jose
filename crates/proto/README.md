@@ -98,7 +98,7 @@ cargo fmt --package reallyme-jose-proto
 
 ```toml
 [dependencies]
-reallyme-jose-proto = { version = "0.4.5", features = ["generated"] }
+reallyme-jose-proto = { version = "0.4.6", features = ["generated"] }
 ```
 
 ## License
@@ -108,6 +108,6 @@ option. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
 ## Copyright And Trademarks
 
-Copyright © 2026 by ReallyMe LLC.
+Copyright © 2026 by ReallyMe Technologies Limited.
 
-ReallyMe<sup>®</sup> is a registered trademark of ReallyMe LLC.
+ReallyMe<sup>®</sup> is a registered trademark of ReallyMe Technologies Limited.

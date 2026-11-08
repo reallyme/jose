@@ -106,7 +106,7 @@ node .release-readiness/scripts/run-consumer-check.mjs
 ```
 
 The `.release-readiness` checkout is pinned to commit
-`5c2da5e5d5795c2c895d0dca0819287ee7101207` (release v0.6.7) before execution.
+`9cf40c7da1def8a8d809af51789284097c572dd5` (release v0.6.9) before execution.
 
 Release readiness requires the declared crates.io versions and rejects path or
 Git overrides. Local sibling dependency substitutions must be removed before
@@ -123,11 +123,11 @@ service-discovery model. Those concerns belong to the embedding application.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.4.5"
+reallyme-jose = "0.4.6"
 ```
 
 ```sh
-npm install @reallyme/jose@0.4.5
+npm install @reallyme/jose@0.4.6
 ```
 
 ## Supported JOSE Surface
@@ -359,6 +359,6 @@ Third-party components retain their own licenses and notices.
 
 ## Copyright And Trademarks
 
-Copyright © 2026 by ReallyMe LLC.
+Copyright © 2026 by ReallyMe Technologies Limited.
 
-ReallyMe<sup>®</sup> is a registered trademark of ReallyMe LLC.
+ReallyMe<sup>®</sup> is a registered trademark of ReallyMe Technologies Limited.

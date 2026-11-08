@@ -7,7 +7,7 @@
     clippy::panic,
     clippy::unwrap_used
 )]
-// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -59,7 +59,7 @@ struct PanvaCase {
 #[cfg_attr(not(target_arch = "wasm32"), test)]
 fn panva_jose_vectors_interoperate() -> Result<(), PanvaTestError> {
     let suite: PanvaSuite = serde_json::from_str(include_str!("../../../vectors/panva-jose.json"))?;
-    assert_eq!(suite.source, "panva/jose@6.2.12");
+    assert_eq!(suite.source, "panva/jose@6.2.16");
     assert_eq!(suite.cases.len(), 4);
 
     for case in suite.cases {

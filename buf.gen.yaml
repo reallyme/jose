@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2026 ReallyMe LLC
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -17,14 +17,14 @@ plugins:
   # TypeScript types are checked in for deterministic npm builds. The typed
   # facade consumes these generated messages rather than maintaining a second
   # hand-written wire contract.
-  - remote: buf.build/bufbuild/es:v2.16.0
+  - remote: buf.build/bufbuild/es:v2.17.0
     out: packages/ts/src/proto/generated
     opt:
       - target=ts
 
   # SwiftProtobuf types are bundled behind the typed Swift SDK facade. Keep the
   # generator version aligned with the package dependency and release policy.
-  - remote: buf.build/apple/swift:v1.38.1
+  - remote: buf.build/apple/swift:v1.39.0
     out: gen/swift
     opt:
       - Visibility=Public

@@ -1,5 +1,5 @@
 // swift-tools-version: 6.3
-// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -7,7 +7,7 @@ import Foundation
 import PackageDescription
 
 let ffiArtifactChecksum = "e22d701c74acd9a7018ed48a008306a2c3c6daabd51b5f48fee1f18f0623cf4c"
-let ffiArtifactVersion = "0.4.5"
+let ffiArtifactVersion = "0.4.6"
 let ffiArtifactLocalPathOverride = ""
 // Source-tree CI exercises runtime loading before testing the linked release
 // artifact. Require a repository-local marker as a second gate so an inherited
@@ -79,7 +79,7 @@ let package = Package(
     .library(name: "ReallyMeJOSEProto", targets: ["ReallyMeJOSEProto"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/apple/swift-protobuf.git", exact: "1.38.1")
+    .package(url: "https://github.com/apple/swift-protobuf.git", exact: "1.39.0")
   ],
   targets: packageTargets
 )

@@ -1,4 +1,4 @@
-@rem SPDX-FileCopyrightText: 2026 ReallyMe LLC
+@rem SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 @rem
 @rem SPDX-License-Identifier: MIT OR Apache-2.0
 @echo off

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2026 ReallyMe LLC
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -13,7 +13,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.4.5
+        default: 0.4.6
 
 permissions:
   contents: read
@@ -117,7 +117,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 5c2da5e5d5795c2c895d0dca0819287ee7101207
+          ref: 9cf40c7da1def8a8d809af51789284097c572dd5
           path: .release-readiness
           persist-credentials: false
 
@@ -219,5 +219,5 @@ jobs:
           - authenticate AES-GCM before bounded inflate and zeroize intermediate plaintext buffers
           - expose explicit compression negotiation across Rust, Swift, Kotlin, TypeScript, and the protobuf boundary
           - add positive, tamper, unsupported-algorithm, and decompression-limit vectors across every supported ECDH-ES curve and AES-GCM size
-          - update the pinned shared release-readiness policy to v0.6.7
+          - update the pinned shared release-readiness policy to v0.6.9
           RELEASE_NOTES

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-FileCopyrightText: 2026 ReallyMe LLC
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -46,20 +46,20 @@ const assertRawContains = (path, needle, description) => {
   }
 };
 
-assertReallyMeReleasePackagePolicy({ version: "0.6.7" });
+assertReallyMeReleasePackagePolicy({ version: "0.6.9" });
 assertWorkflowActionsPinned();
 assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
 assertOperationContractArchitecture({ readText, listFiles, fail });
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
 
-const crateVersion = "0.4.5";
-const protoCrateVersion = "0.4.5";
+const crateVersion = "0.4.6";
+const protoCrateVersion = "0.4.6";
 const buffaVersion = "0.9.2";
-const cryptoVersion = "0.3.16";
-const codecVersion = "0.3.1";
-const npmPackageVersion = "0.4.5";
+const cryptoVersion = "0.3.17";
+const codecVersion = "0.3.2";
+const npmPackageVersion = "0.4.6";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
-const releaseReadinessCommit = "5c2da5e5d5795c2c895d0dca0819287ee7101207";
+const releaseReadinessCommit = "9cf40c7da1def8a8d809af51789284097c572dd5";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -83,7 +83,7 @@ const sourceVerification = (commands) => {
 };
 
 if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
-  fail("RELEASE_VERSION must match every 0.4.5 release package");
+  fail("RELEASE_VERSION must match every 0.4.6 release package");
 }
 
 assertNodeWorkflowJobsPinNode({ nodeVersion: "24" });
@@ -185,7 +185,7 @@ assertNotContains("Cargo.toml", 'time = "');
 
 const ffiCargo = readText("crates/ffi/Cargo.toml");
 assertContains("crates/ffi/Cargo.toml", 'name = "reallyme-jose-ffi"');
-assertContains("crates/ffi/Cargo.toml", 'version = "0.4.5"');
+assertContains("crates/ffi/Cargo.toml", 'version = "0.4.6"');
 assertContains("crates/ffi/Cargo.toml", "publish = false");
 assertContains("crates/ffi/Cargo.toml", 'crate-type = ["rlib", "staticlib", "cdylib"]');
 assertContains("crates/ffi/Cargo.toml", 'default = ["native"]');
@@ -196,7 +196,7 @@ assertContains(
 assertContains("crates/ffi/Cargo.toml", 'features = ["csprng"]');
 assertContains(
   "crates/ffi/Cargo.toml",
-  'reallyme-jose = { version = "0.4.5", path = "../jose", default-features = false, features = ["wire"] }',
+  'reallyme-jose = { version = "0.4.6", path = "../jose", default-features = false, features = ["wire"] }',
 );
 assertContains("crates/ffi/Cargo.toml", "workspace = true");
 assertNotContains("crates/ffi/Cargo.toml", "publish = true");
@@ -235,7 +235,7 @@ assertContains(
   'reallyme-codec = { workspace = true, features = ["base64", "base64url"] }',
 );
 assertContains("crates/jose/Cargo.toml", "reallyme-crypto = { workspace = true }");
-assertContains("Cargo.toml", 'flate2 = { version = "1.1.10", default-features = false, features = ["rust_backend"] }');
+assertContains("Cargo.toml", 'flate2 = { version = "1.1.11", default-features = false, features = ["rust_backend"] }');
 assertContains("crates/jose/Cargo.toml", "flate2 = { workspace = true }");
 assertContains(
   "crates/jose/Cargo.toml",
@@ -271,12 +271,12 @@ assertContains("crates/proto/Cargo.toml", '"/tests/**/*.rs"');
 assertContains("crates/proto/Cargo.toml", '"/proto/**/*.proto"');
 assertContains(
   "crates/proto/README.md",
-  'reallyme-jose-proto = { version = "0.4.5", features = ["generated"] }',
+  'reallyme-jose-proto = { version = "0.4.6", features = ["generated"] }',
 );
 assertContains("crates/proto/README.md", "JoseOperationRequest");
 assertContains("crates/proto/README.md", "JoseOperationResponse");
 assertContains("crates/proto/README.md", "operation-discriminated response");
-assertContains("crates/proto/README.md", "Copyright © 2026 by ReallyMe LLC.");
+assertContains("crates/proto/README.md", "Copyright © 2026 by ReallyMe Technologies Limited.");
 assertContains("crates/proto/NOTICE", "ReallyMe JOSE Proto");
 assertContains(
   "crates/proto/src/generated.rs",
@@ -308,9 +308,9 @@ if (npmPackage.name !== "@reallyme/jose" || npmPackage.version !== npmPackageVer
 if (npmPackage.publishConfig?.registry !== "https://registry.npmjs.org/") {
   fail("TypeScript package registry must be the public npm registry");
 }
-assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.16.0"');
+assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.17.0"');
 assertContains("packages/ts/package-lock.json", '"name": "@reallyme/jose"');
-assertContains("packages/ts/package-lock.json", '"version": "0.4.5"');
+assertContains("packages/ts/package-lock.json", '"version": "0.4.6"');
 assertContains("packages/ts/tsconfig.json", '"strict": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedLocals": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedParameters": true');
@@ -540,8 +540,8 @@ assertContains("crates/proto/README.md", "canonical results remain binary protob
 assertContains("crates/proto/README.md", "JWE decrypt requests include a presence-sensitive");
 assertContains("crates/proto/README.md", "Pre-1.0");
 for (const readme of ["README.md", "crates/jose/README.md", "vectors/README.md", "fuzz/README.md"]) {
-  assertContains(readme, "Copyright © 2026 by ReallyMe LLC.");
-  assertContains(readme, "ReallyMe<sup>®</sup> is a registered trademark of ReallyMe LLC.");
+  assertContains(readme, "Copyright © 2026 by ReallyMe Technologies Limited.");
+  assertContains(readme, "ReallyMe<sup>®</sup> is a registered trademark of ReallyMe Technologies Limited.");
 }
 assertContains("README.md", "[MIT License](LICENSE-MIT)");
 assertContains("README.md", "[Apache License, Version 2.0](LICENSE-APACHE)");
@@ -557,12 +557,12 @@ assertContains("vectors/manifest.json", "reallyme.jose.conformance.vector_manife
 assertContains("vectors/manifest.json", '"id": "panva-jose"');
 assertContains("vectors/manifest.json", '"case_count": 4');
 assertContains("vectors/panva-jose.json", '"suite": "panva-jose"');
-assertContains("vectors/panva-jose.json", '"source": "panva/jose@6.2.12"');
+assertContains("vectors/panva-jose.json", '"source": "panva/jose@6.2.16"');
 assertContains("vectors/panva-jose.json", "panva-jose/jwe-ecdh-es-p256-a128gcm");
 assertContains("vectors/panva-jose.json", "not a full algorithm matrix");
 assertContains("vectors/panva-jose.json", "deterministic low scalars");
 assertContains("vectors/README.md", "`tools/panva-goldens`");
-assertContains("vectors/README.md", "`panva/jose@6.2.12`");
+assertContains("vectors/README.md", "`panva/jose@6.2.16`");
 assertContains("vectors/README.md", "native Rust, Swift, Kotlin/JVM, and minified Android emulator lanes");
 assertContains("vectors/README.md", "WASM lane executes all 98 applicable cases");
 assertContains("vectors/README.md", "not a curve-by-content-encryption matrix");
@@ -572,8 +572,8 @@ assertContains("vectors/README.md", "does not add a JOSE-specific low-S normaliz
 assertContains("vectors/README.md", "Face ID or Secure Enclave protected P-256 key");
 assertContains("vectors/signed-jwt.json", "reallyme-jwt/kid-mismatch");
 assertContains("README.md", "small native and WASM interop anchor");
-assertContains("tools/panva-goldens/package.json", '"jose": "6.2.12"');
-assertContains("tools/panva-goldens/package-lock.json", '"version": "6.2.12"');
+assertContains("tools/panva-goldens/package.json", '"jose": "6.2.16"');
+assertContains("tools/panva-goldens/package-lock.json", '"version": "6.2.16"');
 assertContains("tools/panva-goldens/generate.mjs", "setKeyManagementParameters");
 assertContains("tools/vector-audit/Cargo.toml", 'name = "reallyme-jose-vector-audit"');
 assertContains("tools/vector-audit/src/main.rs", "PANVA_FILE");
@@ -673,14 +673,14 @@ assertContains("buf.yaml", "modules:");
 assertContains("buf.yaml", "- path: crates/proto/proto");
 assertContains("buf.gen.yaml", "out: crates/proto/src/generated/buffa");
 assertContains("buf.gen.yaml", "protoc-gen-buffa-packaging");
-assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.38.1");
+assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.39.0");
 assertContains("buf.gen.yaml", "out: gen/swift");
 assertContains("buf.gen.yaml", "Visibility=Public");
 assertContains("buf.gen.yaml", "buf.build/protocolbuffers/java:v36.2");
 assertContains("buf.gen.yaml", "buf.build/protocolbuffers/kotlin:v36.2");
 assertContains("buf.gen.yaml", "out: gen/java");
 assertContains("buf.gen.yaml", "out: gen/kotlin");
-assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.16.0");
+assertContains("buf.gen.yaml", "buf.build/bufbuild/es:v2.17.0");
 assertContains("buf.gen.yaml", "out: packages/ts/src/proto/generated");
 assertContains(".gitignore", "!crates/proto/src/generated/");
 assertContains(".gitignore", "!crates/proto/src/generated/**");
@@ -1280,16 +1280,16 @@ assertContains("Package.swift", 'name: "reallyme-jose"');
 assertContains("Package.swift", '.macOS(.v13)');
 assertContains("Package.swift", '.iOS(.v16)');
 assertContains("Package.swift", 'name: "ReallyMeJOSE"');
-assertContains("Package.swift", 'exact: "1.38.1"');
+assertContains("Package.swift", 'exact: "1.39.0"');
 assertContains("Package.swift", 'path: "gen/swift"');
-assertContains("Package.swift", 'ffiArtifactVersion = "0.4.5"');
+assertContains("Package.swift", 'ffiArtifactVersion = "0.4.6"');
 assertContains("Package.swift", 'ffiArtifactLocalPathOverride = ""');
 assertNotContains("Package.swift", "0000000000000000000000000000000000000000000000000000000000000000");
 assertContains("Package.swift", "REALLYME_JOSE_SWIFTPM_RUNTIME_FFI");
 assertContains("Package.swift", ".reallyme-jose-runtime-ffi");
 assertContains("Package.swift", "FileManager.default.fileExists");
 assertContains("Package.swift", 'https://github.com/reallyme/jose/releases/download/v\\(ffiArtifactVersion)/ReallyMeJOSEFFI.xcframework.zip');
-assertContains("Package.resolved", '"version" : "1.38.1"');
+assertContains("Package.resolved", '"version" : "1.39.0"');
 assertContains("gen/swift/reallyme/jose/v1/jose.pb.swift", "public nonisolated struct ReallyMeProtoJoseOperationRequest");
 assertContains("gen/swift/reallyme/jose/v1/jose.pb.swift", "public nonisolated struct ReallyMeProtoJoseOperationResponse");
 assertContains(
@@ -1444,7 +1444,7 @@ assertContains(
   swiftReleaseWorkflow,
   "- add positive, tamper, unsupported-algorithm, and decompression-limit vectors across every supported ECDH-ES curve and AES-GCM size",
 );
-assertContains(swiftReleaseWorkflow, "- update the pinned shared release-readiness policy to v0.6.7");
+assertContains(swiftReleaseWorkflow, "- update the pinned shared release-readiness policy to v0.6.9");
 assertContains(swiftReleaseWorkflow, 'git tag "v${RELEASE_VERSION}" "${tag_target}"');
 assertContains(swiftReleaseWorkflow, "--verify-tag");
 assertContains(
@@ -1661,7 +1661,7 @@ assertContains("scripts/verify_native_artifact_handoff.mjs", "exact expected fil
 assertContains("scripts/verify_maven_release_repository.mjs", "Selected Maven publication artifacts");
 assertContains("scripts/verify_maven_release_repository.mjs", "native manifest is not bound to the release source SHA");
 
-assertContains("packages/kotlin-android/build.gradle.kts", 'id("com.android.library") version "9.5.0"');
+assertContains("packages/kotlin-android/build.gradle.kts", 'id("com.android.library") version "9.5.1"');
 assertContains("packages/kotlin-android/build.gradle.kts", 'val bouncyCastleToolVersion = "1.86"');
 assertContains("packages/kotlin-android/build.gradle.kts", 'val commonsLangToolVersion = "3.21.0"');
 assertContains("packages/kotlin-android/build.gradle.kts", 'val apacheHttpClientToolVersion = "4.5.14"');
@@ -1931,7 +1931,7 @@ const requiredWorkflows = [
   ".github/workflows/npm-package-preflight.yml",
   ".github/workflows/npm-package-release.yml",
 ];
-const spdxCopyright = ["SPDX-FileCopyrightText:", "2026 ReallyMe LLC"].join(" ");
+const spdxCopyright = ["SPDX-FileCopyrightText:", "2026 ReallyMe Technologies Limited"].join(" ");
 const spdxLicense = ["SPDX-License-Identifier:", "MIT OR Apache-2.0"].join(" ");
 for (const workflow of requiredWorkflows) {
   assertRawContains(workflow, spdxCopyright, "the SPDX copyright identifier");
