@@ -52,7 +52,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version: '26'
       - id: attestation
         name: Require current main and successful Kotlin Android package checks
         env:
@@ -85,7 +85,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version: '26'
       - name: Download attested Maven publication repository
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:

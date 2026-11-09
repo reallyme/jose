@@ -46,7 +46,7 @@ const assertRawContains = (path, needle, description) => {
   }
 };
 
-assertReallyMeReleasePackagePolicy({ version: "0.6.9" });
+assertReallyMeReleasePackagePolicy({ version: "0.7.0" });
 assertWorkflowActionsPinned();
 assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
 assertOperationContractArchitecture({ readText, listFiles, fail });
@@ -59,7 +59,7 @@ const cryptoVersion = "0.3.17";
 const codecVersion = "0.3.2";
 const npmPackageVersion = "0.4.6";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
-const releaseReadinessCommit = "9cf40c7da1def8a8d809af51789284097c572dd5";
+const releaseReadinessCommit = "18a6d91d99837e80f92e41fe04effb0b043d754e";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
@@ -86,7 +86,7 @@ if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
   fail("RELEASE_VERSION must match every 0.4.6 release package");
 }
 
-assertNodeWorkflowJobsPinNode({ nodeVersion: "24" });
+assertNodeWorkflowJobsPinNode({ nodeVersion: "26" });
 
 // Package workflows own their ecosystem's expensive runtime tests. Requiring
 // policy-only mode here prevents an Ubuntu npm, crates, or Android runner from
@@ -631,7 +631,7 @@ assertNotContains(".github/workflows/crates-release.yml", "git tag");
 assertNotContains(".github/workflows/crates-release.yml", "gh release create");
 assertNotContains(".github/workflows/crates-release.yml", "contents: write");
 assertContains(".github/workflows/crates-release.yml", "Summarize crates.io publication");
-assertContains(".github/workflows/crates-release.yml", "node-version: '24'");
+assertContains(".github/workflows/crates-release.yml", "node-version: '26'");
 const cratesReleaseSource = readText(".github/workflows/crates-release.yml");
 const credentialedCratesPublish = cratesReleaseSource.slice(
   cratesReleaseSource.indexOf("\n  publish:\n"),
@@ -737,7 +737,7 @@ for (const retiredPath of [
   }
 }
 assertContains(".github/workflows/crates-package-preflight.yml", "harden-generated-jose-proto.mjs");
-assertContains(".github/workflows/protobuf-ci.yml", "node-version: '24'");
+assertContains(".github/workflows/protobuf-ci.yml", "node-version: '26'");
 assertContains("scripts/harden-generated-jose-proto.mjs", "byteFieldNames");
 assertContains("scripts/harden-generated-jose-proto.mjs", "Zeroize::zeroize");
 assertContains("scripts/harden-generated-jose-proto.mjs", "deserialize_zeroizing_bytes");
@@ -1444,7 +1444,7 @@ assertContains(
   swiftReleaseWorkflow,
   "- add positive, tamper, unsupported-algorithm, and decompression-limit vectors across every supported ECDH-ES curve and AES-GCM size",
 );
-assertContains(swiftReleaseWorkflow, "- update the pinned shared release-readiness policy to v0.6.9");
+assertContains(swiftReleaseWorkflow, "- update the pinned shared release-readiness policy to v0.7.0");
 assertContains(swiftReleaseWorkflow, 'git tag "v${RELEASE_VERSION}" "${tag_target}"');
 assertContains(swiftReleaseWorkflow, "--verify-tag");
 assertContains(
@@ -2154,7 +2154,7 @@ for (const workflow of listFiles(".github/workflows").filter(
 )) {
   const source = readText(workflow);
   const setupCount = source.split(setupNodeAction).length - 1;
-  const node24Count = source.split("node-version: '24'").length - 1;
+  const node26Count = source.split("node-version: '26'").length - 1;
   const configuredNodeVersionCount = source.split("node-version:").length - 1;
   if (nodeCommandPattern.test(source) && setupCount === 0) {
     fail(`${workflow} invokes Node tooling without pinned actions/setup-node`);
@@ -2162,12 +2162,12 @@ for (const workflow of listFiles(".github/workflows").filter(
   if (source.includes("actions/setup-node@") && setupCount === 0) {
     fail(`${workflow} uses an unapproved actions/setup-node revision`);
   }
-  if (node24Count !== setupCount || configuredNodeVersionCount !== setupCount) {
-    fail(`${workflow} must configure Node 24 for every setup-node step`);
+  if (node26Count !== setupCount || configuredNodeVersionCount !== setupCount) {
+    fail(`${workflow} must configure Node 26 for every setup-node step`);
   }
   const expectedCount = expectedNodeSetupCounts.get(workflow);
   if (expectedCount !== undefined && setupCount !== expectedCount) {
-    fail(`${workflow} must contain ${expectedCount} pinned Node 24 setup step(s)`);
+    fail(`${workflow} must contain ${expectedCount} pinned Node 26 setup step(s)`);
   }
 }
 if (!rootCargo.includes("[workspace.lints.clippy]")) {

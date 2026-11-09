@@ -54,7 +54,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Verify coordinated release version
         run: node scripts/verify_sdk_release_version.mjs "${{ steps.resolve-release-sha.outputs.release_version }}"
@@ -94,7 +94,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Check crates.io publish order
         run: node scripts/publish_crates_in_order.mjs order
@@ -130,7 +130,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version: '26'
 
       - name: Revalidate exact approved main commit
         env:
