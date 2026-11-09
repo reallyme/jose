@@ -55,7 +55,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version: '26'
       - id: attestation
         name: Require current main and successful npm package checks
         env:
@@ -85,7 +85,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version: '26'
           cache: npm
           cache-dependency-path: packages/ts/package-lock.json
       - name: Install Rust toolchain
@@ -107,7 +107,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 9cf40c7da1def8a8d809af51789284097c572dd5
+          ref: 18a6d91d99837e80f92e41fe04effb0b043d754e
           path: .release-readiness
           persist-credentials: false
       - name: Verify release metadata
@@ -162,7 +162,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '24'
+          node-version: '26'
           registry-url: https://registry.npmjs.org
       - name: Download verified npm tarball
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
