@@ -51,6 +51,7 @@ assertWorkflowActionsPinned();
 assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
 assertOperationContractArchitecture({ readText, listFiles, fail });
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
+runNodeCheck("scripts/maven_central_bundle.test.mjs");
 
 const crateVersion = "0.4.6";
 const protoCrateVersion = "0.4.6";
