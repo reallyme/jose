@@ -11,9 +11,12 @@ IFS=$'\n\t'
 #   then export it without placing the passphrase in shell history.
 #   export MAVEN_SIGNING_PASSWORD
 #   MAVEN_SIGNING_KEY_ID=<long-gpg-key-id-or-fingerprint> \
-#   KOTLIN_NATIVE_RESOURCES_DIR=/path/to/full/jvm-native-resources \
-#   ANDROID_NDK_HOME=/path/to/android-ndk \
 #   ./scripts/maven-central-bundle.local.sh
+#
+# JVM native resources are downloaded automatically. Unless ANDROID_NDK_HOME
+# or ANDROID_NDK_VERSION pins a toolchain, query and install the latest stable
+# NDK using the Android SDK command-line tools on every run. SDK licenses must
+# be accepted when prompted by sdkmanager.
 #
 # Output:
 #   build/maven-central-upload/out/reallyme-maven-central-<version>.zip
@@ -34,7 +37,7 @@ KOTLIN_NATIVE_RESOURCES_DIR="${KOTLIN_NATIVE_RESOURCES_DIR:-${ROOT_DIR}/build/ko
 ANDROID_JNI_LIBS_DIR_WAS_SET="${ANDROID_JNI_LIBS_DIR+x}"
 ANDROID_JNI_LIBS_DIR="${ANDROID_JNI_LIBS_DIR:-${WORK_DIR}/android-jniLibs}"
 ANDROID_NATIVE_ASSETS_DIR="${WORK_DIR}/android-native-assets"
-ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:-29.0.14206865}"
+ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:-}"
 NATIVE_RESOURCE_WORKFLOW="${MAVEN_NATIVE_RESOURCE_WORKFLOW:-kotlin-android-package-preflight.yml}"
 NATIVE_RESOURCE_ARTIFACT_PATTERN="${MAVEN_NATIVE_RESOURCE_ARTIFACT_PATTERN:-kotlin-native-*}"
 NATIVE_DIGEST_ARTIFACT_PATTERN="${MAVEN_NATIVE_DIGEST_ARTIFACT_PATTERN:-kotlin-digest-*}"
@@ -364,14 +367,85 @@ ensure_kotlin_native_resources() {
 }
 
 prepare_android_ndk_home() {
+  local sdk_root="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+  local sdkmanager
+  local packages
+
   if [ -n "${ANDROID_NDK_HOME:-}" ]; then
+    require_dir "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt"
+    export ANDROID_NDK_HOME
+    info "Using Android NDK ${ANDROID_NDK_HOME}"
     return
   fi
-  if [ -n "${ANDROID_HOME:-}" ] && [ -d "${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" ]; then
-    export ANDROID_NDK_HOME="${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}"
-    return
+
+  if [ -z "$sdk_root" ]; then
+    case "$(uname -s)" in
+      Darwin) sdk_root="${HOME}/Library/Android/sdk" ;;
+      Linux) sdk_root="${HOME}/Android/Sdk" ;;
+      *) fail "set ANDROID_HOME to an installed Android SDK" ;;
+    esac
   fi
-  fail "ANDROID_NDK_HOME is not set and ${ANDROID_HOME:-\$ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION} was not found"
+  require_dir "$sdk_root"
+  sdk_root="$(cd "$sdk_root" && pwd)"
+  # Gradle and sdkmanager must use the same SDK, including when it was found
+  # through the conventional installation path rather than the environment.
+  export ANDROID_HOME="$sdk_root"
+  export ANDROID_SDK_ROOT="$sdk_root"
+
+  if [ -x "${sdk_root}/cmdline-tools/latest/bin/sdkmanager" ]; then
+    sdkmanager="${sdk_root}/cmdline-tools/latest/bin/sdkmanager"
+  elif command -v sdkmanager >/dev/null 2>&1; then
+    sdkmanager="$(command -v sdkmanager)"
+  else
+    fail "install Android SDK Command-line Tools (latest) or add sdkmanager to PATH"
+  fi
+
+  if [ -z "$ANDROID_NDK_VERSION" ]; then
+    info "Checking the latest stable Android NDK"
+    if ! packages="$(LC_ALL=C "$sdkmanager" --sdk_root="$sdk_root" --list --channel=0)"; then
+      fail "could not query Android NDK packages; check SDK command-line tools and network access"
+    fi
+    # Compare revision components numerically: lexical ordering would place
+    # revision 9 after 30. Ignore previews and anything that is not an NDK path.
+    ANDROID_NDK_VERSION="$(printf '%s\n' "$packages" | awk -F '|' '
+      {
+        path = $1
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", path)
+        if (path !~ /^ndk;[0-9]+\.[0-9]+\.[0-9]+$/) next
+        sub(/^ndk;/, "", path)
+        version = $2
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", version)
+        # Installed previews can still appear in a stable-channel listing.
+        if (version != path) next
+        split(path, revision, ".")
+        if (latest == "" || revision[1] + 0 > major ||
+            (revision[1] + 0 == major && revision[2] + 0 > minor) ||
+            (revision[1] + 0 == major && revision[2] + 0 == minor && revision[3] + 0 > build)) {
+          latest = path
+          major = revision[1] + 0
+          minor = revision[2] + 0
+          build = revision[3] + 0
+        }
+      }
+      END { if (latest != "") print latest }
+    ')"
+    if [ -z "$ANDROID_NDK_VERSION" ]; then
+      fail "Android SDK package listing contains no stable NDK revision"
+    fi
+  elif [[ ! "$ANDROID_NDK_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    fail "ANDROID_NDK_VERSION must be a numeric major.minor.build revision"
+  fi
+
+  ANDROID_NDK_HOME="${sdk_root}/ndk/${ANDROID_NDK_VERSION}"
+  if [ ! -d "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt" ]; then
+    info "Installing Android NDK ${ANDROID_NDK_VERSION}"
+    if ! "$sdkmanager" --sdk_root="$sdk_root" --install "ndk;${ANDROID_NDK_VERSION}" --channel=0 >&2; then
+      fail "Android NDK installation failed; check network access and SDK license acceptance"
+    fi
+  fi
+  require_dir "${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt"
+  export ANDROID_NDK_HOME
+  info "Using Android NDK ${ANDROID_NDK_HOME}"
 }
 
 write_checksums() {
@@ -511,6 +585,7 @@ remove_local_repository_metadata() {
   find "$root" -type f -name 'maven-metadata.xml*' -delete
 }
 
+require_tool awk
 require_tool cargo
 require_tool find
 require_tool grep
