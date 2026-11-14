@@ -19,6 +19,7 @@ native = ["reallyme-crypto/native", "reallyme-jose/native"]
 jni = { workspace = true }
 reallyme-crypto = { workspace = true, features = ["csprng"] }
 reallyme-jose = { version = "0.4.6", path = "../jose", default-features = false, features = ["wire"] }
+thiserror = { workspace = true }
 zeroize = { workspace = true }
 
 [lints]

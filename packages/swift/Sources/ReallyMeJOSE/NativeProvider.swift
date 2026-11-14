@@ -169,11 +169,15 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
   }
 
   func executeBinary(_ request: [UInt8]) throws(ReallyMeJOSEError) -> [UInt8] {
-    try execute(request, limit: maximumBinaryRequestBytes, function: binaryFunction)
+    try executeNativeRequest(
+      request, limit: maximumBinaryRequestBytes, maximumResponseBytes: maximumResponseBytes,
+      invoke: binaryFunction, clear: clearOwned)
   }
 
   func executeJSON(_ request: [UInt8]) throws(ReallyMeJOSEError) -> [UInt8] {
-    try execute(request, limit: maximumJSONRequestBytes, function: jsonFunction)
+    try executeNativeRequest(
+      request, limit: maximumJSONRequestBytes, maximumResponseBytes: maximumResponseBytes,
+      invoke: jsonFunction, clear: clearOwned)
   }
 
   func clearOwned(_ bytes: inout [UInt8]) {
@@ -183,64 +187,6 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
     if status != NativeStatus.success {
       ReallyMeJOSEMemory.clearOwned(&bytes)
     }
-  }
-
-  private func execute(
-    _ request: [UInt8],
-    limit: Int,
-    function: ExecuteFunction
-  ) throws(ReallyMeJOSEError) -> [UInt8] {
-    guard request.count <= limit else {
-      throw ReallyMeJOSEError.jose(
-        branch: .primitive,
-        reason: .commonResourceLimitExceeded
-      )
-    }
-    var producedLength = 0
-    let probe = request.withUnsafeBufferPointer { requestBuffer in
-      function(
-        expectedJoseABIVersion,
-        requestBuffer.baseAddress,
-        request.count,
-        nil,
-        0,
-        &producedLength
-      )
-    }
-    guard probe == NativeStatus.capacityMismatch,
-      producedLength > 0,
-      producedLength <= maximumResponseBytes
-    else {
-      try Self.throwTransportStatus(probe)
-      throw ReallyMeJOSEError.malformedProviderResponse
-    }
-
-    var output = [UInt8](repeating: 0, count: producedLength)
-    let capacity = output.count
-    let status = request.withUnsafeBufferPointer { requestBuffer in
-      output.withUnsafeMutableBufferPointer { outputBuffer in
-        function(
-          expectedJoseABIVersion,
-          requestBuffer.baseAddress,
-          request.count,
-          outputBuffer.baseAddress,
-          capacity,
-          &producedLength
-        )
-      }
-    }
-    var returnOutput = false
-    defer {
-      if returnOutput == false {
-        clearOwned(&output)
-      }
-    }
-    try Self.throwTransportStatus(status)
-    guard producedLength == output.count else {
-      throw ReallyMeJOSEError.malformedProviderResponse
-    }
-    returnOutput = true
-    return output
   }
 
   private static func requireCompatibleABI(_ actual: UInt32) throws(ReallyMeJOSEError) {
@@ -255,22 +201,95 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
     }
     return converted
   }
+}
 
-  private static func throwTransportStatus(_ status: Int32) throws(ReallyMeJOSEError) {
-    switch status {
-    case NativeStatus.success:
-      return
-    case NativeStatus.providerError:
-      throw ReallyMeJOSEError.jose(branch: .provider, reason: .providerUnavailable)
-    case NativeStatus.unsupportedABI:
-      throw ReallyMeJOSEError.incompatibleABI
-    case NativeStatus.callerError,
-      NativeStatus.backendError,
-      NativeStatus.panicCaught,
-      NativeStatus.capacityMismatch:
-      throw ReallyMeJOSEError.malformedProviderResponse
-    default:
-      throw ReallyMeJOSEError.malformedProviderResponse
+func executeNativeRequest(
+  _ request: [UInt8],
+  limit: Int,
+  maximumResponseBytes: Int,
+  invoke: (
+    UInt32, UnsafePointer<UInt8>?, Int, UnsafeMutablePointer<UInt8>?, Int,
+    UnsafeMutablePointer<Int>?
+  ) -> Int32,
+  clear: (inout [UInt8]) -> Void
+) throws(ReallyMeJOSEError) -> [UInt8] {
+  guard request.count <= limit else {
+    throw ReallyMeJOSEError.jose(
+      branch: .primitive,
+      reason: .commonResourceLimitExceeded
+    )
+  }
+  var producedLength = 0
+  let probe = request.withUnsafeBufferPointer { requestBuffer in
+    invoke(
+      expectedJoseABIVersion,
+      requestBuffer.baseAddress,
+      request.count,
+      nil,
+      0,
+      &producedLength
+    )
+  }
+  guard probe == NativeStatus.capacityMismatch,
+    producedLength > 0,
+    producedLength <= maximumResponseBytes
+  else {
+    try throwTransportStatus(probe)
+    throw ReallyMeJOSEError.malformedProviderResponse
+  }
+
+  var output = [UInt8](repeating: 0, count: producedLength)
+  var returnOutput = false
+  defer {
+    if !returnOutput {
+      clear(&output)
     }
+  }
+  let capacity = output.count
+  // Require an independent length report from the write call.
+  producedLength = 0
+  let status = request.withUnsafeBufferPointer { requestBuffer in
+    output.withUnsafeMutableBufferPointer { outputBuffer in
+      invoke(
+        expectedJoseABIVersion,
+        requestBuffer.baseAddress,
+        requestBuffer.count,
+        outputBuffer.baseAddress,
+        capacity,
+        &producedLength
+      )
+    }
+  }
+  try throwTransportStatus(status)
+  guard producedLength > 0, producedLength <= capacity else {
+    throw ReallyMeJOSEError.malformedProviderResponse
+  }
+
+  // Each call executes independently. Preserve a shorter complete envelope
+  // for typed decoding and erase the entire temporary allocation.
+  if producedLength < capacity {
+    return output.withUnsafeBufferPointer { bytes in
+      Array(bytes.prefix(producedLength))
+    }
+  }
+  returnOutput = true
+  return output
+}
+
+private func throwTransportStatus(_ status: Int32) throws(ReallyMeJOSEError) {
+  switch status {
+  case NativeStatus.success:
+    return
+  case NativeStatus.providerError:
+    throw ReallyMeJOSEError.jose(branch: .provider, reason: .providerUnavailable)
+  case NativeStatus.unsupportedABI:
+    throw ReallyMeJOSEError.incompatibleABI
+  case NativeStatus.callerError,
+    NativeStatus.backendError,
+    NativeStatus.panicCaught,
+    NativeStatus.capacityMismatch:
+    throw ReallyMeJOSEError.malformedProviderResponse
+  default:
+    throw ReallyMeJOSEError.malformedProviderResponse
   }
 }

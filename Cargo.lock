@@ -1970,6 +1970,7 @@ dependencies = [
  "jni",
  "reallyme-crypto",
  "reallyme-jose",
+ "thiserror",
  "zeroize",
 ]
 

@@ -16,7 +16,8 @@ use std::ptr;
 use jni::objects::{JByteArray, JObject};
 use jni::sys::{jbyteArray, jint, jlong};
 use jni::{EnvUnowned, Outcome};
-use zeroize::Zeroizing;
+use thiserror::Error;
+use zeroize::{Zeroize, Zeroizing};
 
 use crate::guard::catch_boundary_unwind;
 use crate::operation::{
@@ -113,7 +114,12 @@ fn execute_operation<'local>(
     let guarded_outcome = catch_boundary_unwind(|| {
         env.with_env(|env| -> jni::errors::Result<jbyteArray> {
             let request = bounded_request(env, request, maximum_request_bytes)?;
-            let response = call_c_boundary(env, request.as_slice(), execute)?;
+            let response = match transfer_c_response(request.as_slice(), execute) {
+                Ok(response) => response,
+                Err(failure) => {
+                    return throw_provider_failure(env, failure);
+                }
+            };
             env.byte_array_from_slice(response.as_slice())
                 .map(|array| array.into_raw())
         })
@@ -140,82 +146,109 @@ fn bounded_request<'local>(
 ) -> jni::errors::Result<Zeroizing<Vec<u8>>> {
     let request_len = match request.len(env) {
         Ok(value) => value,
-        Err(_) => return throw_provider_failure(env),
+        Err(_) => return throw_provider_failure(env, NativeProviderFailure),
     };
     if request_len > maximum_request_bytes {
         // Ask Rust to produce its canonical resource-limit response without
         // copying an attacker-sized managed array into native memory.
         let sentinel_len = match maximum_request_bytes.checked_add(1) {
             Some(value) => value,
-            None => return throw_provider_failure(env),
+            None => return throw_provider_failure(env, NativeProviderFailure),
         };
         return Ok(Zeroizing::new(vec![0_u8; sentinel_len]));
     }
     match env.convert_byte_array(&request) {
         Ok(value) => Ok(Zeroizing::new(value)),
-        Err(_) => throw_provider_failure(env),
+        Err(_) => throw_provider_failure(env, NativeProviderFailure),
     }
 }
 
-fn call_c_boundary<'local>(
-    env: &mut jni::Env<'local>,
+fn transfer_c_response(
     request: &[u8],
     execute: ExecuteFunction,
-) -> jni::errors::Result<Zeroizing<Vec<u8>>> {
-    let mut produced_len = 0_usize;
-    // SAFETY: The JNI-frame-owned request and stack-owned length remain live
-    // for the call; the capacity probe deliberately supplies no output range.
-    let probe_status = unsafe {
-        execute(
-            JOSE_ABI_VERSION,
-            request.as_ptr(),
-            request.len(),
-            ptr::null_mut(),
-            0,
-            &mut produced_len,
-        )
-    };
+) -> Result<Zeroizing<Vec<u8>>, NativeProviderFailure> {
+    transfer_response(|output, produced_len| {
+        let (output_ptr, capacity) = match output {
+            Some(buffer) => (buffer.as_mut_ptr(), buffer.len()),
+            None => (ptr::null_mut(), 0),
+        };
+        // SAFETY: The request and optional exclusive output are distinct live
+        // slices. The length is an independent stack value for this call.
+        unsafe {
+            execute(
+                JOSE_ABI_VERSION,
+                request.as_ptr(),
+                request.len(),
+                output_ptr,
+                capacity,
+                produced_len,
+            )
+        }
+    })
+}
+
+#[derive(Debug, PartialEq, Eq, Error)]
+#[error("native provider failure")]
+struct NativeProviderFailure;
+
+impl NativeProviderFailure {
+    const fn exception_class(&self) -> &'static jni::strings::JNIStr {
+        jni::jni_str!("me/really/jose/ReallyMeJoseException$NativeProviderFailure")
+    }
+}
+
+fn transfer_response(
+    mut execute: impl FnMut(Option<&mut [u8]>, &mut usize) -> i32,
+) -> Result<Zeroizing<Vec<u8>>, NativeProviderFailure> {
+    let mut produced_len = 0;
+    let probe_status = execute(None, &mut produced_len);
     if probe_status != JoseFfiStatus::OutputCapacityMismatch.code()
         || produced_len == 0
         || produced_len > rm_jose_max_response_bytes()
     {
-        return throw_provider_failure(env);
+        return Err(NativeProviderFailure);
     }
 
     let mut output = Zeroizing::new(vec![0_u8; produced_len]);
-    // SAFETY: Request and output are distinct owned vectors and the exact
-    // probed capacity is live and exclusively writable for this call.
-    let status = unsafe {
-        execute(
-            JOSE_ABI_VERSION,
-            request.as_ptr(),
-            request.len(),
-            output.as_mut_ptr(),
-            output.len(),
-            &mut produced_len,
-        )
-    };
-    if status != JoseFfiStatus::Success.code() || produced_len != output.len() {
-        return throw_provider_failure(env);
-    }
+    // Require the independent write call to report its own length.
+    produced_len = 0;
+    let status = execute(Some(&mut output), &mut produced_len);
+    finish_response(output.as_mut_slice(), status, produced_len)?;
+    output.truncate(produced_len);
     Ok(output)
+}
+
+fn finish_response(
+    output: &mut [u8],
+    status: i32,
+    produced_len: usize,
+) -> Result<(), NativeProviderFailure> {
+    if status == JoseFfiStatus::Success.code() && produced_len != 0 {
+        if let Some(tail) = output.get_mut(produced_len..) {
+            // Preserve a shorter complete envelope and erase the unused
+            // bytes before removing them from the logical length.
+            tail.zeroize();
+            return Ok(());
+        }
+    }
+    output.zeroize();
+    Err(NativeProviderFailure)
 }
 
 fn throw_provider_failure_if_clear(env: &mut EnvUnowned<'_>) {
     let _outcome = env.with_env(|env| -> jni::errors::Result<()> {
         if !env.exception_check() {
-            env.throw_new_void(jni::jni_str!(
-                "me/really/jose/ReallyMeJoseException$NativeProviderFailure"
-            ))?;
+            env.throw_new_void(NativeProviderFailure.exception_class())?;
         }
         Ok(())
     });
 }
 
-fn throw_provider_failure<'local, T>(env: &mut jni::Env<'local>) -> jni::errors::Result<T> {
-    env.throw_new_void(jni::jni_str!(
-        "me/really/jose/ReallyMeJoseException$NativeProviderFailure"
-    ))?;
+fn throw_provider_failure<T>(
+    env: &mut jni::Env<'_>,
+    failure: NativeProviderFailure,
+) -> jni::errors::Result<T> {
+    env.throw_new_void(failure.exception_class())?;
     Err(jni::errors::Error::JavaException)
 }
 

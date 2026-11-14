@@ -25,7 +25,9 @@ request, successful JWE encryptions have equal encoded response lengths even
 when the nonce and ephemeral public key change. An operation failure such as
 unavailable entropy can change the response length between calls. The write call
 reports its actual response length and returns a capacity mismatch if it needs
-more space.
+more space. Swift and JNI forward a complete shorter response for typed
+decoding and wipe the unused storage. Both adapters clear the discarded
+buffer and report a transport failure if the second response exceeds capacity.
 
 C status values describe pointer, capacity, ABI, panic, or other transport
 state. JOSE success and typed primitive/provider/backend failures are carried
