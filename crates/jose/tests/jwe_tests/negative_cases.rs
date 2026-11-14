@@ -51,6 +51,46 @@ fn rejects_tampered_authentication_tag() -> Result<(), JweError> {
 }
 
 #[test]
+fn rejects_tampered_deflate_before_decoding_for_each_gcm_suite() -> Result<(), JweError> {
+    let compression = [JweCompressionAlgorithm::Deflate];
+    for (enc, key_len) in [
+        (JweContentEncryptionAlgorithm::A128Gcm, 16),
+        (JweContentEncryptionAlgorithm::A192Gcm, 24),
+        (JweContentEncryptionAlgorithm::A256Gcm, 32),
+    ] {
+        let key = reallyme_jose::Zeroizing::new(vec![7_u8; key_len]);
+        let compact = compact_jwe_with_header(
+            &json!({"alg":"dir","enc":enc.as_str(),"zip":"DEF"}),
+            &key,
+            &[9_u8; 12],
+            b"not a raw DEFLATE stream",
+            enc,
+        )?;
+        let suites = [enc];
+        let policy = CompactJwePolicy::new(&[JweKeyManagementAlgorithm::Direct], &suites)
+            .with_allowed_compression_algorithms(&compression);
+        let resolver = DirectJweKeyResolver::new(&key);
+
+        // A valid tag reaches DEFLATE and produces a decoder error.
+        assert!(matches!(
+            decrypt_compact_jwe_bytes(&compact, &policy, &resolver),
+            Err(JweError::Decompression)
+        ));
+
+        let (protected_input, tag) = compact.rsplit_once('.').ok_or(JweError::InvalidCompact)?;
+        let mut tag = base64url_to_bytes(tag).map_err(|_| JweError::InvalidEncoding)?;
+        let first = tag.first_mut().ok_or(JweError::InvalidContentCipherInput)?;
+        *first ^= 1;
+        let tampered = format!("{protected_input}.{}", bytes_to_base64url(&tag));
+        assert!(matches!(
+            decrypt_compact_jwe_bytes(&tampered, &policy, &resolver),
+            Err(JweError::Decrypt)
+        ));
+    }
+    Ok(())
+}
+
+#[test]
 fn rejects_non_empty_encrypted_key_for_dir() -> Result<(), JweError> {
     let key = [7u8; 16];
     let nonce = [9u8; 12];

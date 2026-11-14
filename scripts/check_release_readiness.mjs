@@ -402,10 +402,13 @@ assertContains("crates/jose/src/jwe/compression.rs", "pub const MAX_DECOMPRESSED
 assertContains("crates/jose/src/jwe/compression.rs", "DeflateEncoder::new");
 assertContains("crates/jose/src/jwe/compression.rs", "DeflateDecoder::new");
 assertContains("crates/jose/src/jwe/compression.rs", "Zeroizing<Vec<u8>>");
-assertContains("crates/jose/src/jwe/decrypt.rs", "let plaintext = decrypt_content(");
-assertContains("crates/jose/src/jwe/decrypt.rs", "decompress_deflate(&plaintext)");
-const jweDecryptSource = readText("crates/jose/src/jwe/decrypt.rs");
-if (jweDecryptSource.indexOf("let plaintext = decrypt_content(") >= jweDecryptSource.indexOf("decompress_deflate(&plaintext)")) {
+const jweDecryptPath = "crates/jose/src/jwe/decrypt.rs";
+assertContains(jweDecryptPath, "finish_decryption(\n        decrypt_content(");
+assertContains(jweDecryptPath, "|plaintext| decompress_deflate(&plaintext)");
+assertContains(jweDecryptPath, "let plaintext = authenticated?;");
+assertContains(jweDecryptPath, "Some(JweCompressionAlgorithm::Deflate) => decompress(plaintext)");
+const jweDecryptSource = readText(jweDecryptPath);
+if (jweDecryptSource.indexOf("let plaintext = authenticated?;") >= jweDecryptSource.indexOf("=> decompress(plaintext)")) {
   fail("compact-JWE decryption must authenticate AES-GCM before inflating plaintext");
 }
 assertContains("crates/jose/tests/jwe_tests/cases.rs", "deflate_is_serialized_and_applied_before_each_gcm_cipher");
@@ -417,6 +420,10 @@ assertContains(
 assertContains(
   "crates/jose/tests/jwe_tests/support_and_boundaries.rs",
   "authenticated_invalid_deflate_is_rejected_after_authentication",
+);
+assertContains(
+  "crates/jose/tests/jwe_tests/negative_cases.rs",
+  "rejects_tampered_deflate_before_decoding_for_each_gcm_suite",
 );
 assertContains("crates/jose/src/wire.rs", "reject_duplicate_json_members(bytes)");
 assertContains(

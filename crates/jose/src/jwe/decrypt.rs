@@ -106,18 +106,36 @@ pub(crate) fn decrypt_compact_jwe_bytes_core(
     }
 
     let ciphertext_with_tag = join_ciphertext_and_tag(ciphertext, tag)?;
-    let plaintext = decrypt_content(
-        header.enc,
-        &cek,
-        &iv,
-        parts.protected_header.as_bytes(),
-        ciphertext_with_tag,
-    )?;
-    match header.zip {
-        Some(JweCompressionAlgorithm::Deflate) => decompress_deflate(&plaintext),
+    finish_decryption(
+        decrypt_content(
+            header.enc,
+            &cek,
+            &iv,
+            parts.protected_header.as_bytes(),
+            ciphertext_with_tag,
+        ),
+        header.zip,
+        |plaintext| decompress_deflate(&plaintext),
+    )
+}
+
+fn finish_decryption<Plaintext>(
+    authenticated: Result<Plaintext, JweError>,
+    compression: Option<JweCompressionAlgorithm>,
+    decompress: impl FnOnce(Plaintext) -> Result<Plaintext, JweError>,
+) -> Result<Plaintext, JweError> {
+    // The protected header can request decompression only once the cipher has
+    // authenticated the header and ciphertext together.
+    let plaintext = authenticated?;
+    match compression {
+        Some(JweCompressionAlgorithm::Deflate) => decompress(plaintext),
         None => Ok(plaintext),
     }
 }
+
+#[cfg(kani)]
+#[path = "decrypt_proofs.rs"]
+mod proofs;
 
 /// Decrypts a compact JWE and decodes the plaintext as JSON.
 ///
