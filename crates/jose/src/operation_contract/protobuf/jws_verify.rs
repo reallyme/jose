@@ -5,43 +5,25 @@
 //! Protobuf conversion for compact-JWS verification.
 
 use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
-    JoseErrorReason, JoseJwsVerifyRequest, JoseSignatureAlgorithm, JoseVerifyResult,
+    JoseErrorReason, JoseJwsVerifyRequest, JoseVerifyResult,
 };
-use thiserror::Error;
 
+use crate::jws::parse_header::JwsAlgorithm;
 use crate::operation_contract::jws::{
     verify_jws, JwsVerifyAlgorithm, JwsVerifyError, JwsVerifyErrorReason, JwsVerifyInput,
 };
 use crate::wire::{JoseWireError, JoseWireResult};
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum JwsVerifyRequestErrorReason {
-    UnsupportedAlgorithm,
-}
-
-#[derive(Clone, Copy, Debug, Eq, Error, PartialEq)]
-#[error("JWS verification request selection failed")]
-struct JwsVerifyRequestError {
-    reason: JwsVerifyRequestErrorReason,
-}
-
-impl JwsVerifyRequestError {
-    const fn unsupported_algorithm() -> Self {
-        Self {
-            reason: JwsVerifyRequestErrorReason::UnsupportedAlgorithm,
-        }
-    }
-
-    const fn reason(self) -> JwsVerifyRequestErrorReason {
-        self.reason
-    }
-}
+use super::signature_selector::select_signature_algorithm;
 
 /// Validates and executes a generated compact-JWS verification request.
 pub(crate) fn verify_jws_request(
     request: &JoseJwsVerifyRequest,
 ) -> JoseWireResult<JoseVerifyResult> {
-    let algorithm = request_algorithm(request.algorithm).map_err(map_request_error)?;
+    let algorithm = match select_signature_algorithm(request.algorithm)? {
+        JwsAlgorithm::Es256 => JwsVerifyAlgorithm::Es256,
+        JwsAlgorithm::Eddsa => JwsVerifyAlgorithm::Eddsa,
+    };
     let verified = verify_jws(JwsVerifyInput::new(
         algorithm,
         &request.compact,
@@ -58,30 +40,6 @@ pub(crate) fn verify_jws_request(
         payload: core::mem::take(&mut *payload),
         __buffa_unknown_fields: Default::default(),
     })
-}
-
-fn request_algorithm(
-    algorithm: buffa::EnumValue<JoseSignatureAlgorithm>,
-) -> Result<JwsVerifyAlgorithm, JwsVerifyRequestError> {
-    match algorithm.as_known() {
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_ES256) => {
-            Ok(JwsVerifyAlgorithm::Es256)
-        }
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_EDDSA) => {
-            Ok(JwsVerifyAlgorithm::Eddsa)
-        }
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED) | None => {
-            Err(JwsVerifyRequestError::unsupported_algorithm())
-        }
-    }
-}
-
-const fn map_request_error(error: JwsVerifyRequestError) -> JoseWireError {
-    match error.reason() {
-        JwsVerifyRequestErrorReason::UnsupportedAlgorithm => JoseWireError::provider_internal(
-            JoseErrorReason::JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED,
-        ),
-    }
 }
 
 const fn map_verify_error(error: JwsVerifyError) -> JoseWireError {

@@ -152,11 +152,7 @@ fn validate_response(
     response: &JoseOperationResponse,
     expected_operation: JoseOperationKind,
 ) -> JoseWireResult<()> {
-    if response.contract_version.as_known()
-        != Some(JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1)
-    {
-        return Err(backend_output_error());
-    }
+    validate_contract_version(response.contract_version)?;
 
     let Some(response) = &response.response else {
         return Err(backend_output_error());
@@ -229,6 +225,21 @@ fn validate_response(
         }
     }
 }
+
+fn validate_contract_version(
+    version: EnumValue<JoseOperationContractVersion>,
+) -> JoseWireResult<()> {
+    if version.as_known() == Some(JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1)
+    {
+        Ok(())
+    } else {
+        Err(backend_output_error())
+    }
+}
+
+#[cfg(kani)]
+#[path = "operation_response_proofs.rs"]
+mod proofs;
 
 fn require_operation(actual: JoseOperationKind, expected: JoseOperationKind) -> JoseWireResult<()> {
     if actual == expected {

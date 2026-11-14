@@ -31,6 +31,11 @@ pub use operation_response::{
 const MAX_JOSE_WIRE_BYTES: usize = 1024 * 1024;
 const JOSE_PROTO_RECURSION_LIMIT: u32 = 64;
 const JOSE_PROTO_UNKNOWN_FIELD_LIMIT: usize = 0;
+
+#[cfg(kani)]
+#[path = "wire/unknown_selector_proofs.rs"]
+mod proofs;
+
 /// Maximum protobuf framing overhead above one bounded operation result.
 pub const MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES: usize = 32;
 

@@ -45,6 +45,7 @@ use reallyme_jose::wire::{
 use reallyme_jose::Jwk;
 
 include!("operation_response_tests/jwe_policy.rs");
+include!("operation_response_tests/dispatch.rs");
 
 #[test]
 fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std::error::Error>> {
@@ -557,6 +558,20 @@ fn assert_route_parity(
     assert_eq!(binary_response.as_slice(), json_response.as_slice());
 
     let canonical = decode_operation_response_v1(&binary_response, operation_kind)?;
+    for other in [
+        JoseOperationKind::JwsSign,
+        JoseOperationKind::JwsVerify,
+        JoseOperationKind::JwtEncodeUnsigned,
+        JoseOperationKind::JwtDecodeUnsigned,
+        JoseOperationKind::JwtSign,
+        JoseOperationKind::JwtVerify,
+        JoseOperationKind::JweEncrypt,
+        JoseOperationKind::JweDecrypt,
+    ] {
+        if other != operation_kind {
+            assert_backend_rejection(&binary_response, other);
+        }
+    }
     Ok(normalize_response(canonical))
 }
 

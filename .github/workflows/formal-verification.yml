@@ -62,7 +62,7 @@ jobs:
           sha256sum Cargo.lock > "$RUNNER_TEMP/workspace-lock.sha256"
           results="$RUNNER_TEMP/verification.json"
           CARGO_NET_OFFLINE=true cargo kani --package reallyme-jose --lib --no-default-features \
-            --features native --output-format terse -Z unstable-options --export-json "$results"
+            --features native,wire --output-format terse -Z stubbing -Z unstable-options --export-json "$results"
           sha256sum --check --strict "$RUNNER_TEMP/workspace-lock.sha256"
           # Unmet cover goals do not fail Kani by themselves.
           jq --exit-status '

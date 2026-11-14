@@ -9,6 +9,7 @@ mod jws_sign;
 mod jws_verify;
 mod jwt;
 mod jwt_jwk;
+mod signature_selector;
 
 pub(crate) use jwe::{decrypt_jwe_request, encrypt_jwe_request};
 pub(crate) use jws_sign::sign_jws_request;

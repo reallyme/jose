@@ -7,14 +7,17 @@
 use core::str;
 
 use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
-    JoseCompactResult, JoseErrorReason, JoseJwsSignRequest, JoseSignatureAlgorithm,
+    JoseCompactResult, JoseErrorReason, JoseJwsSignRequest,
 };
 use zeroize::Zeroizing;
 
+use crate::jws::parse_header::JwsAlgorithm;
 use crate::operation_contract::jws::{
     sign_jws, JwsSignAlgorithm, JwsSignError, JwsSignErrorReason, JwsSignInput,
 };
 use crate::wire::{JoseWireError, JoseWireResult};
+
+use super::signature_selector::select_signature_algorithm;
 
 /// Validates and executes a generated compact-JWS signing request.
 pub(crate) fn sign_jws_request(
@@ -27,14 +30,9 @@ pub(crate) fn sign_jws_request(
             JoseErrorReason::JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8,
         )
     })?;
-    let algorithm = match request.algorithm.as_known() {
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_ES256) => JwsSignAlgorithm::Es256,
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_EDDSA) => JwsSignAlgorithm::Eddsa,
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED) | None => {
-            return Err(JoseWireError::provider_internal(
-                JoseErrorReason::JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED,
-            ));
-        }
+    let algorithm = match select_signature_algorithm(request.algorithm)? {
+        JwsAlgorithm::Es256 => JwsSignAlgorithm::Es256,
+        JwsAlgorithm::Eddsa => JwsSignAlgorithm::Eddsa,
     };
     let compact = sign_jws(JwsSignInput::new(algorithm, &private_key, payload))
         .map_err(map_sign_error)?
