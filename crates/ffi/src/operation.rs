@@ -73,11 +73,11 @@ pub const extern "C" fn rm_jose_max_response_bytes() -> usize {
 /// On success, only the first `len_out` bytes of the output are initialized
 /// with the encoded response.
 ///
-/// Platform adapters use a zero-capacity sizing call followed by an independent
-/// write call. The encoded response length for one request is therefore an ABI
-/// invariant: randomized operations may change response bytes, but every
-/// randomized field has a fixed encoded width. A future operation with
-/// variable-length randomized output requires a different allocation contract.
+/// A sizing call executes the request independently from the write call. For
+/// the same request, successful randomized JWE encryptions have equal encoded
+/// response lengths. If an operation outcome changes between calls, the write
+/// call reports the actual length and returns `OutputCapacityMismatch` if it
+/// needs more space.
 ///
 /// # Safety
 ///

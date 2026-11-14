@@ -391,6 +391,16 @@ contributes only the reported prefix. A separate harness uses real
 buffers of up to four bytes to verify the copied prefix and the unchanged
 remainder. ABI tests cover larger buffers through both entry points.
 
+JWE size harnesses verify fixed-width SEC1 coordinate extraction, the
+Base64URL coordinate width and JSON-safe alphabet, the AES-GCM output-width
+check, and checked compact sizing. The generated protobuf response is length-delimited,
+and the envelope harness bounds its size for every permitted compact length.
+The FFI tests run real encryption for direct keys and ECDH-ES on P-256, P-384,
+and P-521 across the three AES-GCM suites, with and without DEFLATE. Two
+successful encryptions of the same request report the same encoded size.
+Independent failures, including unavailable entropy, can change the outcome
+and therefore the encoded size.
+
 With [Kani 0.68.0](https://github.com/model-checking/kani/releases/tag/kani-0.68.0)
 installed and set up, run the harnesses with:
 

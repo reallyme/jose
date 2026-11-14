@@ -6,6 +6,9 @@
 
 #![allow(unsafe_code)]
 
+#[path = "abi/jwe_response_width.rs"]
+mod jwe_response_width;
+
 #[path = "abi/pointer_rejection.rs"]
 mod pointer_rejection;
 
@@ -41,15 +44,6 @@ const OPERATIONS: [(JoseOperationKind, &[u8]); 8] = [
     (JoseOperationKind::JweEncrypt, br#"{"jweEncrypt":{}}"#),
     (JoseOperationKind::JweDecrypt, br#"{"jweDecrypt":{}}"#),
 ];
-
-const RANDOMIZED_JWE_ENCRYPT_REQUEST: &[u8] = br#"{
-  "jweEncrypt": {
-    "keyManagementAlgorithm": "JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT",
-    "contentEncryptionAlgorithm": "JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM",
-    "key": "AAAAAAAAAAAAAAAAAAAAAA==",
-    "plaintext": "cHJvYmU="
-  }
-}"#;
 
 fn execute(operation: ExecuteOperation, input: &[u8]) -> Vec<u8> {
     execute_with_lengths(operation, input).0
@@ -145,22 +139,7 @@ fn probe_and_write_lengths_match_for_every_operation() {
 
 #[test]
 fn probe_and_write_lengths_match_for_randomized_jwe() {
-    let request = decode_json::<JoseOperationRequest>(RANDOMIZED_JWE_ENCRYPT_REQUEST);
-    assert!(request.is_ok());
-    let Some(request) = request.ok() else {
-        return;
-    };
-    let binary_request = encode_protobuf(&request);
-
-    let (_, binary_probe_len, binary_write_len) =
-        execute_with_lengths(rm_jose_execute_operation_v1, &binary_request);
-    assert_eq!(binary_probe_len, binary_write_len);
-
-    let (_, json_probe_len, json_write_len) = execute_with_lengths(
-        rm_jose_execute_operation_json_v1,
-        RANDOMIZED_JWE_ENCRYPT_REQUEST,
-    );
-    assert_eq!(json_probe_len, json_write_len);
+    jwe_response_width::exercise_randomized_jwe_matrix();
 }
 
 #[test]

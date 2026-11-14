@@ -20,11 +20,12 @@ Call `rm_jose_zeroize_buffer` before releasing request or response storage that
 may contain private keys, claims, compact tokens, JWK JSON, or plaintext.
 
 Swift and JNI adapters allocate responses with a zero-capacity sizing call and
-then execute the request independently into the allocated buffer. The encoded
-response length is therefore a versioned ABI invariant: fresh nonces, ephemeral
-keys, and signatures may change bytes between calls, but their encoded widths
-must remain fixed. A future operation with variable-length randomized output
-requires a different allocation contract rather than weakening this check.
+then execute the request independently into the allocated buffer. For the same
+request, successful JWE encryptions have equal encoded response lengths even
+when the nonce and ephemeral public key change. An operation failure such as
+unavailable entropy can change the response length between calls. The write call
+reports its actual response length and returns a capacity mismatch if it needs
+more space.
 
 C status values describe pointer, capacity, ABI, panic, or other transport
 state. JOSE success and typed primitive/provider/backend failures are carried

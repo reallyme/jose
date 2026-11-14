@@ -400,3 +400,7 @@ fn jwe_decrypt_response(result: JoseWireResult<JoseJwePlaintextResult>) -> JoseO
 const fn backend_output_error() -> JoseWireError {
     JoseWireError::backend_internal(JoseErrorReason::JOSE_ERROR_REASON_BACKEND_INTERNAL)
 }
+
+#[cfg(kani)]
+#[path = "jwe_response_width_proofs.rs"]
+mod jwe_response_width_proofs;

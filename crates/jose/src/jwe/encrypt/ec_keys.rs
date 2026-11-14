@@ -7,6 +7,7 @@ use serde_json::Map;
 use reallyme_codec::base64url::base64url_to_bytes;
 
 use crate::jwe::validate_ephemeral_key::{EphemeralCurve, PublicEphemeralJwk};
+use crate::measure_encoding::base64url_len;
 use crate::JsonValue;
 
 use super::encode_jwe_base64url;
@@ -94,6 +95,42 @@ fn ec_epk_from_sec1_public_key(
         compress,
         decompress,
     )?;
+    let (x, y) = ephemeral_coordinates(&uncompressed, curve)?;
+
+    let mut epk = Map::new();
+    epk.insert("kty".to_owned(), JsonValue::String("EC".to_owned()));
+    epk.insert("crv".to_owned(), JsonValue::String(curve.name().to_owned()));
+    epk.insert("x".to_owned(), JsonValue::String(encode_coordinate(x)?));
+    epk.insert("y".to_owned(), JsonValue::String(encode_coordinate(y)?));
+    Ok(JsonValue::Object(epk))
+}
+
+fn encode_coordinate(coordinate: &[u8]) -> Result<String, JweError> {
+    let encoded = encode_jwe_base64url(coordinate);
+    check_coordinate_encoding(coordinate.len(), &encoded)?;
+    Ok(encoded)
+}
+
+pub(super) fn check_coordinate_encoding(width: usize, encoded: &str) -> Result<(), JweError> {
+    let expected = base64url_len(width).ok_or(JweError::LengthOverflow)?;
+    // Only fixed-width Base64URL text may enter the JSON header. These
+    // characters take one byte each and require no JSON escaping.
+    if encoded.len() != expected || !encoded.bytes().all(is_unescaped_base64url) {
+        return Err(JweError::InvalidEncoding);
+    }
+    Ok(())
+}
+
+pub(super) const fn is_unescaped_base64url(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_')
+}
+
+// Keep the full SEC1 width, including leading zeros. The Base64URL
+// coordinates then have a fixed JSON width for each curve.
+pub(super) fn ephemeral_coordinates(
+    sec1: &[u8],
+    curve: EphemeralCurve,
+) -> Result<(&[u8], &[u8]), JweError> {
     let x_start = 1usize;
     let coordinate_len = curve.coordinate_len();
     let x_end = x_start
@@ -102,19 +139,14 @@ fn ec_epk_from_sec1_public_key(
     let y_end = x_end
         .checked_add(coordinate_len)
         .ok_or(JweError::LengthOverflow)?;
-    let x = uncompressed
+    let x = sec1
         .get(x_start..x_end)
         .ok_or(JweError::InvalidKeyAgreementKey)?;
-    let y = uncompressed
+    let y = sec1
         .get(x_end..y_end)
         .ok_or(JweError::InvalidKeyAgreementKey)?;
 
-    let mut epk = Map::new();
-    epk.insert("kty".to_owned(), JsonValue::String("EC".to_owned()));
-    epk.insert("crv".to_owned(), JsonValue::String(curve.name().to_owned()));
-    epk.insert("x".to_owned(), JsonValue::String(encode_jwe_base64url(x)));
-    epk.insert("y".to_owned(), JsonValue::String(encode_jwe_base64url(y)));
-    Ok(JsonValue::Object(epk))
+    Ok((x, y))
 }
 
 fn ec_uncompressed_public_key(
