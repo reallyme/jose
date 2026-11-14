@@ -130,6 +130,22 @@ fn reject_signed_jwt_with_alg_none_header() {
 }
 
 #[test]
+fn reject_empty_signature_for_every_signed_jwt_algorithm() {
+    for key in [gen_ed25519(), gen_p256(), gen_secp256k1()] {
+        let signed = encode_signed_jwt(&base_claims_json(), &key.jwk, &key.private).unwrap();
+        let (signing_input, _) = signed.rsplit_once('.').unwrap();
+        let empty_signature = format!("{signing_input}.");
+        let result = decode_verify_jwt_signature_only::<serde_json::Value>(
+            &empty_signature,
+            &key.jwk,
+            &key.public,
+        );
+
+        assert!(matches!(result, Err(JwtError::InvalidSignature)));
+    }
+}
+
+#[test]
 fn reject_jwt_when_header_alg_differs_from_jwk_alg() {
     let k = gen_p256();
     let expected_key = gen_secp256k1();

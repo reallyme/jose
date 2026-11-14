@@ -16,7 +16,8 @@ use super::{
     parse_compact::parse_compact_jwt,
     strict_json::{parse_sensitive_json, reject_duplicate_object_members},
     validate_header::{
-        select_jwk_algorithm, select_jwk_key_id, JwtHeader, JwtHeaderValidationOptions,
+        select_jwk_algorithm, select_jwk_key_id, validate_signed_header, JwtHeader,
+        JwtHeaderValidationOptions,
     },
     validate_registered_claims::{
         validate_claims_set, validate_registered_claims, JwtClaimsValidationPolicy,
@@ -338,15 +339,17 @@ fn decode_verify_jwt_payload_bytes(
     let header: JwtHeader =
         serde_json::from_slice(&header_bytes).map_err(|_| JwtError::InvalidHeader)?;
 
-    header.validate_with_options(header_validation)?;
-
-    let expected_alg = select_jwk_algorithm(jwk)?;
-    if header.alg != expected_alg {
-        return Err(JwtError::AlgorithmMismatch);
-    }
+    let crypto_alg = bind_verification_algorithm(
+        validate_signed_header(
+            &header.alg,
+            header.typ.as_deref(),
+            header.embedded_key_header,
+            header_validation,
+        )?,
+        algorithm_from_jwt_alg(&select_jwk_algorithm(jwk)?)?,
+    )?;
     validate_jwk_key_binding(&header, jwk, public_key)?;
 
-    let crypto_alg = algorithm_from_jwt_alg(&header.alg)?;
     let signing_input = build_sig_structure(
         parts.protected_header,
         parts.payload,
@@ -359,6 +362,22 @@ fn decode_verify_jwt_payload_bytes(
         parts.payload.as_bytes(),
     )?))
 }
+
+fn bind_verification_algorithm(
+    protected_algorithm: Algorithm,
+    key_algorithm: Algorithm,
+) -> Result<Algorithm, JwtError> {
+    if protected_algorithm != key_algorithm {
+        return Err(JwtError::AlgorithmMismatch);
+    }
+
+    // Dispatch on the caller's key binding once the protected algorithm agrees.
+    Ok(key_algorithm)
+}
+
+#[cfg(kani)]
+#[path = "verify_proofs.rs"]
+mod proofs;
 
 fn validate_jwk_key_binding(
     header: &JwtHeader,

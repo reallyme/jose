@@ -1,0 +1,82 @@
+name: Formal Verification
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/formal-verification.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - "crates/jose/**"
+      - "crates/proto/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/formal-verification.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - "crates/jose/**"
+      - "crates/proto/**"
+
+permissions:
+  contents: read
+
+jobs:
+  kani:
+    name: Kani (native JOSE)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      KANI_VERSION: "0.68.0"
+      KANI_BUNDLE_SHA256: 32e2b484d73ede0bbf64a2cf0879c4259422497d8aec4ee67d448de9ae7843d3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: 1.99.1
+
+      - name: Install and verify pinned Kani
+        shell: bash
+        run: |
+          cargo install --locked kani-verifier --version "=$KANI_VERSION"
+          bundle="kani-$KANI_VERSION-x86_64-unknown-linux-gnu.tar.gz"
+          bundle_path="$RUNNER_TEMP/$bundle"
+          curl --fail --silent --show-error --location --retry 3 --max-time 180 \
+            --output "$bundle_path" "https://github.com/model-checking/kani/releases/download/kani-$KANI_VERSION/$bundle"
+          printf '%s  %s\n' "$KANI_BUNDLE_SHA256" "$bundle_path" | sha256sum --check --strict
+          cargo kani setup --use-local-bundle "$bundle_path"
+          cargo kani --version
+
+      - name: Verify proof obligations
+        shell: bash
+        run: |
+          cargo fetch --locked
+          sha256sum Cargo.lock > "$RUNNER_TEMP/workspace-lock.sha256"
+          results="$RUNNER_TEMP/verification.json"
+          CARGO_NET_OFFLINE=true cargo kani --package reallyme-jose --lib --no-default-features \
+            --features native --output-format terse -Z unstable-options --export-json "$results"
+          sha256sum --check --strict "$RUNNER_TEMP/workspace-lock.sha256"
+          # Unmet cover goals do not fail Kani by themselves.
+          jq --exit-status '
+            .verification_results.results as $results
+            | ($results | length > 0) and all($results[];
+                .status == "Success"
+                and ([.checks[] | select(.category == "cover")] as $covers
+                  | ($covers | length > 0) and all($covers[]; .status == "Satisfied")))
+          ' "$results"
+
+      - name: Upload verification results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: formal-verification
+          path: ${{ runner.temp }}/verification.json
+          if-no-files-found: ignore

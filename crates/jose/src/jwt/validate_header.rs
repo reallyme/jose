@@ -9,9 +9,9 @@ use serde::de::{IgnoredAny, MapAccess, Visitor};
 use serde::{Deserialize, Serialize};
 use zeroize::Zeroize;
 
-use crate::Jwk;
+use crate::{Algorithm, Jwk};
 
-use super::error::JwtError;
+use super::{algorithm_from_jwt_alg, error::JwtError};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct JwtHeader {
@@ -99,42 +99,39 @@ impl<'de> Visitor<'de> for JwtHeaderVisitor {
     }
 }
 
-impl JwtHeader {
-    /// Validates this header against algorithm, type, and embedded-key policy.
-    pub fn validate_with_options(
-        &self,
-        options: &JwtHeaderValidationOptions<'_>,
-    ) -> Result<(), JwtError> {
-        match self.alg.as_str() {
-            "ES256" | "EdDSA" | "ES256K" => {}
-            "none" => return Err(JwtError::InvalidHeader), // unsigned JWTs handled elsewhere
-            _ => return Err(JwtError::UnsupportedAlgorithm),
-        }
-
-        match self.typ.as_deref() {
-            Some(typ) => {
-                if options.accepted_typ_values.is_empty()
-                    || !options
-                        .accepted_typ_values
-                        .iter()
-                        .any(|accepted| jwt_typ_matches(typ, accepted))
-                {
-                    return Err(JwtError::InvalidHeader);
-                }
-            }
-            None => {
-                if !options.allow_missing_typ {
-                    return Err(JwtError::InvalidHeader);
-                }
-            }
-        }
-
-        if self.embedded_key_header && !options.allow_embedded_key_header {
-            return Err(JwtError::InvalidHeader);
-        }
-
-        Ok(())
+pub(super) fn validate_signed_header(
+    algorithm: &str,
+    media_type: Option<&str>,
+    embedded_key_header: bool,
+    options: &JwtHeaderValidationOptions<'_>,
+) -> Result<Algorithm, JwtError> {
+    if algorithm == "none" {
+        return Err(JwtError::InvalidHeader);
     }
+    let algorithm = algorithm_from_jwt_alg(algorithm)?;
+
+    match media_type {
+        Some(typ) => {
+            if !options
+                .accepted_typ_values
+                .iter()
+                .any(|accepted| jwt_typ_matches(typ, accepted))
+            {
+                return Err(JwtError::InvalidHeader);
+            }
+        }
+        None => {
+            if !options.allow_missing_typ {
+                return Err(JwtError::InvalidHeader);
+            }
+        }
+    }
+
+    if embedded_key_header && !options.allow_embedded_key_header {
+        return Err(JwtError::InvalidHeader);
+    }
+
+    Ok(algorithm)
 }
 
 fn jwt_typ_matches(actual: &str, accepted: &str) -> bool {

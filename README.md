@@ -327,6 +327,29 @@ changes because README and policy text are part of the release contract.
 Fuzz harnesses live in [fuzz](fuzz/) and cover compact JWS, JWT, and JWE parser
 boundaries plus the protobuf/JSON process boundary.
 
+## Formal Verification
+
+The [Formal Verification workflow](.github/workflows/formal-verification.yml)
+runs Kani against the Rust production code used for signed JWT verification.
+The temporal harnesses cover the full `u64` domain for verification time,
+skew policy, and decoded NumericDates, including missing required claims,
+zero timestamps, exclusive expiration, inclusive future-time boundaries,
+and overflow rejection. The signed verification harnesses check that dispatch
+requires agreement between the selected header and key algorithms and that
+`alg: none` is rejected across the missing-type and embedded-key policy flags.
+
+These checks begin after JSON decoding. JWT conformance tests exercise
+compact parsing, media-type matching, JWK compatibility and public-key byte
+binding, and cryptographic verification.
+With [Kani 0.68.0](https://github.com/model-checking/kani/releases/tag/kani-0.68.0)
+installed and set up, run the harnesses with:
+
+```sh
+cargo kani --package reallyme-jose --lib --no-default-features --features native
+```
+
+CI requires each harness to pass and every cover property to be reachable.
+
 ## Independent Vector Audit
 
 Committed conformance vectors are checked by `tools/vector-audit`, a standalone
