@@ -331,7 +331,7 @@ boundaries plus the protobuf/JSON process boundary.
 
 The [Formal Verification workflow](.github/workflows/formal-verification.yml)
 runs Kani against Rust production code used for JWS and JWT verification, JWE
-decryption, and protobuf dispatch.
+decryption, protobuf dispatch, and native C ABI validation.
 The temporal harnesses cover the full `u64` domain for verification time,
 skew policy, and decoded NumericDates, including missing required claims,
 zero timestamps, exclusive expiration, inclusive future-time boundaries,
@@ -376,11 +376,20 @@ pass JWS selector validation, and the binary unknown-field budget rejects an
 unrecognized selector before reading its value. Wire tests exercise the
 binary and ProtoJSON routes and unknown binary fields alongside known ones.
 
+The native C ABI harnesses check the three caller address ranges over the
+full machine-word domain. They verify that both operation entry points
+reject invalid pointer, length, or overlap metadata before borrowing or
+writing any caller memory, and that cleanup rejects invalid ranges before
+borrowing them. The harnesses model addresses and exclude the panic
+firewall and cryptographic execution. The C caller supplies live storage,
+correct pointer provenance, and exclusive access to writable ranges.
+
 With [Kani 0.68.0](https://github.com/model-checking/kani/releases/tag/kani-0.68.0)
 installed and set up, run the harnesses with:
 
 ```sh
 cargo kani --package reallyme-jose --lib --no-default-features --features native,wire -Z stubbing
+cargo kani --package reallyme-jose-ffi --lib --no-default-features --features native -Z stubbing
 ```
 
 CI requires each harness to pass and every cover property to be reachable.

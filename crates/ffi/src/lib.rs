@@ -11,8 +11,10 @@
 #![cfg(not(target_arch = "wasm32"))]
 // A panic firewall is ineffective under panic=abort. Native artifact builders
 // select the workspace's release-ffi profile, and this check rejects any
-// incorrectly configured build.
+// incorrectly configured build. Kani models normal control flow with
+// panic=abort and stubs the panic firewall in the boundary harnesses.
 #[cfg(not(panic = "unwind"))]
+#[cfg(not(kani))]
 compile_error!("reallyme-jose-ffi must be compiled with panic=unwind");
 
 /// Panic containment shared by every non-leaf exported function.

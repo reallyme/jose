@@ -15,7 +15,7 @@ use zeroize::{Zeroize, Zeroizing};
 
 use crate::guard::ffi_guard;
 use crate::pointer::{
-    read_slice, validate_mutable_bytes, validate_operation_ranges, write_len, write_slice,
+    read_slice, validate_mutable_bytes, validate_operation_ranges, write_len, write_uninit_slice,
 };
 use crate::status::JoseFfiStatus;
 
@@ -66,8 +66,8 @@ pub const extern "C" fn rm_jose_max_response_bytes() -> usize {
 /// Executes one binary protobuf request into a canonical V1 response.
 ///
 /// The caller owns every pointer. `len_out` is initialized to zero after all
-/// pointer and alias checks. On `OutputCapacityMismatch`, it contains the exact
-/// required response length and the output buffer is unchanged.
+/// pointer, length, and alias checks pass. On `OutputCapacityMismatch`,
+/// it contains the exact required response length and the output is unchanged.
 ///
 /// Platform adapters use a zero-capacity sizing call followed by an independent
 /// write call. The encoded response length for one request is therefore an ABI
@@ -77,9 +77,10 @@ pub const extern "C" fn rm_jose_max_response_bytes() -> usize {
 ///
 /// # Safety
 ///
-/// Nonempty input and output ranges must each reference one live allocation.
-/// The output range must be exclusively writable and disjoint from the input
-/// and aligned `len_out` storage for the duration of the call.
+/// A nonempty input range that passes validation must refer to initialized bytes
+/// in one live allocation and remain immutable for the call. Output and
+/// `len_out` ranges that pass validation must refer to live storage that is
+/// exclusively writable for the call. The output bytes may be uninitialized.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rm_jose_execute_operation_v1(
     abi_version: u32,
@@ -144,7 +145,8 @@ pub unsafe extern "C" fn rm_jose_execute_operation_json_v1(
 /// # Safety
 ///
 /// For nonzero `len`, `ptr` must reference one exclusively writable allocation
-/// containing at least `len` bytes for the duration of the call.
+/// containing at least `len` bytes for the duration of the call. The bytes
+/// may be uninitialized.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rm_jose_zeroize_buffer(abi_version: u32, ptr: *mut u8, len: usize) -> i32 {
     ffi_guard(|| {
@@ -156,7 +158,7 @@ pub unsafe extern "C" fn rm_jose_zeroize_buffer(abi_version: u32, ptr: *mut u8, 
         }
         // SAFETY: The shared validator rejected null or impossible nonempty
         // ranges; the exported contract supplies exclusive writable storage.
-        let Ok(bytes) = (unsafe { write_slice(ptr, len) }) else {
+        let Ok(bytes) = (unsafe { write_uninit_slice(ptr, len) }) else {
             return JoseFfiStatus::CallerError;
         };
         bytes.zeroize();
@@ -195,6 +197,15 @@ fn execute_operation_boundary(
     {
         return JoseFfiStatus::CallerError;
     }
+    // Leave all caller storage unchanged on invalid metadata. A sentinel one
+    // byte above the wire limit still yields a typed resource-limit response.
+    let Some(sentinel_maximum) = maximum_request_bytes.checked_add(1) else {
+        return JoseFfiStatus::BackendError;
+    };
+    if call.request_len > sentinel_maximum {
+        return JoseFfiStatus::CallerError;
+    }
+
     // SAFETY: The complete range validator established valid, aligned,
     // non-overlapping produced-length storage before initialization.
     if unsafe { write_len(call.len_out, 0) }.is_err() {
@@ -203,15 +214,9 @@ fn execute_operation_boundary(
     if call.abi_version != JOSE_ABI_VERSION {
         return JoseFfiStatus::UnsupportedAbi;
     }
-    let Some(sentinel_maximum) = maximum_request_bytes.checked_add(1) else {
-        return JoseFfiStatus::BackendError;
-    };
-    if call.request_len > sentinel_maximum {
-        return JoseFfiStatus::CallerError;
-    }
 
-    // SAFETY: Range validation preceded initialization and established the
-    // caller-owned immutable request allocation for this invocation.
+    // SAFETY: The range validator checked the pointer and length before
+    // initialization. The caller supplies a live immutable request allocation.
     let request = match unsafe { read_slice(call.request_ptr, call.request_len) } {
         Ok(value) => value,
         Err(status) => return status,
@@ -253,7 +258,7 @@ fn write_response(
     }
     // SAFETY: The entrypoint validated the exclusive output allocation and
     // its disjointness from input and length storage before processing.
-    let output = match unsafe { write_slice(output_ptr, output_capacity) } {
+    let output = match unsafe { write_uninit_slice(output_ptr, output_capacity) } {
         Ok(value) => value,
         Err(status) => {
             response.zeroize();
@@ -264,7 +269,11 @@ fn write_response(
         response.zeroize();
         return JoseFfiStatus::BackendError;
     };
-    destination.copy_from_slice(&response);
+    destination.write_copy_of_slice(&response);
     response.zeroize();
     JoseFfiStatus::Success
 }
+
+#[cfg(kani)]
+#[path = "boundary_proofs.rs"]
+mod proofs;

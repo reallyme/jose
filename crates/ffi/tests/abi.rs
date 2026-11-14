@@ -6,6 +6,9 @@
 
 #![allow(unsafe_code)]
 
+#[path = "abi/pointer_rejection.rs"]
+mod pointer_rejection;
+
 use reallyme_jose::wire::{
     decode_json, decode_operation_response_v1, encode_protobuf,
     proto::proto::reallyme::jose::v1::JoseOperationRequest, JoseOperationKind,
@@ -240,26 +243,49 @@ fn overlapping_input_and_output_are_rejected_before_mutation() {
 }
 
 #[test]
+#[allow(clippy::unwrap_used)]
 fn oversized_sentinel_preserves_resource_limit_but_larger_input_is_rejected() {
-    let sentinel = vec![0_u8; MAX_JOSE_PROTO_MESSAGE_BYTES + 1];
-    let response = execute(rm_jose_execute_operation_v1, &sentinel);
-    assert!(decode_operation_response_v1(&response, JoseOperationKind::JwsSign).is_ok());
-
-    let rejected = vec![0_u8; MAX_JOSE_PROTO_MESSAGE_BYTES + 2];
-    let mut produced = usize::MAX;
-    // SAFETY: Input and produced-length storage are valid and disjoint.
-    let status = unsafe {
-        rm_jose_execute_operation_v1(
-            JOSE_ABI_VERSION,
-            rejected.as_ptr(),
-            rejected.len(),
-            core::ptr::null_mut(),
-            0,
-            &mut produced,
-        )
+    use reallyme_jose::wire::proto::proto::reallyme::jose::v1::{
+        __buffa::oneof::{jose_error::Error, jose_operation_response::Response},
+        JoseErrorReason,
     };
-    assert_eq!(status, JoseFfiStatus::CallerError.code());
-    assert_eq!(produced, 0);
+
+    let entrypoints: [(ExecuteOperation, usize); 2] = [
+        (rm_jose_execute_operation_v1, rm_jose_max_request_bytes()),
+        (
+            rm_jose_execute_operation_json_v1,
+            rm_jose_max_json_request_bytes(),
+        ),
+    ];
+    for (operation, maximum) in entrypoints {
+        let sentinel = vec![0_u8; maximum.checked_add(1).unwrap()];
+        let response = execute(operation, &sentinel);
+        let decoded = decode_operation_response_v1(&response, JoseOperationKind::JwsSign).unwrap();
+        assert!(
+            matches!(&decoded.response, Some(Response::BoundaryError(boundary))
+            if matches!(&boundary.error, Some(Error::Primitive(error))
+                if error.reason == JoseErrorReason::JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED))
+        );
+
+        let rejected = vec![0_u8; maximum.checked_add(2).unwrap()];
+        let mut produced = usize::MAX;
+        let mut output = [0xa5_u8; 32];
+        // SAFETY: All storage is valid and disjoint. The request length is
+        // deliberately above the largest length accepted by this export.
+        let status = unsafe {
+            operation(
+                JOSE_ABI_VERSION,
+                rejected.as_ptr(),
+                rejected.len(),
+                output.as_mut_ptr(),
+                output.len(),
+                &mut produced,
+            )
+        };
+        assert_eq!(status, JoseFfiStatus::CallerError.code());
+        assert_eq!(produced, usize::MAX);
+        assert_eq!(output, [0xa5; 32]);
+    }
 }
 
 #[test]

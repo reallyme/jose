@@ -10,8 +10,11 @@ before calling or casting any other loaded symbol. Operation calls also receive
 the ABI version and fail closed if it differs.
 
 The caller owns input, output, and produced-length storage. Nonempty ranges
-must be valid, mutually disjoint allocations. A capacity mismatch changes only
-the produced-length value, which reports the exact required response size.
+must fit within live allocations and be mutually disjoint. Output and
+produced-length storage may start uninitialized. Invalid pointer, length, or
+alias metadata is rejected before any caller memory is accessed. A capacity
+mismatch changes only the produced-length value, which reports the exact
+required response size.
 Call `rm_jose_zeroize_buffer` before releasing request or response storage that
 may contain private keys, claims, compact tokens, JWK JSON, or plaintext.
 

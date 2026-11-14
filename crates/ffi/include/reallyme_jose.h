@@ -34,17 +34,19 @@ size_t rm_jose_max_json_request_bytes(void);
 size_t rm_jose_max_response_bytes(void);
 
 /*
- * All nonempty ranges must identify one live allocation. Input, output, and
- * produced-length storage must be mutually disjoint. The output range must be
- * exclusively writable. On capacity mismatch, *len_out is the exact required
- * size and output is unchanged. On every other validated failure, *len_out is
- * zero after pointer and alias validation succeeds. Invalid pointer or alias
- * arguments are rejected without dereference or mutation. Operation failures
- * are encoded in the canonical response and return RM_JOSE_OK at the C
- * transport layer. Callers may perform a zero-capacity sizing call followed by
- * an independent write call; the encoded response length for the same request
- * is guaranteed to remain equal across those calls even when response bytes
- * contain fresh randomness.
+ * All nonempty ranges must identify one live allocation. Input must contain
+ * initialized bytes and remain immutable for the call. Input, output, and
+ * aligned produced-length storage must be mutually disjoint. Output and
+ * produced-length storage must be exclusively writable and may start
+ * uninitialized. A null byte pointer is permitted for an empty range.
+ * Invalid pointer, length, or alias metadata returns RM_JOSE_CALLER_ERROR
+ * without accessing any caller storage. After validation, *len_out is
+ * initialized to zero. On capacity mismatch, *len_out is the exact required
+ * size and output is unchanged. Operation failures are encoded in the
+ * canonical response and return RM_JOSE_OK at the C transport layer.
+ * Callers may perform a zero-capacity sizing call followed by an independent
+ * write call. The encoded response length for the same request stays equal
+ * across those calls even when response bytes contain fresh randomness.
  */
 rm_jose_status_t rm_jose_execute_operation_v1(
     uint32_t abi_version,
@@ -62,7 +64,10 @@ rm_jose_status_t rm_jose_execute_operation_json_v1(
     size_t output_capacity,
     size_t *len_out);
 
-/* Wipes caller-owned mutable storage; it does not free caller memory. */
+/*
+ * Wipes caller-owned mutable storage, which may start uninitialized.
+ * The caller retains ownership. A null pointer is permitted for zero length.
+ */
 rm_jose_status_t rm_jose_zeroize_buffer(
     uint32_t abi_version,
     uint8_t *ptr,
