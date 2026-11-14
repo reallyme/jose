@@ -64,6 +64,7 @@ struct JweVectorCase {
 
 include!("jwe_tests/cases.rs");
 include!("jwe_tests/encrypt_vectors.rs");
+include!("jwe_tests/ephemeral_key.rs");
 include!("jwe_tests/key_management.rs");
 include!("jwe_tests/negative_cases.rs");
 include!("jwe_tests/support_and_boundaries.rs");

@@ -6,6 +6,7 @@ use serde_json::Map;
 
 use reallyme_codec::base64url::base64url_to_bytes;
 
+use crate::jwe::validate_ephemeral_key::{EphemeralCurve, PublicEphemeralJwk};
 use crate::JsonValue;
 
 use super::encode_jwe_base64url;
@@ -14,8 +15,7 @@ use crate::jwe::JweError;
 pub(super) fn p256_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<JsonValue, JweError> {
     ec_epk_from_sec1_public_key(
         public_key_sec1,
-        "P-256",
-        32,
+        EphemeralCurve::P256,
         33,
         65,
         reallyme_crypto::p256::compress_public_key,
@@ -26,8 +26,7 @@ pub(super) fn p256_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<Js
 pub(super) fn p256_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweError> {
     ec_public_key_from_jwk(
         jwk,
-        "P-256",
-        32,
+        EphemeralCurve::P256,
         33,
         reallyme_crypto::p256::decompress_public_key,
         reallyme_crypto::p256::compress_public_key,
@@ -38,8 +37,7 @@ pub(super) fn p256_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweEr
 pub(super) fn p384_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<JsonValue, JweError> {
     ec_epk_from_sec1_public_key(
         public_key_sec1,
-        "P-384",
-        48,
+        EphemeralCurve::P384,
         49,
         97,
         reallyme_crypto::p384::compress_p384,
@@ -51,8 +49,7 @@ pub(super) fn p384_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<Js
 pub(super) fn p384_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweError> {
     ec_public_key_from_jwk(
         jwk,
-        "P-384",
-        48,
+        EphemeralCurve::P384,
         49,
         reallyme_crypto::p384::decompress_p384,
         reallyme_crypto::p384::compress_p384,
@@ -63,8 +60,7 @@ pub(super) fn p384_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweEr
 pub(super) fn p521_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<JsonValue, JweError> {
     ec_epk_from_sec1_public_key(
         public_key_sec1,
-        "P-521",
-        66,
+        EphemeralCurve::P521,
         67,
         133,
         reallyme_crypto::p521::compress_p521,
@@ -76,8 +72,7 @@ pub(super) fn p521_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<Js
 pub(super) fn p521_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweError> {
     ec_public_key_from_jwk(
         jwk,
-        "P-521",
-        66,
+        EphemeralCurve::P521,
         67,
         reallyme_crypto::p521::decompress_p521,
         reallyme_crypto::p521::compress_p521,
@@ -86,8 +81,7 @@ pub(super) fn p521_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweEr
 
 fn ec_epk_from_sec1_public_key(
     public_key_sec1: &[u8],
-    crv: &'static str,
-    coordinate_len: usize,
+    curve: EphemeralCurve,
     compressed_len: usize,
     uncompressed_len: usize,
     compress: fn(&[u8]) -> Result<Vec<u8>, reallyme_crypto::core::CryptoError>,
@@ -101,6 +95,7 @@ fn ec_epk_from_sec1_public_key(
         decompress,
     )?;
     let x_start = 1usize;
+    let coordinate_len = curve.coordinate_len();
     let x_end = x_start
         .checked_add(coordinate_len)
         .ok_or(JweError::LengthOverflow)?;
@@ -116,7 +111,7 @@ fn ec_epk_from_sec1_public_key(
 
     let mut epk = Map::new();
     epk.insert("kty".to_owned(), JsonValue::String("EC".to_owned()));
-    epk.insert("crv".to_owned(), JsonValue::String(crv.to_owned()));
+    epk.insert("crv".to_owned(), JsonValue::String(curve.name().to_owned()));
     epk.insert("x".to_owned(), JsonValue::String(encode_jwe_base64url(x)));
     epk.insert("y".to_owned(), JsonValue::String(encode_jwe_base64url(y)));
     Ok(JsonValue::Object(epk))
@@ -141,57 +136,19 @@ fn ec_uncompressed_public_key(
 
 fn ec_public_key_from_jwk(
     jwk: &JsonValue,
-    crv: &'static str,
-    coordinate_len: usize,
+    curve: EphemeralCurve,
     compressed_len: usize,
     decompress: fn(&[u8]) -> Result<Vec<u8>, reallyme_crypto::core::CryptoError>,
     compress: fn(&[u8]) -> Result<Vec<u8>, reallyme_crypto::core::CryptoError>,
 ) -> Result<Vec<u8>, JweError> {
-    let object = jwk.as_object().ok_or(JweError::InvalidKeyAgreementKey)?;
-    let kty = object
-        .get("kty")
-        .and_then(JsonValue::as_str)
-        .ok_or(JweError::InvalidKeyAgreementKey)?;
-    let header_crv = object
-        .get("crv")
-        .and_then(JsonValue::as_str)
-        .ok_or(JweError::InvalidKeyAgreementKey)?;
-    if kty != "EC" || header_crv != crv {
-        return Err(JweError::InvalidKeyAgreementKey);
-    }
-    // The protected-header visitor currently rejects `alg` inside `epk` before
-    // this helper runs. Keep the invariant at the JWK-to-SEC1 conversion
-    // boundary so a future internal caller cannot bypass that header-layer
-    // restriction accidentally.
-    if object
-        .get("alg")
-        .and_then(JsonValue::as_str)
-        .is_some_and(|alg| alg != "ECDH-ES")
-    {
-        return Err(JweError::InvalidKeyAgreementKey);
-    }
-    let x = base64url_to_bytes(
-        object
-            .get("x")
-            .and_then(JsonValue::as_str)
-            .ok_or(JweError::InvalidKeyAgreementKey)?,
-    )
-    .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-    let y = base64url_to_bytes(
-        object
-            .get("y")
-            .and_then(JsonValue::as_str)
-            .ok_or(JweError::InvalidKeyAgreementKey)?,
-    )
-    .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-    // RFC 7518 requires the full coordinate width. Do not normalize a
-    // zero-stripped producer encoding here: accepting two encodings for one
-    // point would weaken the strict protected-header profile and obscure
-    // interoperability failures at the boundary.
-    if x.len() != coordinate_len || y.len() != coordinate_len {
-        return Err(JweError::InvalidKeyAgreementKey);
-    }
-    let uncompressed_coordinate_len = coordinate_len
+    let jwk = PublicEphemeralJwk::try_from(jwk)?;
+    curve.validate_identity(jwk.key_type.as_bytes(), jwk.curve.as_bytes())?;
+    let x = base64url_to_bytes(jwk.x).map_err(|_| JweError::InvalidKeyAgreementKey)?;
+    let y = base64url_to_bytes(jwk.y).map_err(|_| JweError::InvalidKeyAgreementKey)?;
+    curve.validate_coordinate_lengths(x.len(), y.len())?;
+
+    let uncompressed_coordinate_len = curve
+        .coordinate_len()
         .checked_mul(2)
         .and_then(|len| len.checked_add(1))
         .ok_or(JweError::LengthOverflow)?;

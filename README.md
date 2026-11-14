@@ -356,6 +356,12 @@ also check every candidate key length against the selected AES-GCM suite.
 Integration tests cover caller-supplied provider outputs and exercise the
 ECDH-ES KDF for each suite.
 
+The ephemeral-key harnesses check the required public JWK members, binding
+to the resolver's curve, and exact widths for both decoded coordinates.
+Agreement runs only after validation succeeds. The harnesses model parsed
+members and decoded lengths. Integration tests exercise JSON and Base64URL
+decoding, SEC1 point validation, and the curve backends.
+
 With [Kani 0.68.0](https://github.com/model-checking/kani/releases/tag/kani-0.68.0)
 installed and set up, run the harnesses with:
 
