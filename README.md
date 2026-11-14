@@ -349,6 +349,13 @@ decompression append fits the output ceiling without integer wraparound.
 The ordering proof treats AEAD and DEFLATE outcomes as inputs. Integration
 tests exercise the real AES-GCM backends and decoder.
 
+The key-management harnesses check that built-in resolvers agree with the
+protected `alg`, both direct CEK modes require an empty encrypted-key segment,
+and `epk`, `apu`, and `apv` obey the selected mode's structural rules. They
+also check every candidate key length against the selected AES-GCM suite.
+Integration tests cover caller-supplied provider outputs and exercise the
+ECDH-ES KDF for each suite.
+
 With [Kani 0.68.0](https://github.com/model-checking/kani/releases/tag/kani-0.68.0)
 installed and set up, run the harnesses with:
 

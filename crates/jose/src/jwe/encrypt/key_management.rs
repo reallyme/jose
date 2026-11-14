@@ -5,6 +5,11 @@
 use reallyme_crypto::core::CryptoError;
 use zeroize::Zeroize;
 
+use crate::jwe::validate_header::validate_jwe_header_structure;
+use crate::jwe::validate_key_management::{
+    validate_content_encryption_key_length, validate_encrypted_key_segment,
+    validate_resolver_key_management,
+};
 use crate::jwe::{
     derive_ecdh_es_content_encryption_key, CompactJweProtectedHeader,
     JweContentEncryptionKeyResolver, JweError, JweKeyManagementAlgorithm,
@@ -50,19 +55,8 @@ impl PreparedJweEncryptionKey {
         encrypted_key: Vec<u8>,
         epk: Option<JsonValue>,
     ) -> Result<Self, JweError> {
-        match alg {
-            JweKeyManagementAlgorithm::Direct | JweKeyManagementAlgorithm::EcdhEs => {
-                if !encrypted_key.is_empty() {
-                    return Err(JweError::InvalidEncryptedKey);
-                }
-            }
-        }
-        if alg == JweKeyManagementAlgorithm::EcdhEs && epk.is_none() {
-            return Err(JweError::MissingRequiredHeaderParameter);
-        }
-        if alg == JweKeyManagementAlgorithm::Direct && epk.is_some() {
-            return Err(JweError::InvalidHeader);
-        }
+        validate_encrypted_key_segment(alg, encrypted_key.len())?;
+        validate_jwe_header_structure(alg, epk.is_some(), false, false)?;
         if let Some(epk) = epk.as_ref() {
             validate_public_epk_jwk(epk)?;
         }
@@ -126,9 +120,7 @@ impl JweContentEncryptionKeyEncryptor for DirectJweKeyEncryptor<'_> {
         &mut self,
         request: &CompactJweEncryptRequest<'_>,
     ) -> Result<PreparedJweEncryptionKey, JweError> {
-        if self.key.len() != request.enc().key_len() {
-            return Err(JweError::InvalidContentEncryptionKey);
-        }
+        validate_content_encryption_key_length(request.enc(), self.key.len())?;
         Ok(PreparedJweEncryptionKey {
             alg: JweKeyManagementAlgorithm::Direct,
             cek: Zeroizing::new(self.key.to_vec()),
@@ -216,9 +208,11 @@ impl JweContentEncryptionKeyResolver for P256EcdhEsJweKeyResolver<'_> {
         header: &CompactJweProtectedHeader,
         encrypted_key: &[u8],
     ) -> Result<Zeroizing<Vec<u8>>, JweError> {
-        if header.alg != JweKeyManagementAlgorithm::EcdhEs || !encrypted_key.is_empty() {
-            return Err(JweError::InvalidEncryptedKey);
-        }
+        validate_resolver_key_management(
+            JweKeyManagementAlgorithm::EcdhEs,
+            header.alg,
+            encrypted_key.len(),
+        )?;
         let epk = header
             .epk
             .as_ref()
@@ -319,9 +313,11 @@ impl JweContentEncryptionKeyResolver for P384EcdhEsJweKeyResolver<'_> {
         header: &CompactJweProtectedHeader,
         encrypted_key: &[u8],
     ) -> Result<Zeroizing<Vec<u8>>, JweError> {
-        if header.alg != JweKeyManagementAlgorithm::EcdhEs || !encrypted_key.is_empty() {
-            return Err(JweError::InvalidEncryptedKey);
-        }
+        validate_resolver_key_management(
+            JweKeyManagementAlgorithm::EcdhEs,
+            header.alg,
+            encrypted_key.len(),
+        )?;
         let epk = header
             .epk
             .as_ref()
@@ -422,9 +418,11 @@ impl JweContentEncryptionKeyResolver for P521EcdhEsJweKeyResolver<'_> {
         header: &CompactJweProtectedHeader,
         encrypted_key: &[u8],
     ) -> Result<Zeroizing<Vec<u8>>, JweError> {
-        if header.alg != JweKeyManagementAlgorithm::EcdhEs || !encrypted_key.is_empty() {
-            return Err(JweError::InvalidEncryptedKey);
-        }
+        validate_resolver_key_management(
+            JweKeyManagementAlgorithm::EcdhEs,
+            header.alg,
+            encrypted_key.len(),
+        )?;
         let epk = header
             .epk
             .as_ref()

@@ -9,6 +9,7 @@ use reallyme_codec::base64url::bytes_to_base64url;
 use reallyme_crypto::core::RngOutputKind;
 
 use super::parse_compact::MAX_COMPACT_JWE_BYTES;
+use super::validate_key_management::validate_content_encryption_key_length;
 use crate::measure_encoding::base64url_len;
 use crate::{JsonValue, SecureRandom, Zeroizing};
 
@@ -249,6 +250,7 @@ pub(crate) fn encrypt_compact_jwe_bytes_core<R: SecureRandom + ?Sized>(
     if encoded_len > MAX_COMPACT_JWE_BYTES {
         return Err(JweError::InputTooLarge);
     }
+    validate_content_encryption_key_length(request.enc(), prepared.cek.len())?;
     let protected_header = Zeroizing::new(encode_jwe_base64url(&protected_header_json));
 
     let mut nonce = [0u8; reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH];

@@ -9,6 +9,10 @@ use crate::reject_duplicate_json_members::reject_duplicate_json_members;
 use crate::Zeroizing;
 
 use super::validate_header::RawCompactJweProtectedHeader;
+use super::validate_key_management::{
+    validate_content_encryption_key_length, validate_encrypted_key_segment,
+    validate_resolver_key_management,
+};
 use super::{
     compression::decompress_deflate, parse_compact::parse_compact_jwe, CompactJwePolicy,
     CompactJweProtectedHeader, JweCompressionAlgorithm, JweContentEncryptionAlgorithm, JweError,
@@ -44,12 +48,12 @@ impl JweContentEncryptionKeyResolver for DirectJweKeyResolver<'_> {
         header: &CompactJweProtectedHeader,
         encrypted_key: &[u8],
     ) -> Result<Zeroizing<Vec<u8>>, JweError> {
-        if header.alg != JweKeyManagementAlgorithm::Direct || !encrypted_key.is_empty() {
-            return Err(JweError::InvalidEncryptedKey);
-        }
-        if self.key.len() != header.enc.key_len() {
-            return Err(JweError::InvalidContentEncryptionKey);
-        }
+        validate_resolver_key_management(
+            JweKeyManagementAlgorithm::Direct,
+            header.alg,
+            encrypted_key.len(),
+        )?;
+        validate_content_encryption_key_length(header.enc, self.key.len())?;
         Ok(Zeroizing::new(self.key.to_vec()))
     }
 }
@@ -88,7 +92,7 @@ pub(crate) fn decrypt_compact_jwe_bytes_core(
     let encrypted_key = Zeroizing::new(
         base64url_to_bytes(parts.encrypted_key).map_err(|_| JweError::InvalidEncoding)?,
     );
-    require_empty_encrypted_key_for_direct_cek_alg(header.alg, &encrypted_key)?;
+    validate_encrypted_key_segment(header.alg, encrypted_key.len())?;
 
     let iv = Zeroizing::new(base64url_to_bytes(parts.iv).map_err(|_| JweError::InvalidEncoding)?);
     let ciphertext = Zeroizing::new(
@@ -101,9 +105,7 @@ pub(crate) fn decrypt_compact_jwe_bytes_core(
     }
 
     let cek = key_resolver.resolve_content_encryption_key(&header, &encrypted_key)?;
-    if cek.len() != header.enc.key_len() {
-        return Err(JweError::InvalidContentEncryptionKey);
-    }
+    validate_content_encryption_key_length(header.enc, cek.len())?;
 
     let ciphertext_with_tag = join_ciphertext_and_tag(ciphertext, tag)?;
     finish_decryption(
@@ -151,21 +153,6 @@ pub fn decrypt_compact_jwe_json<T: DeserializeOwned>(
     let plaintext = crate::operation_contract::jwe::decrypt_jwe(compact_jwe, policy, key_resolver)?;
     reject_duplicate_json_members(&plaintext).map_err(|_| JweError::InvalidPayloadJson)?;
     serde_json::from_slice(&plaintext).map_err(|_| JweError::InvalidPayloadJson)
-}
-
-const fn require_empty_encrypted_key_for_direct_cek_alg(
-    alg: JweKeyManagementAlgorithm,
-    encrypted_key: &[u8],
-) -> Result<(), JweError> {
-    match alg {
-        JweKeyManagementAlgorithm::Direct | JweKeyManagementAlgorithm::EcdhEs => {
-            if encrypted_key.is_empty() {
-                Ok(())
-            } else {
-                Err(JweError::InvalidEncryptedKey)
-            }
-        }
-    }
 }
 
 fn join_ciphertext_and_tag(
