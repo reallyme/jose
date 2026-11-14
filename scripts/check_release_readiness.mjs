@@ -1189,7 +1189,7 @@ assertNotContains("deny.toml", 'name = "getrandom", version = "0.2.17"');
 assertContains("deny.toml", 'name = "syn", version = "2.0.119"');
 
 assertNotContains("crates/ffi/src/lib.rs", '#![allow(unsafe_code)]');
-for (const boundaryModule of ["pointer", "operation", "kotlin"]) {
+for (const boundaryModule of ["pointer", "operation", "owned_response", "kotlin"]) {
   assertContains(`crates/ffi/src/${boundaryModule}.rs`, '#![allow(unsafe_code)]');
 }
 assertContains("crates/ffi/src/lib.rs", '#[cfg(not(panic = "unwind"))]');
@@ -1205,6 +1205,16 @@ for (const symbol of [
   "rm_jose_zeroize_buffer",
 ]) {
   assertContains("crates/ffi/src/operation.rs", `fn ${symbol}`);
+  assertContains("crates/ffi/include/reallyme_jose.h", symbol);
+  assertContains("scripts/test_ffi_abi_release_artifact.sh", symbol);
+}
+for (const symbol of [
+  "rm_jose_execute_owned_operation_v1",
+  "rm_jose_execute_owned_operation_json_v1",
+  "rm_jose_owned_response_view_v1",
+  "rm_jose_owned_response_release_v1",
+]) {
+  assertContains("crates/ffi/src/owned_response.rs", `fn ${symbol}`);
   assertContains("crates/ffi/include/reallyme_jose.h", symbol);
   assertContains("scripts/test_ffi_abi_release_artifact.sh", symbol);
 }
@@ -1590,7 +1600,7 @@ assertContains("Cargo.toml", 'jni = "0.22.4"');
 assertContains("crates/ffi/Cargo.toml", "jni = { workspace = true }");
 assertContains("crates/ffi/src/lib.rs", "pub mod kotlin;");
 assertContains("crates/ffi/src/kotlin.rs", "Java_me_really_jose_ReallyMeJoseNative_executeOperationNative");
-assertContains("crates/ffi/src/kotlin.rs", "rm_jose_execute_operation_v1");
+assertContains("crates/ffi/src/kotlin.rs", "rm_jose_execute_owned_operation_v1");
 assertContains("crates/ffi/src/kotlin.rs", "Zeroizing<Vec<u8>>");
 assertContains("packages/kotlin/build.gradle.kts", 'kotlin("jvm") version "2.4.21"');
 assertContains("packages/kotlin/build.gradle.kts", "jvmToolchain(21)");

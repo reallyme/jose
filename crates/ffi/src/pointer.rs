@@ -23,7 +23,7 @@ fn validate_byte_pair<T>(ptr: *const T, len: usize) -> Result<(), JoseFfiStatus>
     Ok(())
 }
 
-fn validate_scalar_output<T>(ptr: *mut T) -> Result<(), JoseFfiStatus> {
+pub(super) fn validate_scalar_output<T>(ptr: *mut T) -> Result<(), JoseFfiStatus> {
     if ptr.is_null() || !ptr.is_aligned() {
         return Err(JoseFfiStatus::CallerError);
     }
@@ -87,6 +87,20 @@ pub fn validate_operation_ranges(
         request_len,
         len_out.cast::<u8>().cast_const(),
         len_bytes,
+    )
+}
+
+pub(super) fn validate_request_and_slot<T>(
+    request: *const u8,
+    request_len: usize,
+    slot: *mut T,
+) -> Result<(), JoseFfiStatus> {
+    validate_scalar_output(slot)?;
+    validate_disjoint_ranges(
+        request,
+        request_len,
+        slot.cast::<u8>().cast_const(),
+        core::mem::size_of::<T>(),
     )
 }
 

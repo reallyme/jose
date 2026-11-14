@@ -67,6 +67,48 @@ rm_jose_status_t rm_jose_execute_operation_json_v1(
     size_t *len_out);
 
 /*
+ * Single-execution ABI. Initialize *owner_out to NULL before execution.
+ * The request must remain immutable and disjoint from that owner slot.
+ * On success, the slot receives the unique owner of one canonical response,
+ * including an operation error envelope when appropriate. On transport
+ * failure the slot is unchanged. Release an existing owner before reuse.
+ *
+ * Keep the owner and all borrowed pointers in the same library image.
+ * A view lends immutable response bytes until release. Its output slots
+ * must be live, writable, and disjoint from each other and the allocation.
+ * On error, both view outputs are unchanged.
+ *
+ * End all reads before releasing and synchronize accesses across threads.
+ * Pass the unique owner slot to release. It becomes NULL before the
+ * library wipes the response allocation and frees it. Releasing the
+ * same cleared slot succeeds. Copies of the owner pointer are borrowed
+ * aliases. Only release the owner through the original slot.
+ */
+typedef struct rm_jose_owned_response rm_jose_owned_response_t;
+
+rm_jose_status_t rm_jose_execute_owned_operation_v1(
+    uint32_t abi_version,
+    const uint8_t *request,
+    size_t request_len,
+    rm_jose_owned_response_t **owner_out);
+
+rm_jose_status_t rm_jose_execute_owned_operation_json_v1(
+    uint32_t abi_version,
+    const uint8_t *request,
+    size_t request_len,
+    rm_jose_owned_response_t **owner_out);
+
+rm_jose_status_t rm_jose_owned_response_view_v1(
+    uint32_t abi_version,
+    const rm_jose_owned_response_t *owner,
+    const uint8_t **data_out,
+    size_t *len_out);
+
+rm_jose_status_t rm_jose_owned_response_release_v1(
+    uint32_t abi_version,
+    rm_jose_owned_response_t **owner_slot);
+
+/*
  * Wipes caller-owned mutable storage, which may start uninitialized.
  * The caller retains ownership. A null pointer is permitted for zero length.
  */

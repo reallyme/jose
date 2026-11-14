@@ -9,6 +9,9 @@
 #[path = "abi/jwe_response_width.rs"]
 mod jwe_response_width;
 
+#[path = "abi/owned_response.rs"]
+mod owned_response;
+
 #[path = "abi/pointer_rejection.rs"]
 mod pointer_rejection;
 

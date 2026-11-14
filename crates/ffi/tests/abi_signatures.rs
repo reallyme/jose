@@ -5,8 +5,10 @@
 
 use reallyme_jose_ffi::{
     rm_jose_abi_version, rm_jose_execute_operation_json_v1, rm_jose_execute_operation_v1,
+    rm_jose_execute_owned_operation_json_v1, rm_jose_execute_owned_operation_v1,
     rm_jose_max_json_request_bytes, rm_jose_max_request_bytes, rm_jose_max_response_bytes,
-    rm_jose_zeroize_buffer,
+    rm_jose_owned_response_release_v1, rm_jose_owned_response_view_v1, rm_jose_zeroize_buffer,
+    JoseOwnedResponse,
 };
 
 // Keep the Rust signatures paired with the C header smoke test. A declaration
@@ -20,3 +22,11 @@ const _: unsafe extern "C" fn(u32, *const u8, usize, *mut u8, usize, *mut usize)
 const _: unsafe extern "C" fn(u32, *const u8, usize, *mut u8, usize, *mut usize) -> i32 =
     rm_jose_execute_operation_json_v1;
 const _: unsafe extern "C" fn(u32, *mut u8, usize) -> i32 = rm_jose_zeroize_buffer;
+
+type ExecuteOwned = unsafe extern "C" fn(u32, *const u8, usize, *mut *mut JoseOwnedResponse) -> i32;
+const _: ExecuteOwned = rm_jose_execute_owned_operation_v1;
+const _: ExecuteOwned = rm_jose_execute_owned_operation_json_v1;
+const _: unsafe extern "C" fn(u32, *const JoseOwnedResponse, *mut *const u8, *mut usize) -> i32 =
+    rm_jose_owned_response_view_v1;
+const _: unsafe extern "C" fn(u32, *mut *mut JoseOwnedResponse) -> i32 =
+    rm_jose_owned_response_release_v1;

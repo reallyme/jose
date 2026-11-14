@@ -183,9 +183,10 @@ Direct-key JWE encryption generates a fresh 96-bit IV for every message, but a
 stateless encryptor cannot count all uses of a caller-owned CEK. Applications
 must maintain an AES-GCM per-key invocation budget and rotate the CEK before the
 applicable NIST SP 800-38D limit is reached.
-The Swift and Kotlin FFI adapters use a sizing call followed by a write call;
-each direct-key encryption request consumes two AES-GCM invocations under the
-caller-owned CEK. Count both when enforcing that budget.
+The native ABI's owned-response calls execute once per request. JNI and the
+Swift runtime-loaded provider use them with compatible native libraries.
+Legacy caller-owned sizing and write calls, including those used by Swift
+when linked to an older XCFramework, each consume an AES-GCM invocation.
 
 Compact-JWE compression is disabled by default. Encryption compresses with the
 raw DEFLATE format before AES-GCM encryption and serializes `zip = "DEF"` in the
@@ -400,6 +401,16 @@ and P-521 across the three AES-GCM suites, with and without DEFLATE. Two
 successful encryptions of the same request report the same encoded size.
 Independent failures, including unavailable entropy, can change the outcome
 and therefore the encoded size.
+
+The owned-response harnesses check that a valid call executes once and
+transfers the original allocation, that rejected execution preserves the
+owner slot, and that release clears the slot before returning the allocation
+to Rust. The cleanup harness checks the allocation after the destructor's wipe
+and before deallocation. It verifies that every byte, including spare
+capacity, is zero, using symbolic bytes and lengths within a four-byte
+allocation. Callers
+must release the unique live owner after all borrowed views end. Platform
+tests exercise the C exports and the Swift and JNI copy paths.
 
 With [Kani 0.68.0](https://github.com/model-checking/kani/releases/tag/kani-0.68.0)
 installed and set up, run the harnesses with:

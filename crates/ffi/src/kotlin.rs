@@ -17,18 +17,22 @@ use jni::objects::{JByteArray, JObject};
 use jni::sys::{jbyteArray, jint, jlong};
 use jni::{EnvUnowned, Outcome};
 use thiserror::Error;
-use zeroize::{Zeroize, Zeroizing};
+use zeroize::Zeroizing;
 
 use crate::guard::catch_boundary_unwind;
 use crate::operation::{
-    rm_jose_abi_version, rm_jose_execute_operation_json_v1, rm_jose_execute_operation_v1,
-    rm_jose_max_json_request_bytes, rm_jose_max_request_bytes, rm_jose_max_response_bytes,
-    JOSE_ABI_VERSION,
+    rm_jose_abi_version, rm_jose_max_json_request_bytes, rm_jose_max_request_bytes,
+    rm_jose_max_response_bytes, JOSE_ABI_VERSION,
 };
+use crate::owned_response::{
+    rm_jose_execute_owned_operation_json_v1, rm_jose_execute_owned_operation_v1,
+    rm_jose_owned_response_release_v1, rm_jose_owned_response_view_v1, JoseOwnedResponse,
+};
+use crate::pointer::read_slice;
 use crate::status::JoseFfiStatus;
 
 type ExecuteFunction =
-    unsafe extern "C" fn(u32, *const u8, usize, *mut u8, usize, *mut usize) -> i32;
+    unsafe extern "C" fn(u32, *const u8, usize, *mut *mut JoseOwnedResponse) -> i32;
 
 /// Verifies that the loaded native image contains the expected JNI exports.
 #[unsafe(no_mangle)]
@@ -86,7 +90,7 @@ pub extern "system" fn Java_me_really_jose_ReallyMeJoseNative_executeOperationNa
         env,
         request,
         rm_jose_max_request_bytes(),
-        rm_jose_execute_operation_v1,
+        rm_jose_execute_owned_operation_v1,
     )
 }
 
@@ -101,7 +105,7 @@ pub extern "system" fn Java_me_really_jose_ReallyMeJoseNative_executeOperationJs
         env,
         request,
         rm_jose_max_json_request_bytes(),
-        rm_jose_execute_operation_json_v1,
+        rm_jose_execute_owned_operation_json_v1,
     )
 }
 
@@ -120,7 +124,11 @@ fn execute_operation<'local>(
                     return throw_provider_failure(env, failure);
                 }
             };
-            env.byte_array_from_slice(response.as_slice())
+            let bytes = match response.as_bytes() {
+                Ok(bytes) => bytes,
+                Err(failure) => return throw_provider_failure(env, failure),
+            };
+            env.byte_array_from_slice(bytes)
                 .map(|array| array.into_raw())
         })
     });
@@ -163,28 +171,68 @@ fn bounded_request<'local>(
     }
 }
 
+// Retain the C owner through the JVM copy. Dropping it on every return or
+// unwind cleans the native allocation, including when the VM rejects a copy.
+struct NativeResponse {
+    owner: *mut JoseOwnedResponse,
+    data: *const u8,
+    len: usize,
+}
+
+impl NativeResponse {
+    fn as_bytes(&self) -> Result<&[u8], NativeProviderFailure> {
+        // SAFETY: transfer_c_response obtained this view from self.owner.
+        // Its allocation is immutable and the borrow cannot outlive self.
+        unsafe { read_slice(self.data, self.len) }.map_err(|_| NativeProviderFailure)
+    }
+}
+
+impl Drop for NativeResponse {
+    fn drop(&mut self) {
+        // SAFETY: self owns the unique slot. All byte borrows ended before
+        // this drop, and the slot remains valid through the release.
+        unsafe { rm_jose_owned_response_release_v1(JOSE_ABI_VERSION, &mut self.owner) };
+    }
+}
+
 fn transfer_c_response(
     request: &[u8],
     execute: ExecuteFunction,
-) -> Result<Zeroizing<Vec<u8>>, NativeProviderFailure> {
-    transfer_response(|output, produced_len| {
-        let (output_ptr, capacity) = match output {
-            Some(buffer) => (buffer.as_mut_ptr(), buffer.len()),
-            None => (ptr::null_mut(), 0),
-        };
-        // SAFETY: The request and optional exclusive output are distinct live
-        // slices. The length is an independent stack value for this call.
-        unsafe {
-            execute(
-                JOSE_ABI_VERSION,
-                request.as_ptr(),
-                request.len(),
-                output_ptr,
-                capacity,
-                produced_len,
-            )
-        }
-    })
+) -> Result<NativeResponse, NativeProviderFailure> {
+    let mut response = NativeResponse {
+        owner: ptr::null_mut(),
+        data: ptr::null(),
+        len: 0,
+    };
+    // SAFETY: The request and initialized null slot are live and disjoint.
+    let status = unsafe {
+        execute(
+            JOSE_ABI_VERSION,
+            request.as_ptr(),
+            request.len(),
+            &mut response.owner,
+        )
+    };
+    if status != JoseFfiStatus::Success.code() || response.owner.is_null() {
+        return Err(NativeProviderFailure);
+    }
+    // SAFETY: The unique owner is live and both output slots are disjoint.
+    let status = unsafe {
+        rm_jose_owned_response_view_v1(
+            JOSE_ABI_VERSION,
+            response.owner,
+            &mut response.data,
+            &mut response.len,
+        )
+    };
+    if status != JoseFfiStatus::Success.code()
+        || response.data.is_null()
+        || response.len == 0
+        || response.len > rm_jose_max_response_bytes()
+    {
+        return Err(NativeProviderFailure);
+    }
+    Ok(response)
 }
 
 #[derive(Debug, PartialEq, Eq, Error)]
@@ -195,44 +243,6 @@ impl NativeProviderFailure {
     const fn exception_class(&self) -> &'static jni::strings::JNIStr {
         jni::jni_str!("me/really/jose/ReallyMeJoseException$NativeProviderFailure")
     }
-}
-
-fn transfer_response(
-    mut execute: impl FnMut(Option<&mut [u8]>, &mut usize) -> i32,
-) -> Result<Zeroizing<Vec<u8>>, NativeProviderFailure> {
-    let mut produced_len = 0;
-    let probe_status = execute(None, &mut produced_len);
-    if probe_status != JoseFfiStatus::OutputCapacityMismatch.code()
-        || produced_len == 0
-        || produced_len > rm_jose_max_response_bytes()
-    {
-        return Err(NativeProviderFailure);
-    }
-
-    let mut output = Zeroizing::new(vec![0_u8; produced_len]);
-    // Require the independent write call to report its own length.
-    produced_len = 0;
-    let status = execute(Some(&mut output), &mut produced_len);
-    finish_response(output.as_mut_slice(), status, produced_len)?;
-    output.truncate(produced_len);
-    Ok(output)
-}
-
-fn finish_response(
-    output: &mut [u8],
-    status: i32,
-    produced_len: usize,
-) -> Result<(), NativeProviderFailure> {
-    if status == JoseFfiStatus::Success.code() && produced_len != 0 {
-        if let Some(tail) = output.get_mut(produced_len..) {
-            // Preserve a shorter complete envelope and erase the unused
-            // bytes before removing them from the logical length.
-            tail.zeroize();
-            return Ok(());
-        }
-    }
-    output.zeroize();
-    Err(NativeProviderFailure)
 }
 
 fn throw_provider_failure_if_clear(env: &mut EnvUnowned<'_>) {

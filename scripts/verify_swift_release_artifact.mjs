@@ -123,6 +123,10 @@ const requiredSymbols = [
   "rm_jose_execute_operation_v1",
   "rm_jose_execute_operation_json_v1",
   "rm_jose_zeroize_buffer",
+  "rm_jose_execute_owned_operation_v1",
+  "rm_jose_execute_owned_operation_json_v1",
+  "rm_jose_owned_response_view_v1",
+  "rm_jose_owned_response_release_v1",
 ];
 const temporaryDirectory = mkdtempSync(join(tmpdir(), "reallyme-jose-swift-"));
 class SwiftArtifactError extends Error {}

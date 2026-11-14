@@ -126,3 +126,114 @@ private func encryptionResponses() throws -> (success: [UInt8], failure: [UInt8]
   #expect(sequence.clearedAddress == sequence.writeAddress)
   #expect(sequence.clearedBytes == [UInt8](repeating: 0, count: frames.failure.count))
 }
+
+@Test func ownedResponseExecutesOnceAndReleasesAfterTheCopy() throws {
+  let frames = try encryptionResponses()
+  for frame in [frames.success, frames.failure] {
+    var storage = frame.map { $0 }
+    var calls: [String] = []
+    let bytes = try storage.withUnsafeMutableBufferPointer { buffer in
+      let nativeOwner = OpaquePointer(buffer.baseAddress)
+      return try executeOwnedNativeRequest(
+        [0xa5], limit: 1024, maximumResponseBytes: 1024,
+        invoke: { version, request, count, slot in
+          calls.append("execute")
+          #expect(version == 1)
+          #expect(request?.pointee == 0xa5 && count == 1)
+          #expect(slot != nil && slot?.pointee == nil)
+          slot?.pointee = nativeOwner
+          return 0
+        },
+        view: { version, owner, data, length in
+          calls.append("view")
+          #expect(version == 1 && owner == nativeOwner)
+          data?.pointee = buffer.baseAddress.map { UnsafePointer($0) }
+          length?.pointee = UInt(buffer.count)
+          return 0
+        },
+        release: { version, slot in
+          calls.append("release")
+          #expect(version == 1 && slot?.pointee == nativeOwner)
+          slot?.pointee = nil
+          buffer.update(repeating: 0)
+          return 0
+        })
+    }
+    #expect(calls == ["execute", "view", "release"])
+    #expect(bytes == frame)
+    #expect(storage.allSatisfy { $0 == 0 })
+  }
+}
+
+@Test func invalidOwnedViewStillReleasesTheAllocation() {
+  var storage: [UInt8] = [0xa5]
+  var releases = 0
+  storage.withUnsafeMutableBufferPointer { buffer in
+    let nativeOwner = OpaquePointer(buffer.baseAddress)
+    #expect(throws: ReallyMeJOSEError.malformedProviderResponse) {
+      try executeOwnedNativeRequest(
+        [0xa5], limit: 1024, maximumResponseBytes: 1024,
+        invoke: { _, _, _, slot in
+          slot?.pointee = nativeOwner
+          return 0
+        },
+        view: { _, _, data, length in
+          data?.pointee = buffer.baseAddress.map { UnsafePointer($0) }
+          length?.pointee = UInt.max
+          return 0
+        },
+        release: { _, slot in
+          #expect(slot?.pointee == nativeOwner)
+          slot?.pointee = nil
+          buffer.update(repeating: 0)
+          releases += 1
+          return 0
+        })
+    }
+  }
+  #expect(releases == 1)
+  #expect(storage == [0])
+}
+
+@Test func rejectedOwnedExecutionSkipsTheViewAndNeedsNoRelease() {
+  #expect(throws: ReallyMeJOSEError.incompatibleABI) {
+    try executeOwnedNativeRequest(
+      [0xa5], limit: 1024, maximumResponseBytes: 1024,
+      invoke: { _, _, _, slot in
+        #expect(slot != nil && slot?.pointee == nil)
+        return -6
+      },
+      view: { _, _, _, _ in
+        Issue.record("a failed execution cannot expose a view")
+        return -1
+      },
+      release: { _, _ in
+        Issue.record("a failed execution left the slot empty")
+        return -1
+      })
+  }
+}
+
+@Test func ownedResponseIsDiscardedIfReleaseFails() {
+  let storage: [UInt8] = [0xa5]
+  storage.withUnsafeBufferPointer { buffer in
+    let nativeOwner = OpaquePointer(buffer.baseAddress)
+    #expect(throws: ReallyMeJOSEError.incompatibleABI) {
+      try executeOwnedNativeRequest(
+        [0xa5], limit: 1024, maximumResponseBytes: 1024,
+        invoke: { _, _, _, slot in
+          slot?.pointee = nativeOwner
+          return 0
+        },
+        view: { _, _, data, length in
+          data?.pointee = buffer.baseAddress
+          length?.pointee = UInt(buffer.count)
+          return 0
+        },
+        release: { _, slot in
+          #expect(slot?.pointee == nativeOwner)
+          return -6
+        })
+    }
+  }
+}

@@ -23,9 +23,21 @@ int reallyme_jose_header_smoke(void) {
       rm_jose_execute_operation_json_v1;
   rm_jose_status_t (*zeroize)(uint32_t, uint8_t *, size_t) =
       rm_jose_zeroize_buffer;
+  rm_jose_status_t (*execute_owned)(uint32_t, const uint8_t *, size_t,
+                                    rm_jose_owned_response_t **) =
+      rm_jose_execute_owned_operation_v1;
+  rm_jose_status_t (*execute_owned_json)(uint32_t, const uint8_t *, size_t,
+                                         rm_jose_owned_response_t **) =
+      rm_jose_execute_owned_operation_json_v1;
+  rm_jose_status_t (*view)(uint32_t, const rm_jose_owned_response_t *,
+                           const uint8_t **, size_t *) =
+      rm_jose_owned_response_view_v1;
+  rm_jose_status_t (*release)(uint32_t, rm_jose_owned_response_t **) =
+      rm_jose_owned_response_release_v1;
   return version != NULL && max_request != NULL && max_json_request != NULL &&
                  max_response != NULL && execute_binary != NULL &&
-                 execute_json != NULL && zeroize != NULL
+                 execute_json != NULL && zeroize != NULL && execute_owned != NULL &&
+                 execute_owned_json != NULL && view != NULL && release != NULL
              ? 0
              : 1;
 }

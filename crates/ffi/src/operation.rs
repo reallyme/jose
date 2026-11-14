@@ -24,7 +24,7 @@ use crate::status::JoseFfiStatus;
 /// Exact C ABI version required by every operational call.
 pub const JOSE_ABI_VERSION: u32 = 1;
 
-const MAX_JOSE_FFI_RESPONSE_BYTES: usize =
+pub(super) const MAX_JOSE_FFI_RESPONSE_BYTES: usize =
     match MAX_JOSE_PROTO_MESSAGE_BYTES.checked_add(MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES) {
         Some(value) => value,
         None => 0,
@@ -171,14 +171,14 @@ pub unsafe extern "C" fn rm_jose_zeroize_buffer(abi_version: u32, ptr: *mut u8, 
     .code()
 }
 
-fn execute_binary_operation(
+pub(super) fn execute_binary_operation(
     request: &[u8],
     rng: &mut reallyme_crypto::csprng::OsSecureRandom,
 ) -> Zeroizing<Vec<u8>> {
     execute_operation_v1(request, rng)
 }
 
-fn execute_json_operation(
+pub(super) fn execute_json_operation(
     request: &[u8],
     rng: &mut reallyme_crypto::csprng::OsSecureRandom,
 ) -> Zeroizing<Vec<u8>> {
@@ -201,13 +201,8 @@ fn execute_operation_boundary(
     {
         return JoseFfiStatus::CallerError;
     }
-    // Leave all caller storage unchanged on invalid metadata. A sentinel one
-    // byte above the wire limit still yields a typed resource-limit response.
-    let Some(sentinel_maximum) = maximum_request_bytes.checked_add(1) else {
-        return JoseFfiStatus::BackendError;
-    };
-    if call.request_len > sentinel_maximum {
-        return JoseFfiStatus::CallerError;
+    if let Err(status) = validate_request_len(call.request_len, maximum_request_bytes) {
+        return status;
     }
 
     // SAFETY: The complete range validator established valid, aligned,
@@ -239,6 +234,21 @@ fn execute_operation_boundary(
     };
     response.zeroize();
     status
+}
+
+pub(super) fn validate_request_len(
+    request_len: usize,
+    maximum_request_bytes: usize,
+) -> Result<(), JoseFfiStatus> {
+    // A sentinel one byte above the wire limit still yields a typed
+    // resource-limit response without copying an oversized input.
+    let sentinel = maximum_request_bytes
+        .checked_add(1)
+        .ok_or(JoseFfiStatus::BackendError)?;
+    if request_len > sentinel {
+        return Err(JoseFfiStatus::CallerError);
+    }
+    Ok(())
 }
 
 /// # Safety
