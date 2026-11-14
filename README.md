@@ -384,6 +384,13 @@ borrowing them. The harnesses model addresses and exclude the panic
 firewall and cryptographic execution. The C caller supplies live storage,
 correct pointer provenance, and exclusive access to writable ranges.
 
+For responses within the ABI limit, the FFI response writer reports the
+exact encoded size for every capacity. The full machine-word proof checks
+that a short buffer never reaches the output borrow and a fitting buffer
+contributes only the reported prefix. A separate harness uses real
+buffers of up to four bytes to verify the copied prefix and the unchanged
+remainder. ABI tests cover larger buffers through both entry points.
+
 With [Kani 0.68.0](https://github.com/model-checking/kani/releases/tag/kani-0.68.0)
 installed and set up, run the harnesses with:
 

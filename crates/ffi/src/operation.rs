@@ -7,6 +7,8 @@
 // Every exported raw-pointer entry point validates the ABI boundary below.
 #![allow(unsafe_code)]
 
+use core::mem::MaybeUninit;
+
 use reallyme_jose::wire::{
     execute_operation_json_v1, execute_operation_v1, MAX_JOSE_PROTO_JSON_BYTES,
     MAX_JOSE_PROTO_MESSAGE_BYTES, MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES,
@@ -68,6 +70,8 @@ pub const extern "C" fn rm_jose_max_response_bytes() -> usize {
 /// The caller owns every pointer. `len_out` is initialized to zero after all
 /// pointer, length, and alias checks pass. On `OutputCapacityMismatch`,
 /// it contains the exact required response length and the output is unchanged.
+/// On success, only the first `len_out` bytes of the output are initialized
+/// with the encoded response.
 ///
 /// Platform adapters use a zero-capacity sizing call followed by an independent
 /// write call. The encoded response length for one request is therefore an ABI
@@ -222,58 +226,78 @@ fn execute_operation_boundary(
         Err(status) => return status,
     };
     let mut rng = reallyme_crypto::csprng::OsSecureRandom;
-    let response = execute_request(request, &mut rng);
-    write_response(
-        call.output_ptr,
-        call.output_capacity,
-        call.len_out,
-        response,
-    )
+    let mut response = execute_request(request, &mut rng);
+    // SAFETY: The entrypoint validated the output and length ranges before
+    // processing. The caller supplies live exclusive storage for both.
+    let status = unsafe {
+        write_response(
+            call.output_ptr,
+            call.output_capacity,
+            call.len_out,
+            &response,
+        )
+    };
+    response.zeroize();
+    status
 }
 
-fn write_response(
+/// # Safety
+///
+/// Output and length storage must meet the contract of `response_destination`
+/// and be disjoint from `response` for the call.
+unsafe fn write_response(
     output_ptr: *mut u8,
     output_capacity: usize,
     len_out: *mut usize,
-    mut response: Zeroizing<Vec<u8>>,
+    response: &[u8],
 ) -> JoseFfiStatus {
-    if MAX_JOSE_FFI_RESPONSE_BYTES == 0 {
-        response.zeroize();
-        return JoseFfiStatus::BackendError;
-    }
-    if response.len() > MAX_JOSE_FFI_RESPONSE_BYTES {
-        response.zeroize();
-        return JoseFfiStatus::BackendError;
-    }
-    let produced_len = response.len();
-    // SAFETY: The entrypoint validated and initialized this aligned output
-    // before request processing; no aliasing owner has been introduced.
-    if unsafe { write_len(len_out, produced_len) }.is_err() {
-        response.zeroize();
-        return JoseFfiStatus::CallerError;
-    }
-    if output_capacity < produced_len {
-        response.zeroize();
-        return JoseFfiStatus::OutputCapacityMismatch;
-    }
-    // SAFETY: The entrypoint validated the exclusive output allocation and
-    // its disjointness from input and length storage before processing.
-    let output = match unsafe { write_uninit_slice(output_ptr, output_capacity) } {
-        Ok(value) => value,
-        Err(status) => {
-            response.zeroize();
-            return status;
+    // SAFETY: The caller supplies independently writable output and length
+    // storage for this call. The response is a separate allocation.
+    let destination =
+        unsafe { response_destination(output_ptr, output_capacity, len_out, response.len()) };
+    match destination {
+        Ok(prefix) => {
+            // The destination and source lengths come from the same slice.
+            prefix.write_copy_of_slice(response);
+            JoseFfiStatus::Success
         }
-    };
-    let Some(destination) = output.get_mut(..produced_len) else {
-        response.zeroize();
-        return JoseFfiStatus::BackendError;
-    };
-    destination.write_copy_of_slice(&response);
-    response.zeroize();
-    JoseFfiStatus::Success
+        Err(status) => status,
+    }
+}
+
+/// Reports the exact response length before deciding whether to borrow output.
+/// Borrowing just the prefix keeps the rest of the caller allocation outside
+/// the mutable slice used to copy the response.
+///
+/// # Safety
+///
+/// For nonzero capacity, `output_ptr` must be valid and exclusively writable
+/// for that capacity, and `len_out` must be live aligned writable `usize`
+/// storage. These ranges must be disjoint for the call. The successful
+/// destination borrow must end before the caller accesses the prefix again.
+unsafe fn response_destination<'a>(
+    output_ptr: *mut u8,
+    output_capacity: usize,
+    len_out: *mut usize,
+    response_len: usize,
+) -> Result<&'a mut [MaybeUninit<u8>], JoseFfiStatus> {
+    if MAX_JOSE_FFI_RESPONSE_BYTES == 0 || response_len > MAX_JOSE_FFI_RESPONSE_BYTES {
+        return Err(JoseFfiStatus::BackendError);
+    }
+    // SAFETY: The caller supplies live exclusive storage for the length.
+    unsafe { write_len(len_out, response_len) }?;
+    if output_capacity < response_len {
+        return Err(JoseFfiStatus::OutputCapacityMismatch);
+    }
+    // SAFETY: The caller supplies a live exclusive allocation. The capacity
+    // check establishes that the entire prefix fits within it.
+    unsafe { write_uninit_slice(output_ptr, response_len) }
 }
 
 #[cfg(kani)]
 #[path = "boundary_proofs.rs"]
 mod proofs;
+
+#[cfg(kani)]
+#[path = "response_write_proofs.rs"]
+mod response_write_proofs;

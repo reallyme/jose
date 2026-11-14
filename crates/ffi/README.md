@@ -14,7 +14,8 @@ must fit within live allocations and be mutually disjoint. Output and
 produced-length storage may start uninitialized. Invalid pointer, length, or
 alias metadata is rejected before any caller memory is accessed. A capacity
 mismatch changes only the produced-length value, which reports the exact
-required response size.
+required response size. A successful call writes the encoded response into
+the reported prefix and preserves the remaining bytes.
 Call `rm_jose_zeroize_buffer` before releasing request or response storage that
 may contain private keys, claims, compact tokens, JWK JSON, or plaintext.
 

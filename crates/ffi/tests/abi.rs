@@ -164,24 +164,61 @@ fn probe_and_write_lengths_match_for_randomized_jwe() {
 }
 
 #[test]
+#[allow(clippy::unwrap_used)]
 fn capacity_mismatch_reports_exact_length_without_modifying_output() {
-    let input = br#"{}"#;
-    let mut output = [0xa5_u8; 1];
-    let mut required = usize::MAX;
-    // SAFETY: All three storage regions are valid and disjoint.
-    let status = unsafe {
-        rm_jose_execute_operation_json_v1(
-            JOSE_ABI_VERSION,
-            input.as_ptr(),
-            input.len(),
-            output.as_mut_ptr(),
-            output.len(),
-            &mut required,
-        )
-    };
-    assert_eq!(status, JoseFfiStatus::OutputCapacityMismatch.code());
-    assert!(required > output.len());
-    assert_eq!(output, [0xa5]);
+    use reallyme_crypto::csprng::OsSecureRandom;
+    use reallyme_jose::wire::execute_operation_v1;
+
+    let json = br#"{"jwtEncodeUnsigned":{"claimsJson":"e30="}}"#;
+    let request = decode_json::<JoseOperationRequest>(json).unwrap();
+    let binary = encode_protobuf(&request);
+    let routes: [(ExecuteOperation, &[u8]); 2] = [
+        (rm_jose_execute_operation_v1, &binary),
+        (rm_jose_execute_operation_json_v1, json),
+    ];
+    let expected = execute_operation_v1(&binary, &mut OsSecureRandom);
+    let required = expected.len();
+    let short = required.checked_sub(1).unwrap();
+    assert!(short > 0);
+
+    for (operation, input) in routes {
+        for capacity in [0, short, required, required.checked_add(17).unwrap()] {
+            let original = vec![0xa5_u8; capacity.checked_add(8).unwrap()];
+            let mut output = original.clone();
+            let mut reported = usize::MAX;
+            let mut expected_output = original;
+            let expected_status = if capacity < required {
+                JoseFfiStatus::OutputCapacityMismatch
+            } else {
+                expected_output
+                    .get_mut(..required)
+                    .unwrap()
+                    .copy_from_slice(&expected);
+                JoseFfiStatus::Success
+            };
+
+            let output_ptr = if capacity == 0 {
+                core::ptr::null_mut()
+            } else {
+                output.as_mut_ptr()
+            };
+            // SAFETY: Each nonempty region is a live disjoint allocation.
+            // The last eight output bytes are outside the advertised capacity.
+            let status = unsafe {
+                operation(
+                    JOSE_ABI_VERSION,
+                    input.as_ptr(),
+                    input.len(),
+                    output_ptr,
+                    capacity,
+                    &mut reported,
+                )
+            };
+            assert_eq!(status, expected_status.code());
+            assert_eq!(reported, required);
+            assert_eq!(output, expected_output);
+        }
+    }
 }
 
 #[test]

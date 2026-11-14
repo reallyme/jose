@@ -42,8 +42,9 @@ size_t rm_jose_max_response_bytes(void);
  * Invalid pointer, length, or alias metadata returns RM_JOSE_CALLER_ERROR
  * without accessing any caller storage. After validation, *len_out is
  * initialized to zero. On capacity mismatch, *len_out is the exact required
- * size and output is unchanged. Operation failures are encoded in the
- * canonical response and return RM_JOSE_OK at the C transport layer.
+ * size and output is unchanged. On success, only the first *len_out bytes
+ * of output are written. Operation failures are encoded in the canonical
+ * response and return RM_JOSE_OK at the C transport layer.
  * Callers may perform a zero-capacity sizing call followed by an independent
  * write call. The encoded response length for the same request stays equal
  * across those calls even when response bytes contain fresh randomness.
