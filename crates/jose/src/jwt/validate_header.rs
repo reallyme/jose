@@ -80,7 +80,7 @@ impl<'de> Visitor<'de> for JwtHeaderVisitor {
                     embedded_key_header = true;
                     let _ = map.next_value::<IgnoredAny>()?;
                 }
-                "b64" | "crit" | "cty" | "zip" | "jku" | "x5u" => {
+                name if forbidden_signed_header_member(name) => {
                     let _ = map.next_value::<IgnoredAny>()?;
                     return Err(serde::de::Error::custom(JwtError::InvalidHeader));
                 }
@@ -99,6 +99,10 @@ impl<'de> Visitor<'de> for JwtHeaderVisitor {
     }
 }
 
+pub(super) fn forbidden_signed_header_member(name: &str) -> bool {
+    matches!(name, "b64" | "crit" | "cty" | "zip" | "jku" | "x5u")
+}
+
 pub(super) fn validate_signed_header(
     algorithm: &str,
     media_type: Option<&str>,
@@ -110,28 +114,29 @@ pub(super) fn validate_signed_header(
     }
     let algorithm = algorithm_from_jwt_alg(algorithm)?;
 
-    match media_type {
-        Some(typ) => {
-            if !options
-                .accepted_typ_values
-                .iter()
-                .any(|accepted| jwt_typ_matches(typ, accepted))
-            {
-                return Err(JwtError::InvalidHeader);
-            }
-        }
-        None => {
-            if !options.allow_missing_typ {
-                return Err(JwtError::InvalidHeader);
-            }
-        }
-    }
+    let media_type_matches = media_type.map(|typ| {
+        options
+            .accepted_typ_values
+            .iter()
+            .any(|accepted| jwt_typ_matches(typ, accepted))
+    });
+    validate_header_policy(media_type_matches, embedded_key_header, options)?;
+    Ok(algorithm)
+}
 
-    if embedded_key_header && !options.allow_embedded_key_header {
+pub(super) const fn validate_header_policy(
+    media_type_matches: Option<bool>,
+    embedded_key_header: bool,
+    options: &JwtHeaderValidationOptions<'_>,
+) -> Result<(), JwtError> {
+    let allows_type = match media_type_matches {
+        Some(matches) => matches,
+        None => options.allow_missing_typ,
+    };
+    if !allows_type || (embedded_key_header && !options.allow_embedded_key_header) {
         return Err(JwtError::InvalidHeader);
     }
-
-    Ok(algorithm)
+    Ok(())
 }
 
 fn jwt_typ_matches(actual: &str, accepted: &str) -> bool {

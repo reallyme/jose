@@ -56,6 +56,33 @@ fn verifies_supported_algorithms() {
 }
 
 #[test]
+fn compact_jws_certificate_metadata_cannot_replace_the_callers_key() {
+    let (trusted_public, _) = generate_keypair(Algorithm::P256).unwrap();
+    let (other_public, other_private) = generate_keypair(Algorithm::P256).unwrap();
+    let protected = bytes_to_base64url(br#"{"alg":"ES256","kid":"other","x5c":["AQ"]}"#);
+    let payload = bytes_to_base64url(b"payload");
+    let signing_input = format!("{protected}.{payload}");
+    let signature = sign_p256_jose_prehash(&other_private, signing_input.as_bytes()).unwrap();
+    let compact = format!(
+        "{signing_input}.{}",
+        bytes_to_base64url(signature.as_slice())
+    );
+    let error = expect_verify_error(verify_jws(JwsVerifyInput::new(
+        JwsVerifyAlgorithm::Es256,
+        &compact,
+        &trusted_public,
+    )));
+    assert_eq!(error.reason(), JwsVerifyErrorReason::InvalidSignature);
+    let verified = verify_jws(JwsVerifyInput::new(
+        JwsVerifyAlgorithm::Es256,
+        &compact,
+        &other_public,
+    ))
+    .unwrap();
+    assert_eq!(verified.payload(), b"payload");
+}
+
+#[test]
 fn returns_the_exact_authenticated_protected_header() {
     let (public_key, private_key) = generate_keypair(Algorithm::P256).unwrap();
     let protected_header =

@@ -76,7 +76,7 @@ impl<'de> Visitor<'de> for JwsProtectedHeaderVisitor {
                     // remain responsible for metadata policy.
                     let _ = map.next_value::<IgnoredAny>()?;
                 }
-                "b64" | "crit" | "zip" | "jku" | "x5u" | "jwk" => {
+                name if forbidden_protected_member(name) => {
                     let _ = map.next_value::<IgnoredAny>()?;
                     return Err(serde::de::Error::custom(JwsHeaderError::Invalid));
                 }
@@ -92,6 +92,10 @@ impl<'de> Visitor<'de> for JwsProtectedHeaderVisitor {
             alg: JwsAlgorithm::parse(&alg).map_err(serde::de::Error::custom)?,
         })
     }
+}
+
+pub(super) fn forbidden_protected_member(name: &str) -> bool {
+    matches!(name, "b64" | "crit" | "zip" | "jku" | "x5u" | "jwk")
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

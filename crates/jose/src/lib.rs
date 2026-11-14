@@ -64,6 +64,8 @@ mod measure_encoding_tests;
 mod operation_contract;
 #[cfg(any(feature = "native", feature = "wasm"))]
 mod reject_duplicate_json_members;
+#[cfg(any(feature = "native", feature = "wasm"))]
+mod verify_signed_payload;
 
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub mod jwe;

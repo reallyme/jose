@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use super::support::{base_claims_json, gen_ed25519};
-use reallyme_codec::base64url::base64url_to_bytes;
+use reallyme_codec::base64url::{base64url_to_bytes, bytes_to_base64url};
+use reallyme_crypto::core::Algorithm;
+use reallyme_crypto::dispatch::sign;
 use reallyme_crypto::jwk::Jwk;
 use reallyme_jose::jws::suites::eddsa::sign_eddsa_jws;
 use reallyme_jose::jwt::{
@@ -163,4 +165,59 @@ fn empty_accepted_typ_values_rejects_present_typ() {
         );
 
     assert!(matches!(decoded, Err(JwtError::InvalidHeader)));
+}
+
+#[test]
+fn permitted_embedded_jwk_cannot_authenticate_claims_for_a_different_caller_key() {
+    let trusted = gen_ed25519();
+    let other = gen_ed25519();
+    // Both test JWKs have the same kid, so only the signature distinguishes
+    // the caller's key from the untrusted key advertised in the header.
+    let header = serde_json::json!({
+        "alg": "EdDSA",
+        "typ": "JWT",
+        "kid": "k-ed",
+        "jwk": other.jwk,
+    });
+    let claims = base_claims_json();
+    let header = bytes_to_base64url(header.to_string().as_bytes());
+    let payload = bytes_to_base64url(claims.to_string().as_bytes());
+    let signing_input = format!("{header}.{payload}");
+    let trusted_signature = sign(
+        Algorithm::Ed25519,
+        &trusted.private,
+        signing_input.as_bytes(),
+    )
+    .expect("trusted signature");
+    let other_signature = sign(Algorithm::Ed25519, &other.private, signing_input.as_bytes())
+        .expect("other signature");
+    let trusted_token = format!("{signing_input}.{}", bytes_to_base64url(&trusted_signature));
+    let other_token = format!("{signing_input}.{}", bytes_to_base64url(&other_signature));
+    let allows_embedded = JwtHeaderValidationOptions::new(false, true, &["JWT"]);
+
+    assert!(matches!(
+        decode_verify_jwt_signature_only::<serde_json::Value>(
+            &trusted_token,
+            &trusted.jwk,
+            &trusted.public
+        ),
+        Err(JwtError::InvalidHeader)
+    ));
+    assert!(matches!(
+        decode_verify_jwt_signature_only_with_header_validation::<serde_json::Value>(
+            &other_token,
+            &trusted.jwk,
+            &trusted.public,
+            &allows_embedded
+        ),
+        Err(JwtError::InvalidSignature)
+    ));
+    let verified: serde_json::Value = decode_verify_jwt_signature_only_with_header_validation(
+        &trusted_token,
+        &trusted.jwk,
+        &trusted.public,
+        &allows_embedded,
+    )
+    .expect("claims authenticated using the caller's key");
+    assert_eq!(verified, claims);
 }

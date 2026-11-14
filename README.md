@@ -330,7 +330,7 @@ boundaries plus the protobuf/JSON process boundary.
 ## Formal Verification
 
 The [Formal Verification workflow](.github/workflows/formal-verification.yml)
-runs Kani against Rust production code used for JWT verification and JWE
+runs Kani against Rust production code used for JWS and JWT verification and JWE
 decryption.
 The temporal harnesses cover the full `u64` domain for verification time,
 skew policy, and decoded NumericDates, including missing required claims,
@@ -339,9 +339,14 @@ and overflow rejection. The signed verification harnesses check that dispatch
 requires agreement between the selected header and key algorithms and that
 `alg: none` is rejected across the missing-type and embedded-key policy flags.
 
-The JWT checks begin after JSON decoding. JWT conformance tests exercise
-compact parsing, media-type matching, JWK compatibility and public-key byte
-binding, and cryptographic verification.
+The signed-payload harness checks that JWS and JWT pass the original caller
+key to signature verification and release payload bytes only after header
+authorization and successful verification. Header harnesses check the JWS
+algorithm match, forbidden member decisions, JWT media-type and embedded-key
+policy decisions, and JWT key-identifier and key-byte comparisons. The
+harnesses model parsed headers and cryptographic outcomes. Conformance tests
+exercise compact parsing, media-type matching, JWK compatibility, key
+normalization, and the signature backends.
 
 The JWE harnesses check that a failed content-cipher operation can neither
 release plaintext nor invoke the decompressor, and that every successful
