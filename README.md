@@ -349,6 +349,16 @@ harnesses model parsed headers and cryptographic outcomes. Conformance tests
 exercise compact parsing, media-type matching, JWK compatibility, key
 normalization, and the signature backends.
 
+Two claims-release harnesses exercise the public JWT claims-bytes entry
+point. The first checks that authentication and claims decoding succeed
+before policy evaluation. It models compact parsing, header authorization,
+signature verification, and claims decoding. The second supplies
+authenticated bytes and a fixed decoded claims set through modeled field
+lookups. It varies verification time and policy choices symbolically and
+checks that the original bytes are returned only after the production
+temporal, audience, issuer, and subject checks pass. Integration tests
+exercise compact JWTs signed with real keys through the same entry point.
+
 The JWE harnesses check that a failed content-cipher operation can neither
 release plaintext nor invoke the decompressor, and that every successful
 decompression append fits the output ceiling without integer wraparound.

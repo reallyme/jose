@@ -6,8 +6,9 @@
 use super::support::{gen_ed25519, sign_raw_ed25519_jwt_claims};
 use reallyme_crypto::jwk::Jwk;
 use reallyme_jose::jwt::{
+    decode_verify_jwt_claims_json_with_claims_validation_and_header_validation,
     decode_verify_jwt_with_claims_validation, JwtClaimsValidationPolicy, JwtError,
-    JwtRegisteredClaim, JwtTemporalValidationPolicy,
+    JwtHeaderValidationOptions, JwtRegisteredClaim, JwtTemporalValidationPolicy,
 };
 
 const NOW_UNIX: u64 = 1_720_000_000;
@@ -170,6 +171,53 @@ fn claims_policy_rejects_empty_expected_audience() {
     let error = verify_claims(&claims, policy).unwrap_err();
 
     assert!(matches!(error, JwtError::InvalidClaimsPolicy));
+}
+
+#[test]
+fn claims_bytes_require_a_valid_signature_and_matching_policy() {
+    let claims = base_claims(serde_json::json!(EXPECTED_AUDIENCE));
+    let key = gen_ed25519();
+    let other_key = gen_ed25519();
+    let authentic = sign_raw_ed25519_jwt_claims(&key.private, &claims);
+    let wrong_signature = sign_raw_ed25519_jwt_claims(&other_key.private, &claims);
+    let mut jwk = key.jwk;
+    if let Jwk::Okp(ref mut key) = jwk {
+        key.kid = None;
+    }
+
+    let header = JwtHeaderValidationOptions::standard_jwt();
+    let verify = |compact: &str, policy| {
+        decode_verify_jwt_claims_json_with_claims_validation_and_header_validation(
+            compact,
+            &jwk,
+            &key.public,
+            NOW_UNIX,
+            policy,
+            &header,
+        )
+    };
+    let accepting = constrained_policy(EXPECTED_ISSUER, EXPECTED_SUBJECT);
+    let rejecting = JwtClaimsValidationPolicy::new(
+        JwtTemporalValidationPolicy::strict(),
+        "another-service",
+        Some(EXPECTED_ISSUER),
+        Some(EXPECTED_SUBJECT),
+    );
+
+    let accepted = verify(&authentic, accepting).unwrap();
+    assert_eq!(accepted.as_slice(), claims.to_string().as_bytes());
+    assert!(matches!(
+        verify(&authentic, rejecting),
+        Err(JwtError::AudienceMismatch)
+    ));
+    assert!(matches!(
+        verify(&wrong_signature, accepting),
+        Err(JwtError::InvalidSignature)
+    ));
+    assert!(matches!(
+        verify(&wrong_signature, rejecting),
+        Err(JwtError::InvalidSignature)
+    ));
 }
 
 fn base_claims(audience: serde_json::Value) -> serde_json::Value {

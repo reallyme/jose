@@ -14,6 +14,13 @@ pub(crate) fn reject_duplicate_object_members(bytes: &[u8]) -> Result<(), JwtErr
 
 pub(crate) struct SensitiveJsonValue(JsonValue);
 
+#[cfg(kani)]
+impl SensitiveJsonValue {
+    pub(super) fn from_parsed_model(value: JsonValue) -> Self {
+        Self(value)
+    }
+}
+
 impl core::ops::Deref for SensitiveJsonValue {
     type Target = JsonValue;
 

@@ -8,6 +8,9 @@ use super::{
 };
 use crate::jwt::validate_header::{forbidden_signed_header_member, validate_header_policy};
 
+#[path = "verify_claims_proofs.rs"]
+mod claims;
+
 fn signed_algorithm() -> Algorithm {
     match kani::any::<u8>() {
         0 => Algorithm::Ed25519,
