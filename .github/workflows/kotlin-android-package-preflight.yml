@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8
+          ref: 55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f
           path: .release-readiness
           persist-credentials: false
 
@@ -178,7 +178,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8
+          ref: 55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f
           path: .release-readiness
           persist-credentials: false
 

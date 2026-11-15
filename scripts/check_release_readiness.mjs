@@ -52,7 +52,7 @@ const assertRawContains = (path, needle, description) => {
   }
 };
 
-assertReallyMeReleasePackagePolicy({ version: "0.9.4" });
+assertReallyMeReleasePackagePolicy({ version: "0.9.5" });
 assertWorkflowActionsPinned();
 for (const [workflow, job] of [
   [".github/workflows/fuzz-ci.yml", "build"],
@@ -82,7 +82,12 @@ const cryptoVersion = "0.4.2";
 const codecVersion = "0.4.3";
 const npmPackageVersion = "0.5.0";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
-const releaseReadinessCommit = "5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8";
+const releaseReadinessCommit = "55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f";
+// The existing 0.5.0 evidence qualifies a source tree with the 0.9.4 CI layout.
+const preflightedReleaseSource = "9aeae6356b65512a2c53832c46719de36e1d7e86";
+const preflightedReleaseReadinessCommit = "5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8";
+const publishReadinessRef =
+  `\${{ inputs.source_sha == '${preflightedReleaseSource}' && '${preflightedReleaseReadinessCommit}' || '${releaseReadinessCommit}' }}`;
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseRust = "1.100.0";
 const minimumRust = "1.99.0";
@@ -729,10 +734,16 @@ assertContains(
   "README.md",
   releaseReadinessCommand,
 );
+const publishWorkflows = new Set(
+  Object.values(readJson(".github/release-readiness.json").release)
+    .filter((channel) => typeof channel === "object" && channel !== null)
+    .map(({ publish }) => `.github/workflows/${publish}`),
+);
 for (const workflow of listFiles(".github/workflows").filter((path) => /\.ya?ml$/u.test(path))) {
   const source = readText(workflow);
-  for (const [, ref] of source.matchAll(/^\s+repository: reallyme\/release-readiness\s*\n\s+ref: (\S+)/gmu)) {
-    if (ref !== releaseReadinessCommit) fail(`${workflow} uses a different release-readiness commit`);
+  const pinnedRef = publishWorkflows.has(workflow) ? publishReadinessRef : releaseReadinessCommit;
+  for (const [, ref] of source.matchAll(/^[ \t]+repository: reallyme\/release-readiness[ \t]*\r?\n[ \t]+ref: ([^\r\n]+)/gmu)) {
+    if (ref.trimEnd() !== pinnedRef) fail(`${workflow} uses a different release-readiness commit`);
   }
 }
 for (const retiredPath of [

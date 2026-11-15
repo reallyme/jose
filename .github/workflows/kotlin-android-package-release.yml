@@ -13,10 +13,12 @@ on:
         description: Release version from the successful package preflight
         required: true
         type: string
+        default: '0.5.0'
       source_sha:
-        description: Copy the full source SHA from this ecosystem's successful package preflight summary
+        description: Full source SHA from this ecosystem's successful package preflight
         required: true
         type: string
+        default: '9aeae6356b65512a2c53832c46719de36e1d7e86'
 
 permissions:
   contents: read
@@ -59,7 +61,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8
+          ref: ${{ inputs.source_sha == '9aeae6356b65512a2c53832c46719de36e1d7e86' && '5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8' || '55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f' }}
           path: .release-readiness
           persist-credentials: false
 

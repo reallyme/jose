@@ -46,8 +46,9 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.merge_group.base_sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
-          LANE_PATHS: '{"policy":[],"code":[".gitattributes","crates/","deny.toml","packages/ts/","tools/","vectors/"],"proto":[".gitattributes","crates/","gen/","packages/","vectors/"],"fuzz":[".gitattributes","crates/","fuzz/","vectors/"],"swift":[".gitattributes","Package.resolved","Package.swift","crates/","gen/swift/","packages/swift/","vectors/"],"android":[".gitattributes","crates/","gen/java/","gen/kotlin/","packages/kotlin-android/","packages/kotlin/","vectors/"],"conformance":[".gitattributes","crates/","gen/java/","gen/kotlin/","packages/kotlin/","vectors/"],"formal":[".gitattributes","crates/","scripts/check-formal.sh"]}'
+          LANE_PATHS: '{"policy":[],"code":["crates/","deny.toml","packages/ts/","tools/","vectors/"],"proto":["crates/","gen/","packages/","vectors/"],"fuzz":["crates/","fuzz/","vectors/"],"swift":["Package.resolved","Package.swift","crates/","gen/swift/","packages/swift/","vectors/"],"android":["crates/","gen/java/","gen/kotlin/","packages/kotlin-android/","packages/kotlin/","vectors/"],"conformance":["crates/","gen/java/","gen/kotlin/","packages/kotlin/","vectors/"],"formal":["crates/","scripts/check-formal.sh"]}'
           SHARED_PATHS: '[".github/release-readiness.json",".github/workflows/",".github/actions/",".github/scripts/","scripts/",".cargo/","rust-toolchain.toml","Cargo.toml","Cargo.lock","buf.yaml","buf.gen.yaml","buf.lock","package.json","package-lock.json"]'
+          CHECKOUT_ATTRIBUTES: '(?:^|\/)\.gitattributes$'
           FORMAL_BUILD_INPUT: '(?:^|\/)(?:Cargo\.(?:toml|lock)|rust-toolchain(?:\.toml)?|\.cargo\/config(?:\.toml)?)$'
         run: |
           set -euo pipefail
@@ -76,12 +77,12 @@ jobs:
             echo "::notice::No reliable diff baseline. Running all CI lanes."
             printf '%s\n' null >"$changed_file"
           fi
-          lanes=$(jq -cen --argjson rules "$LANE_PATHS" --argjson shared "$SHARED_PATHS" --arg formal "$FORMAL_BUILD_INPUT" --slurpfile changes "$changed_file" '
+          lanes=$(jq -cen --argjson rules "$LANE_PATHS" --argjson shared "$SHARED_PATHS" --arg attributes "$CHECKOUT_ATTRIBUTES" --arg formal "$FORMAL_BUILD_INPUT" --slurpfile changes "$changed_file" '
             def includes_path($path):
               any(.[]; . as $rule | if endswith("/") then $path | startswith($rule) else . == $path end);
             $changes[0] as $changed | $rules | with_entries(.key as $lane | .value |= (. as $paths |
               $changed == null or ($paths | length == 0) or any($changed[];
-                . as $path | ($shared | includes_path($path)) or ($paths | includes_path($path)) or
+                . as $path | ($shared | includes_path($path)) or ($paths | includes_path($path)) or ($path | test($attributes)) or
                 ($lane == "formal" and ($path | test($formal))))))
           ')
           echo "lanes=$lanes" >>"$GITHUB_OUTPUT"

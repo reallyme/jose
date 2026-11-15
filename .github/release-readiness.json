@@ -7,7 +7,6 @@
     "code": {
       "workflow": "rust-ci.yml",
       "paths": [
-        ".gitattributes",
         "crates/",
         "deny.toml",
         "tools/",
@@ -18,7 +17,6 @@
     "proto": {
       "workflow": "protobuf-ci.yml",
       "paths": [
-        ".gitattributes",
         "crates/",
         "gen/",
         "packages/",
@@ -28,7 +26,6 @@
     "fuzz": {
       "workflow": "fuzz-ci.yml",
       "paths": [
-        ".gitattributes",
         "crates/",
         "fuzz/",
         "vectors/"
@@ -37,7 +34,6 @@
     "swift": {
       "workflow": "swift-ci.yml",
       "paths": [
-        ".gitattributes",
         "Package.swift",
         "Package.resolved",
         "packages/swift/",
@@ -49,7 +45,6 @@
     "android": {
       "workflow": "android-ci.yml",
       "paths": [
-        ".gitattributes",
         "crates/",
         "packages/kotlin-android/",
         "packages/kotlin/",
@@ -61,7 +56,6 @@
     "conformance": {
       "workflow": "kotlin-ci.yml",
       "paths": [
-        ".gitattributes",
         "crates/",
         "packages/kotlin/",
         "gen/java/",
@@ -72,7 +66,6 @@
     "formal": {
       "workflow": "formal-verification.yml",
       "paths": [
-        ".gitattributes",
         "crates/",
         "scripts/check-formal.sh"
       ]
