@@ -4,3 +4,4 @@ gen/kotlin/**/*.kt text eol=lf
 
 # CI invokes these launchers through Bash, including on Windows.
 packages/*/gradlew text eol=lf
+scripts/**/*.sh text eol=lf

@@ -7,6 +7,7 @@
     "code": {
       "workflow": "rust-ci.yml",
       "paths": [
+        ".gitattributes",
         "crates/",
         "deny.toml",
         "tools/",
@@ -27,6 +28,7 @@
     "fuzz": {
       "workflow": "fuzz-ci.yml",
       "paths": [
+        ".gitattributes",
         "crates/",
         "fuzz/",
         "vectors/"
@@ -35,6 +37,7 @@
     "swift": {
       "workflow": "swift-ci.yml",
       "paths": [
+        ".gitattributes",
         "Package.swift",
         "Package.resolved",
         "packages/swift/",
@@ -69,6 +72,7 @@
     "formal": {
       "workflow": "formal-verification.yml",
       "paths": [
+        ".gitattributes",
         "crates/",
         "scripts/check-formal.sh"
       ]
