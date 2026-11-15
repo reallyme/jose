@@ -1975,10 +1975,9 @@ assertNotContains("fuzz/README.md", "nightly-2026-07-01");
 assertNotContains(".github/workflows/fuzz.yml", "toolchain: nightly\n");
 assertContains(".github/workflows/fuzz.yml", "CARGO_FUZZ_VERSION: 0.13.2");
 assertContains(".github/workflows/fuzz.yml", "FUZZ_MAX_TOTAL_TIME_SECONDS: 900");
-assertContains(
-  ".github/workflows/fuzz-ci.yml",
-  "cargo metadata --manifest-path fuzz/Cargo.toml --locked --no-deps",
-);
+for (const path of [".github/workflows/fuzz-ci.yml", ".github/workflows/fuzz.yml"]) {
+  assertContains(path, "cargo metadata --manifest-path fuzz/Cargo.toml --locked --format-version 1");
+}
 assertContains(".github/workflows/fuzz-ci.yml", "git diff --exit-code -- fuzz/Cargo.lock");
 assertContains(".github/workflows/fuzz.yml", "Restore and persist fuzz corpus");
 assertContains(".github/workflows/fuzz.yml", "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9");

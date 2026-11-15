@@ -54,7 +54,7 @@ jobs:
         run: cargo install cargo-fuzz --version "$CARGO_FUZZ_VERSION" --locked
 
       - name: Verify fuzz lockfile is current
-        run: cargo metadata --manifest-path fuzz/Cargo.toml --locked --no-deps --format-version 1
+        run: cargo metadata --manifest-path fuzz/Cargo.toml --locked --format-version 1 > /dev/null
 
       - name: Restore and persist fuzz corpus
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

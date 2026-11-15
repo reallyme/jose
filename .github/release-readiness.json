@@ -17,6 +17,7 @@
     "proto": {
       "workflow": "protobuf-ci.yml",
       "paths": [
+        ".gitattributes",
         "crates/",
         "gen/",
         "packages/",
@@ -45,6 +46,7 @@
     "android": {
       "workflow": "android-ci.yml",
       "paths": [
+        ".gitattributes",
         "crates/",
         "packages/kotlin-android/",
         "packages/kotlin/",
@@ -56,6 +58,7 @@
     "conformance": {
       "workflow": "kotlin-ci.yml",
       "paths": [
+        ".gitattributes",
         "crates/",
         "packages/kotlin/",
         "gen/java/",

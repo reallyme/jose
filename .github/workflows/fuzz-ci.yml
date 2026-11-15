@@ -42,7 +42,7 @@ jobs:
         run: cargo install cargo-fuzz --version "$CARGO_FUZZ_VERSION" --locked
 
       - name: Verify fuzz lockfile is current
-        run: cargo metadata --manifest-path fuzz/Cargo.toml --locked --no-deps --format-version 1
+        run: cargo metadata --manifest-path fuzz/Cargo.toml --locked --format-version 1 > /dev/null
 
       - name: Build fuzz targets
         run: cargo +nightly-2026-09-15 fuzz build
