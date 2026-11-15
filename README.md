@@ -198,9 +198,10 @@ Direct-key JWE encryption generates a fresh 96-bit IV for every message, but a
 stateless encryptor cannot count all uses of a caller-owned CEK. Applications
 must maintain an AES-GCM per-key invocation budget and rotate the CEK before the
 applicable NIST SP 800-38D limit is reached.
-The Swift and Kotlin FFI adapters use a sizing call followed by a write call;
-each direct-key encryption request consumes two AES-GCM invocations under the
-caller-owned CEK. Count both when enforcing that budget.
+The native ABI's owned-response calls execute once per request. JNI and
+the linked Swift provider use them. The runtime-loaded Swift provider also
+uses them with compatible native libraries. Legacy caller-owned sizing and
+write calls each consume an AES-GCM invocation.
 
 Compact-JWE compression is disabled by default. Encryption compresses with the
 raw DEFLATE format before AES-GCM encryption and serializes `zip = "DEF"` in the
@@ -363,6 +364,110 @@ the contributor agreement separately.
 
 Fuzz harnesses live in [fuzz](fuzz/) and cover compact JWS, JWT, and JWE parser
 boundaries plus the protobuf/JSON process boundary.
+
+## Formal Verification
+
+The [Formal Verification workflow](.github/workflows/formal-verification.yml)
+runs Kani against Rust production code used for JWS and JWT verification, JWE
+decryption, protobuf dispatch, and native C ABI validation.
+The temporal harnesses cover the full `u64` domain for verification time,
+skew policy, and decoded NumericDates, including missing required claims,
+zero timestamps, exclusive expiration, inclusive future-time boundaries,
+and overflow rejection. The signed verification harnesses check that dispatch
+requires agreement between the selected header and key algorithms and that
+`alg: none` is rejected across the missing-type and embedded-key policy flags.
+
+The signed-payload harness checks that JWS and JWT pass the original caller
+key to signature verification and release payload bytes only after header
+authorization and successful verification. Header harnesses check the JWS
+algorithm match, forbidden member decisions, JWT media-type and embedded-key
+policy decisions, and JWT key-identifier and key-byte comparisons. The
+harnesses model parsed headers and cryptographic outcomes. Conformance tests
+exercise compact parsing, media-type matching, JWK compatibility, key
+normalization, and the signature backends.
+
+Two claims-release harnesses exercise the public JWT claims-bytes entry
+point. The first checks that authentication and claims decoding succeed
+before policy evaluation. It models compact parsing, header authorization,
+signature verification, and claims decoding. The second supplies
+authenticated bytes and a fixed decoded claims set through modeled field
+lookups. It varies verification time and policy choices symbolically and
+checks that the original bytes are returned only after the production
+temporal, audience, issuer, and subject checks pass. Integration tests
+exercise compact JWTs signed with real keys through the same entry point.
+
+The JWE harnesses check that a failed content-cipher operation can neither
+release plaintext nor invoke the decompressor, and that every successful
+decompression append fits the output ceiling without integer wraparound.
+The ordering proof treats AEAD and DEFLATE outcomes as inputs. Integration
+tests exercise the real AES-GCM backends and decoder.
+
+The key-management harnesses check that built-in resolvers agree with the
+protected `alg`, both direct CEK modes require an empty encrypted-key segment,
+and `epk`, `apu`, and `apv` obey the selected mode's structural rules. They
+also check every candidate key length against the selected AES-GCM suite.
+Integration tests cover caller-supplied provider outputs and exercise the
+ECDH-ES KDF for each suite.
+
+The ephemeral-key harnesses check the required public JWK members, binding
+to the resolver's curve, and exact widths for both decoded coordinates.
+Agreement runs only after validation succeeds. The harnesses model parsed
+members and decoded lengths. Integration tests exercise JSON and Base64URL
+decoding, SEC1 point validation, and the curve backends.
+
+The protobuf harnesses check that dispatch preserves the selected operation
+on success and error and that only the matching consumer accepts an
+operation-scoped response. The dispatch harnesses run the production dispatcher
+and response validator with symbolic adapter outcomes. Separate harnesses check
+that only V2 passes decoded response-version validation, only EdDSA and ES256
+pass JWS selector validation, and the binary unknown-field budget rejects an
+unrecognized selector before reading its value. Wire tests exercise the
+binary and ProtoJSON routes and unknown binary fields alongside known ones.
+
+The native C ABI harnesses check the three caller address ranges over the
+full machine-word domain. They verify that both operation entry points
+reject invalid pointer, length, or overlap metadata before borrowing or
+writing any caller memory, and that cleanup rejects invalid ranges before
+borrowing them. The harnesses model addresses and exclude the panic
+firewall and cryptographic execution. The C caller supplies live storage,
+correct pointer provenance, and exclusive access to writable ranges.
+
+For responses within the ABI limit, the FFI response writer reports the
+exact encoded size for every capacity. The full machine-word proof checks
+that a short buffer never reaches the output borrow and a fitting buffer
+contributes only the reported prefix. A separate harness uses real
+buffers of up to four bytes to verify the copied prefix and the unchanged
+remainder. ABI tests cover larger buffers through both entry points.
+
+JWE size harnesses verify fixed-width SEC1 coordinate extraction, the
+Base64URL coordinate width and JSON-safe alphabet, the AES-GCM output-width
+check, and checked compact sizing. The generated protobuf response is length-delimited,
+and the envelope harness bounds its size for every permitted compact length.
+The FFI tests run real encryption for direct keys and ECDH-ES on P-256, P-384,
+and P-521 across the three AES-GCM suites, with and without DEFLATE. Two
+successful encryptions of the same request report the same encoded size.
+Independent failures, including unavailable entropy, can change the outcome
+and therefore the encoded size.
+
+The owned-response harnesses check that a valid call executes once and
+transfers the original allocation, that rejected execution preserves the
+owner slot, and that release clears the slot before returning the allocation
+to Rust. The cleanup harness checks the allocation after the destructor's wipe
+and before deallocation. It verifies that every byte, including spare
+capacity, is zero, using symbolic bytes and lengths within a four-byte
+allocation. Callers
+must release the unique live owner after all borrowed views end. Platform
+tests exercise the C exports and the Swift and JNI copy paths.
+
+With [Kani 0.68.0](https://github.com/model-checking/kani/releases/tag/kani-0.68.0)
+installed and set up, run the harnesses with:
+
+```sh
+cargo kani --package reallyme-jose --lib --no-default-features --features native,wire -Z stubbing
+cargo kani --package reallyme-jose-ffi --lib --no-default-features --features native -Z stubbing
+```
+
+CI requires each harness to pass and every cover property to be reachable.
 
 ## Independent Vector Audit
 

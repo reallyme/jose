@@ -8,6 +8,8 @@ use super::JweError;
 pub const MAX_COMPACT_JWE_BYTES: usize =
     reallyme_jose_proto::generated::contract_values::COMPACT_BYTES;
 
+pub(super) const JWE_COMPACT_SEPARATOR_COUNT: usize = 4;
+
 pub(crate) struct CompactJweParts<'a> {
     pub(crate) protected_header: &'a str,
     pub(crate) encrypted_key: &'a str,
@@ -63,13 +65,9 @@ pub(crate) fn format_compact_jwe(
         .and_then(|len| len.checked_add(iv.len()))
         .and_then(|len| len.checked_add(ciphertext.len()))
         .and_then(|len| len.checked_add(tag.len()))
-        .and_then(|len| len.checked_add(4))
+        .and_then(|len| len.checked_add(JWE_COMPACT_SEPARATOR_COUNT))
         .ok_or(JweError::LengthOverflow)?;
-    if encoded_len > MAX_COMPACT_JWE_BYTES {
-        return Err(JweError::InputTooLarge);
-    }
-
-    let mut compact = String::with_capacity(encoded_len);
+    let mut compact = String::with_capacity(checked_compact_jwe_len(encoded_len)?);
     compact.push_str(protected_header);
     compact.push('.');
     compact.push_str(encrypted_key);
@@ -80,4 +78,12 @@ pub(crate) fn format_compact_jwe(
     compact.push('.');
     compact.push_str(tag);
     Ok(compact)
+}
+
+pub(super) const fn checked_compact_jwe_len(len: usize) -> Result<usize, JweError> {
+    if len > MAX_COMPACT_JWE_BYTES {
+        Err(JweError::InputTooLarge)
+    } else {
+        Ok(len)
+    }
 }

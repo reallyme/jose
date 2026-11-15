@@ -7,6 +7,15 @@
 #![cfg(not(target_arch = "wasm32"))]
 #![allow(unsafe_code)]
 
+#[path = "abi/jwe_response_width.rs"]
+mod jwe_response_width;
+
+#[path = "abi/owned_response.rs"]
+mod owned_response;
+
+#[path = "abi/pointer_rejection.rs"]
+mod pointer_rejection;
+
 use reallyme_jose::wire::{
     decode_json, decode_operation_response_v1, encode_protobuf,
     proto::proto::reallyme::jose::v1::JoseOperationRequest, JoseOperationKind,
@@ -39,15 +48,6 @@ const OPERATIONS: [(JoseOperationKind, &[u8]); 8] = [
     (JoseOperationKind::JweEncrypt, br#"{"jweEncrypt":{}}"#),
     (JoseOperationKind::JweDecrypt, br#"{"jweDecrypt":{}}"#),
 ];
-
-const RANDOMIZED_JWE_ENCRYPT_REQUEST: &[u8] = br#"{
-  "jweEncrypt": {
-    "keyManagementAlgorithm": "JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT",
-    "contentEncryptionAlgorithm": "JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM",
-    "key": "AAAAAAAAAAAAAAAAAAAAAA==",
-    "plaintext": "cHJvYmU="
-  }
-}"#;
 
 fn execute(operation: ExecuteOperation, input: &[u8]) -> Vec<u8> {
     execute_with_lengths(operation, input).0
@@ -143,43 +143,65 @@ fn probe_and_write_lengths_match_for_every_operation() {
 
 #[test]
 fn probe_and_write_lengths_match_for_randomized_jwe() {
-    let request = decode_json::<JoseOperationRequest>(RANDOMIZED_JWE_ENCRYPT_REQUEST);
-    assert!(request.is_ok());
-    let Some(request) = request.ok() else {
-        return;
-    };
-    let binary_request = encode_protobuf(&request);
-
-    let (_, binary_probe_len, binary_write_len) =
-        execute_with_lengths(rm_jose_execute_operation_v1, &binary_request);
-    assert_eq!(binary_probe_len, binary_write_len);
-
-    let (_, json_probe_len, json_write_len) = execute_with_lengths(
-        rm_jose_execute_operation_json_v1,
-        RANDOMIZED_JWE_ENCRYPT_REQUEST,
-    );
-    assert_eq!(json_probe_len, json_write_len);
+    jwe_response_width::exercise_randomized_jwe_matrix();
 }
 
 #[test]
+#[allow(clippy::unwrap_used)]
 fn capacity_mismatch_reports_exact_length_without_modifying_output() {
-    let input = br#"{}"#;
-    let mut output = [0xa5_u8; 1];
-    let mut required = usize::MAX;
-    // SAFETY: All three storage regions are valid and disjoint.
-    let status = unsafe {
-        rm_jose_execute_operation_json_v1(
-            JOSE_ABI_VERSION,
-            input.as_ptr(),
-            input.len(),
-            output.as_mut_ptr(),
-            output.len(),
-            &mut required,
-        )
-    };
-    assert_eq!(status, JoseFfiStatus::OutputCapacityMismatch.code());
-    assert!(required > output.len());
-    assert_eq!(output, [0xa5]);
+    use reallyme_crypto::csprng::OsSecureRandom;
+    use reallyme_jose::wire::execute_operation_v1;
+
+    let json = br#"{"jwtEncodeUnsigned":{"claimsJson":"e30="}}"#;
+    let request = decode_json::<JoseOperationRequest>(json).unwrap();
+    let binary = encode_protobuf(&request);
+    let routes: [(ExecuteOperation, &[u8]); 2] = [
+        (rm_jose_execute_operation_v1, &binary),
+        (rm_jose_execute_operation_json_v1, json),
+    ];
+    let expected = execute_operation_v1(&binary, &mut OsSecureRandom);
+    let required = expected.len();
+    let short = required.checked_sub(1).unwrap();
+    assert!(short > 0);
+
+    for (operation, input) in routes {
+        for capacity in [0, short, required, required.checked_add(17).unwrap()] {
+            let original = vec![0xa5_u8; capacity.checked_add(8).unwrap()];
+            let mut output = original.clone();
+            let mut reported = usize::MAX;
+            let mut expected_output = original;
+            let expected_status = if capacity < required {
+                JoseFfiStatus::OutputCapacityMismatch
+            } else {
+                expected_output
+                    .get_mut(..required)
+                    .unwrap()
+                    .copy_from_slice(&expected);
+                JoseFfiStatus::Success
+            };
+
+            let output_ptr = if capacity == 0 {
+                core::ptr::null_mut()
+            } else {
+                output.as_mut_ptr()
+            };
+            // SAFETY: Each nonempty region is a live disjoint allocation.
+            // The last eight output bytes are outside the advertised capacity.
+            let status = unsafe {
+                operation(
+                    JOSE_ABI_VERSION,
+                    input.as_ptr(),
+                    input.len(),
+                    output_ptr,
+                    capacity,
+                    &mut reported,
+                )
+            };
+            assert_eq!(status, expected_status.code());
+            assert_eq!(reported, required);
+            assert_eq!(output, expected_output);
+        }
+    }
 }
 
 #[test]
@@ -241,26 +263,49 @@ fn overlapping_input_and_output_are_rejected_before_mutation() {
 }
 
 #[test]
+#[allow(clippy::unwrap_used)]
 fn oversized_sentinel_preserves_resource_limit_but_larger_input_is_rejected() {
-    let sentinel = vec![0_u8; MAX_JOSE_PROTO_MESSAGE_BYTES + 1];
-    let response = execute(rm_jose_execute_operation_v1, &sentinel);
-    assert!(decode_operation_response_v1(&response, JoseOperationKind::JwsSign).is_ok());
-
-    let rejected = vec![0_u8; MAX_JOSE_PROTO_MESSAGE_BYTES + 2];
-    let mut produced = usize::MAX;
-    // SAFETY: Input and produced-length storage are valid and disjoint.
-    let status = unsafe {
-        rm_jose_execute_operation_v1(
-            JOSE_ABI_VERSION,
-            rejected.as_ptr(),
-            rejected.len(),
-            core::ptr::null_mut(),
-            0,
-            &mut produced,
-        )
+    use reallyme_jose::wire::proto::proto::reallyme::jose::v1::{
+        __buffa::oneof::{jose_error::Error, jose_operation_response::Response},
+        JoseErrorReason,
     };
-    assert_eq!(status, JoseFfiStatus::CallerError.code());
-    assert_eq!(produced, 0);
+
+    let entrypoints: [(ExecuteOperation, usize); 2] = [
+        (rm_jose_execute_operation_v1, rm_jose_max_request_bytes()),
+        (
+            rm_jose_execute_operation_json_v1,
+            rm_jose_max_json_request_bytes(),
+        ),
+    ];
+    for (operation, maximum) in entrypoints {
+        let sentinel = vec![0_u8; maximum.checked_add(1).unwrap()];
+        let response = execute(operation, &sentinel);
+        let decoded = decode_operation_response_v1(&response, JoseOperationKind::JwsSign).unwrap();
+        assert!(
+            matches!(&decoded.response, Some(Response::BoundaryError(boundary))
+            if matches!(&boundary.error, Some(Error::Primitive(error))
+                if error.reason == JoseErrorReason::JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED))
+        );
+
+        let rejected = vec![0_u8; maximum.checked_add(2).unwrap()];
+        let mut produced = usize::MAX;
+        let mut output = [0xa5_u8; 32];
+        // SAFETY: All storage is valid and disjoint. The request length is
+        // deliberately above the largest length accepted by this export.
+        let status = unsafe {
+            operation(
+                JOSE_ABI_VERSION,
+                rejected.as_ptr(),
+                rejected.len(),
+                output.as_mut_ptr(),
+                output.len(),
+                &mut produced,
+            )
+        };
+        assert_eq!(status, JoseFfiStatus::CallerError.code());
+        assert_eq!(produced, usize::MAX);
+        assert_eq!(output, [0xa5; 32]);
+    }
 }
 
 #[test]

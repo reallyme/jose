@@ -46,7 +46,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.merge_group.base_sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
-          LANE_PATHS: '{"policy":[],"code":["crates/","deny.toml","packages/ts/","tools/","vectors/"],"proto":["crates/","gen/","packages/","vectors/"],"fuzz":["crates/","fuzz/","vectors/"],"swift":["Package.resolved","Package.swift","crates/","gen/swift/","packages/swift/","vectors/"],"android":["crates/","gen/java/","gen/kotlin/","packages/kotlin-android/","packages/kotlin/","vectors/"],"conformance":["crates/","gen/java/","gen/kotlin/","packages/kotlin/","vectors/"]}'
+          LANE_PATHS: '{"policy":[],"code":["crates/","deny.toml","packages/ts/","tools/","vectors/"],"proto":["crates/","gen/","packages/","vectors/"],"fuzz":["crates/","fuzz/","vectors/"],"swift":["Package.resolved","Package.swift","crates/","gen/swift/","packages/swift/","vectors/"],"android":["crates/","gen/java/","gen/kotlin/","packages/kotlin-android/","packages/kotlin/","vectors/"],"conformance":["crates/","gen/java/","gen/kotlin/","packages/kotlin/","vectors/"],"formal":["crates/","scripts/check-formal.sh"]}'
           SHARED_PATHS: '[".github/release-readiness.json",".github/workflows/",".github/actions/",".github/scripts/","scripts/",".cargo/","rust-toolchain.toml","Cargo.toml","Cargo.lock","buf.yaml","buf.gen.yaml","buf.lock","package.json","package-lock.json"]'
           FORMAL_BUILD_INPUT: '(?:^|\/)(?:Cargo\.(?:toml|lock)|rust-toolchain(?:\.toml)?|\.cargo\/config(?:\.toml)?)$'
         run: |
@@ -120,10 +120,15 @@ jobs:
     if: ${{ fromJSON(needs.scope.outputs.lanes).conformance }}
     uses: ./.github/workflows/kotlin-ci.yml
 
+  formal:
+    needs: scope
+    if: ${{ fromJSON(needs.scope.outputs.lanes).formal }}
+    uses: ./.github/workflows/formal-verification.yml
+
   required:
     name: Required CI
     if: ${{ always() && github.repository_owner == 'reallyme' && toJSON(github.event.repository.private) == 'false' && (github.event.repository.visibility == null || github.event.repository.visibility == 'public') }}
-    needs: [scope, policy, code, proto, fuzz, swift, android, conformance]
+    needs: [scope, policy, code, proto, fuzz, swift, android, conformance, formal]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

@@ -25,15 +25,15 @@ pub fn derive_ecdh_es_content_encryption_key(
     header: &CompactJweProtectedHeader,
 ) -> Result<Zeroizing<Vec<u8>>, JweError> {
     match header.enc {
-        JweContentEncryptionAlgorithm::A128Gcm => {
-            derive_ecdh_es_content_encryption_key_for_len::<16>(shared_secret, header)
-        }
-        JweContentEncryptionAlgorithm::A192Gcm => {
-            derive_ecdh_es_content_encryption_key_for_len::<24>(shared_secret, header)
-        }
-        JweContentEncryptionAlgorithm::A256Gcm => {
-            derive_ecdh_es_content_encryption_key_for_len::<32>(shared_secret, header)
-        }
+        JweContentEncryptionAlgorithm::A128Gcm => derive_ecdh_es_content_encryption_key_for_len::<
+            { JweContentEncryptionAlgorithm::A128Gcm.key_len() },
+        >(shared_secret, header),
+        JweContentEncryptionAlgorithm::A192Gcm => derive_ecdh_es_content_encryption_key_for_len::<
+            { JweContentEncryptionAlgorithm::A192Gcm.key_len() },
+        >(shared_secret, header),
+        JweContentEncryptionAlgorithm::A256Gcm => derive_ecdh_es_content_encryption_key_for_len::<
+            { JweContentEncryptionAlgorithm::A256Gcm.key_len() },
+        >(shared_secret, header),
     }
 }
 

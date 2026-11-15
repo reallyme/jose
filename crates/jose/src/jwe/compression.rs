@@ -92,14 +92,18 @@ impl BufRead for MeteredDeflateInput<'_> {
     }
 }
 
-fn append_plaintext(plaintext: &mut Zeroizing<Vec<u8>>, chunk: &[u8]) -> Result<(), JweError> {
-    let next_len = plaintext
-        .len()
-        .checked_add(chunk.len())
-        .ok_or(JweError::LengthOverflow)?;
+const fn checked_decompressed_length(produced: usize, emitted: usize) -> Result<usize, JweError> {
+    let Some(next_len) = produced.checked_add(emitted) else {
+        return Err(JweError::LengthOverflow);
+    };
     if next_len > MAX_DECOMPRESSED_JWE_BYTES {
         return Err(JweError::DecompressedPlaintextTooLarge);
     }
+    Ok(next_len)
+}
+
+fn append_plaintext(plaintext: &mut Zeroizing<Vec<u8>>, chunk: &[u8]) -> Result<(), JweError> {
+    let next_len = checked_decompressed_length(plaintext.len(), chunk.len())?;
     if next_len > plaintext.capacity() {
         // Vec::reserve may free an old plaintext-bearing allocation without
         // wiping it. Move through a new owner and zeroize the old one first.
@@ -120,6 +124,10 @@ fn append_plaintext(plaintext: &mut Zeroizing<Vec<u8>>, chunk: &[u8]) -> Result<
     plaintext.extend_from_slice(chunk);
     Ok(())
 }
+
+#[cfg(kani)]
+#[path = "compression_proofs.rs"]
+mod proofs;
 
 struct ZeroizingWriter {
     bytes: Zeroizing<Vec<u8>>,

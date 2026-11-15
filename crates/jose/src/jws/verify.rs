@@ -22,12 +22,26 @@ pub(crate) fn decode_and_validate_header<E: Copy>(
     let header_text = core::str::from_utf8(&header_bytes).map_err(|_| bad_utf8)?;
     reject_duplicate_json_members(&header_bytes).map_err(|_| mismatch)?;
     let header: JwsProtectedHeader = serde_json::from_str(header_text).map_err(|_| mismatch)?;
-    if header.alg != algorithm {
-        return Err(mismatch);
-    }
+    validate_protected_algorithm(header.alg, algorithm, mismatch)?;
 
     Ok(header_bytes)
 }
+
+fn validate_protected_algorithm<E>(
+    protected: JwsAlgorithm,
+    caller: JwsAlgorithm,
+    mismatch: E,
+) -> Result<(), E> {
+    if protected == caller {
+        Ok(())
+    } else {
+        Err(mismatch)
+    }
+}
+
+#[cfg(kani)]
+#[path = "verify_proofs.rs"]
+mod proofs;
 
 pub(crate) fn decode_signature<E>(signature: &str, bad_base64: E) -> Result<Zeroizing<Vec<u8>>, E> {
     base64url_bytes_to_bytes(signature.as_bytes())

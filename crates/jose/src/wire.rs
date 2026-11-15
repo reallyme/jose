@@ -30,6 +30,12 @@ pub use operation_response::{
 
 const JOSE_PROTO_RECURSION_LIMIT: u32 =
     reallyme_jose_proto::generated::contract_values::PROTO_RECURSION_DEPTH;
+const JOSE_PROTO_UNKNOWN_FIELD_LIMIT: usize = 0;
+
+#[cfg(kani)]
+#[path = "wire/unknown_selector_proofs.rs"]
+mod proofs;
+
 /// Maximum protobuf framing overhead above one bounded operation result.
 pub const MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES: usize =
     reallyme_jose_proto::generated::contract_values::RESPONSE_OVERHEAD_BYTES;
@@ -155,7 +161,7 @@ fn decode_protobuf_with_limit<M: Message>(bytes: &[u8], max_bytes: usize) -> Jos
     DecodeOptions::new()
         .with_recursion_limit(JOSE_PROTO_RECURSION_LIMIT)
         .with_max_message_size(max_bytes)
-        .reject_unknown_fields()
+        .with_unknown_field_limit(JOSE_PROTO_UNKNOWN_FIELD_LIMIT)
         .decode_from_slice(bytes)
         .map_err(|_| {
             JoseWireError::primitive_internal(

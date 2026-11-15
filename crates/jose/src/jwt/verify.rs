@@ -6,6 +6,7 @@ use serde::de::DeserializeOwned;
 
 use crate::jws::{parse_compact::build_sig_structure, suites::es256::verify_p256_jose_prehash};
 use crate::reject_duplicate_json_members::reject_duplicate_json_members;
+use crate::verify_signed_payload::verify_signed_payload;
 use crate::{Algorithm, Jwk, Zeroizing};
 use reallyme_codec::base64url::base64url_bytes_to_bytes;
 use reallyme_crypto::core::{CryptoError, CryptoErrorReason};
@@ -16,7 +17,8 @@ use super::{
     parse_compact::parse_compact_jwt,
     strict_json::{parse_sensitive_json, reject_duplicate_object_members},
     validate_header::{
-        select_jwk_algorithm, select_jwk_key_id, JwtHeader, JwtHeaderValidationOptions,
+        select_jwk_algorithm, select_jwk_key_id, validate_signed_header, JwtHeader,
+        JwtHeaderValidationOptions,
     },
     validate_registered_claims::{
         validate_claims_set, validate_registered_claims, JwtClaimsValidationPolicy,
@@ -333,52 +335,81 @@ fn decode_verify_jwt_payload_bytes(
     header_validation: &JwtHeaderValidationOptions<'_>,
 ) -> Result<Zeroizing<Vec<u8>>, JwtError> {
     let parts = parse_compact_jwt(jwt)?;
+    verify_signed_payload(
+        public_key,
+        |caller_key| {
+            authorize_jwt_header(parts.protected_header, jwk, caller_key, header_validation)
+        },
+        |caller_key, algorithm| {
+            let signing_input = build_sig_structure(
+                parts.protected_header,
+                parts.payload,
+                JwtError::LengthOverflow,
+            )?;
+            let raw = Zeroizing::new(base64url_bytes_to_bytes(parts.signature.as_bytes())?);
+            verify_jwt_signature(*algorithm, caller_key, &signing_input, raw)
+        },
+        |_| {
+            base64url_bytes_to_bytes(parts.payload.as_bytes())
+                .map(Zeroizing::new)
+                .map_err(JwtError::from)
+        },
+    )
+}
 
-    let header_bytes = Zeroizing::new(base64url_bytes_to_bytes(parts.protected_header.as_bytes())?);
+fn authorize_jwt_header(
+    encoded_header: &str,
+    jwk: &Jwk,
+    public_key: &[u8],
+    policy: &JwtHeaderValidationOptions<'_>,
+) -> Result<Algorithm, JwtError> {
+    let header_bytes = Zeroizing::new(base64url_bytes_to_bytes(encoded_header.as_bytes())?);
     reject_duplicate_json_members(&header_bytes).map_err(|_| JwtError::InvalidHeader)?;
     let header: JwtHeader =
         serde_json::from_slice(&header_bytes).map_err(|_| JwtError::InvalidHeader)?;
 
-    header.validate_with_options(header_validation)?;
-
-    let expected_alg = select_jwk_algorithm(jwk)?;
-    if header.alg != expected_alg {
-        return Err(JwtError::AlgorithmMismatch);
-    }
-    validate_jwk_key_binding(&header, jwk, public_key)?;
-
-    let crypto_alg = algorithm_from_jwt_alg(&header.alg)?;
-    let signing_input = build_sig_structure(
-        parts.protected_header,
-        parts.payload,
-        JwtError::LengthOverflow,
+    let crypto_alg = bind_verification_algorithm(
+        validate_signed_header(
+            &header.alg,
+            header.typ.as_deref(),
+            header.embedded_key_header,
+            policy,
+        )?,
+        algorithm_from_jwt_alg(&select_jwk_algorithm(jwk)?)?,
     )?;
-    let raw = Zeroizing::new(base64url_bytes_to_bytes(parts.signature.as_bytes())?);
-    verify_jwt_signature(crypto_alg, public_key, &signing_input, raw)?;
-
-    Ok(Zeroizing::new(base64url_bytes_to_bytes(
-        parts.payload.as_bytes(),
-    )?))
+    validate_jwk_key_binding(header.kid.as_deref(), crypto_alg, jwk, public_key)?;
+    Ok(crypto_alg)
 }
 
+fn bind_verification_algorithm(
+    protected_algorithm: Algorithm,
+    key_algorithm: Algorithm,
+) -> Result<Algorithm, JwtError> {
+    if protected_algorithm != key_algorithm {
+        return Err(JwtError::AlgorithmMismatch);
+    }
+
+    // Dispatch on the caller's key binding once the protected algorithm agrees.
+    Ok(key_algorithm)
+}
+
+#[cfg(kani)]
+#[path = "verify_proofs.rs"]
+mod proofs;
+
 fn validate_jwk_key_binding(
-    header: &JwtHeader,
+    header_kid: Option<&str>,
+    algorithm: Algorithm,
     jwk: &Jwk,
     public_key: &[u8],
 ) -> Result<(), JwtError> {
-    if let Some(expected_kid) = select_jwk_key_id(jwk) {
-        if header.kid.as_deref() != Some(expected_kid.as_str()) {
-            return Err(JwtError::KeyIdMismatch);
-        }
-    }
+    let expected_kid = select_jwk_key_id(jwk);
+    validate_key_id(header_kid, expected_kid.as_deref())?;
 
     let expected_public_key = jwk.public_key_bytes().map_err(map_jwk_public_key_error)?;
     // WebCrypto commonly exports the same P-256 point in uncompressed SEC1.
     // Canonicalize that representation before comparing it with JWK bytes.
-    let normalized_public_key = if header.alg
-        == crate::resolve_algorithm::JwtAlgorithm::Es256.as_str()
-        && public_key.len() == 65
-    {
+    let normalized_public_key = if algorithm == Algorithm::P256 && public_key.len() == 65 {
         std::borrow::Cow::Owned(
             reallyme_crypto::p256::compress_public_key(public_key)
                 .map_err(|_| JwtError::InvalidPublicKey)?,
@@ -386,10 +417,27 @@ fn validate_jwk_key_binding(
     } else {
         std::borrow::Cow::Borrowed(public_key)
     };
-    if expected_public_key.as_slice() != normalized_public_key.as_ref() {
-        return Err(JwtError::PublicKeyMismatch);
+    validate_public_key_bytes(
+        expected_public_key.as_slice(),
+        normalized_public_key.as_ref(),
+    )
+}
+
+fn validate_key_id(header: Option<&str>, expected: Option<&str>) -> Result<(), JwtError> {
+    if let Some(expected) = expected {
+        if header != Some(expected) {
+            return Err(JwtError::KeyIdMismatch);
+        }
     }
     Ok(())
+}
+
+fn validate_public_key_bytes(expected: &[u8], caller: &[u8]) -> Result<(), JwtError> {
+    if expected == caller {
+        Ok(())
+    } else {
+        Err(JwtError::PublicKeyMismatch)
+    }
 }
 
 const fn map_jwk_public_key_error(error: CryptoError) -> JwtError {

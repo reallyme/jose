@@ -10,7 +10,9 @@ mod derive_key;
 pub(crate) mod encrypt;
 mod error;
 mod parse_compact;
+mod validate_ephemeral_key;
 mod validate_header;
+mod validate_key_management;
 
 pub use compression::MAX_DECOMPRESSED_JWE_BYTES;
 pub use decrypt::{

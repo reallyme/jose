@@ -13,6 +13,7 @@ use crate::jws::parse_header::JwsAlgorithm;
 use crate::jws::verify::{decode_and_validate_header, decode_payload, decode_signature};
 use crate::jws::verify_p256::{verify_p256_jose_signature, P256JoseVerifyErrorReason};
 use crate::jws::AuthenticatedCompactJws;
+use crate::verify_signed_payload::verify_signed_payload;
 
 const ED25519_SIGNATURE_LENGTH: usize = 64;
 const ES256_SIGNATURE_LENGTH: usize = reallyme_crypto::p256::P256_ECDSA_JOSE_SIGNATURE_LEN;
@@ -96,42 +97,40 @@ pub(crate) fn verify_jws(
         input.compact,
         JwsVerifyError::new(JwsVerifyErrorReason::InvalidCompact),
     )?;
-    let header_algorithm = input.algorithm;
-    let protected_header = decode_and_validate_header(
-        parts.protected_header,
-        header_algorithm,
-        JwsVerifyError::new(JwsVerifyErrorReason::BadHeaderBase64),
-        JwsVerifyError::new(JwsVerifyErrorReason::BadHeaderUtf8),
-        JwsVerifyError::new(JwsVerifyErrorReason::HeaderMismatch),
-    )?;
-
-    // Verification must cover the exact encoded segment before any caller can
-    // observe decoded payload bytes.
-    let signing_input = build_sig_structure(
-        parts.protected_header,
-        parts.payload,
-        JwsVerifyError::new(JwsVerifyErrorReason::LengthOverflow),
-    )?;
-    let signature = decode_signature(
-        parts.signature,
-        JwsVerifyError::new(JwsVerifyErrorReason::BadSignatureBase64),
-    )?;
-
-    match input.algorithm {
-        JwsAlgorithm::Es256 => {
-            verify_es256(&signature, &signing_input, input.public_key)?;
-        }
-        JwsAlgorithm::Eddsa => {
-            verify_eddsa(&signature, &signing_input, input.public_key)?;
-        }
-    }
-
-    let payload = decode_payload(
-        parts.payload,
-        JwsVerifyError::new(JwsVerifyErrorReason::BadPayloadBase64),
-    )?;
-
-    Ok(AuthenticatedCompactJws::new(protected_header, payload))
+    verify_signed_payload(
+        input.public_key,
+        |_| {
+            decode_and_validate_header(
+                parts.protected_header,
+                input.algorithm,
+                JwsVerifyError::new(JwsVerifyErrorReason::BadHeaderBase64),
+                JwsVerifyError::new(JwsVerifyErrorReason::BadHeaderUtf8),
+                JwsVerifyError::new(JwsVerifyErrorReason::HeaderMismatch),
+            )
+        },
+        |caller_key, _| {
+            let signing_input = build_sig_structure(
+                parts.protected_header,
+                parts.payload,
+                JwsVerifyError::new(JwsVerifyErrorReason::LengthOverflow),
+            )?;
+            let signature = decode_signature(
+                parts.signature,
+                JwsVerifyError::new(JwsVerifyErrorReason::BadSignatureBase64),
+            )?;
+            match input.algorithm {
+                JwsAlgorithm::Es256 => verify_es256(&signature, &signing_input, caller_key),
+                JwsAlgorithm::Eddsa => verify_eddsa(&signature, &signing_input, caller_key),
+            }
+        },
+        |protected_header| {
+            let payload = decode_payload(
+                parts.payload,
+                JwsVerifyError::new(JwsVerifyErrorReason::BadPayloadBase64),
+            )?;
+            Ok(AuthenticatedCompactJws::new(protected_header, payload))
+        },
+    )
 }
 
 fn verify_es256(

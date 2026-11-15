@@ -70,6 +70,8 @@ mod operation_contract;
 mod reject_duplicate_json_members;
 #[cfg(any(feature = "native", feature = "wasm"))]
 mod resolve_algorithm;
+#[cfg(any(feature = "native", feature = "wasm"))]
+mod verify_signed_payload;
 
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub mod jwe;

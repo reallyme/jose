@@ -21,6 +21,25 @@ private typealias ExecuteFunction =
     Int,
     UnsafeMutablePointer<Int>?
   ) -> Int32
+private typealias ExecuteOwnedFunction =
+  @convention(c) (
+    UInt32, UnsafePointer<UInt8>?, Int, UnsafeMutablePointer<OpaquePointer?>?
+  ) -> Int32
+private typealias ViewOwnedFunction =
+  @convention(c) (
+    UInt32, OpaquePointer?, UnsafeMutablePointer<UnsafePointer<UInt8>?>?,
+    UnsafeMutablePointer<UInt>?
+  ) -> Int32
+private typealias ReleaseOwnedFunction =
+  @convention(c) (UInt32, UnsafeMutablePointer<OpaquePointer?>?) -> Int32
+
+private struct OwnedResponseFunctions: Sendable {
+  let binary: ExecuteOwnedFunction
+  let json: ExecuteOwnedFunction
+  let view: ViewOwnedFunction
+  let release: ReleaseOwnedFunction
+}
+
 private typealias ZeroizeFunction =
   @convention(c) (
     UInt32,
@@ -84,6 +103,17 @@ public final class ReallyMeJOSENativeLibrary: Sendable {
       throw ReallyMeJOSEError.unsupportedPlatform
     #endif
   }
+
+  fileprivate func hasSymbol(_ symbol: StaticString) -> Bool {
+    #if canImport(Darwin)
+      guard let handle = UnsafeMutableRawPointer(bitPattern: handleAddress) else {
+        return false
+      }
+      return dlsym(handle, symbol.description) != nil
+    #else
+      return false
+    #endif
+  }
 }
 
 protocol ReallyMeJOSENativeProvider: Sendable {
@@ -121,6 +151,32 @@ protocol ReallyMeJOSENativeProvider: Sendable {
     _ outputCapacity: Int,
     _ producedLength: UnsafeMutablePointer<Int>?
   ) -> Int32
+  @_silgen_name("rm_jose_execute_owned_operation_v1")
+  private func linkedExecuteOwnedBinary(
+    _ version: UInt32,
+    _ request: UnsafePointer<UInt8>?,
+    _ requestLength: Int,
+    _ owner: UnsafeMutablePointer<OpaquePointer?>?
+  ) -> Int32
+  @_silgen_name("rm_jose_execute_owned_operation_json_v1")
+  private func linkedExecuteOwnedJSON(
+    _ version: UInt32,
+    _ request: UnsafePointer<UInt8>?,
+    _ requestLength: Int,
+    _ owner: UnsafeMutablePointer<OpaquePointer?>?
+  ) -> Int32
+  @_silgen_name("rm_jose_owned_response_view_v1")
+  private func linkedOwnedResponseView(
+    _ version: UInt32,
+    _ owner: OpaquePointer?,
+    _ bytes: UnsafeMutablePointer<UnsafePointer<UInt8>?>?,
+    _ length: UnsafeMutablePointer<UInt>?
+  ) -> Int32
+  @_silgen_name("rm_jose_owned_response_release_v1")
+  private func linkedOwnedResponseRelease(
+    _ version: UInt32,
+    _ owner: UnsafeMutablePointer<OpaquePointer?>?
+  ) -> Int32
   @_silgen_name("rm_jose_zeroize_buffer")
   private func linkedZeroize(
     _ version: UInt32,
@@ -134,6 +190,7 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
   private let binaryFunction: ExecuteFunction
   private let jsonFunction: ExecuteFunction
   private let zeroizeFunction: ZeroizeFunction
+  private let owned: OwnedResponseFunctions?
   let maximumBinaryRequestBytes: Int
   let maximumJSONRequestBytes: Int
   private let maximumResponseBytes: Int
@@ -148,6 +205,9 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
       binaryFunction = linkedExecuteBinary
       jsonFunction = linkedExecuteJSON
       zeroizeFunction = linkedZeroize
+      owned = OwnedResponseFunctions(
+        binary: linkedExecuteOwnedBinary, json: linkedExecuteOwnedJSON,
+        view: linkedOwnedResponseView, release: linkedOwnedResponseRelease)
     }
   #endif
 
@@ -166,14 +226,43 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
     binaryFunction = try library.load("rm_jose_execute_operation_v1", as: ExecuteFunction.self)
     jsonFunction = try library.load("rm_jose_execute_operation_json_v1", as: ExecuteFunction.self)
     zeroizeFunction = try library.load("rm_jose_zeroize_buffer", as: ZeroizeFunction.self)
+    if library.hasSymbol("rm_jose_execute_owned_operation_v1")
+      || library.hasSymbol("rm_jose_execute_owned_operation_json_v1")
+      || library.hasSymbol("rm_jose_owned_response_view_v1")
+      || library.hasSymbol("rm_jose_owned_response_release_v1")
+    {
+      owned = try OwnedResponseFunctions(
+        binary: library.load("rm_jose_execute_owned_operation_v1", as: ExecuteOwnedFunction.self),
+        json: library.load(
+          "rm_jose_execute_owned_operation_json_v1", as: ExecuteOwnedFunction.self),
+        view: library.load("rm_jose_owned_response_view_v1", as: ViewOwnedFunction.self),
+        release: library.load("rm_jose_owned_response_release_v1", as: ReleaseOwnedFunction.self)
+      )
+    } else {
+      owned = nil
+    }
   }
 
   func executeBinary(_ request: [UInt8]) throws(ReallyMeJOSEError) -> [UInt8] {
-    try execute(request, limit: maximumBinaryRequestBytes, function: binaryFunction)
+    if let owned {
+      return try executeOwnedNativeRequest(
+        request, limit: maximumBinaryRequestBytes, maximumResponseBytes: maximumResponseBytes,
+        invoke: owned.binary, view: owned.view, release: owned.release)
+    }
+    return try executeNativeRequest(
+      request, limit: maximumBinaryRequestBytes, maximumResponseBytes: maximumResponseBytes,
+      invoke: binaryFunction, clear: clearOwned)
   }
 
   func executeJSON(_ request: [UInt8]) throws(ReallyMeJOSEError) -> [UInt8] {
-    try execute(request, limit: maximumJSONRequestBytes, function: jsonFunction)
+    if let owned {
+      return try executeOwnedNativeRequest(
+        request, limit: maximumJSONRequestBytes, maximumResponseBytes: maximumResponseBytes,
+        invoke: owned.json, view: owned.view, release: owned.release)
+    }
+    return try executeNativeRequest(
+      request, limit: maximumJSONRequestBytes, maximumResponseBytes: maximumResponseBytes,
+      invoke: jsonFunction, clear: clearOwned)
   }
 
   func clearOwned(_ bytes: inout [UInt8]) {
@@ -183,64 +272,6 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
     if status != NativeStatus.success {
       ReallyMeJOSEMemory.clearOwned(&bytes)
     }
-  }
-
-  private func execute(
-    _ request: [UInt8],
-    limit: Int,
-    function: ExecuteFunction
-  ) throws(ReallyMeJOSEError) -> [UInt8] {
-    guard request.count <= limit else {
-      throw ReallyMeJOSEError.jose(
-        branch: .primitive,
-        reason: .commonResourceLimitExceeded
-      )
-    }
-    var producedLength = 0
-    let probe = request.withUnsafeBufferPointer { requestBuffer in
-      function(
-        expectedJoseABIVersion,
-        requestBuffer.baseAddress,
-        request.count,
-        nil,
-        0,
-        &producedLength
-      )
-    }
-    guard probe == NativeStatus.capacityMismatch,
-      producedLength > 0,
-      producedLength <= maximumResponseBytes
-    else {
-      try Self.throwTransportStatus(probe)
-      throw ReallyMeJOSEError.malformedProviderResponse
-    }
-
-    var output = [UInt8](repeating: 0, count: producedLength)
-    let capacity = output.count
-    let status = request.withUnsafeBufferPointer { requestBuffer in
-      output.withUnsafeMutableBufferPointer { outputBuffer in
-        function(
-          expectedJoseABIVersion,
-          requestBuffer.baseAddress,
-          request.count,
-          outputBuffer.baseAddress,
-          capacity,
-          &producedLength
-        )
-      }
-    }
-    var returnOutput = false
-    defer {
-      if returnOutput == false {
-        clearOwned(&output)
-      }
-    }
-    try Self.throwTransportStatus(status)
-    guard producedLength == output.count else {
-      throw ReallyMeJOSEError.malformedProviderResponse
-    }
-    returnOutput = true
-    return output
   }
 
   private static func requireCompatibleABI(_ actual: UInt32) throws(ReallyMeJOSEError) {
@@ -255,22 +286,145 @@ struct ReallyMeJOSERustProvider: ReallyMeJOSENativeProvider {
     }
     return converted
   }
+}
 
-  private static func throwTransportStatus(_ status: Int32) throws(ReallyMeJOSEError) {
-    switch status {
-    case NativeStatus.success:
-      return
-    case NativeStatus.providerError:
-      throw ReallyMeJOSEError.jose(branch: .provider, reason: .providerUnavailable)
-    case NativeStatus.unsupportedABI:
-      throw ReallyMeJOSEError.incompatibleABI
-    case NativeStatus.callerError,
-      NativeStatus.backendError,
-      NativeStatus.panicCaught,
-      NativeStatus.capacityMismatch:
-      throw ReallyMeJOSEError.malformedProviderResponse
-    default:
+func executeOwnedNativeRequest(
+  _ request: [UInt8],
+  limit: Int,
+  maximumResponseBytes: Int,
+  invoke: (UInt32, UnsafePointer<UInt8>?, Int, UnsafeMutablePointer<OpaquePointer?>?) -> Int32,
+  view: (
+    UInt32, OpaquePointer?, UnsafeMutablePointer<UnsafePointer<UInt8>?>?,
+    UnsafeMutablePointer<UInt>?
+  ) -> Int32,
+  release: (UInt32, UnsafeMutablePointer<OpaquePointer?>?) -> Int32
+) throws(ReallyMeJOSEError) -> [UInt8] {
+  try requireNativeRequestLimit(request.count, limit: limit)
+  var owner: OpaquePointer?
+  var releaseStatus = NativeStatus.success
+  var response: [UInt8]
+  do {
+    // Keep the allocation live through the copy and release it on every exit
+    // after ownership transfers, including a rejected view.
+    defer {
+      if owner != nil {
+        releaseStatus = release(expectedJoseABIVersion, &owner)
+      }
+    }
+    let status = request.withUnsafeBufferPointer {
+      invoke(expectedJoseABIVersion, $0.baseAddress, $0.count, &owner)
+    }
+    try throwTransportStatus(status)
+    guard let owner else { throw ReallyMeJOSEError.malformedProviderResponse }
+
+    var data: UnsafePointer<UInt8>?
+    var lengthOut: UInt = 0
+    try throwTransportStatus(view(expectedJoseABIVersion, owner, &data, &lengthOut))
+    guard let data,
+      let length = Int(exactly: lengthOut),
+      length > 0,
+      length <= maximumResponseBytes
+    else {
       throw ReallyMeJOSEError.malformedProviderResponse
     }
+    response = Array(UnsafeBufferPointer(start: data, count: length))
+  }
+  if releaseStatus != NativeStatus.success || owner != nil {
+    ReallyMeJOSEMemory.clearOwned(&response)
+    try throwTransportStatus(releaseStatus)
+    throw ReallyMeJOSEError.malformedProviderResponse
+  }
+  return response
+}
+
+private func requireNativeRequestLimit(_ count: Int, limit: Int) throws(ReallyMeJOSEError) {
+  guard count <= limit else {
+    throw ReallyMeJOSEError.jose(branch: .primitive, reason: .commonResourceLimitExceeded)
+  }
+}
+
+func executeNativeRequest(
+  _ request: [UInt8],
+  limit: Int,
+  maximumResponseBytes: Int,
+  invoke: (
+    UInt32, UnsafePointer<UInt8>?, Int, UnsafeMutablePointer<UInt8>?, Int,
+    UnsafeMutablePointer<Int>?
+  ) -> Int32,
+  clear: (inout [UInt8]) -> Void
+) throws(ReallyMeJOSEError) -> [UInt8] {
+  try requireNativeRequestLimit(request.count, limit: limit)
+  var producedLength = 0
+  let probe = request.withUnsafeBufferPointer { requestBuffer in
+    invoke(
+      expectedJoseABIVersion,
+      requestBuffer.baseAddress,
+      request.count,
+      nil,
+      0,
+      &producedLength
+    )
+  }
+  guard probe == NativeStatus.capacityMismatch,
+    producedLength > 0,
+    producedLength <= maximumResponseBytes
+  else {
+    try throwTransportStatus(probe)
+    throw ReallyMeJOSEError.malformedProviderResponse
+  }
+
+  var output = [UInt8](repeating: 0, count: producedLength)
+  var returnOutput = false
+  defer {
+    if !returnOutput {
+      clear(&output)
+    }
+  }
+  let capacity = output.count
+  // Require an independent length report from the write call.
+  producedLength = 0
+  let status = request.withUnsafeBufferPointer { requestBuffer in
+    output.withUnsafeMutableBufferPointer { outputBuffer in
+      invoke(
+        expectedJoseABIVersion,
+        requestBuffer.baseAddress,
+        requestBuffer.count,
+        outputBuffer.baseAddress,
+        capacity,
+        &producedLength
+      )
+    }
+  }
+  try throwTransportStatus(status)
+  guard producedLength > 0, producedLength <= capacity else {
+    throw ReallyMeJOSEError.malformedProviderResponse
+  }
+
+  // Each call executes independently. Preserve a shorter complete envelope
+  // for typed decoding and erase the entire temporary allocation.
+  if producedLength < capacity {
+    return output.withUnsafeBufferPointer { bytes in
+      Array(bytes.prefix(producedLength))
+    }
+  }
+  returnOutput = true
+  return output
+}
+
+private func throwTransportStatus(_ status: Int32) throws(ReallyMeJOSEError) {
+  switch status {
+  case NativeStatus.success:
+    return
+  case NativeStatus.providerError:
+    throw ReallyMeJOSEError.jose(branch: .provider, reason: .providerUnavailable)
+  case NativeStatus.unsupportedABI:
+    throw ReallyMeJOSEError.incompatibleABI
+  case NativeStatus.callerError,
+    NativeStatus.backendError,
+    NativeStatus.panicCaught,
+    NativeStatus.capacityMismatch:
+    throw ReallyMeJOSEError.malformedProviderResponse
+  default:
+    throw ReallyMeJOSEError.malformedProviderResponse
   }
 }

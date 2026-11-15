@@ -11,6 +11,8 @@ mod jws_sign;
 mod jws_verify;
 mod jwt;
 mod jwt_jwk;
+#[cfg(kani)]
+mod signature_selector_proofs;
 
 pub(crate) use jwe::{decrypt_jwe_request, encrypt_jwe_request};
 pub(crate) use jws_sign::sign_jws_request;

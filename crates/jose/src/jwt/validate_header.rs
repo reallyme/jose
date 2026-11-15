@@ -9,9 +9,9 @@ use serde::de::{IgnoredAny, MapAccess, Visitor};
 use serde::{Deserialize, Serialize};
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
-use crate::Jwk;
+use crate::{Algorithm, Jwk};
 
-use super::error::JwtError;
+use super::{algorithm_from_jwt_alg, error::JwtError};
 
 #[derive(Debug, Clone, Serialize)]
 pub(crate) struct JwtHeader {
@@ -80,7 +80,7 @@ impl<'de> Visitor<'de> for JwtHeaderVisitor {
                     embedded_key_header = true;
                     let _ = map.next_value::<IgnoredAny>()?;
                 }
-                "b64" | "crit" | "cty" | "zip" | "jku" | "x5u" => {
+                name if forbidden_signed_header_member(name) => {
                     let _ = map.next_value::<IgnoredAny>()?;
                     return Err(serde::de::Error::custom(JwtError::InvalidHeader));
                 }
@@ -99,48 +99,49 @@ impl<'de> Visitor<'de> for JwtHeaderVisitor {
     }
 }
 
-impl JwtHeader {
-    /// Validates this header against algorithm, type, and embedded-key policy.
-    pub fn validate_with_options(
-        &self,
-        options: &JwtHeaderValidationOptions<'_>,
-    ) -> Result<(), JwtError> {
-        if options.accepted_typ_values.len()
-            > reallyme_jose_proto::generated::contract_values::ACCEPTED_TYPE_VALUES
-        {
-            return Err(JwtError::InputTooLarge);
-        }
-        if self.alg == "none" {
-            return Err(JwtError::InvalidHeader);
-        }
-        if crate::resolve_algorithm::JwtAlgorithm::from_jose_name(&self.alg).is_none() {
-            return Err(JwtError::UnsupportedAlgorithm);
-        }
+pub(super) fn forbidden_signed_header_member(name: &str) -> bool {
+    matches!(name, "b64" | "crit" | "cty" | "zip" | "jku" | "x5u")
+}
 
-        match self.typ.as_deref() {
-            Some(typ) => {
-                if options.accepted_typ_values.is_empty()
-                    || !options
-                        .accepted_typ_values
-                        .iter()
-                        .any(|accepted| jwt_typ_matches(typ, accepted))
-                {
-                    return Err(JwtError::InvalidHeader);
-                }
-            }
-            None => {
-                if !options.allow_missing_typ {
-                    return Err(JwtError::InvalidHeader);
-                }
-            }
-        }
-
-        if self.embedded_key_header && !options.allow_embedded_key_header {
-            return Err(JwtError::InvalidHeader);
-        }
-
-        Ok(())
+pub(super) fn validate_signed_header(
+    algorithm: &str,
+    media_type: Option<&str>,
+    embedded_key_header: bool,
+    options: &JwtHeaderValidationOptions<'_>,
+) -> Result<Algorithm, JwtError> {
+    if options.accepted_typ_values.len()
+        > reallyme_jose_proto::generated::contract_values::ACCEPTED_TYPE_VALUES
+    {
+        return Err(JwtError::InputTooLarge);
     }
+    if algorithm == "none" {
+        return Err(JwtError::InvalidHeader);
+    }
+    let algorithm = algorithm_from_jwt_alg(algorithm)?;
+
+    let media_type_matches = media_type.map(|typ| {
+        options
+            .accepted_typ_values
+            .iter()
+            .any(|accepted| jwt_typ_matches(typ, accepted))
+    });
+    validate_header_policy(media_type_matches, embedded_key_header, options)?;
+    Ok(algorithm)
+}
+
+pub(super) const fn validate_header_policy(
+    media_type_matches: Option<bool>,
+    embedded_key_header: bool,
+    options: &JwtHeaderValidationOptions<'_>,
+) -> Result<(), JwtError> {
+    let allows_type = match media_type_matches {
+        Some(matches) => matches,
+        None => options.allow_missing_typ,
+    };
+    if !allows_type || (embedded_key_header && !options.allow_embedded_key_header) {
+        return Err(JwtError::InvalidHeader);
+    }
+    Ok(())
 }
 
 fn jwt_typ_matches(actual: &str, accepted: &str) -> bool {

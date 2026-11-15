@@ -102,16 +102,32 @@ pub(super) fn validate_temporal_claims(
     now_unix: u64,
     temporal_policy: JwtTemporalValidationPolicy,
 ) -> Result<(), JwtError> {
-    if now_unix == 0 {
-        return Err(JwtError::InvalidVerificationTime);
-    }
-    temporal_policy.validate()?;
+    validate_verification_time(now_unix, temporal_policy)?;
     let _claims = validate_claims_set(payload)?;
 
     let exp = parse_optional_numeric_date(payload, JwtTemporalClaim::Exp)?;
     let nbf = parse_optional_numeric_date(payload, JwtTemporalClaim::Nbf)?;
     let iat = parse_optional_numeric_date(payload, JwtTemporalClaim::Iat)?;
+    validate_numeric_dates(exp, nbf, iat, now_unix, temporal_policy)
+}
 
+const fn validate_verification_time(
+    now_unix: u64,
+    temporal_policy: JwtTemporalValidationPolicy,
+) -> Result<(), JwtError> {
+    if now_unix == 0 {
+        return Err(JwtError::InvalidVerificationTime);
+    }
+    temporal_policy.validate()
+}
+
+fn validate_numeric_dates(
+    exp: Option<u64>,
+    nbf: Option<u64>,
+    iat: Option<u64>,
+    now_unix: u64,
+    temporal_policy: JwtTemporalValidationPolicy,
+) -> Result<(), JwtError> {
     if temporal_policy.require_exp && exp.is_none() {
         return Err(JwtError::MissingRequiredTemporalClaim(
             JwtTemporalClaim::Exp,
@@ -222,3 +238,7 @@ fn checked_skew_ceiling(now_unix: u64, skew_seconds: u64) -> Result<u64, JwtErro
         .checked_add(skew_seconds)
         .ok_or(JwtError::InvalidTemporalPolicy)
 }
+
+#[cfg(kani)]
+#[path = "validate_temporal_claims_proofs.rs"]
+mod proofs;

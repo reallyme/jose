@@ -8,7 +8,8 @@ use zeroize::Zeroize;
 use reallyme_codec::base64url::bytes_to_base64url;
 use reallyme_crypto::core::RngOutputKind;
 
-use super::parse_compact::MAX_COMPACT_JWE_BYTES;
+use super::parse_compact::{checked_compact_jwe_len, JWE_COMPACT_SEPARATOR_COUNT};
+use super::validate_key_management::validate_content_encryption_key_length;
 use crate::measure_encoding::base64url_len;
 use crate::{JsonValue, SecureRandom, Zeroizing};
 
@@ -239,16 +240,13 @@ pub(crate) fn encrypt_compact_jwe_bytes_core<R: SecureRandom + ?Sized>(
     // The serialized owner is sufficient from here. Do not retain the separate
     // party-information copies while sizing or encrypting the message.
     drop(header);
-    let encoded_len = base64url_len(protected_header_json.len())
-        .and_then(|length| length.checked_add(base64url_len(prepared.encrypted_key.len())?))
-        .and_then(|length| length.checked_add(base64url_len(request.enc().nonce_len())?))
-        .and_then(|length| length.checked_add(base64url_len(encryption_plaintext.len())?))
-        .and_then(|length| length.checked_add(base64url_len(request.enc().tag_len())?))
-        .and_then(|length| length.checked_add(4))
-        .ok_or(JweError::LengthOverflow)?;
-    if encoded_len > MAX_COMPACT_JWE_BYTES {
-        return Err(JweError::InputTooLarge);
-    }
+    let expected_len = measure_compact_jwe(
+        protected_header_json.len(),
+        prepared.encrypted_key.len(),
+        encryption_plaintext.len(),
+        request.enc(),
+    )?;
+    validate_content_encryption_key_length(request.enc(), prepared.cek.len())?;
     let protected_header = Zeroizing::new(encode_jwe_base64url(&protected_header_json));
 
     let mut nonce = [0u8; reallyme_crypto::aes::AES_128_GCM_NONCE_LENGTH];
@@ -263,10 +261,11 @@ pub(crate) fn encrypt_compact_jwe_bytes_core<R: SecureRandom + ?Sized>(
     )?;
     let ciphertext_and_tag = ciphertext_with_tag.as_bytes();
     let tag_len = request.enc().tag_len();
-    let split_at = ciphertext_and_tag
-        .len()
-        .checked_sub(tag_len)
-        .ok_or(JweError::LengthOverflow)?;
+    let split_at = validate_gcm_output_len(
+        encryption_plaintext.len(),
+        tag_len,
+        ciphertext_and_tag.len(),
+    )?;
     let encrypted_key = encode_jwe_base64url(&prepared.encrypted_key);
     let iv = encode_jwe_base64url(&nonce);
     let ciphertext_bytes = ciphertext_and_tag
@@ -278,8 +277,54 @@ pub(crate) fn encrypt_compact_jwe_bytes_core<R: SecureRandom + ?Sized>(
     let ciphertext = encode_jwe_base64url(ciphertext_bytes);
     let tag = encode_jwe_base64url(tag_bytes);
 
-    format_compact_jwe(&protected_header, &encrypted_key, &iv, &ciphertext, &tag)
+    let compact = format_compact_jwe(&protected_header, &encrypted_key, &iv, &ciphertext, &tag)?;
+    if compact.len() != expected_len {
+        return Err(JweError::InvalidEncoding);
+    }
+    Ok(compact)
 }
+
+fn measure_compact_jwe(
+    header_len: usize,
+    encrypted_key_len: usize,
+    plaintext_len: usize,
+    enc: JweContentEncryptionAlgorithm,
+) -> Result<usize, JweError> {
+    let segments = [
+        header_len,
+        encrypted_key_len,
+        enc.nonce_len(),
+        plaintext_len,
+        enc.tag_len(),
+    ];
+    let total = segments
+        .into_iter()
+        .try_fold(JWE_COMPACT_SEPARATOR_COUNT, |sum, len| {
+            let encoded = base64url_len(len).ok_or(JweError::LengthOverflow)?;
+            sum.checked_add(encoded).ok_or(JweError::LengthOverflow)
+        })?;
+    checked_compact_jwe_len(total)
+}
+
+fn validate_gcm_output_len(
+    plaintext_len: usize,
+    tag_len: usize,
+    combined_len: usize,
+) -> Result<usize, JweError> {
+    let expected = plaintext_len
+        .checked_add(tag_len)
+        .ok_or(JweError::LengthOverflow)?;
+    // The compact size was calculated before encryption. A successful backend
+    // result must preserve plaintext width and append exactly one GCM tag.
+    if combined_len != expected {
+        return Err(JweError::Encrypt);
+    }
+    Ok(plaintext_len)
+}
+
+#[cfg(kani)]
+#[path = "encrypt_width_proofs.rs"]
+mod width_proofs;
 
 /// Encrypts a JSON-serializable payload as a compact JWE.
 ///

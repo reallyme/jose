@@ -5,6 +5,12 @@
 use reallyme_crypto::core::{CryptoError, CryptoErrorReason};
 use zeroize::Zeroize;
 
+use crate::jwe::validate_ephemeral_key::{agree_with_validated_ephemeral_key, PublicEphemeralJwk};
+use crate::jwe::validate_header::validate_jwe_header_structure;
+use crate::jwe::validate_key_management::{
+    validate_content_encryption_key_length, validate_encrypted_key_segment,
+    validate_resolver_key_management,
+};
 use crate::jwe::{
     derive_ecdh_es_content_encryption_key, CompactJweProtectedHeader,
     JweContentEncryptionKeyResolver, JweError, JweKeyManagementAlgorithm,
@@ -24,6 +30,25 @@ const fn map_keypair_generation_error(error: CryptoError) -> JweError {
         CryptoErrorReason::ProviderRandomnessUnavailable => JweError::Randomness,
         _ => JweError::InvalidKeyAgreementKey,
     }
+}
+
+fn resolve_ecdh_es_cek(
+    header: &CompactJweProtectedHeader,
+    encrypted_key: &[u8],
+    recipient_private_key: &[u8],
+    decode_epk: impl FnOnce(&JsonValue) -> Result<Vec<u8>, JweError>,
+    derive_shared_secret: impl FnOnce(&[u8], &[u8]) -> Result<Zeroizing<Vec<u8>>, CryptoError>,
+) -> Result<Zeroizing<Vec<u8>>, JweError> {
+    validate_resolver_key_management(
+        JweKeyManagementAlgorithm::EcdhEs,
+        header.alg,
+        encrypted_key.len(),
+    )?;
+    agree_with_validated_ephemeral_key(header.epk.as_ref(), decode_epk, |ephemeral_public_key| {
+        let shared_secret = derive_shared_secret(recipient_private_key, &ephemeral_public_key)
+            .map_err(|_| JweError::InvalidKeyAgreementKey)?;
+        derive_ecdh_es_content_encryption_key(&shared_secret, header)
+    })
 }
 
 #[cfg(test)]
@@ -61,21 +86,10 @@ impl PreparedJweEncryptionKey {
         encrypted_key: Vec<u8>,
         epk: Option<JsonValue>,
     ) -> Result<Self, JweError> {
-        match alg {
-            JweKeyManagementAlgorithm::Direct | JweKeyManagementAlgorithm::EcdhEs => {
-                if !encrypted_key.is_empty() {
-                    return Err(JweError::InvalidEncryptedKey);
-                }
-            }
-        }
-        if alg == JweKeyManagementAlgorithm::EcdhEs && epk.is_none() {
-            return Err(JweError::MissingRequiredHeaderParameter);
-        }
-        if alg == JweKeyManagementAlgorithm::Direct && epk.is_some() {
-            return Err(JweError::InvalidHeader);
-        }
+        validate_encrypted_key_segment(alg, encrypted_key.len())?;
+        validate_jwe_header_structure(alg, epk.is_some(), false, false)?;
         if let Some(epk) = epk.as_ref() {
-            validate_public_epk_jwk(epk)?;
+            PublicEphemeralJwk::try_from(epk)?;
         }
         Ok(Self {
             alg,
@@ -84,25 +98,6 @@ impl PreparedJweEncryptionKey {
             epk,
         })
     }
-}
-
-fn validate_public_epk_jwk(jwk: &JsonValue) -> Result<(), JweError> {
-    let object = jwk.as_object().ok_or(JweError::InvalidKeyAgreementKey)?;
-    if object.len() != 4
-        || !["kty", "crv", "x", "y"]
-            .iter()
-            .all(|key| object.contains_key(*key))
-    {
-        return Err(JweError::InvalidKeyAgreementKey);
-    }
-    for (key, value) in object {
-        match key.as_str() {
-            "kty" | "crv" | "x" | "y" if value.as_str().is_some() => {}
-            "kty" | "crv" | "x" | "y" => return Err(JweError::InvalidKeyAgreementKey),
-            _ => return Err(JweError::InvalidKeyAgreementKey),
-        }
-    }
-    Ok(())
 }
 
 /// Encrypt-side JWE key-management boundary.
@@ -137,9 +132,7 @@ impl JweContentEncryptionKeyEncryptor for DirectJweKeyEncryptor<'_> {
         &mut self,
         request: &CompactJweEncryptRequest<'_>,
     ) -> Result<PreparedJweEncryptionKey, JweError> {
-        if self.key.len() != request.enc().key_len() {
-            return Err(JweError::InvalidContentEncryptionKey);
-        }
+        validate_content_encryption_key_length(request.enc(), self.key.len())?;
         Ok(PreparedJweEncryptionKey {
             alg: JweKeyManagementAlgorithm::Direct,
             cek: Zeroizing::new(self.key.to_vec()),
@@ -227,22 +220,13 @@ impl JweContentEncryptionKeyResolver for P256EcdhEsJweKeyResolver<'_> {
         header: &CompactJweProtectedHeader,
         encrypted_key: &[u8],
     ) -> Result<Zeroizing<Vec<u8>>, JweError> {
-        if header.alg != JweKeyManagementAlgorithm::EcdhEs || !encrypted_key.is_empty() {
-            return Err(JweError::InvalidEncryptedKey);
-        }
-        let epk = header
-            .epk
-            .as_ref()
-            .ok_or(JweError::MissingRequiredHeaderParameter)?;
-        let ephemeral_public_key = p256_public_key_from_jwk(epk)?;
-        let mut shared_secret = reallyme_crypto::p256::derive_p256_shared_secret(
+        resolve_ecdh_es_cek(
+            header,
+            encrypted_key,
             self.recipient_private_key,
-            &ephemeral_public_key,
+            p256_public_key_from_jwk,
+            reallyme_crypto::p256::derive_p256_shared_secret,
         )
-        .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-        let cek = derive_ecdh_es_content_encryption_key(&shared_secret, header)?;
-        shared_secret.zeroize();
-        Ok(cek)
     }
 }
 
@@ -330,22 +314,13 @@ impl JweContentEncryptionKeyResolver for P384EcdhEsJweKeyResolver<'_> {
         header: &CompactJweProtectedHeader,
         encrypted_key: &[u8],
     ) -> Result<Zeroizing<Vec<u8>>, JweError> {
-        if header.alg != JweKeyManagementAlgorithm::EcdhEs || !encrypted_key.is_empty() {
-            return Err(JweError::InvalidEncryptedKey);
-        }
-        let epk = header
-            .epk
-            .as_ref()
-            .ok_or(JweError::MissingRequiredHeaderParameter)?;
-        let ephemeral_public_key = p384_public_key_from_jwk(epk)?;
-        let mut shared_secret = reallyme_crypto::p384::derive_p384_shared_secret(
+        resolve_ecdh_es_cek(
+            header,
+            encrypted_key,
             self.recipient_private_key,
-            &ephemeral_public_key,
+            p384_public_key_from_jwk,
+            reallyme_crypto::p384::derive_p384_shared_secret,
         )
-        .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-        let cek = derive_ecdh_es_content_encryption_key(&shared_secret, header)?;
-        shared_secret.zeroize();
-        Ok(cek)
     }
 }
 
@@ -433,21 +408,12 @@ impl JweContentEncryptionKeyResolver for P521EcdhEsJweKeyResolver<'_> {
         header: &CompactJweProtectedHeader,
         encrypted_key: &[u8],
     ) -> Result<Zeroizing<Vec<u8>>, JweError> {
-        if header.alg != JweKeyManagementAlgorithm::EcdhEs || !encrypted_key.is_empty() {
-            return Err(JweError::InvalidEncryptedKey);
-        }
-        let epk = header
-            .epk
-            .as_ref()
-            .ok_or(JweError::MissingRequiredHeaderParameter)?;
-        let ephemeral_public_key = p521_public_key_from_jwk(epk)?;
-        let mut shared_secret = reallyme_crypto::p521::derive_p521_shared_secret(
+        resolve_ecdh_es_cek(
+            header,
+            encrypted_key,
             self.recipient_private_key,
-            &ephemeral_public_key,
+            p521_public_key_from_jwk,
+            reallyme_crypto::p521::derive_p521_shared_secret,
         )
-        .map_err(|_| JweError::InvalidKeyAgreementKey)?;
-        let cek = derive_ecdh_es_content_encryption_key(&shared_secret, header)?;
-        shared_secret.zeroize();
-        Ok(cek)
     }
 }

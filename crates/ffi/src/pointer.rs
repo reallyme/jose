@@ -7,6 +7,8 @@
 // This module alone turns validated caller pointers into Rust references.
 #![allow(unsafe_code)]
 
+use core::mem::MaybeUninit;
+
 use crate::status::JoseFfiStatus;
 
 const MAX_FFI_SLICE_LEN: usize = isize::MAX.unsigned_abs();
@@ -21,11 +23,11 @@ fn validate_byte_pair<T>(ptr: *const T, len: usize) -> Result<(), JoseFfiStatus>
     Ok(())
 }
 
-fn validate_scalar_output<T>(ptr: *mut T) -> Result<(), JoseFfiStatus> {
+pub(super) fn validate_scalar_output<T>(ptr: *mut T) -> Result<(), JoseFfiStatus> {
     if ptr.is_null() || !ptr.is_aligned() {
         return Err(JoseFfiStatus::CallerError);
     }
-    Ok(())
+    validate_byte_pair(ptr.cast::<u8>().cast_const(), core::mem::size_of::<T>())
 }
 
 fn validate_disjoint_ranges(
@@ -88,6 +90,20 @@ pub fn validate_operation_ranges(
     )
 }
 
+pub(super) fn validate_request_and_slot<T>(
+    request: *const u8,
+    request_len: usize,
+    slot: *mut T,
+) -> Result<(), JoseFfiStatus> {
+    validate_scalar_output(slot)?;
+    validate_disjoint_ranges(
+        request,
+        request_len,
+        slot.cast::<u8>().cast_const(),
+        core::mem::size_of::<T>(),
+    )
+}
+
 /// Borrows a caller-owned byte range after validation.
 ///
 /// # Safety
@@ -105,21 +121,24 @@ pub unsafe fn read_slice<'a>(ptr: *const u8, len: usize) -> Result<&'a [u8], Jos
     Ok(unsafe { core::slice::from_raw_parts(ptr, len) })
 }
 
-/// Borrows a caller-owned mutable byte range after validation.
+/// Borrows caller-owned byte storage that may be uninitialized.
 ///
 /// # Safety
 ///
-/// For nonzero `len`, `ptr` must identify one exclusively writable allocation
-/// containing at least `len` bytes for the returned lifetime.
-pub unsafe fn write_slice<'a>(ptr: *mut u8, len: usize) -> Result<&'a mut [u8], JoseFfiStatus> {
+/// For nonzero `len`, the entire range must belong to one live allocation
+/// exclusively writable for the returned lifetime.
+pub(super) unsafe fn write_uninit_slice<'a>(
+    ptr: *mut u8,
+    len: usize,
+) -> Result<&'a mut [MaybeUninit<u8>], JoseFfiStatus> {
     validate_byte_pair(ptr.cast_const(), len)?;
     if len == 0 {
         return Ok(&mut []);
     }
-    // SAFETY: Validation rejects null, impossible lengths, and wrapping
-    // address ranges. The exported function's caller contract supplies one
-    // live exclusive allocation.
-    Ok(unsafe { core::slice::from_raw_parts_mut(ptr, len) })
+    // SAFETY: The validator checked the nonempty range and u8 needs no padding
+    // or alignment adjustment. The caller supplies a live exclusive allocation.
+    // MaybeUninit permits uninitialized bytes without reading any of them.
+    Ok(unsafe { core::slice::from_raw_parts_mut(ptr.cast(), len) })
 }
 
 /// Writes a deterministic produced length after pointer validation.
@@ -129,10 +148,10 @@ pub unsafe fn write_slice<'a>(ptr: *mut u8, len: usize) -> Result<&'a mut [u8], 
 /// `ptr` must identify aligned, writable `usize` storage for the call.
 pub unsafe fn write_len(ptr: *mut usize, value: usize) -> Result<(), JoseFfiStatus> {
     validate_scalar_output(ptr)?;
-    // SAFETY: The validator established non-null aligned storage; the caller
-    // owns it exclusively for this invocation.
+    // SAFETY: The validator checked alignment, non-nullness, and range
+    // arithmetic. The caller supplies live exclusive storage for this call.
     unsafe {
-        *ptr = value;
+        ptr.write(value);
     }
     Ok(())
 }

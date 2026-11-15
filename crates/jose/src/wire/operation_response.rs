@@ -186,11 +186,7 @@ fn validate_response(
     response: &JoseOperationResponse,
     expected_operation: JoseOperationKind,
 ) -> JoseWireResult<()> {
-    if response.contract_version.as_known()
-        != Some(JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V2)
-    {
-        return Err(backend_output_error());
-    }
+    validate_contract_version(response.contract_version)?;
 
     let Some(response) = &response.response else {
         return Err(backend_output_error());
@@ -341,13 +337,28 @@ fn validate_response(
         Response::JwtClaimsParse(response) => {
             require_operation(expected_operation, JoseOperationKind::JwtClaimsParse)?;
             match &response.outcome {
-                Some(crate::api::contract::__buffa::oneof::jose_jwt_claims_parse_response::Outcome::Result(_)) => Ok(()),
-                Some(crate::api::contract::__buffa::oneof::jose_jwt_claims_parse_response::Outcome::Error(error)) => validate_response_error(error),
+                Some(JwtClaimsParseOutcome::Result(_)) => Ok(()),
+                Some(JwtClaimsParseOutcome::Error(error)) => validate_response_error(error),
                 None => Err(backend_output_error()),
             }
         }
     }
 }
+
+fn validate_contract_version(
+    version: EnumValue<JoseOperationContractVersion>,
+) -> JoseWireResult<()> {
+    if version.as_known() == Some(JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V2)
+    {
+        Ok(())
+    } else {
+        Err(backend_output_error())
+    }
+}
+
+#[cfg(kani)]
+#[path = "operation_response_proofs.rs"]
+mod proofs;
 
 fn require_operation(actual: JoseOperationKind, expected: JoseOperationKind) -> JoseWireResult<()> {
     if actual == expected {
@@ -426,6 +437,7 @@ use crate::api::contract::__buffa::oneof::{
     jose_jwe_decrypt_with_provider_response::Outcome as JweDecryptWithProviderOutcome,
     jose_jwe_derive_key_response::Outcome as JweDeriveKeyOutcome,
     jose_jwe_encrypt_with_provider_response::Outcome as JweEncryptWithProviderOutcome,
+    jose_jwt_claims_parse_response::Outcome as JwtClaimsParseOutcome,
     jose_jwt_sign_with_provider_response::Outcome as JwtSignWithProviderOutcome,
     jose_signature_sign_response::Outcome as SignatureSignOutcome,
     jose_signature_suite_info_response::Outcome as SignatureSuiteInfoOutcome,
@@ -441,3 +453,7 @@ use build_response::{
     jwt_sign_with_provider_response, jwt_verify_response, signature_sign_response,
     signature_suite_info_response, signature_verify_response,
 };
+
+#[cfg(kani)]
+#[path = "jwe_response_width_proofs.rs"]
+mod jwe_response_width_proofs;

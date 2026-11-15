@@ -422,10 +422,13 @@ assertContains("crates/jose/src/jwe/compression.rs", "reallyme_jose_proto::gener
 assertContains("crates/jose/src/jwe/compression.rs", "DeflateEncoder::new");
 assertContains("crates/jose/src/jwe/compression.rs", "DeflateDecoder::new");
 assertContains("crates/jose/src/jwe/compression.rs", "Zeroizing<Vec<u8>>");
-assertContains("crates/jose/src/jwe/decrypt.rs", "let plaintext = decrypt_content(");
-assertContains("crates/jose/src/jwe/decrypt.rs", "decompress_deflate(&plaintext)");
-const jweDecryptSource = readText("crates/jose/src/jwe/decrypt.rs");
-if (jweDecryptSource.indexOf("let plaintext = decrypt_content(") >= jweDecryptSource.indexOf("decompress_deflate(&plaintext)")) {
+const jweDecryptPath = "crates/jose/src/jwe/decrypt.rs";
+assertContains(jweDecryptPath, "finish_decryption(\n        decrypt_content(");
+assertContains(jweDecryptPath, "|plaintext| decompress_deflate(&plaintext)");
+assertContains(jweDecryptPath, "let plaintext = authenticated?;");
+assertContains(jweDecryptPath, "Some(JweCompressionAlgorithm::Deflate) => decompress(plaintext)");
+const jweDecryptSource = readText(jweDecryptPath);
+if (jweDecryptSource.indexOf("let plaintext = authenticated?;") >= jweDecryptSource.indexOf("=> decompress(plaintext)")) {
   fail("compact-JWE decryption must authenticate AES-GCM before inflating plaintext");
 }
 assertContains("crates/jose/tests/jwe_tests/cases.rs", "deflate_is_serialized_and_applied_before_each_gcm_cipher");
@@ -437,6 +440,10 @@ assertContains(
 assertContains(
   "crates/jose/tests/jwe_tests/support_and_boundaries.rs",
   "authenticated_invalid_deflate_is_rejected_after_authentication",
+);
+assertContains(
+  "crates/jose/tests/jwe_tests/negative_cases.rs",
+  "rejects_tampered_deflate_before_decoding_for_each_gcm_suite",
 );
 assertContains("crates/jose/src/wire.rs", "reject_duplicate_json_members(bytes)");
 assertContains(
@@ -1197,7 +1204,7 @@ assertNotContains("deny.toml", 'name = "getrandom", version = "0.2.17"');
 assertContains("deny.toml", 'name = "syn", version = "2.0.119"');
 
 assertNotContains("crates/ffi/src/lib.rs", '#![allow(unsafe_code)]');
-for (const boundaryModule of ["pointer", "operation", "kotlin"]) {
+for (const boundaryModule of ["pointer", "operation", "owned_response", "kotlin"]) {
   assertContains(`crates/ffi/src/${boundaryModule}.rs`, '#![allow(unsafe_code)]');
 }
 assertContains("crates/ffi/src/lib.rs", '#[cfg(not(panic = "unwind"))]');
@@ -1213,6 +1220,16 @@ for (const symbol of [
   "rm_jose_zeroize_buffer",
 ]) {
   assertContains("crates/ffi/src/operation.rs", `fn ${symbol}`);
+  assertContains("crates/ffi/include/reallyme_jose.h", symbol);
+  assertContains("scripts/test_ffi_abi_release_artifact.sh", symbol);
+}
+for (const symbol of [
+  "rm_jose_execute_owned_operation_v1",
+  "rm_jose_execute_owned_operation_json_v1",
+  "rm_jose_owned_response_view_v1",
+  "rm_jose_owned_response_release_v1",
+]) {
+  assertContains("crates/ffi/src/owned_response.rs", `fn ${symbol}`);
   assertContains("crates/ffi/include/reallyme_jose.h", symbol);
   assertContains("scripts/test_ffi_abi_release_artifact.sh", symbol);
 }
@@ -1523,7 +1540,7 @@ assertContains("crates/ffi/Cargo.toml", "jni = { workspace = true }");
 assertContains("crates/ffi/src/lib.rs", "mod kotlin;");
 assertNotContains("crates/ffi/src/lib.rs", "pub mod kotlin;");
 assertContains("crates/ffi/src/kotlin.rs", "Java_me_really_jose_ReallyMeJoseNative_executeOperationNative");
-assertContains("crates/ffi/src/kotlin.rs", "rm_jose_execute_operation_v1");
+assertContains("crates/ffi/src/kotlin.rs", "rm_jose_execute_owned_operation_v1");
 assertContains("crates/ffi/src/kotlin.rs", "Zeroizing<Vec<u8>>");
 assertContains("packages/kotlin/build.gradle.kts", 'kotlin("jvm") version "2.4.21"');
 assertContains("packages/kotlin/build.gradle.kts", "jvmToolchain(21)");

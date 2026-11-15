@@ -62,6 +62,13 @@
         "gen/kotlin/",
         "vectors/"
       ]
+    },
+    "formal": {
+      "workflow": "formal-verification.yml",
+      "paths": [
+        "crates/",
+        "scripts/check-formal.sh"
+      ]
     }
   },
   "release": {

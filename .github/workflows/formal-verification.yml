@@ -1,0 +1,67 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: Formal Verification
+
+on:
+  workflow_call:
+    outputs:
+      verified_sha:
+        value: ${{ jobs.kani.outputs.verified_sha }}
+
+permissions:
+  contents: read
+
+jobs:
+  kani:
+    name: Kani (native JOSE)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    outputs:
+      verified_sha: ${{ github.sha }}
+    env:
+      KANI_VERSION: "0.68.0"
+      KANI_BUNDLE_SHA256: 32e2b484d73ede0bbf64a2cf0879c4259422497d8aec4ee67d448de9ae7843d3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: 1.100.0
+
+      - name: Install and verify pinned Kani
+        shell: bash
+        run: |
+          cargo install --locked kani-verifier --version "=$KANI_VERSION"
+          bundle="kani-$KANI_VERSION-x86_64-unknown-linux-gnu.tar.gz"
+          bundle_path="$RUNNER_TEMP/$bundle"
+          curl --fail --silent --show-error --location --retry 3 --max-time 180 \
+            --output "$bundle_path" "https://github.com/model-checking/kani/releases/download/kani-$KANI_VERSION/$bundle"
+          printf '%s  %s\n' "$KANI_BUNDLE_SHA256" "$bundle_path" | sha256sum --check --strict
+          cargo kani setup --use-local-bundle "$bundle_path"
+          cargo kani --version
+
+      - name: Verify proof obligations
+        shell: bash
+        working-directory: .
+        env:
+          FORMAL_RESULTS_DIRECTORY: ${{ runner.temp }}/formal-verification
+        run: |
+          test "$(git rev-parse --verify HEAD)" = "$GITHUB_SHA"
+          git diff --no-ext-diff --exit-code "$GITHUB_SHA" --
+          bash -e -o pipefail scripts/check-formal.sh
+          test "$(git rev-parse --verify HEAD)" = "$GITHUB_SHA"
+          git diff --no-ext-diff --exit-code "$GITHUB_SHA" --
+
+      - name: Upload verification results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: formal-verification
+          path: ${{ runner.temp }}/formal-verification/verification-*.json
+          if-no-files-found: ignore
