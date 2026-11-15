@@ -9,6 +9,11 @@ sha=$(git rev-parse --verify HEAD)
 test "$sha" = "$GITHUB_SHA"
 export ADB="${ANDROID_HOME:?}/platform-tools/adb"
 helper=.release-readiness/scripts/android-runtime.mjs
+# The cold-boot deadline covers ADB discovery, boot, and system services.
+readonly readiness_wait_seconds=420
+readonly service_recovery_wait_seconds=60
+readonly max_install_attempts=3
+readonly install_retry_delay_seconds=5
 emulator_log="$RUNNER_TEMP/android-runtime-emulator.log"
 emulator_pid=
 
@@ -53,26 +58,43 @@ for attempt in 1 2; do
     >"$emulator_log" 2>&1 &
   emulator_pid=$!
 
-  if node "$helper" wait "$ANDROID_SERIAL" && node "$helper" install "$ANDROID_SERIAL" "$APK_PATH"; then
-    # Confirm the guest really exercised JNI on a 16 KiB page-size device.
-    page_size="$(timeout --kill-after=2s 10s "$ADB" -s "$ANDROID_SERIAL" shell getconf PAGE_SIZE | tr -d '\r')"
-    if [[ "$page_size" != 16384 ]]; then
-      echo '::error::Android runtime CI requires a 16 KiB page-size guest.' >&2
-      exit 1
-    fi
-    # Preserve system, events and crash buffers for failure diagnostics.
-    timeout --kill-after=2s 10s "$ADB" -s "$ANDROID_SERIAL" logcat -b main -c
-    bash -e -o pipefail scripts/test-android-runtime.sh "$ANDROID_SERIAL"
-    node "$helper" verify-publication "$MAVEN_REPOSITORY" "$sha"
-    printf 'sha=%s\n' "$sha" >>"$GITHUB_OUTPUT"
+  if node "$helper" wait "$ANDROID_SERIAL" "$readiness_wait_seconds"; then
     break
   else
     result=$?
     if (( result != 75 || attempt == 2 )); then
       exit "$result"
     fi
-    echo "Restarting the Android emulator after a device readiness or package-service failure." >&2
+    echo "Restarting the Android emulator after a cold-boot readiness timeout." >&2
     collect_diagnostics
     stop_emulator
   fi
 done
+
+for ((attempt = 1; attempt <= max_install_attempts; attempt++)); do
+  if node "$helper" install "$ANDROID_SERIAL" "$APK_PATH"; then
+    break
+  else
+    result=$?
+    if (( result != 75 || attempt == max_install_attempts )); then
+      exit "$result"
+    fi
+  fi
+  # Wiping the emulator would repeat the package-service startup race.
+  echo "Rechecking Android package services before retrying APK installation." >&2
+  sleep "$install_retry_delay_seconds"
+  node "$helper" wait "$ANDROID_SERIAL" "$service_recovery_wait_seconds"
+done
+
+# Confirm that JNI runs on a guest with the release's required page size.
+page_size="$(timeout --kill-after=2s 10s "$ADB" -s "$ANDROID_SERIAL" shell getconf PAGE_SIZE | tr -d '\r')"
+if [[ "$page_size" != 16384 ]]; then
+  echo '::error::Android runtime CI requires a 16 KiB page-size guest.' >&2
+  exit 1
+fi
+
+# Preserve system, events and crash buffers for failure diagnostics.
+timeout --kill-after=2s 10s "$ADB" -s "$ANDROID_SERIAL" logcat -b main -c
+bash -e -o pipefail scripts/test-android-runtime.sh "$ANDROID_SERIAL"
+node "$helper" verify-publication "$MAVEN_REPOSITORY" "$sha"
+printf 'sha=%s\n' "$sha" >>"$GITHUB_OUTPUT"

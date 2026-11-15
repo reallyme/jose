@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 7dffa0366a43fe9cc7b98a8040d37dd701d7955e
+          ref: 5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8
           path: .release-readiness
           persist-credentials: false
 
@@ -178,7 +178,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 7dffa0366a43fe9cc7b98a8040d37dd701d7955e
+          ref: 5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8
           path: .release-readiness
           persist-credentials: false
 
@@ -221,3 +221,31 @@ jobs:
           path: build/maven-release
           if-no-files-found: error
           retention-days: 30
+
+      - name: Show release form inputs
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          VERSION_PATTERN: '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
+          SHA_PATTERN: '^[0-9a-f]{40}$'
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" != workflow_dispatch || "$GITHUB_REF" != refs/heads/main ||
+                "$SOURCE_SHA" != "$GITHUB_SHA" || ! "$SOURCE_SHA" =~ $SHA_PATTERN ||
+                ! "$RELEASE_VERSION" =~ $VERSION_PATTERN ||
+                ! "$GITHUB_REPOSITORY" =~ ^[a-zA-Z0-9-]+/[a-zA-Z0-9_.-]+$ ]]; then
+            echo "::warning::Cannot show release inputs without a matching preflight dispatch on main." >&2
+            exit 0
+          fi
+          if [[ -z "$GITHUB_STEP_SUMMARY" ]]; then
+            echo "::warning::GitHub Actions did not provide a job summary file." >&2
+            exit 0
+          fi
+          if ! printf '%s\n' '## Release form inputs' '' \
+              'After this preflight succeeds, run this command to dispatch publish with both inputs set.' '' \
+              '```sh' "gh workflow run kotlin-android-package-release.yml --repo github.com/$GITHUB_REPOSITORY --ref main -f version=$RELEASE_VERSION -f source_sha=$SOURCE_SHA" '```' '' \
+              'Copy these values into the release form for this ecosystem once the preflight run succeeds.' '' \
+              '**Version**' '```text' "$RELEASE_VERSION" '```' '' \
+              '**Source SHA**' '```text' "$SOURCE_SHA" '```' >>"$GITHUB_STEP_SUMMARY"; then
+            echo "::warning::Could not write release inputs to the GitHub Actions summary." >&2
+          fi

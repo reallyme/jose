@@ -69,9 +69,13 @@ ECDH-ES cases are retained in its matrix and must return the typed
 Package publication is split into unprivileged preflight and credentialed
 promotion workflows. Dispatch each package preflight with the version and full
 `source_sha` while `main` points at the release commit. The preflights require
-successful Required CI for that SHA. Publish the same version and SHA after all
-preflights pass. The publish workflows promote the exact preflight artifacts
-and verify their package-level digests or native inventory before upload.
+successful Required CI for that SHA. After all preflights pass, use the
+`gh workflow run` command in each preflight's Actions summary. The command
+includes the version and full source SHA. You can edit either input to select
+another candidate that passed that ecosystem's preflight. The summary also
+lists both values for the GitHub publish form. The publish workflows promote the
+exact preflight artifacts and verify their digests or native inventory before
+upload.
 
 The Android lane tests a minified consumer against the staged AAR. Maven
 preflight reuses that publication and verifies the hashes of all five JVM
@@ -112,7 +116,7 @@ node .release-readiness/scripts/run-consumer-check.mjs
 ```
 
 The `.release-readiness` checkout is pinned to commit
-`7dffa0366a43fe9cc7b98a8040d37dd701d7955e` (release v0.9.0) before execution.
+`5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8` (release v0.9.4) before execution.
 With that revision checked out alongside JOSE, check the public CI wiring and
 generated bindings locally:
 

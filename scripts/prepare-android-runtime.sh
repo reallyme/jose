@@ -12,6 +12,7 @@ readonly avd="${2:?expected an AVD name}"
 readonly repository="${3:?expected an absolute Maven repository path}"
 readonly sdk="${ANDROID_HOME:?expected Android SDK path}"
 readonly avd_home="${ANDROID_AVD_HOME:?expected an isolated AVD directory}"
+readonly avd_device="${ANDROID_AVD_DEVICE:-pixel}"
 readonly image="system-images;android-37.0;google_apis_ps16k;x86_64"
 [[ "$apk" = /* && "$repository" = /* && -d "$repository" && "$avd" =~ ^[a-zA-Z0-9_-]+$ ]]
 
@@ -28,4 +29,4 @@ cp packages/kotlin-android/consumer-r8-runtime/build/outputs/apk/release/consume
 
 mkdir -p "$avd_home"
 { yes 2>/dev/null || true; } | "$sdk/cmdline-tools/latest/bin/sdkmanager" emulator "platforms;android-37.0" "$image"
-printf 'no\n' | "$sdk/cmdline-tools/latest/bin/avdmanager" create avd --force --name "$avd" --package "$image" --device pixel
+printf 'no\n' | "$sdk/cmdline-tools/latest/bin/avdmanager" create avd --force --name "$avd" --package "$image" --device "$avd_device"
