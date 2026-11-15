@@ -11,8 +11,8 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 export function requireGeneratorVersions(run = spawnSync) {
   for (const name of ["protoc-gen-reallyme-buffa", "protoc-gen-reallyme-buffa-packaging"]) {
     const result = run(name, ["--version"], { encoding: "utf8", cwd: root });
-    if (result.status !== 0 || result.error !== undefined || result.stdout.trim() !== `${name} 0.1.1`) {
-      throw new TypeError("the published ReallyMe Buffa 0.1.1 generators are required");
+    if (result.status !== 0 || result.error !== undefined || result.stdout.trim() !== `${name} 0.1.2`) {
+      throw new TypeError("the published ReallyMe Buffa 0.1.2 generators are required");
     }
   }
 }

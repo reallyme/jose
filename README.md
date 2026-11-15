@@ -335,7 +335,7 @@ node scripts/generate-jose-proto.mjs
 ```
 
 `api::contract` exposes generated protobuf types and Buffa enum wrappers.
-The Rust runtime and generators use the exact ReallyMe Buffa 0.1.1 family.
+The Rust runtime and generators use the exact ReallyMe Buffa 0.1.2 family.
 The generator configures cleanup, guarded JSON, and borrowed views in
 `buf.gen.yaml`.
 `api::execute` executes generated requests; `api::execute_with_providers` accepts

@@ -77,9 +77,9 @@ runNodeCheck("scripts/release_crate_archives.test.mjs");
 
 const crateVersion = "0.5.0";
 const protoCrateVersion = "0.5.0";
-const buffaVersion = "0.1.1";
-const cryptoVersion = "0.4.0";
-const codecVersion = "0.4.0";
+const buffaVersion = "0.1.2";
+const cryptoVersion = "0.4.2";
+const codecVersion = "0.4.3";
 const npmPackageVersion = "0.5.0";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
 const releaseReadinessCommit = "7dffa0366a43fe9cc7b98a8040d37dd701d7955e";
@@ -1469,6 +1469,10 @@ assertContains(
 assertContains(
   swiftReleaseWorkflow,
   `- use ReallyMe Codec ${codecVersion} for the shared native and WASM runtime`,
+);
+assertContains(
+  swiftReleaseWorkflow,
+  `- use ReallyMe Crypto ${cryptoVersion} for the shared cryptographic operations`,
 );
 assertContains(swiftReleaseWorkflow, "- regenerate SDK bindings and rebuild native binaries together for V2");
 assertContains(swiftReleaseWorkflow, 'git tag "v${RELEASE_VERSION}" "${tag_target}"');

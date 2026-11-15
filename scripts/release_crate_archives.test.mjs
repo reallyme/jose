@@ -108,7 +108,7 @@ test("Cargo metadata preserves registry aliases and normalizes the versioned wor
   const runtime = {
     name: "reallyme-buffa",
     source: "registry+https://github.com/rust-lang/crates.io-index",
-    req: "=0.1.1",
+    req: "=0.1.2",
     rename: "buffa",
     features: ["json"],
     optional: true,
@@ -126,7 +126,7 @@ test("Cargo metadata preserves registry aliases and normalizes the versioned wor
   const metadata = registryMetadata(pkg, version, "fixture");
   assert.equal(metadata.readme, "fixture");
   assert.deepEqual(metadata.deps[0], {
-    name: "reallyme-buffa", version_req: "=0.1.1", features: ["json"],
+    name: "reallyme-buffa", version_req: "=0.1.2", features: ["json"],
     optional: true, default_features: false, target: null, kind: "normal",
     registry: null, explicit_name_in_toml: "buffa",
   });
