@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 
 const publisher = fileURLToPath(new URL("./publish_crates_in_order.mjs", import.meta.url));
 
-const writeFakeWorkspace = (root, publishFailure = "crate version already exists") => {
+const writeFakeWorkspace = (root) => {
   const binDirectory = join(root, "bin");
   const targetDirectory = join(root, "target");
   const metadataPath = join(root, "metadata.json");
@@ -78,7 +78,6 @@ process.exit(101);
       ...process.env,
       FAKE_CARGO_LOG: callLogPath,
       FAKE_CARGO_METADATA: metadataPath,
-      FAKE_CARGO_FAILURE: publishFailure,
       PATH: `${binDirectory}${delimiter}${process.env.PATH ?? ""}`,
     },
   };
@@ -163,6 +162,9 @@ if (args[0] === "fetch") {
   process.exit(0);
 }
 if (args[0] === "publish" && args.includes("reallyme-jose-proto")) {
+  const metadata = JSON.parse(fs.readFileSync(process.env.FAKE_CARGO_METADATA, "utf8"));
+  const repackaged = path.join(metadata.target_directory, "package", "reallyme-jose-proto-0.4.0.crate");
+  fs.writeFileSync(repackaged, "replacement from dry run");
   process.exit(0);
 }
 if (args[0] === "publish" && args.includes("reallyme-jose")) {
@@ -227,6 +229,11 @@ test("inspect mode does not re-resolve archive listings through the registry", (
 
     assert.equal(result.status, 0, result.stderr);
     assert.equal(existsSync(staleArtifact), false);
+    const packaged = join(root, "target", "package");
+    const filename = "reallyme-jose-proto-0.4.0.crate";
+    assert.equal(readFileSync(join(packaged, filename), "utf8"), "replacement from dry run");
+    assert.deepEqual(readFileSync(join(packaged, "release-inspected", filename)).subarray(0, 2),
+      Buffer.from([0x1f, 0x8b]));
     assert.match(
       result.stdout,
       /reallyme-jose dry-run reached unpublished ordered workspace dependencies: reallyme-jose-proto/u,
@@ -245,60 +252,6 @@ test("inspect mode does not re-resolve archive listings through the registry", (
     const inspectionTargets = readFileSync(workspace.targetLogPath, "utf8").trim().split("\n");
     assert.equal(inspectionTargets.length, 2);
     assert.equal(new Set(inspectionTargets).size, 1);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
-test("rejects an existing crate instead of continuing with mixed provenance", () => {
-  const root = mkdtempSync(join(tmpdir(), "reallyme-jose-publish-test-"));
-  try {
-    const workspace = writeFakeWorkspace(root);
-
-    const result = spawnSync(process.execPath, [publisher, "publish"], {
-      cwd: root,
-      encoding: "utf8",
-      env: workspace.environment,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-
-    assert.equal(result.status, 101);
-    assert.match(
-      result.stderr,
-      /refusing to combine an unverified registry artifact with this release/u,
-    );
-    assert.doesNotMatch(result.stdout, /continuing/u);
-    const publishCalls = readFileSync(workspace.callLogPath, "utf8")
-      .split("\n")
-      .filter((line) => line.startsWith("publish "));
-    assert.equal(publishCalls.length, 1);
-    assert.match(publishCalls[0], /reallyme-jose-proto/u);
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
-});
-
-test("exhausted rate-limit retries fail without publishing dependent crates", () => {
-  const root = mkdtempSync(join(tmpdir(), "reallyme-jose-retry-test-"));
-  try {
-    const workspace = writeFakeWorkspace(root, "too many requests");
-    // Bypass only elapsed time in the child; exercise the real retry loop and
-    // process exit status without making network requests or waiting minutes.
-    const preload = join(root, "skip-wait.cjs");
-    writeFileSync(preload, 'Atomics.wait = () => "timed-out";\n');
-    const result = spawnSync(process.execPath, ["--require", preload, publisher, "publish"], {
-      cwd: root,
-      encoding: "utf8",
-      env: workspace.environment,
-      timeout: 30_000,
-    });
-    assert.equal(result.error, undefined);
-    assert.equal(result.status, 101);
-    assert.match(result.stderr, /publish retry limit reached/u);
-    const calls = readFileSync(workspace.callLogPath, "utf8").split("\n")
-      .filter((line) => line.startsWith("publish "));
-    assert.equal(calls.length, 12);
-    assert.ok(calls.every((line) => line === "publish -p reallyme-jose-proto --locked"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

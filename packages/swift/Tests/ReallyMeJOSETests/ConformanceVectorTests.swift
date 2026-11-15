@@ -14,14 +14,14 @@ private enum VectorFixtureError: Error {
 }
 
 @Test func completeJWSVectorCorpusPreservesTypedResults() throws {
-  let jose = try configuredVectorJOSE()
+  let jose = try configuredJOSE()
   for vector in try vectorCases(named: "jws-compact.json") {
     try runJWSVector(vector, jose: jose)
   }
 }
 
 @Test func completeJWTVectorCorporaPreserveClaimsAndTypedFailures() throws {
-  let jose = try configuredVectorJOSE()
+  let jose = try configuredJOSE()
   for vector in try vectorCases(named: "signed-jwt.json") {
     try runSignedJWTVector(vector, jose: jose)
   }
@@ -31,14 +31,14 @@ private enum VectorFixtureError: Error {
 }
 
 @Test func completeJWEVectorCorpusPreservesPlaintextAndTypedFailures() throws {
-  let jose = try configuredVectorJOSE()
+  let jose = try configuredJOSE()
   for vector in try vectorCases(named: "jwe-compact.json") {
     try runJWEVector(vector, jose: jose)
   }
 }
 
 @Test func panvaInteropCorpusUsesTheSameTypedFacade() throws {
-  let jose = try configuredVectorJOSE()
+  let jose = try configuredJOSE()
   for vector in try vectorCases(named: "panva-jose.json") {
     switch try requiredString(vector, "format") {
     case "jws-compact": try runJWSVector(vector, jose: jose)
@@ -50,7 +50,7 @@ private enum VectorFixtureError: Error {
 }
 
 @Test func binaryAndProtoJSONWireRoutesAreByteIdentical() throws {
-  let jose = try configuredVectorJOSE()
+  let jose = try configuredJOSE()
   let vector = try #require(vectorCases(named: "unsigned-jwt.json").first)
   let compact = try requiredString(vector, "compact")
   var operation = ReallyMeProtoJoseJwtDecodeUnsignedRequest()
@@ -71,7 +71,7 @@ private enum VectorFixtureError: Error {
 }
 
 @Test func hostileWireInputsAndProviderSelectionPreserveExactErrors() throws {
-  let jose = try configuredVectorJOSE()
+  let jose = try configuredJOSE()
   var malformedBinary: [UInt8] = [0xff]
   var malformedJSON = Array(#"{"jwtDecodeUnsigned":"#.utf8)
   var binaryResponse = try jose.executeWireRequest(malformedBinary)
@@ -113,7 +113,7 @@ private enum VectorFixtureError: Error {
 }
 
 @Test func temporalWirePolicyRequiresExplicitVerificationTime() throws {
-  let jose = try configuredVectorJOSE()
+  let jose = try configuredJOSE()
   let vector = try #require(vectorCases(named: "signed-jwt.json").first)
   var publicKey = try vectorBytes(hex: requiredString(vector, "public_key_hex"))
   var jwk = try canonicalJSONData(requiredObject(vector, "verification_jwk")).map { $0 }
@@ -123,7 +123,9 @@ private enum VectorFixtureError: Error {
   verify.compact = try requiredString(vector, "compact")
   verify.jwkJson = Data(jwk)
   verify.publicKey = Data(publicKey)
-  verify.temporalPolicy = temporal
+  var verification = ReallyMeProtoJoseJwtVerificationPolicy()
+  verification.mode = .claims(temporal)
+  verify.verification = verification
   var request = ReallyMeProtoJoseOperationRequest()
   request.operation = .jwtVerify(verify)
   var requestBytes: [UInt8] = try request.serializedBytes()
@@ -162,24 +164,6 @@ private func requireGeneratedError(
   }
 }
 
-private func configuredVectorJOSE() throws -> ReallyMeJOSE {
-  try ReallyMeJOSE(nativeLibrary: ReallyMeJOSENativeLibrary(path: try vectorNativeLibraryPath()))
-}
-
-private func vectorNativeLibraryPath() throws -> String {
-  if let configured = ProcessInfo.processInfo.environment["REALLYME_JOSE_FFI_LIBRARY_PATH"],
-    !configured.isEmpty
-  {
-    return configured
-  }
-  let candidate = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-    .appendingPathComponent("target/debug/libreallyme_jose_ffi.dylib").path
-  guard FileManager.default.fileExists(atPath: candidate) else {
-    throw ReallyMeJOSEError.nativeLibraryNotFound
-  }
-  return candidate
-}
-
 private func runJWSVector(_ vector: [String: Any], jose: ReallyMeJOSE) throws {
   let algorithm: ReallyMeJOSESignatureAlgorithm
   switch try requiredString(vector, "alg") {
@@ -207,12 +191,12 @@ private func runSignedJWTVector(_ vector: [String: Any], jose: ReallyMeJOSE) thr
     clearVectorBytes(&publicKey)
     clearVectorBytes(&jwk)
   }
-  let temporalPolicy: ReallyMeJOSEJWTTemporalPolicy?
+  let temporalPolicy: ReallyMeJOSEJWTClaimsPolicy?
   if let now = optionalUInt64(vector, "now_unix") {
     guard optionalString(vector, "temporal_policy") ?? "strict" == "strict" else {
       throw VectorFixtureError.invalidFixture
     }
-    temporalPolicy = ReallyMeJOSEJWTTemporalPolicy(
+    temporalPolicy = ReallyMeJOSEJWTClaimsPolicy(
       requireExpiration: true,
       requireNotBefore: false,
       requireIssuedAt: false,
@@ -230,8 +214,7 @@ private func runSignedJWTVector(_ vector: [String: Any], jose: ReallyMeJOSE) thr
       compact: compact,
       jwkJSON: jwk,
       publicKey: publicKey,
-      temporalPolicy: temporalPolicy,
-      signatureOnly: temporalPolicy == nil
+      verification: temporalPolicy.map { .claims($0) } ?? .signatureOnly
     )
     defer { clearVectorBytes(&actual) }
     #expect(try canonicalJSONData(from: actual) == canonicalJSONData(expectedClaims))
@@ -242,8 +225,7 @@ private func runSignedJWTVector(_ vector: [String: Any], jose: ReallyMeJOSE) thr
         compact: compact,
         jwkJSON: jwk,
         publicKey: publicKey,
-        temporalPolicy: temporalPolicy,
-        signatureOnly: temporalPolicy == nil
+        verification: temporalPolicy.map { .claims($0) } ?? .signatureOnly
       )
       clearVectorBytes(&output)
     }
@@ -337,7 +319,7 @@ private func expectVectorFailure(
 
 private func expectedJWSError(_ name: String) throws -> ReallyMeJOSEErrorReason {
   switch name {
-  case "InvalidCompactEncoding": return .jwsInvalidCompact
+  case "InvalidCompactEncoding": return .commonInvalidCompact
   case "HeaderMismatch": return .jwsHeaderMismatch
   case "BadSignatureBase64": return .jwsBadSignatureBase64
   case "InvalidSignature": return .jwsInvalidSignature
@@ -347,7 +329,7 @@ private func expectedJWSError(_ name: String) throws -> ReallyMeJOSEErrorReason 
 
 private func expectedJWTError(_ name: String) throws -> ReallyMeJOSEErrorReason {
   switch name.split(separator: ":", maxSplits: 1).first {
-  case "InvalidJwtFormat": return .jwtInvalidCompact
+  case "InvalidJwtFormat": return .commonInvalidCompact
   case "InvalidHeader": return .jwtInvalidHeader
   case "UnsupportedAlgorithm": return .jwtUnsupportedAlgorithm
   case "AlgorithmMismatch": return .jwtAlgorithmMismatch
@@ -364,8 +346,8 @@ private func expectedJWTError(_ name: String) throws -> ReallyMeJOSEErrorReason 
 
 private func expectedJWEError(_ name: String) throws -> ReallyMeJOSEErrorReason {
   switch name {
-  case "InvalidCompact": return .jweInvalidCompact
-  case "InvalidEncoding": return .jweInvalidEncoding
+  case "InvalidCompact": return .commonInvalidCompact
+  case "InvalidEncoding": return .commonInvalidEncoding
   case "InvalidHeader": return .jweInvalidHeader
   case "UnsupportedKeyManagementAlgorithm": return .jweUnsupportedKeyManagementAlgorithm
   case "UnsupportedContentEncryptionAlgorithm": return .jweUnsupportedContentEncryptionAlgorithm
@@ -378,11 +360,31 @@ private func expectedJWEError(_ name: String) throws -> ReallyMeJOSEErrorReason 
   case "Decrypt": return .jweDecryptFailed
   case "Encrypt": return .jweEncryptFailed
   case "InvalidKeyAgreementKey": return .jweInvalidKeyAgreementKey
-  case "InvalidPayloadJson": return .jweInvalidPayloadJson
+  case "InvalidPayloadJson": return .jweInvalidPayloadJSON
   case "Compression": return .jweCompressionFailed
   case "Decompression": return .jweDecompressionFailed
   case "DecompressedPlaintextTooLarge": return .jweDecompressedPlaintextTooLarge
   default: throw VectorFixtureError.invalidFixture
+  }
+}
+
+@Test func schemaOperationsPreserveExactNativeBinaryAndJSONParity() throws {
+  let jose = try configuredJOSE()
+  for vector in try vectorCases(named: "schema-operations.json") {
+    var binary = try vectorBytes(hex: requiredString(vector, "request_hex"))
+    var json = Array(try requiredString(vector, "request_json").utf8)
+    var expected = try vectorBytes(hex: requiredString(vector, "response_hex"))
+    var binaryResponse = try jose.executeWireRequest(binary)
+    var jsonResponse = try jose.executeWireJSONRequest(json)
+    defer {
+      clearVectorBytes(&binary)
+      clearVectorBytes(&json)
+      clearVectorBytes(&expected)
+      clearVectorBytes(&binaryResponse)
+      clearVectorBytes(&jsonResponse)
+    }
+    #expect(binaryResponse == expected)
+    #expect(jsonResponse == expected)
   }
 }
 

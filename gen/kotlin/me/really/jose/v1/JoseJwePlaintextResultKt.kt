@@ -33,6 +33,7 @@ public object JoseJwePlaintextResultKt {
      * ```
      * Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
      * must not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes plaintext = 1 [json_name = "plaintext"];`
@@ -48,6 +49,7 @@ public object JoseJwePlaintextResultKt {
      * ```
      * Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
      * must not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes plaintext = 1 [json_name = "plaintext"];`

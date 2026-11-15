@@ -17,7 +17,12 @@ public  final class JoseJweHeaderValidationPolicy extends
   // Security post-processing: generated Lite messages otherwise expose
   // neither unknown-field presence nor a safe redacted debug representation.
   public boolean reallyMeHasUnknownFieldsForValidation() {
-    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance();
+    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance()
+        || (hasExpectedKid() && getExpectedKid().reallyMeHasUnknownFieldsForValidation())
+        || (hasExpectedTyp() && getExpectedTyp().reallyMeHasUnknownFieldsForValidation())
+        || (hasExpectedCty() && getExpectedCty().reallyMeHasUnknownFieldsForValidation())
+        || (hasExpectedApu() && getExpectedApu().reallyMeHasUnknownFieldsForValidation())
+        || (hasExpectedApv() && getExpectedApv().reallyMeHasUnknownFieldsForValidation());
   }
 
   @java.lang.Override

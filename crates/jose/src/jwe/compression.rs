@@ -19,7 +19,8 @@ use super::JweError;
 /// The authenticated compressed payload is never allowed to allocate an
 /// unbounded output buffer. Keeping this limit equal to the compact-input
 /// boundary also gives callers one stable resource ceiling in both directions.
-pub const MAX_DECOMPRESSED_JWE_BYTES: usize = 1024 * 1024;
+pub const MAX_DECOMPRESSED_JWE_BYTES: usize =
+    reallyme_jose_proto::generated::contract_values::COMPACT_BYTES;
 
 const DEFLATE_COMPRESSION_LEVEL: u32 = 6;
 const DEFLATE_INPUT_CHUNK_BYTES: usize = 1024;

@@ -6,6 +6,10 @@
 package me.really.jose.v1;
 
 /**
+ * <pre>
+ * Rust selector: JweCompressionAlgorithm; public; primitive; JWE_UNSUPPORTED_COMPRESSION_ALGORITHM
+ * </pre>
+ *
  * Protobuf enum {@code reallyme.jose.v1.JoseJweCompressionAlgorithm}
  */
 @com.google.protobuf.Generated
@@ -18,6 +22,7 @@ public enum JoseJweCompressionAlgorithm
   /**
    * <pre>
    * RFC 7518 raw DEFLATE compression: 100-199.
+   * Rust variant: JweCompressionAlgorithm.Deflate; label=DEF
    * </pre>
    *
    * <code>JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE = 100;</code>
@@ -33,6 +38,7 @@ public enum JoseJweCompressionAlgorithm
   /**
    * <pre>
    * RFC 7518 raw DEFLATE compression: 100-199.
+   * Rust variant: JweCompressionAlgorithm.Deflate; label=DEF
    * </pre>
    *
    * <code>JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE = 100;</code>

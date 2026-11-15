@@ -17,6 +17,7 @@ import me.really.jose.ReallyMeJoseJweContentEncryptionAlgorithm;
 import me.really.jose.ReallyMeJoseJweHeaderPolicy;
 import me.really.jose.ReallyMeJoseJweKeyManagementAlgorithm;
 import me.really.jose.ReallyMeJoseSignatureAlgorithm;
+import me.really.jose.v1.JoseSdkErrorCode;
 
 /** Release-only consumer fixture proving JNI and generated types survive R8. */
 public final class ConsumerR8RuntimeActivity extends Activity {
@@ -97,7 +98,8 @@ public final class ConsumerR8RuntimeActivity extends Activity {
           publicKey);
       throw new IllegalStateException("typed invalid-signature failure was not returned");
     } catch (ReallyMeJoseException.JoseFailure failure) {
-      if (failure.getBranch() != ReallyMeJoseErrorBranch.PRIMITIVE
+      if (failure.getCode() != JoseSdkErrorCode.JOSE_SDK_ERROR_CODE_JOSE_FAILURE
+          || failure.getBranch() != ReallyMeJoseErrorBranch.PRIMITIVE
           || failure.getReason() != ReallyMeJoseErrorReason.JWS_INVALID_SIGNATURE) {
         throw new IllegalStateException("unexpected typed failure");
       }

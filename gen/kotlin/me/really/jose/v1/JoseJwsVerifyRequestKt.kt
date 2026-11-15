@@ -54,6 +54,10 @@ public object JoseJwsVerifyRequestKt {
     }
 
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `string compact = 2 [json_name = "compact"];`
      */
     public var compact: kotlin.String
@@ -64,6 +68,10 @@ public object JoseJwsVerifyRequestKt {
         _builder.compact = value
       }
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `string compact = 2 [json_name = "compact"];`
      */
     public fun clearCompact() {
@@ -74,6 +82,7 @@ public object JoseJwsVerifyRequestKt {
      * ```
      * Public verification key bytes. Public material is still boundary data and
      * must not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes public_key = 3 [json_name = "publicKey"];`
@@ -89,6 +98,7 @@ public object JoseJwsVerifyRequestKt {
      * ```
      * Public verification key bytes. Public material is still boundary data and
      * must not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes public_key = 3 [json_name = "publicKey"];`

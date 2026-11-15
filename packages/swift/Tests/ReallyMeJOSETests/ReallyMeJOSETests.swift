@@ -8,23 +8,65 @@ import Testing
 
 @testable import ReallyMeJOSE
 
-private func nativeLibraryPath() throws -> String {
-  if let configured = ProcessInfo.processInfo.environment["REALLYME_JOSE_FFI_LIBRARY_PATH"],
-    !configured.isEmpty
-  {
-    return configured
+@Test func sdkErrorsExposeSchemaCodes() {
+  let cases: [(ReallyMeJOSEError, ReallyMeProtoJoseSdkErrorCode)] = [
+    (.jose(branch: .primitive, reason: .jwsInvalidSignature), .joseFailure),
+    (.unsupportedPlatform, .unsupportedPlatform),
+    (.nativeLibraryNotFound, .nativeLibraryNotFound),
+    (.nativeLibraryLoadFailed, .nativeLibraryLoadFailed),
+    (.nativeSymbolMissing, .nativeSymbolMissing),
+    (.incompatibleABI, .incompatibleAbi),
+    (.malformedProviderResponse, .malformedProviderResponse),
+  ]
+  for (error, code) in cases {
+    #expect(error.code == code)
   }
-  let candidate = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-    .appendingPathComponent("target/debug/libreallyme_jose_ffi.dylib").path
-  guard FileManager.default.fileExists(atPath: candidate) else {
-    throw ReallyMeJOSEError.nativeLibraryNotFound
+  #expect(throws: ReallyMeJOSEError.malformedProviderResponse) {
+    _ = try sdkError(ReallyMeProtoJoseError())
   }
-  return candidate
 }
 
-private func configuredJOSE() throws -> ReallyMeJOSE {
-  try ReallyMeJOSE(nativeLibrary: ReallyMeJOSENativeLibrary(path: nativeLibraryPath()))
+@Test func missingNativeLibraryExposesSchemaCode() throws {
+  let path = FileManager.default.temporaryDirectory
+    .appendingPathComponent(UUID().uuidString).path
+  do {
+    _ = try ReallyMeJOSENativeLibrary(path: path)
+    Issue.record("The loader accepted a missing library")
+  } catch {
+    #if canImport(Darwin)
+      #expect(error == .nativeLibraryNotFound)
+      #expect(error.code == .nativeLibraryNotFound)
+    #else
+      #expect(error == .unsupportedPlatform)
+      #expect(error.code == .unsupportedPlatform)
+    #endif
+  }
 }
+
+// Run the same facade and wire vectors through the provider selected by SwiftPM.
+func configuredJOSE() throws -> ReallyMeJOSE {
+  #if REALLYME_JOSE_LINKED_FFI
+    return try ReallyMeJOSE()
+  #else
+    return try ReallyMeJOSE(nativeLibrary: ReallyMeJOSENativeLibrary(path: nativeLibraryPath()))
+  #endif
+}
+
+#if !REALLYME_JOSE_LINKED_FFI
+  private func nativeLibraryPath() throws -> String {
+    if let configured = ProcessInfo.processInfo.environment["REALLYME_JOSE_FFI_LIBRARY_PATH"],
+      !configured.isEmpty
+    {
+      return configured
+    }
+    let candidate = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+      .appendingPathComponent("target/debug/libreallyme_jose_ffi.dylib").path
+    guard FileManager.default.fileExists(atPath: candidate) else {
+      throw ReallyMeJOSEError.nativeLibraryNotFound
+    }
+    return candidate
+  }
+#endif
 
 private func bytes(hex: String) throws -> [UInt8] {
   guard hex.utf8.count.isMultiple(of: 2) else {
@@ -70,7 +112,7 @@ private func bytes(hex: String) throws -> [UInt8] {
 }
 
 @Test func policyDescriptionsAndReflectionRedactBoundIdentifiers() {
-  let policy = ReallyMeJOSEJWTTemporalPolicy(
+  let policy = ReallyMeJOSEJWTClaimsPolicy(
     requireExpiration: true,
     requireNotBefore: false,
     requireIssuedAt: false,
@@ -249,7 +291,7 @@ private final class WipeObservation: @unchecked Sendable {
     compact: compact,
     jwkJSON: jwk,
     publicKey: publicKey,
-    signatureOnly: true
+    verification: .signatureOnly
   )
   #expect(verified == claims)
 }
@@ -269,7 +311,7 @@ private final class WipeObservation: @unchecked Sendable {
   let claims = Array(#"{"aud":"recipient","iss":"trusted","sub":"alice","exp":1720000100}"#.utf8)
   let compact = try jose.signJWT(claimsJSON: claims, jwkJSON: jwk, privateKey: privateKey)
   let policy = { (issuer: String?, subject: String?) in
-    ReallyMeJOSEJWTTemporalPolicy(
+    ReallyMeJOSEJWTClaimsPolicy(
       requireExpiration: true,
       requireNotBefore: false,
       requireIssuedAt: false,
@@ -285,13 +327,33 @@ private final class WipeObservation: @unchecked Sendable {
   #expect(
     try jose.verifyJWT(
       compact: compact, jwkJSON: jwk, publicKey: publicKey,
-      temporalPolicy: policy(nil, nil)
+      verification: .claims(policy(nil, nil))
     ) == claims)
   #expect(
     try jose.verifyJWT(
       compact: compact, jwkJSON: jwk, publicKey: publicKey,
-      temporalPolicy: policy("trusted", "alice")
+      verification: .claims(policy("trusted", "alice"))
     ) == claims)
+  let temporal = { (now: UInt64) in
+    ReallyMeJOSEJWTTemporalPolicy(
+      requireExpiration: true, requireNotBefore: false, requireIssuedAt: false,
+      clockSkewSeconds: 0, maximumFutureIssuedAtSkewSeconds: 0, nowUnix: now)
+  }
+  var timeOnly = try jose.verifyJWT(
+    compact: compact, jwkJSON: jwk, publicKey: publicKey,
+    verification: .temporalOnly(temporal(1_720_000_000)))
+  defer { ReallyMeJOSEMemory.clearOwned(&timeOnly) }
+  #expect(timeOnly == claims)
+  #expect(throws: ReallyMeJOSEError.jose(branch: .primitive, reason: .jwtExpired)) {
+    try jose.verifyJWT(
+      compact: compact, jwkJSON: jwk, publicKey: publicKey,
+      verification: .temporalOnly(temporal(1_720_000_200)))
+  }
+  #expect(throws: ReallyMeJOSEError.jose(branch: .primitive, reason: .jwtInvalidVerificationTime)) {
+    try jose.verifyJWT(
+      compact: compact, jwkJSON: jwk, publicKey: publicKey,
+      verification: .temporalOnly(temporal(0)))
+  }
   for (issuer, subject) in [("", nil), (nil, "")] {
     #expect(
       throws: ReallyMeJOSEError.jose(
@@ -300,7 +362,7 @@ private final class WipeObservation: @unchecked Sendable {
     ) {
       try jose.verifyJWT(
         compact: compact, jwkJSON: jwk, publicKey: publicKey,
-        temporalPolicy: policy(issuer, subject)
+        verification: .claims(policy(issuer, subject))
       )
     }
   }
@@ -311,7 +373,7 @@ private final class WipeObservation: @unchecked Sendable {
   ) {
     try jose.verifyJWT(
       compact: compact, jwkJSON: jwk, publicKey: publicKey,
-      temporalPolicy: policy("trusted", "other")
+      verification: .claims(policy("trusted", "other"))
     )
   }
 }
@@ -369,4 +431,76 @@ private final class WipeObservation: @unchecked Sendable {
       }
     }
   }
+}
+
+@Test func generatedAlgorithmViewsRejectUnspecifiedAndUnknownValues() throws {
+  for value in ReallyMeJOSESignatureAlgorithm.allCases {
+    #expect(try ReallyMeJOSESignatureAlgorithm(contract: protoSignatureAlgorithm(value)) == value)
+  }
+  for value in ReallyMeJOSEJWEKeyManagementAlgorithm.allCases {
+    #expect(
+      try ReallyMeJOSEJWEKeyManagementAlgorithm(contract: protoKeyManagementAlgorithm(value))
+        == value)
+  }
+  for value in ReallyMeJOSEJWEContentEncryptionAlgorithm.allCases {
+    #expect(
+      try ReallyMeJOSEJWEContentEncryptionAlgorithm(
+        contract: protoContentEncryptionAlgorithm(value)) == value)
+  }
+  for value in ReallyMeJOSEJWECompressionAlgorithm.allCases {
+    #expect(
+      try ReallyMeJOSEJWECompressionAlgorithm(contract: protoCompressionAlgorithm(value)) == value)
+  }
+  for raw in [0, -1, Int(Int32.max)] {
+    #expect(throws: ReallyMeJOSEError.jose(branch: .provider, reason: .providerUnsupported)) {
+      _ = try ReallyMeJOSESignatureAlgorithm(
+        contract: ReallyMeProtoJoseSignatureAlgorithm(rawValue: raw) ?? .UNRECOGNIZED(raw))
+    }
+    #expect(throws: ReallyMeJOSEError.jose(branch: .provider, reason: .providerUnsupported)) {
+      _ = try ReallyMeJOSEJWEKeyManagementAlgorithm(
+        contract: ReallyMeProtoJoseJweKeyManagementAlgorithm(rawValue: raw) ?? .UNRECOGNIZED(raw))
+    }
+    #expect(throws: ReallyMeJOSEError.jose(branch: .provider, reason: .providerUnsupported)) {
+      _ = try ReallyMeJOSEJWEContentEncryptionAlgorithm(
+        contract: ReallyMeProtoJoseJweContentEncryptionAlgorithm(rawValue: raw)
+          ?? .UNRECOGNIZED(raw))
+    }
+    #expect(throws: ReallyMeJOSEError.jose(branch: .provider, reason: .providerUnsupported)) {
+      _ = try ReallyMeJOSEJWECompressionAlgorithm(
+        contract: ReallyMeProtoJoseJweCompressionAlgorithm(rawValue: raw) ?? .UNRECOGNIZED(raw))
+    }
+  }
+}
+
+@Test func generatedOptionalHeadersAndPoliciesKeepPresence() throws {
+  var request = ReallyMeProtoJoseJweEncryptRequest()
+  #expect(!request.hasKid && !request.hasApu)
+  request.kid = ""
+  request.apu = Data()
+  let decoded = try ReallyMeProtoJoseJweEncryptRequest(serializedBytes: request.serializedData())
+  #expect(decoded.hasKid && decoded.hasApu)
+  #expect(decoded.kid.isEmpty && decoded.apu.isEmpty)
+  clearSensitiveFields(&request)
+  #expect(!request.hasKid && !request.hasApu)
+  let limit = JoseContractValues.acceptedTypeValues
+  _ = try protoJWTHeaderPolicy(
+    ReallyMeJOSEJWTHeaderPolicy(
+      allowMissingTyp: false, allowEmbeddedKeyHeader: false,
+      acceptedTypValues: Array(repeating: "JWT", count: limit)))
+  #expect(throws: ReallyMeJOSEError.jose(branch: .primitive, reason: .commonResourceLimitExceeded))
+  {
+    _ = try protoJWTHeaderPolicy(
+      ReallyMeJOSEJWTHeaderPolicy(
+        allowMissingTyp: false, allowEmbeddedKeyHeader: false,
+        acceptedTypValues: Array(repeating: "JWT", count: limit + 1)))
+  }
+  let signature = try protoJWTVerification(.signatureOnly)
+  #expect(signature.mode == .signatureOnly(ReallyMeProtoJoseJwtSignatureOnlyPolicy()))
+  let temporal = try protoJWTVerification(
+    .temporalOnly(
+      ReallyMeJOSEJWTTemporalPolicy(
+        requireExpiration: true, requireNotBefore: false, requireIssuedAt: false,
+        clockSkewSeconds: 0, maximumFutureIssuedAtSkewSeconds: 0, nowUnix: 1000)))
+  #expect(temporal.temporalOnly.nowUnix == 1000)
+  #expect(temporal.temporalOnly.options.requireExp)
 }

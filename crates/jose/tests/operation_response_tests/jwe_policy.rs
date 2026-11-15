@@ -10,29 +10,26 @@ fn direct_jwe_encrypt_request() -> JoseJweEncryptRequest {
         content_encryption_algorithm: EnumValue::from(
             JoseJweContentEncryptionAlgorithm::JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM,
         ),
-        key: vec![7_u8; 16],
-        plaintext: b"wire policy plaintext".to_vec(),
-        kid: "recipient".to_owned(),
-        apu: Vec::new(),
-        apv: Vec::new(),
-        typ: "application/JWE".to_owned(),
-        cty: "application/json".to_owned(),
+        key: vec![7_u8; 16].into(),
+        plaintext: b"wire policy plaintext".to_vec().into(),
+        kid: Some("recipient".to_owned().into()),
+        apu: None,
+        apv: None,
+        typ: Some("application/JWE".to_owned().into()),
+        cty: Some("application/json".to_owned().into()),
         compression_algorithm: Default::default(),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
 fn expected_string(value: &str) -> JoseExpectedString {
     JoseExpectedString {
-        value: value.to_owned(),
-        __buffa_unknown_fields: Default::default(),
+        value: value.to_owned().into(),
     }
 }
 
 fn expected_bytes(value: &[u8]) -> JoseExpectedBytes {
     JoseExpectedBytes {
-        value: value.to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        value: value.to_vec().into(),
     }
 }
 
@@ -42,16 +39,15 @@ fn decrypt_with_policy(
 ) -> Result<JoseOperationResponse, Box<dyn std::error::Error>> {
     let request = operation(RequestOperation::JweDecrypt(Box::new(
         JoseJweDecryptRequest {
-            compact: compact.to_owned(),
+            compact: compact.to_owned().into(),
             key_management_algorithm: EnumValue::from(
                 JoseJweKeyManagementAlgorithm::JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT,
             ),
             content_encryption_algorithm: EnumValue::from(
                 JoseJweContentEncryptionAlgorithm::JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM,
             ),
-            key: vec![7_u8; 16],
+            key: vec![7_u8; 16].into(),
             header_policy: policy.into(),
-            __buffa_unknown_fields: Default::default(),
         },
     )));
     let binary = execute_operation_v1(&encode_protobuf(&request), &mut FixedRandom::new([1; 12]));
@@ -81,8 +77,7 @@ fn jwe_wire_header_policy_rejects_each_mismatch() -> Result<(), Box<dyn std::err
         expected_cty: expected_string("application/json").into(),
         expected_apu: Default::default(),
         expected_apv: Default::default(),
-        allowed_compression_algorithms: Vec::new(),
-        __buffa_unknown_fields: Default::default(),
+        allowed_compression_algorithms: Vec::new().into(),
     };
     let accepted = decrypt_with_policy(&compact, valid.clone())?;
     assert!(matches!(
@@ -139,12 +134,9 @@ impl SecureRandom for UnavailableRandom {
     fn fill_secure(
         &mut self,
         _output: &mut [u8],
-        output_kind: RngOutputKind,
+        _output_kind: RngOutputKind,
     ) -> Result<(), CryptoError> {
-        Err(CryptoError::Rng {
-            output: output_kind,
-            kind: RngFailureKind::EntropyUnavailable,
-        })
+        Err(CryptoError::PROVIDER_RANDOMNESS_UNAVAILABLE)
     }
 }
 

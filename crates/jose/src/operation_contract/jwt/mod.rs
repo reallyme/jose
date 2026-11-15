@@ -7,6 +7,7 @@
 mod execute;
 
 pub(crate) use execute::{
-    decode_unsigned_jwt, encode_unsigned_jwt, sign_jwt, sign_jwt_with_signer,
-    verify_jwt_signature_only, verify_jwt_with_claims_policy, verify_jwt_with_temporal_policy,
+    decode_unsigned_jwt, encode_unsigned_jwt, parse_registered_claims, sign_jwt,
+    sign_jwt_with_signer, verify_jwt_signature_only, verify_jwt_with_claims_policy,
+    verify_jwt_with_temporal_policy,
 };

@@ -8,6 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import me.really.jose.v1.JoseSdkErrorCode
 
 private const val KNOWN_COMPACT: String =
     "eyJhbGciOiJFZERTQSJ9.cmVhbGx5bWUtY29uZm9ybWFuY2UtY2lk." +
@@ -32,6 +33,7 @@ class ReallyMeJoseTest {
         }
         assertEquals(ReallyMeJoseErrorBranch.PRIMITIVE, failure.branch)
         assertEquals(ReallyMeJoseErrorReason.JWS_INVALID_SIGNATURE, failure.reason)
+        assertEquals(JoseSdkErrorCode.JOSE_SDK_ERROR_CODE_JOSE_FAILURE, failure.code)
     }
 
     @Test
@@ -52,7 +54,7 @@ class ReallyMeJoseTest {
         val jwt = ReallyMeJose.signJwt(claims, jwk, privateKey)
         assertContentEquals(
             claims,
-            ReallyMeJose.verifyJwt(jwt, jwk, publicKey, signatureOnly = true),
+            ReallyMeJose.verifyJwt(jwt, jwk, publicKey, verification = ReallyMeJoseJwtVerification.SignatureOnly),
         )
     }
 
@@ -67,33 +69,46 @@ class ReallyMeJoseTest {
             .toByteArray()
         try {
             val compact = ReallyMeJose.signJwt(claims, jwk, privateKey)
-            fun policy(issuer: String?, subject: String?): ReallyMeJoseJwtTemporalPolicy =
-                ReallyMeJoseJwtTemporalPolicy(
+            fun policy(issuer: String?, subject: String?): ReallyMeJoseJwtClaimsPolicy =
+                ReallyMeJoseJwtClaimsPolicy(
                     true, false, false, 0, 0, 1_720_000_000, "recipient", issuer, subject,
                 )
 
             val unconstrained = ReallyMeJose.verifyJwt(
-                compact, jwk, publicKey, temporalPolicy = policy(null, null),
+                compact, jwk, publicKey, verification = ReallyMeJoseJwtVerification.Claims(policy(null, null)),
             )
             assertContentEquals(claims, unconstrained)
             unconstrained.fill(0)
             val constrained = ReallyMeJose.verifyJwt(
-                compact, jwk, publicKey, temporalPolicy = policy("trusted", "alice"),
+                compact, jwk, publicKey, verification = ReallyMeJoseJwtVerification.Claims(policy("trusted", "alice")),
             )
             assertContentEquals(claims, constrained)
             constrained.fill(0)
 
+            fun temporal(now: Long): ReallyMeJoseJwtVerification = ReallyMeJoseJwtVerification.TemporalOnly(
+                ReallyMeJoseJwtTemporalPolicy(true, false, false, 0, 0, now),
+            )
+            val timeOnly = ReallyMeJose.verifyJwt(compact, jwk, publicKey, verification = temporal(1_720_000_000))
+            assertContentEquals(claims, timeOnly)
+            timeOnly.fill(0)
+            for ((now, reason) in listOf(1_720_000_200L to ReallyMeJoseErrorReason.JWT_EXPIRED,
+                0L to ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_TIME)) {
+                val failure = assertFailsWith<ReallyMeJoseException.JoseFailure> {
+                    ReallyMeJose.verifyJwt(compact, jwk, publicKey, verification = temporal(now)).fill(0)
+                }
+                assertEquals(reason, failure.reason)
+            }
             for ((issuer, subject) in listOf("" to null, null to "")) {
                 val failure = assertFailsWith<ReallyMeJoseException.JoseFailure> {
                     ReallyMeJose.verifyJwt(
-                        compact, jwk, publicKey, temporalPolicy = policy(issuer, subject),
+                        compact, jwk, publicKey, verification = ReallyMeJoseJwtVerification.Claims(policy(issuer, subject)),
                     ).fill(0)
                 }
                 assertEquals(ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_POLICY, failure.reason)
             }
             val mismatch = assertFailsWith<ReallyMeJoseException.JoseFailure> {
                 ReallyMeJose.verifyJwt(
-                    compact, jwk, publicKey, temporalPolicy = policy("trusted", "other"),
+                    compact, jwk, publicKey, verification = ReallyMeJoseJwtVerification.Claims(policy("trusted", "other")),
                 ).fill(0)
             }
             assertEquals(ReallyMeJoseErrorReason.JWT_SUBJECT_MISMATCH, mismatch.reason)
@@ -149,9 +164,9 @@ class ReallyMeJoseTest {
                 val failure = assertFailsWith<ReallyMeJoseException.JoseFailure> {
                     ReallyMeJose.verifyJwt(
                         token, jwk, publicKey,
-                        temporalPolicy = ReallyMeJoseJwtTemporalPolicy(
+                        verification = ReallyMeJoseJwtVerification.Claims(ReallyMeJoseJwtClaimsPolicy(
                             false, false, false, 0, 0, now, "test",
-                        ),
+                        )),
                     )
                 }
                 assertEquals(ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_TIME, failure.reason)
@@ -160,18 +175,18 @@ class ReallyMeJoseTest {
                 val failure = assertFailsWith<ReallyMeJoseException.JoseFailure> {
                     ReallyMeJose.verifyJwt(
                         token, jwk, publicKey,
-                        temporalPolicy = ReallyMeJoseJwtTemporalPolicy(
+                        verification = ReallyMeJoseJwtVerification.Claims(ReallyMeJoseJwtClaimsPolicy(
                             false, false, false, clockSkew, issuedAtSkew, 1000, "test",
-                        ),
+                        )),
                     )
                 }
                 assertEquals(ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_POLICY, failure.reason)
             }
             val future = ReallyMeJose.verifyJwt(
                 token, jwk, publicKey,
-                temporalPolicy = ReallyMeJoseJwtTemporalPolicy(
+                verification = ReallyMeJoseJwtVerification.Claims(ReallyMeJoseJwtClaimsPolicy(
                     false, false, false, 0, 0, 1000, "test",
-                ),
+                )),
             )
             assertContentEquals(claims, future)
             future.fill(0)

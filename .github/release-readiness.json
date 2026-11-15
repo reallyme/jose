@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "lanes": {
+    "policy": {
+      "workflow": "readiness.yml"
+    },
+    "code": {
+      "workflow": "rust-ci.yml",
+      "paths": [
+        "crates/",
+        "deny.toml",
+        "tools/",
+        "vectors/",
+        "packages/ts/"
+      ]
+    },
+    "proto": {
+      "workflow": "protobuf-ci.yml",
+      "paths": [
+        "crates/",
+        "gen/",
+        "packages/",
+        "vectors/"
+      ]
+    },
+    "fuzz": {
+      "workflow": "fuzz-ci.yml",
+      "paths": [
+        "crates/",
+        "fuzz/",
+        "vectors/"
+      ]
+    },
+    "swift": {
+      "workflow": "swift-ci.yml",
+      "paths": [
+        "Package.swift",
+        "Package.resolved",
+        "packages/swift/",
+        "crates/",
+        "gen/swift/",
+        "vectors/"
+      ]
+    },
+    "android": {
+      "workflow": "android-ci.yml",
+      "paths": [
+        "crates/",
+        "packages/kotlin-android/",
+        "packages/kotlin/",
+        "gen/java/",
+        "gen/kotlin/",
+        "vectors/"
+      ]
+    },
+    "conformance": {
+      "workflow": "kotlin-ci.yml",
+      "paths": [
+        "crates/",
+        "packages/kotlin/",
+        "gen/java/",
+        "gen/kotlin/",
+        "vectors/"
+      ]
+    }
+  },
+  "release": {
+    "tagPrefix": "v",
+    "crates": {
+      "preflight": "crates-package-preflight.yml",
+      "publish": "crates-release.yml",
+      "artifacts": [
+        "crate-archives-{version}-{sha}"
+      ]
+    },
+    "npm": {
+      "preflight": "npm-package-preflight.yml",
+      "publish": "npm-package-release.yml",
+      "manifests": [
+        "packages/ts/package.json"
+      ],
+      "artifacts": [
+        "reallyme-jose-npm-{version}-{sha}"
+      ]
+    },
+    "swift": {
+      "preflight": "swift-package-preflight.yml",
+      "publish": "swift-package-release.yml",
+      "tagJob": "swift-release",
+      "artifacts": [
+        "swift-xcframework-{version}-{sha}"
+      ]
+    },
+    "maven": {
+      "preflight": "kotlin-android-package-preflight.yml",
+      "publish": "kotlin-android-package-release.yml",
+      "manifests": [
+        "packages/kotlin/build.gradle.kts",
+        "packages/kotlin-android/build.gradle.kts"
+      ],
+      "artifacts": [
+        "maven-publications-{version}-{sha}"
+      ]
+    }
+  }
+}

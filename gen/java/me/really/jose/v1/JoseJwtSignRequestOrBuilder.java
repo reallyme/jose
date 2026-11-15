@@ -13,6 +13,7 @@ public interface JoseJwtSignRequestOrBuilder extends
   /**
    * <pre>
    * Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes claims_json = 1 [json_name = "claimsJson"];</code>
@@ -24,6 +25,7 @@ public interface JoseJwtSignRequestOrBuilder extends
    * <pre>
    * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
    * this as sensitive boundary input and avoid logging it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -35,6 +37,7 @@ public interface JoseJwtSignRequestOrBuilder extends
    * <pre>
    * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes private_key = 3 [json_name = "privateKey"];</code>
@@ -44,21 +47,20 @@ public interface JoseJwtSignRequestOrBuilder extends
 
   /**
    * <pre>
-   * Optional protected-header typ. Empty means the native SDK default typ.
+   * Absent options use typ JWT. Present options can explicitly omit typ.
    * </pre>
    *
-   * <code>string typ = 4 [json_name = "typ"];</code>
-   * @return The typ.
+   * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
+   * @return Whether the headerOptions field is set.
    */
-  java.lang.String getTyp();
+  boolean hasHeaderOptions();
   /**
    * <pre>
-   * Optional protected-header typ. Empty means the native SDK default typ.
+   * Absent options use typ JWT. Present options can explicitly omit typ.
    * </pre>
    *
-   * <code>string typ = 4 [json_name = "typ"];</code>
-   * @return The bytes for typ.
+   * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
+   * @return The headerOptions.
    */
-  com.google.protobuf.ByteString
-      getTypBytes();
+  me.really.jose.v1.JoseJwtHeaderEncodeOptions getHeaderOptions();
 }

@@ -12,11 +12,12 @@ public inline fun joseOperationResponse(block: me.really.jose.v1.JoseOperationRe
   me.really.jose.v1.JoseOperationResponseKt.Dsl._create(me.really.jose.v1.JoseOperationResponse.newBuilder()).apply { block() }._build()
 /**
  * ```
- * JoseOperationResponse is the canonical 0.3.0 executable response. The low
+ * JoseOperationResponse is the canonical versioned executable response. The low
  * field-number range remains reserved so future revisions cannot reuse or
  * ambiguously reinterpret it. Boundary errors are limited to failures before
  * a trusted operation variant can be selected; operation failures remain
  * nested under the selected operation.
+ * Rust adapter: wire/operation_response.rs#decode_operation_response_v1
  * ```
  *
  * Protobuf type `reallyme.jose.v1.JoseOperationResponse`
@@ -312,6 +313,234 @@ public object JoseOperationResponseKt {
     public fun hasJweDecrypt(): kotlin.Boolean {
       return _builder.hasJweDecrypt()
     }
+
+    /**
+     * ```
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];`
+     */
+    public var signatureSign: me.really.jose.v1.JoseSignatureSignResponse
+      @kotlin.jvm.JvmName("getSignatureSign")
+        get() = _builder.signatureSign
+      @kotlin.jvm.JvmName("setSignatureSign")
+        set(value) {
+        _builder.signatureSign = value
+      }
+    /**
+     * ```
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];`
+     */
+    public fun clearSignatureSign() {
+      _builder.clearSignatureSign()
+    }
+    /**
+     * ```
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];`
+     * @return Whether the signatureSign field is set.
+     */
+    public fun hasSignatureSign(): kotlin.Boolean {
+      return _builder.hasSignatureSign()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];`
+     */
+    public var signatureVerify: me.really.jose.v1.JoseSignatureVerifyResponse
+      @kotlin.jvm.JvmName("getSignatureVerify")
+        get() = _builder.signatureVerify
+      @kotlin.jvm.JvmName("setSignatureVerify")
+        set(value) {
+        _builder.signatureVerify = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];`
+     */
+    public fun clearSignatureVerify() {
+      _builder.clearSignatureVerify()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];`
+     * @return Whether the signatureVerify field is set.
+     */
+    public fun hasSignatureVerify(): kotlin.Boolean {
+      return _builder.hasSignatureVerify()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];`
+     */
+    public var signatureSuiteInfo: me.really.jose.v1.JoseSignatureSuiteInfoResponse
+      @kotlin.jvm.JvmName("getSignatureSuiteInfo")
+        get() = _builder.signatureSuiteInfo
+      @kotlin.jvm.JvmName("setSignatureSuiteInfo")
+        set(value) {
+        _builder.signatureSuiteInfo = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];`
+     */
+    public fun clearSignatureSuiteInfo() {
+      _builder.clearSignatureSuiteInfo()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];`
+     * @return Whether the signatureSuiteInfo field is set.
+     */
+    public fun hasSignatureSuiteInfo(): kotlin.Boolean {
+      return _builder.hasSignatureSuiteInfo()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];`
+     */
+    public var jwtSignWithProvider: me.really.jose.v1.JoseJwtSignWithProviderResponse
+      @kotlin.jvm.JvmName("getJwtSignWithProvider")
+        get() = _builder.jwtSignWithProvider
+      @kotlin.jvm.JvmName("setJwtSignWithProvider")
+        set(value) {
+        _builder.jwtSignWithProvider = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];`
+     */
+    public fun clearJwtSignWithProvider() {
+      _builder.clearJwtSignWithProvider()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];`
+     * @return Whether the jwtSignWithProvider field is set.
+     */
+    public fun hasJwtSignWithProvider(): kotlin.Boolean {
+      return _builder.hasJwtSignWithProvider()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];`
+     */
+    public var jwtClaimsParse: me.really.jose.v1.JoseJwtClaimsParseResponse
+      @kotlin.jvm.JvmName("getJwtClaimsParse")
+        get() = _builder.jwtClaimsParse
+      @kotlin.jvm.JvmName("setJwtClaimsParse")
+        set(value) {
+        _builder.jwtClaimsParse = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];`
+     */
+    public fun clearJwtClaimsParse() {
+      _builder.clearJwtClaimsParse()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];`
+     * @return Whether the jwtClaimsParse field is set.
+     */
+    public fun hasJwtClaimsParse(): kotlin.Boolean {
+      return _builder.hasJwtClaimsParse()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];`
+     */
+    public var jweDeriveKey: me.really.jose.v1.JoseJweDeriveKeyResponse
+      @kotlin.jvm.JvmName("getJweDeriveKey")
+        get() = _builder.jweDeriveKey
+      @kotlin.jvm.JvmName("setJweDeriveKey")
+        set(value) {
+        _builder.jweDeriveKey = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];`
+     */
+    public fun clearJweDeriveKey() {
+      _builder.clearJweDeriveKey()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];`
+     * @return Whether the jweDeriveKey field is set.
+     */
+    public fun hasJweDeriveKey(): kotlin.Boolean {
+      return _builder.hasJweDeriveKey()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];`
+     */
+    public var jweEncryptWithProvider: me.really.jose.v1.JoseJweEncryptWithProviderResponse
+      @kotlin.jvm.JvmName("getJweEncryptWithProvider")
+        get() = _builder.jweEncryptWithProvider
+      @kotlin.jvm.JvmName("setJweEncryptWithProvider")
+        set(value) {
+        _builder.jweEncryptWithProvider = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];`
+     */
+    public fun clearJweEncryptWithProvider() {
+      _builder.clearJweEncryptWithProvider()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];`
+     * @return Whether the jweEncryptWithProvider field is set.
+     */
+    public fun hasJweEncryptWithProvider(): kotlin.Boolean {
+      return _builder.hasJweEncryptWithProvider()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];`
+     */
+    public var jweDecryptWithProvider: me.really.jose.v1.JoseJweDecryptWithProviderResponse
+      @kotlin.jvm.JvmName("getJweDecryptWithProvider")
+        get() = _builder.jweDecryptWithProvider
+      @kotlin.jvm.JvmName("setJweDecryptWithProvider")
+        set(value) {
+        _builder.jweDecryptWithProvider = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];`
+     */
+    public fun clearJweDecryptWithProvider() {
+      _builder.clearJweDecryptWithProvider()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];`
+     * @return Whether the jweDecryptWithProvider field is set.
+     */
+    public fun hasJweDecryptWithProvider(): kotlin.Boolean {
+      return _builder.hasJweDecryptWithProvider()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];`
+     */
+    public var contractInfo: me.really.jose.v1.JoseContractInfoResponse
+      @kotlin.jvm.JvmName("getContractInfo")
+        get() = _builder.contractInfo
+      @kotlin.jvm.JvmName("setContractInfo")
+        set(value) {
+        _builder.contractInfo = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];`
+     */
+    public fun clearContractInfo() {
+      _builder.clearContractInfo()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];`
+     * @return Whether the contractInfo field is set.
+     */
+    public fun hasContractInfo(): kotlin.Boolean {
+      return _builder.hasContractInfo()
+    }
     public val responseCase: me.really.jose.v1.JoseOperationResponse.ResponseCase
     @kotlin.jvm.JvmName("getResponseCase")
       get() = _builder.responseCase
@@ -350,3 +579,30 @@ public val me.really.jose.v1.JoseOperationResponseOrBuilder.jweEncryptOrNull: me
 
 public val me.really.jose.v1.JoseOperationResponseOrBuilder.jweDecryptOrNull: me.really.jose.v1.JoseJweDecryptResponse?
   get() = if (hasJweDecrypt()) getJweDecrypt() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.signatureSignOrNull: me.really.jose.v1.JoseSignatureSignResponse?
+  get() = if (hasSignatureSign()) getSignatureSign() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.signatureVerifyOrNull: me.really.jose.v1.JoseSignatureVerifyResponse?
+  get() = if (hasSignatureVerify()) getSignatureVerify() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.signatureSuiteInfoOrNull: me.really.jose.v1.JoseSignatureSuiteInfoResponse?
+  get() = if (hasSignatureSuiteInfo()) getSignatureSuiteInfo() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.jwtSignWithProviderOrNull: me.really.jose.v1.JoseJwtSignWithProviderResponse?
+  get() = if (hasJwtSignWithProvider()) getJwtSignWithProvider() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.jwtClaimsParseOrNull: me.really.jose.v1.JoseJwtClaimsParseResponse?
+  get() = if (hasJwtClaimsParse()) getJwtClaimsParse() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.jweDeriveKeyOrNull: me.really.jose.v1.JoseJweDeriveKeyResponse?
+  get() = if (hasJweDeriveKey()) getJweDeriveKey() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.jweEncryptWithProviderOrNull: me.really.jose.v1.JoseJweEncryptWithProviderResponse?
+  get() = if (hasJweEncryptWithProvider()) getJweEncryptWithProvider() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.jweDecryptWithProviderOrNull: me.really.jose.v1.JoseJweDecryptWithProviderResponse?
+  get() = if (hasJweDecryptWithProvider()) getJweDecryptWithProvider() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.contractInfoOrNull: me.really.jose.v1.JoseContractInfoResponse?
+  get() = if (hasContractInfo()) getContractInfo() else null

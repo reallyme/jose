@@ -83,6 +83,7 @@ public  final class JoseJwsSignRequest extends
    * <pre>
    * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes private_key = 2 [json_name = "privateKey"];</code>
@@ -96,6 +97,7 @@ public  final class JoseJwsSignRequest extends
    * <pre>
    * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes private_key = 2 [json_name = "privateKey"];</code>
@@ -110,6 +112,7 @@ public  final class JoseJwsSignRequest extends
    * <pre>
    * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes private_key = 2 [json_name = "privateKey"];</code>
@@ -126,6 +129,7 @@ public  final class JoseJwsSignRequest extends
    * Payload bytes for compact JWS signing. The current native SDK facade signs
    * UTF-8 payloads; non-UTF-8 wire payloads fail closed with
    * JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes payload = 3 [json_name = "payload"];</code>
@@ -140,6 +144,7 @@ public  final class JoseJwsSignRequest extends
    * Payload bytes for compact JWS signing. The current native SDK facade signs
    * UTF-8 payloads; non-UTF-8 wire payloads fail closed with
    * JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes payload = 3 [json_name = "payload"];</code>
@@ -155,6 +160,7 @@ public  final class JoseJwsSignRequest extends
    * Payload bytes for compact JWS signing. The current native SDK facade signs
    * UTF-8 payloads; non-UTF-8 wire payloads fail closed with
    * JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes payload = 3 [json_name = "payload"];</code>
@@ -312,6 +318,7 @@ public  final class JoseJwsSignRequest extends
      * <pre>
      * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes private_key = 2 [json_name = "privateKey"];</code>
@@ -325,6 +332,7 @@ public  final class JoseJwsSignRequest extends
      * <pre>
      * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes private_key = 2 [json_name = "privateKey"];</code>
@@ -340,6 +348,7 @@ public  final class JoseJwsSignRequest extends
      * <pre>
      * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes private_key = 2 [json_name = "privateKey"];</code>
@@ -356,6 +365,7 @@ public  final class JoseJwsSignRequest extends
      * Payload bytes for compact JWS signing. The current native SDK facade signs
      * UTF-8 payloads; non-UTF-8 wire payloads fail closed with
      * JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes payload = 3 [json_name = "payload"];</code>
@@ -370,6 +380,7 @@ public  final class JoseJwsSignRequest extends
      * Payload bytes for compact JWS signing. The current native SDK facade signs
      * UTF-8 payloads; non-UTF-8 wire payloads fail closed with
      * JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes payload = 3 [json_name = "payload"];</code>
@@ -386,6 +397,7 @@ public  final class JoseJwsSignRequest extends
      * Payload bytes for compact JWS signing. The current native SDK facade signs
      * UTF-8 payloads; non-UTF-8 wire payloads fail closed with
      * JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes payload = 3 [json_name = "payload"];</code>

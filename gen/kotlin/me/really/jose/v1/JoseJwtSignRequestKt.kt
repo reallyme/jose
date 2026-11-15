@@ -32,6 +32,7 @@ public object JoseJwtSignRequestKt {
     /**
      * ```
      * Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes claims_json = 1 [json_name = "claimsJson"];`
@@ -46,6 +47,7 @@ public object JoseJwtSignRequestKt {
     /**
      * ```
      * Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes claims_json = 1 [json_name = "claimsJson"];`
@@ -58,6 +60,7 @@ public object JoseJwtSignRequestKt {
      * ```
      * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
      * this as sensitive boundary input and avoid logging it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes jwk_json = 2 [json_name = "jwkJson"];`
@@ -73,6 +76,7 @@ public object JoseJwtSignRequestKt {
      * ```
      * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
      * this as sensitive boundary input and avoid logging it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes jwk_json = 2 [json_name = "jwkJson"];`
@@ -85,6 +89,7 @@ public object JoseJwtSignRequestKt {
      * ```
      * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes private_key = 3 [json_name = "privateKey"];`
@@ -100,6 +105,7 @@ public object JoseJwtSignRequestKt {
      * ```
      * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes private_key = 3 [json_name = "privateKey"];`
@@ -110,29 +116,46 @@ public object JoseJwtSignRequestKt {
 
     /**
      * ```
-     * Optional protected-header typ. Empty means the native SDK default typ.
+     * Absent options use typ JWT. Present options can explicitly omit typ.
      * ```
      *
-     * `string typ = 4 [json_name = "typ"];`
+     * `.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];`
      */
-    public var typ: kotlin.String
-      @kotlin.jvm.JvmName("getTyp")
-        get() = _builder.typ
-      @kotlin.jvm.JvmName("setTyp")
+    public var headerOptions: me.really.jose.v1.JoseJwtHeaderEncodeOptions
+      @kotlin.jvm.JvmName("getHeaderOptions")
+        get() = _builder.headerOptions
+      @kotlin.jvm.JvmName("setHeaderOptions")
         set(value) {
-        _builder.typ = value
+        _builder.headerOptions = value
       }
     /**
      * ```
-     * Optional protected-header typ. Empty means the native SDK default typ.
+     * Absent options use typ JWT. Present options can explicitly omit typ.
      * ```
      *
-     * `string typ = 4 [json_name = "typ"];`
+     * `.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];`
      */
-    public fun clearTyp() {
-      _builder.clearTyp()
+    public fun clearHeaderOptions() {
+      _builder.clearHeaderOptions()
     }
+    /**
+     * ```
+     * Absent options use typ JWT. Present options can explicitly omit typ.
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];`
+     * @return Whether the headerOptions field is set.
+     */
+    public fun hasHeaderOptions(): kotlin.Boolean {
+      return _builder.hasHeaderOptions()
+    }
+
+    public val JoseJwtSignRequestKt.Dsl.headerOptionsOrNull: me.really.jose.v1.JoseJwtHeaderEncodeOptions?
+      get() = _builder.headerOptionsOrNull
   }
 }
 public inline fun me.really.jose.v1.JoseJwtSignRequest.copy(block: `me.really.jose.v1`.JoseJwtSignRequestKt.Dsl.() -> kotlin.Unit): me.really.jose.v1.JoseJwtSignRequest =
   `me.really.jose.v1`.JoseJwtSignRequestKt.Dsl._create(this.toBuilder()).apply { block() }._build()
+
+public val me.really.jose.v1.JoseJwtSignRequestOrBuilder.headerOptionsOrNull: me.really.jose.v1.JoseJwtHeaderEncodeOptions?
+  get() = if (hasHeaderOptions()) getHeaderOptions() else null

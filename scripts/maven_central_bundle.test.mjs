@@ -80,7 +80,8 @@ function fixture(t) {
   const env = { ...process.env, HOME: home, PATH: bin + ":" + process.env.PATH,
     ANDROID_HOME: sdk, SDK_CALLS: calls, SDK_PACKAGES: packages };
   for (const variable of ["ANDROID_SDK_ROOT", "ANDROID_NDK_HOME", "ANDROID_NDK_VERSION",
-    "SDK_LIST_STATUS", "SDK_INSTALL_STATUS", "SDK_INSTALL_INCOMPLETE", "MAVEN_CENTRAL_WORK_DIR"]) {
+    "KOTLIN_NATIVE_RESOURCES_DIR", "SDK_LIST_STATUS", "SDK_INSTALL_STATUS", "SDK_INSTALL_INCOMPLETE",
+    "MAVEN_CENTRAL_WORK_DIR"]) {
     delete env[variable];
   }
   return {
@@ -106,6 +107,48 @@ test("installs the latest stable NDK with numeric revision ordering", t => {
   assert.deepEqual(JSON.parse(result.stdout), {
     ndk: join(f.sdk, "ndk/30.10.10"), sdk: f.sdk, legacySdk: f.sdk,
   });
+  assert.deepEqual(f.calls(), [
+    ["--sdk_root=" + f.sdk, "--list", "--channel=0"],
+    ["--sdk_root=" + f.sdk, "--install", "ndk;30.10.10", "--channel=0"],
+  ]);
+});
+
+test("reuses the latest stable NDK from a space-aligned SDK listing", t => {
+  const f = fixture(t);
+  const ndk = f.installed("29.0.14206865");
+  writeFileSync(f.packages, [
+    "Installed packages:",
+    "  ndk/29.0.14206865       29.0.14206865              NDK (Side by side) 29.0.14206865",
+    "Available packages:",
+    "  ndk/9.0.999            9.0.999                    NDK (Side by side) 9.0.999",
+    "  ndk/30.0.14904198      30.0.14904198-rc.1          NDK (Side by side) 30.0.14904198",
+    "  ndk/30.0.15729638      30.0.15729638 rc2          NDK (Side by side) 30.0.15729638",
+    "  ndk/31.0.100           31.0.101                   Mismatched version",
+    "  ndk/32x0x100           32x0x100                   Invalid revision",
+    "  ndk/../../outside      ../../outside             Invalid path",
+    "",
+  ].join("\r\n"));
+  const result = f.run();
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(JSON.parse(result.stdout), { ndk, sdk: f.sdk, legacySdk: f.sdk });
+  assert.deepEqual(f.calls(), [["--sdk_root=" + f.sdk, "--list", "--channel=0"]]);
+});
+
+test("installs a newly discovered NDK using the SDK package ID", t => {
+  const f = fixture(t);
+  f.installed("29.0.14206865");
+  writeFileSync(f.packages, [
+    "Installed packages:",
+    "  ndk/29.0.14206865       29.0.14206865              NDK (Side by side) 29.0.14206865",
+    "Available packages:",
+    "  ndk/30.2.9             30.2.9                    NDK (Side by side) 30.2.9",
+    "  ndk/30.10.8            30.10.8                   NDK (Side by side) 30.10.8",
+    "\tndk/30.10.10\t30.10.10\tNDK (Side by side) 30.10.10",
+    "",
+  ].join("\n"));
+  const result = f.run();
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout).ndk, join(f.sdk, "ndk/30.10.10"));
   assert.deepEqual(f.calls(), [
     ["--sdk_root=" + f.sdk, "--list", "--channel=0"],
     ["--sdk_root=" + f.sdk, "--install", "ndk;30.10.10", "--channel=0"],

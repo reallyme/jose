@@ -19,6 +19,23 @@ use crate::jwt::{
 };
 use crate::{Jwk, Signer};
 
+/// Parses an unauthenticated claims object without accepting serde's sequence
+/// representation of a Rust struct as a JWT claims document.
+pub(crate) fn parse_registered_claims(
+    claims_json: &[u8],
+) -> Result<crate::jwt::RegisteredClaims, JwtError> {
+    if claims_json
+        .iter()
+        .copied()
+        .find(|byte| !byte.is_ascii_whitespace())
+        != Some(b'{')
+    {
+        return Err(JwtError::InvalidClaims);
+    }
+    crate::jwt::reject_duplicate_object_members(claims_json)?;
+    serde_json::from_slice(claims_json).map_err(|_| JwtError::Serialization)
+}
+
 /// Encodes validated claims JSON as an unsigned compact JWT.
 pub(crate) fn encode_unsigned_jwt(claims_json: &[u8]) -> Result<String, JwtError> {
     encode_unsigned_jwt_claims_json_core(claims_json)

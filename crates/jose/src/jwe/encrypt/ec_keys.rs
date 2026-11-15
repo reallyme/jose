@@ -14,7 +14,9 @@ use crate::jwe::JweError;
 pub(super) fn p256_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<JsonValue, JweError> {
     ec_epk_from_sec1_public_key(
         public_key_sec1,
-        "P-256",
+        crate::resolve_algorithm::JweKeyManagementSuite::P256
+            .jwk_curve()
+            .ok_or(JweError::InvalidKeyAgreementKey)?,
         32,
         33,
         65,
@@ -26,7 +28,9 @@ pub(super) fn p256_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<Js
 pub(super) fn p256_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweError> {
     ec_public_key_from_jwk(
         jwk,
-        "P-256",
+        crate::resolve_algorithm::JweKeyManagementSuite::P256
+            .jwk_curve()
+            .ok_or(JweError::InvalidKeyAgreementKey)?,
         32,
         33,
         reallyme_crypto::p256::decompress_public_key,
@@ -38,7 +42,9 @@ pub(super) fn p256_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweEr
 pub(super) fn p384_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<JsonValue, JweError> {
     ec_epk_from_sec1_public_key(
         public_key_sec1,
-        "P-384",
+        crate::resolve_algorithm::JweKeyManagementSuite::P384
+            .jwk_curve()
+            .ok_or(JweError::InvalidKeyAgreementKey)?,
         48,
         49,
         97,
@@ -51,7 +57,9 @@ pub(super) fn p384_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<Js
 pub(super) fn p384_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweError> {
     ec_public_key_from_jwk(
         jwk,
-        "P-384",
+        crate::resolve_algorithm::JweKeyManagementSuite::P384
+            .jwk_curve()
+            .ok_or(JweError::InvalidKeyAgreementKey)?,
         48,
         49,
         reallyme_crypto::p384::decompress_p384,
@@ -63,7 +71,9 @@ pub(super) fn p384_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweEr
 pub(super) fn p521_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<JsonValue, JweError> {
     ec_epk_from_sec1_public_key(
         public_key_sec1,
-        "P-521",
+        crate::resolve_algorithm::JweKeyManagementSuite::P521
+            .jwk_curve()
+            .ok_or(JweError::InvalidKeyAgreementKey)?,
         66,
         67,
         133,
@@ -76,7 +86,9 @@ pub(super) fn p521_epk_from_sec1_public_key(public_key_sec1: &[u8]) -> Result<Js
 pub(super) fn p521_public_key_from_jwk(jwk: &JsonValue) -> Result<Vec<u8>, JweError> {
     ec_public_key_from_jwk(
         jwk,
-        "P-521",
+        crate::resolve_algorithm::JweKeyManagementSuite::P521
+            .jwk_curve()
+            .ok_or(JweError::InvalidKeyAgreementKey)?,
         66,
         67,
         reallyme_crypto::p521::decompress_p521,
@@ -166,7 +178,7 @@ fn ec_public_key_from_jwk(
     if object
         .get("alg")
         .and_then(JsonValue::as_str)
-        .is_some_and(|alg| alg != "ECDH-ES")
+        .is_some_and(|alg| alg != super::super::JweKeyManagementAlgorithm::EcdhEs.as_str())
     {
         return Err(JweError::InvalidKeyAgreementKey);
     }

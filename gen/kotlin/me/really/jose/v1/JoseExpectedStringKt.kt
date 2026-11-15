@@ -30,6 +30,10 @@ public object JoseExpectedStringKt {
     internal fun _build(): me.really.jose.v1.JoseExpectedString = _builder.build()
 
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `string value = 1 [json_name = "value"];`
      */
     public var value: kotlin.String
@@ -40,6 +44,10 @@ public object JoseExpectedStringKt {
         _builder.value = value
       }
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `string value = 1 [json_name = "value"];`
      */
     public fun clearValue() {

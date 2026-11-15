@@ -2,14 +2,16 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { fromBinary, toBinary } from "@bufbuild/protobuf";
+import { create, fromBinary, toBinary } from "@bufbuild/protobuf";
 import type { Message } from "@bufbuild/protobuf";
 import { executeOperation } from "./boundary.js";
-import { ReallyMeJoseError } from "./errors.js";
+import { ReallyMeJoseError, ReallyMeJoseSdkErrorCode } from "./errors.js";
 import type { ReallyMeJoseErrorBranch } from "./errors.js";
 import {
   JoseErrorReason,
   JoseJweCompressionAlgorithm,
+  JoseJwtHeaderEncodeOptionsSchema,
+  JoseJwtVerificationPolicySchema,
   JoseOperationContractVersion,
   JoseOperationRequestSchema,
   JoseOperationResponseSchema,
@@ -26,24 +28,32 @@ import type {
 import type {
   ReallyMeJoseJweHeaderPolicy,
   ReallyMeJoseJwtHeaderPolicy,
-  ReallyMeJoseJwtTemporalPolicy,
+  ReallyMeJoseJwtHeaderOptions,
+  ReallyMeJoseJwtClaimsPolicy,
 } from "./facade.js";
 import {
   ensureAggregateLength,
   ensureBoolean,
   ensureBytes,
-  ensureObject,
+  ensureObjectFields,
   ensureString,
   ensureUint64,
   invalidInput,
+  resourceLimit,
+  MAX_JOSE_BINARY_REQUEST_BYTES,
   utf8Length,
 } from "./validate.js";
+import {
+  JWT_HEADER_OPTION_FIELDS, JWT_HEADER_POLICY_FIELDS, JWT_CLAIMS_POLICY_FIELDS,
+  JWE_HEADER_POLICY_FIELDS,
+} from "./facade-shapes.js";
 
-const MAX_JWT_ACCEPTED_TYPE_VALUES = 32;
+import { ACCEPTED_TYPE_VALUES, STRICT_TEMPORAL_DEFAULTS, errorBranch } from "./proto/contract-values.js";
+const MAX_JWT_ACCEPTED_TYPE_VALUES = ACCEPTED_TYPE_VALUES;
 const PROTOBUF_REPEATED_STRING_OVERHEAD_BYTES = 5;
 
 export const malformedProviderResponse = (): never => {
-  throw new ReallyMeJoseError("malformed-provider-response");
+  throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.MALFORMED_PROVIDER_RESPONSE);
 };
 
 const requireClean = (message: Message): void => {
@@ -68,14 +78,61 @@ export const optionalString = (value: string | undefined): string => {
   return value;
 };
 
+export const optionalHeaderString = (value: string | undefined): string | undefined => {
+  if (value !== undefined) ensureString(value);
+  return value;
+};
+
+export const jwtHeaderOptions = (options: ReallyMeJoseJwtHeaderOptions | undefined) => {
+  if (options === undefined) return undefined;
+  ensureObjectFields(options, JWT_HEADER_OPTION_FIELDS);
+  const typ = optionalHeaderString(options.type);
+  if (typ === "") {
+    throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.JOSE_FAILURE, "primitive", JoseErrorReason.JWT_INVALID_HEADER);
+  }
+  return create(JoseJwtHeaderEncodeOptionsSchema, { typ });
+};
+
+export const jwtVerification = (value: import("./contract-verification.js").ReallyMeJoseJwtVerification) => {
+  // Validate the discriminated view before reading its policy. The generated
+  // mode vocabulary is exactly the schema oneof, including temporal-only.
+  ensureObjectFields(value, { mode: true, policy: true });
+  if (value.mode === "signatureOnly") {
+    ensureObjectFields(value, { mode: true });
+    return create(JoseJwtVerificationPolicySchema, { mode: { case: "signatureOnly", value: {} } });
+  }
+  if (value.mode === "claims") {
+    const claims = jwtClaimsPolicy(value.policy);
+    if (claims === undefined) return invalidInput();
+    return create(JoseJwtVerificationPolicySchema, { mode: { case: "claims", value: claims } });
+  }
+  if (value.mode === "temporalOnly") {
+    ensureObjectFields(value.policy, { requireExpiration: true, requireNotBefore: true, requireIssuedAt: true,
+      clockSkewSeconds: true, maximumFutureIssuedAtSkewSeconds: true, verificationTimeUnixSeconds: true });
+    ensureUint64(value.policy.verificationTimeUnixSeconds);
+    if (value.policy.verificationTimeUnixSeconds === 0n) invalidInput();
+    return create(JoseJwtVerificationPolicySchema, { mode: { case: "temporalOnly", value: {
+      nowUnix: value.policy.verificationTimeUnixSeconds,
+      options: {
+        requireExp: optionalBoolean(value.policy.requireExpiration, STRICT_TEMPORAL_DEFAULTS.requireExp),
+        requireNbf: optionalBoolean(value.policy.requireNotBefore, STRICT_TEMPORAL_DEFAULTS.requireNbf),
+        requireIat: optionalBoolean(value.policy.requireIssuedAt, STRICT_TEMPORAL_DEFAULTS.requireIat),
+        clockSkewSeconds: optionalUint64(value.policy.clockSkewSeconds, STRICT_TEMPORAL_DEFAULTS.clockSkewSeconds),
+        maxFutureIatSkewSeconds: optionalUint64(value.policy.maximumFutureIssuedAtSkewSeconds, STRICT_TEMPORAL_DEFAULTS.maxFutureIatSkewSeconds),
+      },
+    } } });
+  }
+  return invalidInput();
+};
+
 export const optionalBoolean = (value: boolean | undefined, fallback: boolean): boolean => {
   if (value === undefined) return fallback;
   ensureBoolean(value);
   return value;
 };
 
-const optionalUint64 = (value: bigint | undefined): bigint => {
-  if (value === undefined) return 0n;
+const optionalUint64 = (value: bigint | undefined, fallback: bigint): bigint => {
+  if (value === undefined) return fallback;
   ensureUint64(value);
   return value;
 };
@@ -91,26 +148,21 @@ const throwJoseError = (error: JoseError): never => {
   const failWithReason = (
     publicBranch: ReallyMeJoseErrorBranch,
     reason: JoseErrorReason,
-    minimum: number,
-    maximum: number,
   ): never => {
     if (
-      reason === JoseErrorReason.UNSPECIFIED ||
-      JoseErrorReason[reason] === undefined ||
-      reason < minimum ||
-      reason > maximum
+      errorBranch(reason) !== publicBranch
     ) {
       malformedProviderResponse();
     }
-    throw new ReallyMeJoseError("jose-failure", publicBranch, reason);
+    throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.JOSE_FAILURE, publicBranch, reason);
   };
   switch (branch) {
     case "primitive":
-      return failWithReason("primitive", error.error.value.reason, 1, 799);
+      return failWithReason("primitive", error.error.value.reason);
     case "provider":
-      return failWithReason("provider", error.error.value.reason, 800, 802);
+      return failWithReason("provider", error.error.value.reason);
     case "backend":
-      return failWithReason("backend", error.error.value.reason, 900, 902);
+      return failWithReason("backend", error.error.value.reason);
     default:
       return malformedProviderResponse();
   }
@@ -134,7 +186,7 @@ export const withResponse = <T>(
     responseBytes = executeOperation(requestBytes);
     const response = decodeResponse(responseBytes);
     requireClean(response);
-    if (response.contractVersion !== JoseOperationContractVersion.V1) {
+    if (response.contractVersion !== JoseOperationContractVersion.V2) {
       malformedProviderResponse();
     }
     if (response.response.case === undefined) return malformedProviderResponse();
@@ -195,14 +247,14 @@ export const plaintextOutcome = (outcome: JoseJweDecryptResponse["outcome"]): Ui
 
 export const jwtHeaderPolicy = (policy: ReallyMeJoseJwtHeaderPolicy | undefined) => {
   if (policy === undefined) return undefined;
-  ensureObject(policy);
+  ensureObjectFields(policy, JWT_HEADER_POLICY_FIELDS);
+  if (policy.acceptedTypes !== undefined && !Array.isArray(policy.acceptedTypes)) invalidInput();
   if (
     policy.acceptedTypes !== undefined &&
     policy.acceptedTypes.length > MAX_JWT_ACCEPTED_TYPE_VALUES
   ) {
-    invalidInput();
+    resourceLimit();
   }
-  if (policy.acceptedTypes !== undefined && !Array.isArray(policy.acceptedTypes)) invalidInput();
   const acceptedTypes = policy.acceptedTypes === undefined ? [] : [...policy.acceptedTypes];
   for (const value of acceptedTypes) ensureString(value);
   return {
@@ -222,24 +274,12 @@ export const jwtHeaderPolicyLength = (
   return ensureAggregateLength(...lengths);
 };
 
-export const jwtTemporalPolicyLength = (
-  policy: ReturnType<typeof jwtTemporalPolicy>,
-): number => {
-  if (policy === undefined) return 0;
-  const lengths = [
-    utf8Length(policy.expectedAudience),
-    utf8Length(policy.expectedIssuerConstraint?.value ?? ""),
-    utf8Length(policy.expectedSubjectConstraint?.value ?? ""),
-  ];
-  return ensureAggregateLength(...lengths);
-};
-
 const expectedClaimConstraint = (value: string | undefined): { value: string } | undefined => {
   if (value === undefined) return undefined;
   ensureString(value);
   if (value.length === 0) {
     throw new ReallyMeJoseError(
-      "jose-failure",
+      ReallyMeJoseSdkErrorCode.JOSE_FAILURE,
       "primitive",
       JoseErrorReason.JWT_INVALID_VERIFICATION_POLICY,
     );
@@ -247,19 +287,19 @@ const expectedClaimConstraint = (value: string | undefined): { value: string } |
   return { value };
 };
 
-export const jwtTemporalPolicy = (policy: ReallyMeJoseJwtTemporalPolicy | undefined) => {
+export const jwtClaimsPolicy = (policy: ReallyMeJoseJwtClaimsPolicy | undefined) => {
   if (policy === undefined) return undefined;
-  ensureObject(policy);
+  ensureObjectFields(policy, JWT_CLAIMS_POLICY_FIELDS);
   ensureUint64(policy.verificationTimeUnixSeconds);
   if (policy.verificationTimeUnixSeconds === 0n) invalidInput();
   ensureString(policy.expectedAudience);
   if (policy.expectedAudience.length === 0) invalidInput();
   return {
-    requireExp: optionalBoolean(policy.requireExpiration, true),
-    requireNbf: optionalBoolean(policy.requireNotBefore, false),
-    requireIat: optionalBoolean(policy.requireIssuedAt, false),
-    clockSkewSeconds: optionalUint64(policy.clockSkewSeconds),
-    maxFutureIatSkewSeconds: optionalUint64(policy.maximumFutureIssuedAtSkewSeconds),
+    requireExp: optionalBoolean(policy.requireExpiration, STRICT_TEMPORAL_DEFAULTS.requireExp),
+    requireNbf: optionalBoolean(policy.requireNotBefore, STRICT_TEMPORAL_DEFAULTS.requireNbf),
+    requireIat: optionalBoolean(policy.requireIssuedAt, STRICT_TEMPORAL_DEFAULTS.requireIat),
+    clockSkewSeconds: optionalUint64(policy.clockSkewSeconds, STRICT_TEMPORAL_DEFAULTS.clockSkewSeconds),
+    maxFutureIatSkewSeconds: optionalUint64(policy.maximumFutureIssuedAtSkewSeconds, STRICT_TEMPORAL_DEFAULTS.maxFutureIatSkewSeconds),
     nowUnix: policy.verificationTimeUnixSeconds,
     expectedAudience: policy.expectedAudience,
     expectedIssuerConstraint: expectedClaimConstraint(policy.expectedIssuer),
@@ -273,9 +313,12 @@ export const jweHeaderPolicy = (
   ownedApv: Uint8Array | undefined,
 ) => {
   if (policy === undefined) return undefined;
-  ensureObject(policy);
-  const configuredCompressionAlgorithms = policy.allowedCompressionAlgorithms ?? [];
+  ensureObjectFields(policy, JWE_HEADER_POLICY_FIELDS);
+  const configuredCompressionAlgorithms = policy.allowedCompressionAlgorithms === undefined ? [] : policy.allowedCompressionAlgorithms;
   if (!Array.isArray(configuredCompressionAlgorithms)) invalidInput();
+  // Each packed enum needs at least one wire byte. Bound the list before
+  // copying it so a sparse attacker-controlled array cannot exhaust the host.
+  if (configuredCompressionAlgorithms.length > MAX_JOSE_BINARY_REQUEST_BYTES) resourceLimit();
   const allowedCompressionAlgorithms: JoseJweCompressionAlgorithm[] = [
     ...configuredCompressionAlgorithms,
   ];

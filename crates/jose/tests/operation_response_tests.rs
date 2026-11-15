@@ -8,7 +8,7 @@
 #![allow(missing_docs, clippy::panic)]
 
 use buffa::{EnumValue, Enumeration, Message};
-use reallyme_crypto::core::{Algorithm, CryptoError, RngFailureKind, RngOutputKind};
+use reallyme_crypto::core::{Algorithm, CryptoError, RngOutputKind};
 use reallyme_crypto::p256::generate_p256_keypair_from_secret_key;
 use reallyme_crypto::{
     csprng::SecureRandom,
@@ -44,16 +44,20 @@ use reallyme_jose::wire::{
 };
 use reallyme_jose::Jwk;
 
+include!("operation_response_tests/helpers.rs");
 include!("operation_response_tests/jwe_policy.rs");
+include!("operation_response_tests/presence.rs");
+include!("operation_response_tests/extended.rs");
+include!("operation_response_tests/providers.rs");
+include!("operation_response_tests/cross_lane.rs");
 
 #[test]
 fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std::error::Error>> {
     let (jws_public, jws_private) = generate_keypair(Algorithm::Ed25519)?;
     let jws_sign = operation(RequestOperation::JwsSign(Box::new(JoseJwsSignRequest {
         algorithm: EnumValue::from(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_EDDSA),
-        private_key: jws_private.to_vec(),
-        payload: b"stage-11-jws".to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        private_key: jws_private.to_vec().into(),
+        payload: b"stage-11-jws".to_vec().into(),
     })));
     let signed_jws = decode_compact(&assert_route_parity(
         &jws_sign,
@@ -64,9 +68,8 @@ fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std
     let jws_verify = operation(RequestOperation::JwsVerify(Box::new(
         JoseJwsVerifyRequest {
             algorithm: EnumValue::from(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_EDDSA),
-            compact: signed_jws,
-            public_key: jws_public,
-            __buffa_unknown_fields: Default::default(),
+            compact: signed_jws.into(),
+            public_key: jws_public.into(),
         },
     )));
     let (verified_header, verified_payload) = decode_verify_result(&assert_route_parity(
@@ -80,8 +83,7 @@ fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std
     let unsigned_claims = br#"{"sub":"unsigned-stage-11"}"#.to_vec();
     let jwt_encode = operation(RequestOperation::JwtEncodeUnsigned(Box::new(
         JoseJwtEncodeUnsignedRequest {
-            claims_json: unsigned_claims.clone(),
-            __buffa_unknown_fields: Default::default(),
+            claims_json: unsigned_claims.clone().into(),
         },
     )));
     let unsigned_compact = decode_compact(&assert_route_parity(
@@ -92,8 +94,7 @@ fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std
 
     let jwt_decode = operation(RequestOperation::JwtDecodeUnsigned(Box::new(
         JoseJwtDecodeUnsignedRequest {
-            compact: unsigned_compact,
-            __buffa_unknown_fields: Default::default(),
+            compact: unsigned_compact.into(),
         },
     )));
     let decoded_claims = decode_claims(&assert_route_parity(
@@ -117,11 +118,10 @@ fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std
     let jwk_json = serde_json::to_vec(&jwk)?;
     let signed_claims = br#"{"sub":"signed-stage-11"}"#.to_vec();
     let jwt_sign = operation(RequestOperation::JwtSign(Box::new(JoseJwtSignRequest {
-        claims_json: signed_claims.clone(),
-        jwk_json: jwk_json.clone(),
-        private_key: jwt_private.to_vec(),
-        typ: String::new(),
-        __buffa_unknown_fields: Default::default(),
+        claims_json: signed_claims.clone().into(),
+        jwk_json: jwk_json.clone().into(),
+        private_key: jwt_private.to_vec().into(),
+        header_options: Default::default(),
     })));
     let signed_compact = decode_compact(&assert_route_parity(
         &jwt_sign,
@@ -131,13 +131,12 @@ fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std
 
     let jwt_verify = operation(RequestOperation::JwtVerify(Box::new(
         JoseJwtVerifyRequest {
-            compact: signed_compact,
-            jwk_json,
-            public_key: jwt_public,
+            compact: signed_compact.into(),
+            jwk_json: jwk_json.into(),
+            public_key: jwt_public.into(),
             header_policy: Default::default(),
-            temporal_policy: Default::default(),
-            signature_only: true,
-            __buffa_unknown_fields: Default::default(),
+            verification: reallyme_jose_proto::generated::proto::reallyme::jose::v1::JoseJwtVerificationPolicy {mode:Some(reallyme_jose_proto::generated::proto::reallyme::jose::v1::__buffa::oneof::jose_jwt_verification_policy::Mode::SignatureOnly(Box::default()))}.into(),
+
         },
     )));
     let verified_claims = decode_claims(&assert_route_parity(
@@ -157,15 +156,14 @@ fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std
             content_encryption_algorithm: EnumValue::from(
                 JoseJweContentEncryptionAlgorithm::JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM,
             ),
-            key: jwe_key.clone(),
-            plaintext: plaintext.clone(),
-            kid: String::new(),
-            apu: Vec::new(),
-            apv: Vec::new(),
-            typ: String::new(),
-            cty: String::new(),
+            key: jwe_key.clone().into(),
+            plaintext: plaintext.clone().into(),
+            kid: None,
+            apu: None,
+            apv: None,
+            typ: None,
+            cty: None,
             compression_algorithm: Default::default(),
-            __buffa_unknown_fields: Default::default(),
         },
     )));
     let encrypted = decode_compact(&assert_route_parity(
@@ -176,16 +174,15 @@ fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std
 
     let jwe_decrypt = operation(RequestOperation::JweDecrypt(Box::new(
         JoseJweDecryptRequest {
-            compact: encrypted,
+            compact: encrypted.into(),
             key_management_algorithm: EnumValue::from(
                 JoseJweKeyManagementAlgorithm::JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT,
             ),
             content_encryption_algorithm: EnumValue::from(
                 JoseJweContentEncryptionAlgorithm::JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM,
             ),
-            key: jwe_key,
+            key: jwe_key.into(),
             header_policy: Default::default(),
-            __buffa_unknown_fields: Default::default(),
         },
     )));
     let decrypted = decode_plaintext(&assert_route_parity(
@@ -220,9 +217,8 @@ fn boundary_and_selected_operation_failures_remain_discriminated(
 
     let unsupported = operation(RequestOperation::JwsSign(Box::new(JoseJwsSignRequest {
         algorithm: EnumValue::from(99),
-        private_key: Vec::new(),
-        payload: b"payload".to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        private_key: Vec::new().into(),
+        payload: b"payload".to_vec().into(),
     })));
     let unsupported = execute_operation_v1(
         &encode_protobuf(&unsupported),
@@ -286,27 +282,25 @@ fn jwt_wire_temporal_policy_rejects_audience_mismatch() -> Result<(), Box<dyn st
     )?;
     let request = operation(RequestOperation::JwtVerify(Box::new(
         JoseJwtVerifyRequest {
-            compact,
-            jwk_json: serde_json::to_vec(&jwk)?,
-            public_key,
+            compact: compact.into(),
+            jwk_json: serde_json::to_vec(&jwk)?.into(),
+            public_key: public_key.into(),
             header_policy: Default::default(),
-            temporal_policy: JoseJwtTemporalValidationPolicy {
+            verification: reallyme_jose_proto::generated::proto::reallyme::jose::v1::JoseJwtVerificationPolicy {mode:Some(reallyme_jose_proto::generated::proto::reallyme::jose::v1::__buffa::oneof::jose_jwt_verification_policy::Mode::Claims(Box::new(JoseJwtTemporalValidationPolicy {
                 require_exp: true,
                 require_nbf: false,
                 require_iat: false,
                 clock_skew_seconds: 60,
                 max_future_iat_skew_seconds: 60,
                 now_unix: NOW_UNIX,
-                expected_audience: "service-b".to_owned(),
-                expected_issuer: String::new(),
-                expected_subject: String::new(),
+                expected_audience: "service-b".to_owned().into(),
+
+
                 expected_issuer_constraint: Default::default(),
                 expected_subject_constraint: Default::default(),
-                __buffa_unknown_fields: Default::default(),
-            }
-            .into(),
-            signature_only: false,
-            __buffa_unknown_fields: Default::default(),
+
+            })))}.into(),
+
         },
     )));
     let encoded = encode_protobuf(&request);
@@ -348,8 +342,7 @@ fn jwt_wire_expected_claim_presence_is_fail_closed() -> Result<(), Box<dyn std::
     )?;
     let jwk_json = serde_json::to_vec(&jwk)?;
     let constraint = |value: &str| JoseExpectedString {
-        value: value.to_owned(),
-        __buffa_unknown_fields: Default::default(),
+        value: value.to_owned().into(),
     };
 
     for (issuer, subject, expected_error) in [
@@ -379,18 +372,17 @@ fn jwt_wire_expected_claim_presence_is_fail_closed() -> Result<(), Box<dyn std::
         let mut policy = JoseJwtTemporalValidationPolicy::default();
         policy.require_exp = true;
         policy.now_unix = NOW_UNIX;
-        policy.expected_audience = "service-a".to_owned();
+        policy.expected_audience = "service-a".to_owned().into();
         policy.expected_issuer_constraint = issuer.map(constraint).into();
         policy.expected_subject_constraint = subject.map(constraint).into();
         let request = operation(RequestOperation::JwtVerify(Box::new(
             JoseJwtVerifyRequest {
-                compact: compact.clone(),
-                jwk_json: jwk_json.clone(),
-                public_key: public_key.clone(),
+                compact: compact.clone().into(),
+                jwk_json: jwk_json.clone().into(),
+                public_key: public_key.clone().into(),
                 header_policy: Default::default(),
-                temporal_policy: policy.into(),
-                signature_only: false,
-                __buffa_unknown_fields: Default::default(),
+                verification: reallyme_jose_proto::generated::proto::reallyme::jose::v1::JoseJwtVerificationPolicy {mode:Some(reallyme_jose_proto::generated::proto::reallyme::jose::v1::__buffa::oneof::jose_jwt_verification_policy::Mode::Claims(Box::new(policy)))}.into(),
+
             },
         )));
         let binary = execute_operation_v1(
@@ -426,7 +418,6 @@ fn canonical_decoder_rejects_malformed_versions_oneofs_and_operations() {
             JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_UNSPECIFIED,
         ),
         response: Some(valid_verify_response()),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_backend_rejection(
         &encode_protobuf(&missing_version),
@@ -436,7 +427,6 @@ fn canonical_decoder_rejects_malformed_versions_oneofs_and_operations() {
     let unknown_version = JoseOperationResponse {
         contract_version: EnumValue::from(99),
         response: Some(valid_verify_response()),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_backend_rejection(
         &encode_protobuf(&unknown_version),
@@ -451,7 +441,6 @@ fn canonical_decoder_rejects_malformed_versions_oneofs_and_operations() {
 
     let missing_outcome = canonical(Some(Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
         outcome: None,
-        __buffa_unknown_fields: Default::default(),
     }))));
     assert_backend_rejection(
         &encode_protobuf(&missing_outcome),
@@ -467,13 +456,10 @@ fn canonical_decoder_rejects_malformed_versions_oneofs_and_operations() {
     let wrong_branch = JoseError {
         error: Some(ErrorBranch::Provider(Box::new(JoseProviderError {
             reason: EnumValue::from(JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_HEADER),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
     let malformed_error = canonical(Some(Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
         outcome: Some(JwsVerifyOutcome::Error(Box::new(wrong_branch))),
-        __buffa_unknown_fields: Default::default(),
     }))));
     assert_backend_rejection(
         &encode_protobuf(&malformed_error),
@@ -498,7 +484,6 @@ fn canonical_decoder_accepts_every_stable_error_branch_and_reason(
         let error = JoseWireError::try_new(branch, *reason)?;
         let response = canonical(Some(Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
             outcome: Some(JwsVerifyOutcome::Error(Box::new(jose_error(error)))),
-            __buffa_unknown_fields: Default::default(),
         }))));
         let encoded = encode_protobuf(&response);
         let decoded = decode_operation_response_v1(&encoded, JoseOperationKind::JwsVerify)?;
@@ -526,14 +511,12 @@ fn canonical_maximum_inner_result_fits_frozen_overhead() -> Result<(), Box<dyn s
         .checked_sub(4)
         .ok_or("test plaintext length underflow")?;
     let result = JoseJwePlaintextResult {
-        plaintext: vec![0u8; plaintext_length],
-        __buffa_unknown_fields: Default::default(),
+        plaintext: vec![0u8; plaintext_length].into(),
     };
     assert_eq!(result.encode_to_vec().len(), MAX_JOSE_PROTO_MESSAGE_BYTES);
     let response = canonical(Some(Response::JweDecrypt(Box::new(
         JoseJweDecryptResponse {
             outcome: Some(JweDecryptOutcome::Result(Box::new(result))),
-            __buffa_unknown_fields: Default::default(),
         },
     ))));
     let encoded = encode_protobuf(&response);
@@ -543,231 +526,4 @@ fn canonical_maximum_inner_result_fits_frozen_overhead() -> Result<(), Box<dyn s
     assert!(encoded.len() <= maximum_response_length);
     decode_operation_response_v1(&encoded, JoseOperationKind::JweDecrypt)?;
     Ok(())
-}
-
-fn assert_route_parity(
-    request: &JoseOperationRequest,
-    operation_kind: JoseOperationKind,
-    rng_bytes: [u8; 12],
-) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    let protobuf = encode_protobuf(request);
-    let json = encode_json(request)?;
-    let binary_response = execute_operation_v1(&protobuf, &mut FixedRandom::new(rng_bytes));
-    let json_response = execute_operation_json_v1(&json, &mut FixedRandom::new(rng_bytes));
-    assert_eq!(binary_response.as_slice(), json_response.as_slice());
-
-    let canonical = decode_operation_response_v1(&binary_response, operation_kind)?;
-    Ok(normalize_response(canonical))
-}
-
-fn normalize_response(mut response: JoseOperationResponse) -> Vec<u8> {
-    assert_eq!(
-        response.contract_version,
-        JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1
-    );
-    let Some(response) = response.response.take() else {
-        panic!("canonical response omitted its response oneof");
-    };
-    match response {
-        Response::BoundaryError(error) => normalized_error(&error),
-        Response::JwsSign(mut response) => match response.outcome.take() {
-            Some(JwsSignOutcome::Result(result)) => normalized_result(&*result),
-            Some(JwsSignOutcome::Error(error)) => normalized_error(&error),
-            None => panic!("JWS sign response omitted its outcome"),
-        },
-        Response::JwsVerify(mut response) => match response.outcome.take() {
-            Some(JwsVerifyOutcome::Result(result)) => normalized_result(&*result),
-            Some(JwsVerifyOutcome::Error(error)) => normalized_error(&error),
-            None => panic!("JWS verify response omitted its outcome"),
-        },
-        Response::JwtEncodeUnsigned(mut response) => match response.outcome.take() {
-            Some(JwtEncodeUnsignedOutcome::Result(result)) => normalized_result(&*result),
-            Some(JwtEncodeUnsignedOutcome::Error(error)) => normalized_error(&error),
-            None => panic!("JWT encode response omitted its outcome"),
-        },
-        Response::JwtDecodeUnsigned(mut response) => match response.outcome.take() {
-            Some(JwtDecodeUnsignedOutcome::Result(result)) => normalized_result(&*result),
-            Some(JwtDecodeUnsignedOutcome::Error(error)) => normalized_error(&error),
-            None => panic!("JWT decode response omitted its outcome"),
-        },
-        Response::JwtSign(mut response) => match response.outcome.take() {
-            Some(JwtSignOutcome::Result(result)) => normalized_result(&*result),
-            Some(JwtSignOutcome::Error(error)) => normalized_error(&error),
-            None => panic!("JWT sign response omitted its outcome"),
-        },
-        Response::JwtVerify(mut response) => match response.outcome.take() {
-            Some(JwtVerifyOutcome::Result(result)) => normalized_result(&*result),
-            Some(JwtVerifyOutcome::Error(error)) => normalized_error(&error),
-            None => panic!("JWT verify response omitted its outcome"),
-        },
-        Response::JweEncrypt(mut response) => match response.outcome.take() {
-            Some(JweEncryptOutcome::Result(result)) => normalized_result(&*result),
-            Some(JweEncryptOutcome::Error(error)) => normalized_error(&error),
-            None => panic!("JWE encrypt response omitted its outcome"),
-        },
-        Response::JweDecrypt(mut response) => match response.outcome.take() {
-            Some(JweDecryptOutcome::Result(result)) => normalized_result(&*result),
-            Some(JweDecryptOutcome::Error(error)) => normalized_error(&error),
-            None => panic!("JWE decrypt response omitted its outcome"),
-        },
-    }
-}
-
-fn normalized_result<M: Message>(result: &M) -> Vec<u8> {
-    result.encode_to_vec()
-}
-
-fn normalized_error(error: &JoseError) -> Vec<u8> {
-    error.encode_to_vec()
-}
-
-fn assert_response_error(
-    mut response: JoseOperationResponse,
-    expected_operation: Option<JoseOperationKind>,
-    branch: JoseWireErrorBranch,
-    reason: JoseErrorReason,
-) {
-    let Some(response) = response.response.take() else {
-        panic!("error response omitted its response oneof");
-    };
-    let error = match (expected_operation, response) {
-        (None, Response::BoundaryError(error)) => error,
-        (Some(JoseOperationKind::JwsSign), Response::JwsSign(mut response)) => {
-            match response.outcome.take() {
-                Some(JwsSignOutcome::Error(error)) => error,
-                _ => panic!("JWS sign response did not contain an error"),
-            }
-        }
-        (Some(JoseOperationKind::JwsVerify), Response::JwsVerify(mut response)) => {
-            match response.outcome.take() {
-                Some(JwsVerifyOutcome::Error(error)) => error,
-                _ => panic!("JWS verify response did not contain an error"),
-            }
-        }
-        (Some(JoseOperationKind::JwtVerify), Response::JwtVerify(mut response)) => {
-            match response.outcome.take() {
-                Some(JwtVerifyOutcome::Error(error)) => error,
-                _ => panic!("JWT verify response did not contain an error"),
-            }
-        }
-        (Some(JoseOperationKind::JweEncrypt), Response::JweEncrypt(mut response)) => {
-            match response.outcome.take() {
-                Some(JweEncryptOutcome::Error(error)) => error,
-                _ => panic!("JWE encrypt response did not contain an error"),
-            }
-        }
-        (Some(JoseOperationKind::JweDecrypt), Response::JweDecrypt(mut response)) => {
-            match response.outcome.take() {
-                Some(JweDecryptOutcome::Error(error)) => error,
-                _ => panic!("JWE decrypt response did not contain an error"),
-            }
-        }
-        _ => panic!("response error used the wrong operation variant"),
-    };
-    assert_generated_error(&error, branch, reason);
-}
-
-fn assert_generated_error(error: &JoseError, branch: JoseWireErrorBranch, reason: JoseErrorReason) {
-    match (branch, &error.error) {
-        (JoseWireErrorBranch::Primitive, Some(ErrorBranch::Primitive(error))) => {
-            assert_eq!(error.reason, reason);
-        }
-        (JoseWireErrorBranch::Provider, Some(ErrorBranch::Provider(error))) => {
-            assert_eq!(error.reason, reason);
-        }
-        (JoseWireErrorBranch::Backend, Some(ErrorBranch::Backend(error))) => {
-            assert_eq!(error.reason, reason);
-        }
-        _ => panic!("generated error used the wrong branch"),
-    }
-}
-
-fn assert_backend_rejection(bytes: &[u8], expected_operation: JoseOperationKind) {
-    let error = match decode_operation_response_v1(bytes, expected_operation) {
-        Ok(_) => panic!("malformed canonical response decoded successfully"),
-        Err(error) => error,
-    };
-    assert_eq!(error.branch(), JoseWireErrorBranch::Backend);
-    assert_eq!(
-        error.reason(),
-        JoseErrorReason::JOSE_ERROR_REASON_BACKEND_INTERNAL
-    );
-}
-
-fn operation(operation: RequestOperation) -> JoseOperationRequest {
-    JoseOperationRequest {
-        operation: Some(operation),
-        __buffa_unknown_fields: Default::default(),
-    }
-}
-
-fn canonical(response: Option<Response>) -> JoseOperationResponse {
-    JoseOperationResponse {
-        contract_version: EnumValue::from(
-            JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1,
-        ),
-        response,
-        __buffa_unknown_fields: Default::default(),
-    }
-}
-
-fn valid_verify_response() -> Response {
-    Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
-        outcome: Some(JwsVerifyOutcome::Result(Box::new(JoseVerifyResult {
-            protected_header_json: Vec::new(),
-            payload: Vec::new(),
-            __buffa_unknown_fields: Default::default(),
-        }))),
-        __buffa_unknown_fields: Default::default(),
-    }))
-}
-
-fn decode_compact(bytes: &[u8]) -> Result<String, buffa::DecodeError> {
-    let mut result = JoseCompactResult::decode_from_slice(bytes)?;
-    Ok(core::mem::take(&mut result.compact))
-}
-
-fn decode_claims(bytes: &[u8]) -> Result<Vec<u8>, buffa::DecodeError> {
-    let mut result = JoseJwtClaimsResult::decode_from_slice(bytes)?;
-    Ok(core::mem::take(&mut result.claims_json))
-}
-
-fn decode_verify_result(bytes: &[u8]) -> Result<(Vec<u8>, Vec<u8>), buffa::DecodeError> {
-    let mut result = JoseVerifyResult::decode_from_slice(bytes)?;
-    Ok((
-        core::mem::take(&mut result.protected_header_json),
-        core::mem::take(&mut result.payload),
-    ))
-}
-
-fn decode_plaintext(bytes: &[u8]) -> Result<Vec<u8>, buffa::DecodeError> {
-    let mut result = JoseJwePlaintextResult::decode_from_slice(bytes)?;
-    Ok(core::mem::take(&mut result.plaintext))
-}
-
-struct FixedRandom {
-    bytes: [u8; 12],
-}
-
-impl FixedRandom {
-    const fn new(bytes: [u8; 12]) -> Self {
-        Self { bytes }
-    }
-}
-
-impl SecureRandom for FixedRandom {
-    fn fill_secure(
-        &mut self,
-        output: &mut [u8],
-        output_kind: RngOutputKind,
-    ) -> Result<(), CryptoError> {
-        if output.len() != self.bytes.len() {
-            return Err(CryptoError::Rng {
-                output: output_kind,
-                kind: RngFailureKind::InvalidOutputLength,
-            });
-        }
-        output.copy_from_slice(&self.bytes);
-        Ok(())
-    }
 }

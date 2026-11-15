@@ -27,238 +27,336 @@ public enum JoseErrorReason
    * Compact JWS structure and parser policy: 100-119.
    * </pre>
    *
-   * <code>JOSE_ERROR_REASON_JWS_INVALID_COMPACT = 100;</code>
-   */
-  JOSE_ERROR_REASON_JWS_INVALID_COMPACT(100),
-  /**
-   * <code>JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE = 101;</code>
-   */
-  JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE(101),
-  /**
-   * <code>JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW = 102;</code>
-   */
-  JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW(102),
-  /**
    * <code>JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8 = 103;</code>
    */
   JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8(103),
   /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::BadPayloadBase64
+   * Rust failure: JwsEddsaError::BadPayloadBase64
+   * Rust failure: JwsEs256Error::BadPayloadBase64
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64 = 104;</code>
    */
   JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64(104),
   /**
    * <pre>
    * Compact JWS protected-header policy: 120-139.
+   * Rust failure: JwsVerifyErrorReason::BadHeaderBase64
+   * Rust failure: JwsEddsaError::BadHeaderBase64
+   * Rust failure: JwsEs256Error::BadHeaderBase64
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64 = 120;</code>
    */
   JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64(120),
   /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::BadHeaderUtf8
+   * Rust failure: JwsEddsaError::BadHeaderUtf8
+   * Rust failure: JwsEs256Error::BadHeaderUtf8
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8 = 121;</code>
    */
   JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8(121),
   /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::HeaderMismatch
+   * Rust failure: JwsEddsaError::HeaderMismatch
+   * Rust failure: JwsEs256Error::HeaderMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_HEADER_MISMATCH = 122;</code>
    */
   JOSE_ERROR_REASON_JWS_HEADER_MISMATCH(122),
   /**
    * <pre>
    * Compact JWS signature encoding and verification: 140-159.
+   * Rust failure: JwsVerifyErrorReason::BadSignatureBase64
+   * Rust failure: JwsEddsaError::BadSignatureBase64
+   * Rust failure: JwsEs256Error::BadSignatureBase64
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64 = 140;</code>
    */
   JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64(140),
   /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::BadRawSignature
+   * Rust failure: JwsEs256Error::BadRawSignature
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE = 141;</code>
    */
   JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE(141),
   /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::InvalidSignature
+   * Rust failure: JwsEddsaError::InvalidSignature
+   * Rust failure: JwsEs256Error::InvalidSignature
+   * Rust failure: JwsEs256Error::VerifyFailed
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE = 142;</code>
    */
   JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE(142),
   /**
    * <pre>
    * Compact JWS signing: 160-179.
+   * Rust failure: JwsSignErrorReason::SignFailed
+   * Rust failure: JwsEddsaError::SignFailed
+   * Rust failure: JwsEs256Error::SignFailed
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWS_SIGN_FAILED = 160;</code>
    */
   JOSE_ERROR_REASON_JWS_SIGN_FAILED(160),
   /**
+   * <pre>
+   * Rust failure: JwsSignErrorReason::BadDerSignature
+   * Rust failure: JwsEs256Error::BadDerSignature
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE = 161;</code>
    */
   JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE(161),
   /**
    * <pre>
-   * Compact JWE structure and segment encoding: 200-219.
-   * </pre>
-   *
-   * <code>JOSE_ERROR_REASON_JWE_INVALID_COMPACT = 200;</code>
-   */
-  JOSE_ERROR_REASON_JWE_INVALID_COMPACT(200),
-  /**
-   * <code>JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE = 201;</code>
-   */
-  JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE(201),
-  /**
-   * <code>JOSE_ERROR_REASON_JWE_INVALID_ENCODING = 202;</code>
-   */
-  JOSE_ERROR_REASON_JWE_INVALID_ENCODING(202),
-  /**
-   * <pre>
    * Compact JWE protected-header policy: 220-239.
+   * Rust failure: JweError::InvalidHeader
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_HEADER = 220;</code>
    */
   JOSE_ERROR_REASON_JWE_INVALID_HEADER(220),
   /**
+   * <pre>
+   * Rust failure: JweError::UnsupportedKeyManagementAlgorithm
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM = 221;</code>
    */
   JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM(221),
   /**
+   * <pre>
+   * Rust failure: JweError::UnsupportedContentEncryptionAlgorithm
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM = 222;</code>
    */
   JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM(222),
   /**
+   * <pre>
+   * Rust failure: JweError::MissingRequiredHeaderParameter
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER = 223;</code>
    */
   JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER(223),
   /**
+   * <pre>
+   * Rust failure: JweError::HeaderPolicyMismatch
+   * Rust failure: JweError::TypPolicyMismatch
+   * Rust failure: JweError::CtyPolicyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH = 224;</code>
    */
   JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH(224),
   /**
+   * <pre>
+   * Rust failure: JweError::KidPolicyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH = 225;</code>
    */
   JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH(225),
   /**
+   * <pre>
+   * Rust failure: JweError::ApuPolicyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH = 226;</code>
    */
   JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH(226),
   /**
+   * <pre>
+   * Rust failure: JweError::ApvPolicyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH = 227;</code>
    */
   JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH(227),
   /**
+   * <pre>
+   * Rust failure: JweError::UnsupportedCompressionAlgorithm
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM = 228;</code>
    */
   JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM(228),
   /**
    * <pre>
    * Compact JWE key-management and content-encryption failures: 240-259.
+   * Rust failure: JweError::InvalidEncryptedKey
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY = 240;</code>
    */
   JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY(240),
   /**
+   * <pre>
+   * Rust failure: JweError::InvalidContentEncryptionKey
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY = 241;</code>
    */
   JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY(241),
   /**
+   * <pre>
+   * Rust failure: JweError::InvalidContentCipherInput
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT = 242;</code>
    */
   JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT(242),
   /**
+   * <pre>
+   * Rust failure: JweError::Decrypt
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_DECRYPT_FAILED = 243;</code>
    */
   JOSE_ERROR_REASON_JWE_DECRYPT_FAILED(243),
   /**
+   * <pre>
+   * Rust failure: JweError::Encrypt
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED = 244;</code>
    */
   JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED(244),
   /**
+   * <pre>
+   * Rust failure: JweError::InvalidKeyAgreementKey
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY = 245;</code>
    */
   JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY(245),
   /**
-   * <code>JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW = 246;</code>
-   */
-  JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW(246),
-  /**
+   * <pre>
+   * Rust failure: JweError::InvalidSharedSecret
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET = 247;</code>
    */
   JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET(247),
   /**
    * <pre>
    * Compact JWE plaintext handling: 260-279.
+   * Rust failure: JweError::InvalidPayloadJson
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON = 260;</code>
    */
   JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON(260),
   /**
+   * <pre>
+   * Rust failure: JweError::Compression
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED = 261;</code>
    */
   JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED(261),
   /**
+   * <pre>
+   * Rust failure: JweError::Decompression
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED = 262;</code>
    */
   JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED(262),
   /**
+   * <pre>
+   * Rust failure: JweError::DecompressedPlaintextTooLarge
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE = 263;</code>
    */
   JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE(263),
   /**
    * <pre>
-   * JWT compact structure and encoding: 300-319.
-   * </pre>
-   *
-   * <code>JOSE_ERROR_REASON_JWT_INVALID_COMPACT = 300;</code>
-   */
-  JOSE_ERROR_REASON_JWT_INVALID_COMPACT(300),
-  /**
-   * <code>JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE = 301;</code>
-   */
-  JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE(301),
-  /**
-   * <code>JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED = 302;</code>
-   */
-  JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED(302),
-  /**
-   * <code>JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW = 303;</code>
-   */
-  JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW(303),
-  /**
-   * <pre>
    * JWT JOSE-header policy and algorithm/key binding: 320-339.
+   * Rust failure: JwtError::InvalidHeader
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_HEADER = 320;</code>
    */
   JOSE_ERROR_REASON_JWT_INVALID_HEADER(320),
   /**
+   * <pre>
+   * Rust failure: JwtError::UnsupportedAlgorithm
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM = 321;</code>
    */
   JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM(321),
   /**
+   * <pre>
+   * Rust failure: JwtError::AlgorithmMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH = 322;</code>
    */
   JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH(322),
   /**
+   * <pre>
+   * Rust failure: JwtError::MissingAlgorithm
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM = 323;</code>
    */
   JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM(323),
   /**
+   * <pre>
+   * Rust failure: JwtError::MissingPrivateKey
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY = 324;</code>
    */
   JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY(324),
   /**
+   * <pre>
+   * Rust failure: JwtError::MissingPublicKey
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY = 325;</code>
    */
   JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY(325),
   /**
+   * <pre>
+   * Rust failure: JwtError::KeyIdMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH = 326;</code>
    */
   JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH(326),
   /**
+   * <pre>
+   * Rust failure: JwtError::PublicKeyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH = 327;</code>
    */
   JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH(327),
   /**
+   * <pre>
+   * Rust failure: JwtError::InvalidPublicKey
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY = 328;</code>
    */
   JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY(328),
@@ -269,80 +367,140 @@ public enum JoseErrorReason
   /**
    * <pre>
    * JWT signature and cryptographic failures: 340-359.
+   * Rust failure: JwtError::InvalidSignature
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE = 340;</code>
    */
   JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE(340),
   /**
+   * <pre>
+   * Rust failure: JwtError::Crypto
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_CRYPTO_FAILED = 341;</code>
    */
   JOSE_ERROR_REASON_JWT_CRYPTO_FAILED(341),
   /**
    * <pre>
    * JWT claims and serialization failures: 360-379.
+   * Rust failure: JwtError::InvalidClaims
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_CLAIMS = 360;</code>
    */
   JOSE_ERROR_REASON_JWT_INVALID_CLAIMS(360),
   /**
+   * <pre>
+   * Rust failure: JwtError::Serialization
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED = 361;</code>
    */
   JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED(361),
   /**
    * <pre>
    * JWT temporal claim policy: 380-399.
+   * Rust failure: JwtError::MissingRequiredTemporalClaim(_)
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM = 380;</code>
    */
   JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM(380),
   /**
+   * <pre>
+   * Rust failure: JwtError::InvalidTemporalClaimValue(_)
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE = 381;</code>
    */
   JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE(381),
   /**
+   * <pre>
+   * Rust failure: JwtError::Expired
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_EXPIRED = 382;</code>
    */
   JOSE_ERROR_REASON_JWT_EXPIRED(382),
   /**
+   * <pre>
+   * Rust failure: JwtError::NotYetValid
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_NOT_YET_VALID = 383;</code>
    */
   JOSE_ERROR_REASON_JWT_NOT_YET_VALID(383),
   /**
+   * <pre>
+   * Rust failure: JwtError::IssuedAtInFuture
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE = 384;</code>
    */
   JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE(384),
   /**
+   * <pre>
+   * Rust failure: JwtError::InvalidVerificationTime
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME = 385;</code>
    */
   JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME(385),
   /**
+   * <pre>
+   * Rust failure: JwtError::InvalidTemporalPolicy
+   * Rust failure: JwtError::InvalidClaimsPolicy
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY = 386;</code>
    */
   JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY(386),
   /**
+   * <pre>
+   * Rust failure: JwtError::SigningKeyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH = 387;</code>
    */
   JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH(387),
   /**
+   * <pre>
+   * Rust failure: JwtError::MissingRequiredRegisteredClaim(_)
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM = 388;</code>
    */
   JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM(388),
   /**
+   * <pre>
+   * Rust failure: JwtError::InvalidRegisteredClaimValue(_)
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE = 389;</code>
    */
   JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE(389),
   /**
+   * <pre>
+   * Rust failure: JwtError::AudienceMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH = 390;</code>
    */
   JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH(390),
   /**
+   * <pre>
+   * Rust failure: JwtError::IssuerMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH = 391;</code>
    */
   JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH(391),
   /**
+   * <pre>
+   * Rust failure: JwtError::SubjectMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH = 392;</code>
    */
   JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH(392),
@@ -363,9 +521,51 @@ public enum JoseErrorReason
    */
   JOSE_ERROR_REASON_COMMON_MISSING_OPERATION(702),
   /**
+   * <pre>
+   * Rust failure: JwsSignErrorReason::InputTooLarge
+   * Rust failure: JwsEddsaError::InputTooLarge
+   * Rust failure: JwsEs256Error::InputTooLarge
+   * Rust failure: JweError::InputTooLarge
+   * Rust failure: JwtError::InputTooLarge
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED = 703;</code>
    */
   JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED(703),
+  /**
+   * <pre>
+   * Rust failure: JwsSignErrorReason::LengthOverflow
+   * Rust failure: JwsVerifyErrorReason::LengthOverflow
+   * Rust failure: JwsEddsaError::LengthOverflow
+   * Rust failure: JwsEs256Error::LengthOverflow
+   * Rust failure: JweError::LengthOverflow
+   * Rust failure: JwtError::LengthOverflow
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW = 704;</code>
+   */
+  JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW(704),
+  /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::InvalidCompact
+   * Rust failure: JwsEddsaError::InvalidCompactEncoding
+   * Rust failure: JwsEs256Error::InvalidCompactEncoding
+   * Rust failure: JweError::InvalidCompact
+   * Rust failure: JwtError::InvalidJwtFormat
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_COMMON_INVALID_COMPACT = 705;</code>
+   */
+  JOSE_ERROR_REASON_COMMON_INVALID_COMPACT(705),
+  /**
+   * <pre>
+   * Rust failure: JweError::InvalidEncoding
+   * Rust failure: JwtError::Base64Url
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_COMMON_INVALID_ENCODING = 706;</code>
+   */
+  JOSE_ERROR_REASON_COMMON_INVALID_ENCODING(706),
   /**
    * <pre>
    * Provider failures: 800-899.
@@ -382,12 +582,17 @@ public enum JoseErrorReason
    */
   JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED(801),
   /**
+   * <pre>
+   * Rust failure: JweError::Randomness
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE = 802;</code>
    */
   JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE(802),
   /**
    * <pre>
    * Backend failures: 900-999.
+   * Rust failure: JoseWireErrorConstructionError::BranchReasonMismatch
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_BACKEND_INTERNAL = 900;</code>
@@ -398,6 +603,10 @@ public enum JoseErrorReason
    */
   JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION(901),
   /**
+   * <pre>
+   * Rust failure: JweError::KeyDerivation
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED = 902;</code>
    */
   JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED(902),
@@ -413,238 +622,336 @@ public enum JoseErrorReason
    * Compact JWS structure and parser policy: 100-119.
    * </pre>
    *
-   * <code>JOSE_ERROR_REASON_JWS_INVALID_COMPACT = 100;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWS_INVALID_COMPACT_VALUE = 100;
-  /**
-   * <code>JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE = 101;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE_VALUE = 101;
-  /**
-   * <code>JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW = 102;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW_VALUE = 102;
-  /**
    * <code>JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8 = 103;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8_VALUE = 103;
   /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::BadPayloadBase64
+   * Rust failure: JwsEddsaError::BadPayloadBase64
+   * Rust failure: JwsEs256Error::BadPayloadBase64
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64 = 104;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64_VALUE = 104;
   /**
    * <pre>
    * Compact JWS protected-header policy: 120-139.
+   * Rust failure: JwsVerifyErrorReason::BadHeaderBase64
+   * Rust failure: JwsEddsaError::BadHeaderBase64
+   * Rust failure: JwsEs256Error::BadHeaderBase64
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64 = 120;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64_VALUE = 120;
   /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::BadHeaderUtf8
+   * Rust failure: JwsEddsaError::BadHeaderUtf8
+   * Rust failure: JwsEs256Error::BadHeaderUtf8
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8 = 121;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8_VALUE = 121;
   /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::HeaderMismatch
+   * Rust failure: JwsEddsaError::HeaderMismatch
+   * Rust failure: JwsEs256Error::HeaderMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_HEADER_MISMATCH = 122;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_HEADER_MISMATCH_VALUE = 122;
   /**
    * <pre>
    * Compact JWS signature encoding and verification: 140-159.
+   * Rust failure: JwsVerifyErrorReason::BadSignatureBase64
+   * Rust failure: JwsEddsaError::BadSignatureBase64
+   * Rust failure: JwsEs256Error::BadSignatureBase64
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64 = 140;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64_VALUE = 140;
   /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::BadRawSignature
+   * Rust failure: JwsEs256Error::BadRawSignature
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE = 141;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE_VALUE = 141;
   /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::InvalidSignature
+   * Rust failure: JwsEddsaError::InvalidSignature
+   * Rust failure: JwsEs256Error::InvalidSignature
+   * Rust failure: JwsEs256Error::VerifyFailed
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE = 142;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE_VALUE = 142;
   /**
    * <pre>
    * Compact JWS signing: 160-179.
+   * Rust failure: JwsSignErrorReason::SignFailed
+   * Rust failure: JwsEddsaError::SignFailed
+   * Rust failure: JwsEs256Error::SignFailed
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWS_SIGN_FAILED = 160;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_SIGN_FAILED_VALUE = 160;
   /**
+   * <pre>
+   * Rust failure: JwsSignErrorReason::BadDerSignature
+   * Rust failure: JwsEs256Error::BadDerSignature
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE = 161;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE_VALUE = 161;
   /**
    * <pre>
-   * Compact JWE structure and segment encoding: 200-219.
-   * </pre>
-   *
-   * <code>JOSE_ERROR_REASON_JWE_INVALID_COMPACT = 200;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWE_INVALID_COMPACT_VALUE = 200;
-  /**
-   * <code>JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE = 201;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE_VALUE = 201;
-  /**
-   * <code>JOSE_ERROR_REASON_JWE_INVALID_ENCODING = 202;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWE_INVALID_ENCODING_VALUE = 202;
-  /**
-   * <pre>
    * Compact JWE protected-header policy: 220-239.
+   * Rust failure: JweError::InvalidHeader
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_HEADER = 220;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_INVALID_HEADER_VALUE = 220;
   /**
+   * <pre>
+   * Rust failure: JweError::UnsupportedKeyManagementAlgorithm
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM = 221;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM_VALUE = 221;
   /**
+   * <pre>
+   * Rust failure: JweError::UnsupportedContentEncryptionAlgorithm
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM = 222;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM_VALUE = 222;
   /**
+   * <pre>
+   * Rust failure: JweError::MissingRequiredHeaderParameter
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER = 223;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER_VALUE = 223;
   /**
+   * <pre>
+   * Rust failure: JweError::HeaderPolicyMismatch
+   * Rust failure: JweError::TypPolicyMismatch
+   * Rust failure: JweError::CtyPolicyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH = 224;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH_VALUE = 224;
   /**
+   * <pre>
+   * Rust failure: JweError::KidPolicyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH = 225;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH_VALUE = 225;
   /**
+   * <pre>
+   * Rust failure: JweError::ApuPolicyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH = 226;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH_VALUE = 226;
   /**
+   * <pre>
+   * Rust failure: JweError::ApvPolicyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH = 227;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH_VALUE = 227;
   /**
+   * <pre>
+   * Rust failure: JweError::UnsupportedCompressionAlgorithm
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM = 228;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM_VALUE = 228;
   /**
    * <pre>
    * Compact JWE key-management and content-encryption failures: 240-259.
+   * Rust failure: JweError::InvalidEncryptedKey
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY = 240;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY_VALUE = 240;
   /**
+   * <pre>
+   * Rust failure: JweError::InvalidContentEncryptionKey
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY = 241;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY_VALUE = 241;
   /**
+   * <pre>
+   * Rust failure: JweError::InvalidContentCipherInput
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT = 242;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT_VALUE = 242;
   /**
+   * <pre>
+   * Rust failure: JweError::Decrypt
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_DECRYPT_FAILED = 243;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_DECRYPT_FAILED_VALUE = 243;
   /**
+   * <pre>
+   * Rust failure: JweError::Encrypt
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED = 244;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED_VALUE = 244;
   /**
+   * <pre>
+   * Rust failure: JweError::InvalidKeyAgreementKey
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY = 245;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY_VALUE = 245;
   /**
-   * <code>JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW = 246;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW_VALUE = 246;
-  /**
+   * <pre>
+   * Rust failure: JweError::InvalidSharedSecret
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET = 247;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET_VALUE = 247;
   /**
    * <pre>
    * Compact JWE plaintext handling: 260-279.
+   * Rust failure: JweError::InvalidPayloadJson
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON = 260;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON_VALUE = 260;
   /**
+   * <pre>
+   * Rust failure: JweError::Compression
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED = 261;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED_VALUE = 261;
   /**
+   * <pre>
+   * Rust failure: JweError::Decompression
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED = 262;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED_VALUE = 262;
   /**
+   * <pre>
+   * Rust failure: JweError::DecompressedPlaintextTooLarge
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE = 263;</code>
    */
   public static final int JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE_VALUE = 263;
   /**
    * <pre>
-   * JWT compact structure and encoding: 300-319.
-   * </pre>
-   *
-   * <code>JOSE_ERROR_REASON_JWT_INVALID_COMPACT = 300;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWT_INVALID_COMPACT_VALUE = 300;
-  /**
-   * <code>JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE = 301;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE_VALUE = 301;
-  /**
-   * <code>JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED = 302;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED_VALUE = 302;
-  /**
-   * <code>JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW = 303;</code>
-   */
-  public static final int JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW_VALUE = 303;
-  /**
-   * <pre>
    * JWT JOSE-header policy and algorithm/key binding: 320-339.
+   * Rust failure: JwtError::InvalidHeader
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_HEADER = 320;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_INVALID_HEADER_VALUE = 320;
   /**
+   * <pre>
+   * Rust failure: JwtError::UnsupportedAlgorithm
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM = 321;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM_VALUE = 321;
   /**
+   * <pre>
+   * Rust failure: JwtError::AlgorithmMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH = 322;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH_VALUE = 322;
   /**
+   * <pre>
+   * Rust failure: JwtError::MissingAlgorithm
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM = 323;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM_VALUE = 323;
   /**
+   * <pre>
+   * Rust failure: JwtError::MissingPrivateKey
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY = 324;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY_VALUE = 324;
   /**
+   * <pre>
+   * Rust failure: JwtError::MissingPublicKey
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY = 325;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY_VALUE = 325;
   /**
+   * <pre>
+   * Rust failure: JwtError::KeyIdMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH = 326;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH_VALUE = 326;
   /**
+   * <pre>
+   * Rust failure: JwtError::PublicKeyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH = 327;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH_VALUE = 327;
   /**
+   * <pre>
+   * Rust failure: JwtError::InvalidPublicKey
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY = 328;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY_VALUE = 328;
@@ -655,80 +962,140 @@ public enum JoseErrorReason
   /**
    * <pre>
    * JWT signature and cryptographic failures: 340-359.
+   * Rust failure: JwtError::InvalidSignature
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE = 340;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE_VALUE = 340;
   /**
+   * <pre>
+   * Rust failure: JwtError::Crypto
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_CRYPTO_FAILED = 341;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_CRYPTO_FAILED_VALUE = 341;
   /**
    * <pre>
    * JWT claims and serialization failures: 360-379.
+   * Rust failure: JwtError::InvalidClaims
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_CLAIMS = 360;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_INVALID_CLAIMS_VALUE = 360;
   /**
+   * <pre>
+   * Rust failure: JwtError::Serialization
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED = 361;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED_VALUE = 361;
   /**
    * <pre>
    * JWT temporal claim policy: 380-399.
+   * Rust failure: JwtError::MissingRequiredTemporalClaim(_)
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM = 380;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM_VALUE = 380;
   /**
+   * <pre>
+   * Rust failure: JwtError::InvalidTemporalClaimValue(_)
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE = 381;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE_VALUE = 381;
   /**
+   * <pre>
+   * Rust failure: JwtError::Expired
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_EXPIRED = 382;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_EXPIRED_VALUE = 382;
   /**
+   * <pre>
+   * Rust failure: JwtError::NotYetValid
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_NOT_YET_VALID = 383;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_NOT_YET_VALID_VALUE = 383;
   /**
+   * <pre>
+   * Rust failure: JwtError::IssuedAtInFuture
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE = 384;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE_VALUE = 384;
   /**
+   * <pre>
+   * Rust failure: JwtError::InvalidVerificationTime
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME = 385;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME_VALUE = 385;
   /**
+   * <pre>
+   * Rust failure: JwtError::InvalidTemporalPolicy
+   * Rust failure: JwtError::InvalidClaimsPolicy
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY = 386;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY_VALUE = 386;
   /**
+   * <pre>
+   * Rust failure: JwtError::SigningKeyMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH = 387;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH_VALUE = 387;
   /**
+   * <pre>
+   * Rust failure: JwtError::MissingRequiredRegisteredClaim(_)
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM = 388;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM_VALUE = 388;
   /**
+   * <pre>
+   * Rust failure: JwtError::InvalidRegisteredClaimValue(_)
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE = 389;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE_VALUE = 389;
   /**
+   * <pre>
+   * Rust failure: JwtError::AudienceMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH = 390;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH_VALUE = 390;
   /**
+   * <pre>
+   * Rust failure: JwtError::IssuerMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH = 391;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH_VALUE = 391;
   /**
+   * <pre>
+   * Rust failure: JwtError::SubjectMismatch
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH = 392;</code>
    */
   public static final int JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH_VALUE = 392;
@@ -749,9 +1116,51 @@ public enum JoseErrorReason
    */
   public static final int JOSE_ERROR_REASON_COMMON_MISSING_OPERATION_VALUE = 702;
   /**
+   * <pre>
+   * Rust failure: JwsSignErrorReason::InputTooLarge
+   * Rust failure: JwsEddsaError::InputTooLarge
+   * Rust failure: JwsEs256Error::InputTooLarge
+   * Rust failure: JweError::InputTooLarge
+   * Rust failure: JwtError::InputTooLarge
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED = 703;</code>
    */
   public static final int JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED_VALUE = 703;
+  /**
+   * <pre>
+   * Rust failure: JwsSignErrorReason::LengthOverflow
+   * Rust failure: JwsVerifyErrorReason::LengthOverflow
+   * Rust failure: JwsEddsaError::LengthOverflow
+   * Rust failure: JwsEs256Error::LengthOverflow
+   * Rust failure: JweError::LengthOverflow
+   * Rust failure: JwtError::LengthOverflow
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW = 704;</code>
+   */
+  public static final int JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW_VALUE = 704;
+  /**
+   * <pre>
+   * Rust failure: JwsVerifyErrorReason::InvalidCompact
+   * Rust failure: JwsEddsaError::InvalidCompactEncoding
+   * Rust failure: JwsEs256Error::InvalidCompactEncoding
+   * Rust failure: JweError::InvalidCompact
+   * Rust failure: JwtError::InvalidJwtFormat
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_COMMON_INVALID_COMPACT = 705;</code>
+   */
+  public static final int JOSE_ERROR_REASON_COMMON_INVALID_COMPACT_VALUE = 705;
+  /**
+   * <pre>
+   * Rust failure: JweError::InvalidEncoding
+   * Rust failure: JwtError::Base64Url
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_COMMON_INVALID_ENCODING = 706;</code>
+   */
+  public static final int JOSE_ERROR_REASON_COMMON_INVALID_ENCODING_VALUE = 706;
   /**
    * <pre>
    * Provider failures: 800-899.
@@ -768,12 +1177,17 @@ public enum JoseErrorReason
    */
   public static final int JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED_VALUE = 801;
   /**
+   * <pre>
+   * Rust failure: JweError::Randomness
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE = 802;</code>
    */
   public static final int JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE_VALUE = 802;
   /**
    * <pre>
    * Backend failures: 900-999.
+   * Rust failure: JoseWireErrorConstructionError::BranchReasonMismatch
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_BACKEND_INTERNAL = 900;</code>
@@ -784,6 +1198,10 @@ public enum JoseErrorReason
    */
   public static final int JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION_VALUE = 901;
   /**
+   * <pre>
+   * Rust failure: JweError::KeyDerivation
+   * </pre>
+   *
    * <code>JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED = 902;</code>
    */
   public static final int JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED_VALUE = 902;
@@ -810,9 +1228,6 @@ public enum JoseErrorReason
   public static JoseErrorReason forNumber(int value) {
     switch (value) {
       case 0: return JOSE_ERROR_REASON_UNSPECIFIED;
-      case 100: return JOSE_ERROR_REASON_JWS_INVALID_COMPACT;
-      case 101: return JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE;
-      case 102: return JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW;
       case 103: return JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8;
       case 104: return JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64;
       case 120: return JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64;
@@ -823,9 +1238,6 @@ public enum JoseErrorReason
       case 142: return JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE;
       case 160: return JOSE_ERROR_REASON_JWS_SIGN_FAILED;
       case 161: return JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE;
-      case 200: return JOSE_ERROR_REASON_JWE_INVALID_COMPACT;
-      case 201: return JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE;
-      case 202: return JOSE_ERROR_REASON_JWE_INVALID_ENCODING;
       case 220: return JOSE_ERROR_REASON_JWE_INVALID_HEADER;
       case 221: return JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM;
       case 222: return JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM;
@@ -841,16 +1253,11 @@ public enum JoseErrorReason
       case 243: return JOSE_ERROR_REASON_JWE_DECRYPT_FAILED;
       case 244: return JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED;
       case 245: return JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY;
-      case 246: return JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW;
       case 247: return JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET;
       case 260: return JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON;
       case 261: return JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED;
       case 262: return JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED;
       case 263: return JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE;
-      case 300: return JOSE_ERROR_REASON_JWT_INVALID_COMPACT;
-      case 301: return JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE;
-      case 302: return JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED;
-      case 303: return JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW;
       case 320: return JOSE_ERROR_REASON_JWT_INVALID_HEADER;
       case 321: return JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM;
       case 322: return JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH;
@@ -882,6 +1289,9 @@ public enum JoseErrorReason
       case 701: return JOSE_ERROR_REASON_COMMON_MALFORMED_JSON;
       case 702: return JOSE_ERROR_REASON_COMMON_MISSING_OPERATION;
       case 703: return JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED;
+      case 704: return JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW;
+      case 705: return JOSE_ERROR_REASON_COMMON_INVALID_COMPACT;
+      case 706: return JOSE_ERROR_REASON_COMMON_INVALID_ENCODING;
       case 800: return JOSE_ERROR_REASON_PROVIDER_UNAVAILABLE;
       case 801: return JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED;
       case 802: return JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE;

@@ -2,55 +2,55 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-name: Android CI
+name: Android runtime
 
 on:
-  workflow_dispatch:
-  pull_request:
-    paths:
-      - ".github/workflows/android-ci.yml"
-      - "packages/kotlin-android/**"
-      - "packages/kotlin/**"
-      - "gen/java/**"
-      - "gen/kotlin/**"
-      - "crates/ffi/**"
-      - "crates/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "vectors/**"
-      - "scripts/build_android_native_resources.sh"
-      - "scripts/test_android_consumer_r8_runtime.sh"
-      - "scripts/write_native_manifest.mjs"
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/android-ci.yml"
-      - "packages/kotlin-android/**"
-      - "packages/kotlin/**"
-      - "gen/java/**"
-      - "gen/kotlin/**"
-      - "crates/ffi/**"
-      - "crates/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "vectors/**"
-      - "scripts/build_android_native_resources.sh"
-      - "scripts/test_android_consumer_r8_runtime.sh"
-      - "scripts/write_native_manifest.mjs"
+  workflow_call:
+    outputs:
+      verified_sha:
+        value: ${{ jobs.runtime.outputs.verified_sha }}
 
 permissions:
   contents: read
 
 jobs:
-  android-release-runtime:
-    name: Android AAR and minified runtime
+  runtime:
+    name: Minified Android consumer
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    outputs:
+      verified_sha: ${{ steps.runtime.outputs.sha }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Checkout candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+
+      - name: Checkout release-readiness
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: reallyme/release-readiness
+          ref: 7dffa0366a43fe9cc7b98a8040d37dd701d7955e
+          path: .release-readiness
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+
+      # Save on main so later candidates can reuse the cache and PR code
+      # cannot seed it. Queue-only repositories can refresh it by dispatching
+      # CI on main when the cache key changes or the entry is evicted.
+      - name: Restore Gradle cache
+        id: android-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: android-runtime-${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle-wrapper.properties', '**/libs.versions.toml', 'scripts/prepare-android-runtime.sh') }}
+
       - name: Validate Gradle wrappers
         uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
       - name: Install Java
@@ -61,24 +61,73 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.99.1
-      - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '26'
+          toolchain: 1.100.0
       - name: Install pinned Android NDK
         run: |
           { yes 2>/dev/null || true; } | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.14206865"
           echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
       - name: Verify native manifest writer
         run: node --test scripts/write_native_manifest.test.mjs
-      - name: Enable emulator KVM
+
+      - name: Enable emulator acceleration
+        shell: bash
         run: |
-          test -e /dev/kvm
-          sudo chown "${USER}:${USER}" /dev/kvm
+          test -c /dev/kvm
+          sudo chown "$(id -u):$(id -g)" /dev/kvm
           test -r /dev/kvm
           test -w /dev/kvm
-      - name: Test minified Android consumer runtime
-        run: scripts/test_android_consumer_r8_runtime.sh
+
+      - name: Stage Android Maven publication
+        shell: bash
         env:
-          REALLYME_JOSE_ANDROID_AVD: reallyme-jose-r8-gate
+          MAVEN_REPOSITORY: ${{ runner.temp }}/android-publication/repository
+        run: |
+          # Package once. The consumer resolves this publication by its Maven
+          # coordinates so the test covers the same AAR that preflight uses.
+          mkdir -p "$MAVEN_REPOSITORY"
+          bash -e -o pipefail scripts/stage-android-publication.sh "$MAVEN_REPOSITORY"
+          node .release-readiness/scripts/android-runtime.mjs seal-publication "$MAVEN_REPOSITORY" "$GITHUB_SHA"
+
+      - name: Prepare Android consumer and emulator
+        shell: bash
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/android-avd
+          ANDROID_AVD_NAME: reallyme-runtime
+          APK_PATH: ${{ runner.temp }}/android-runtime.apk
+          MAVEN_REPOSITORY: ${{ runner.temp }}/android-publication/repository
+        run: |
+          bash -e -o pipefail scripts/prepare-android-runtime.sh "$APK_PATH" "$ANDROID_AVD_NAME" "$MAVEN_REPOSITORY"
+          test -s "$APK_PATH"
+
+      - name: Test minified Android consumer runtime
+        id: runtime
+        shell: bash
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/android-avd
+          ANDROID_AVD_NAME: reallyme-runtime
+          ANDROID_SERIAL: emulator-5554
+          APK_PATH: ${{ runner.temp }}/android-runtime.apk
+          MAVEN_REPOSITORY: ${{ runner.temp }}/android-publication/repository
+        run: bash -e -o pipefail scripts/run-android-emulator.sh
+
+      # Release qualification accepts a main run or, with a merge queue, the
+      # queue run that main fast-forwarded to. PR runs never qualify.
+      - name: Upload tested Android publication
+        if: >-
+          (github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')) ||
+          (github.event_name == 'merge_group' && startsWith(github.ref, 'refs/heads/gh-readonly-queue/main/'))
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: android-maven-${{ github.sha }}
+          path: ${{ runner.temp }}/android-publication/
+          if-no-files-found: error
+          overwrite: true
+
+      - name: Save Gradle cache
+        if: github.ref == 'refs/heads/main' && steps.android-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ steps.android-cache.outputs.cache-primary-key }}

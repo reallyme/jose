@@ -11,11 +11,19 @@ public interface JoseJweDecryptRequestOrBuilder extends
     com.google.protobuf.MessageLiteOrBuilder {
 
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @return The compact.
    */
   java.lang.String getCompact();
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @return The bytes for compact.
    */
@@ -48,6 +56,7 @@ public interface JoseJweDecryptRequestOrBuilder extends
    * <pre>
    * Sensitive direct CEK or recipient private/agreement key bytes, depending on
    * key_management_algorithm. Adapters must zeroize after dispatch.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes key = 4 [json_name = "key"];</code>

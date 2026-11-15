@@ -30,6 +30,10 @@ public object JoseExpectedBytesKt {
     internal fun _build(): me.really.jose.v1.JoseExpectedBytes = _builder.build()
 
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `bytes value = 1 [json_name = "value"];`
      */
     public var value: com.google.protobuf.ByteString
@@ -40,6 +44,10 @@ public object JoseExpectedBytesKt {
         _builder.value = value
       }
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `bytes value = 1 [json_name = "value"];`
      */
     public fun clearValue() {

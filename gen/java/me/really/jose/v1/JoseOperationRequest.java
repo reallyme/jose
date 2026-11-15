@@ -11,6 +11,18 @@ package me.really.jose.v1;
  * FFI, JNI, WASM, and other operation adapters. Native SDKs should keep
  * using typed methods; adapters can use this generated oneof to avoid
  * hand-rolled operation routing and error-envelope plumbing.
+ * Rust adapter: api.rs#execute
+ * Rust adapter: api.rs#execute_with_providers
+ * Rust adapter: wire/operation_response.rs#execute_operation_request
+ * Rust adapter: wire/operation_response.rs#execute_operation_request_with_providers
+ * Rust adapter: wire/operation_response.rs#execute_operation_v1
+ * Rust adapter: wire/operation_response.rs#execute_operation_json_v1
+ * Rust adapter: wire.rs#encode_protobuf
+ * Rust adapter: wire.rs#decode_protobuf
+ * Rust adapter: wire.rs#encode_json
+ * Rust adapter: wire.rs#decode_json
+ * Rust capability: operation_contract/providers.rs#OperationProviders
+ * Rust capability: operation_contract/providers.rs#BuiltinProviders
  * </pre>
  *
  * Protobuf type {@code reallyme.jose.v1.JoseOperationRequest}
@@ -24,7 +36,24 @@ public  final class JoseOperationRequest extends
   // Security post-processing: generated Lite messages otherwise expose
   // neither unknown-field presence nor a safe redacted debug representation.
   public boolean reallyMeHasUnknownFieldsForValidation() {
-    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance();
+    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance()
+        || (hasJwsSign() && getJwsSign().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwsVerify() && getJwsVerify().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtEncodeUnsigned() && getJwtEncodeUnsigned().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtDecodeUnsigned() && getJwtDecodeUnsigned().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtSign() && getJwtSign().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtVerify() && getJwtVerify().reallyMeHasUnknownFieldsForValidation())
+        || (hasJweEncrypt() && getJweEncrypt().reallyMeHasUnknownFieldsForValidation())
+        || (hasJweDecrypt() && getJweDecrypt().reallyMeHasUnknownFieldsForValidation())
+        || (hasSignatureSign() && getSignatureSign().reallyMeHasUnknownFieldsForValidation())
+        || (hasSignatureVerify() && getSignatureVerify().reallyMeHasUnknownFieldsForValidation())
+        || (hasSignatureSuiteInfo() && getSignatureSuiteInfo().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtSignWithProvider() && getJwtSignWithProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtClaimsParse() && getJwtClaimsParse().reallyMeHasUnknownFieldsForValidation())
+        || (hasJweDeriveKey() && getJweDeriveKey().reallyMeHasUnknownFieldsForValidation())
+        || (hasJweEncryptWithProvider() && getJweEncryptWithProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasJweDecryptWithProvider() && getJweDecryptWithProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasContractInfo() && getContractInfo().reallyMeHasUnknownFieldsForValidation());
   }
 
   @java.lang.Override
@@ -51,6 +80,15 @@ public  final class JoseOperationRequest extends
     JWT_VERIFY(2003),
     JWE_ENCRYPT(3000),
     JWE_DECRYPT(3001),
+    SIGNATURE_SIGN(1010),
+    SIGNATURE_VERIFY(1011),
+    SIGNATURE_SUITE_INFO(1012),
+    JWT_SIGN_WITH_PROVIDER(2010),
+    JWT_CLAIMS_PARSE(2011),
+    JWE_DERIVE_KEY(3010),
+    JWE_ENCRYPT_WITH_PROVIDER(3011),
+    JWE_DECRYPT_WITH_PROVIDER(3012),
+    CONTRACT_INFO(7000),
     OPERATION_NOT_SET(0);
     private final int value;
     private OperationCase(int value) {
@@ -74,6 +112,15 @@ public  final class JoseOperationRequest extends
         case 2003: return JWT_VERIFY;
         case 3000: return JWE_ENCRYPT;
         case 3001: return JWE_DECRYPT;
+        case 1010: return SIGNATURE_SIGN;
+        case 1011: return SIGNATURE_VERIFY;
+        case 1012: return SIGNATURE_SUITE_INFO;
+        case 2010: return JWT_SIGN_WITH_PROVIDER;
+        case 2011: return JWT_CLAIMS_PARSE;
+        case 3010: return JWE_DERIVE_KEY;
+        case 3011: return JWE_ENCRYPT_WITH_PROVIDER;
+        case 3012: return JWE_DECRYPT_WITH_PROVIDER;
+        case 7000: return CONTRACT_INFO;
         case 0: return OPERATION_NOT_SET;
         default: return null;
       }
@@ -99,6 +146,8 @@ public  final class JoseOperationRequest extends
   /**
    * <pre>
    * Compact JWS operations: 1000-1999.
+   * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+   * Rust adapter: jws/suites/es256.rs#sign_es256_jws
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -110,6 +159,8 @@ public  final class JoseOperationRequest extends
   /**
    * <pre>
    * Compact JWS operations: 1000-1999.
+   * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+   * Rust adapter: jws/suites/es256.rs#sign_es256_jws
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -124,6 +175,8 @@ public  final class JoseOperationRequest extends
   /**
    * <pre>
    * Compact JWS operations: 1000-1999.
+   * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+   * Rust adapter: jws/suites/es256.rs#sign_es256_jws
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -136,6 +189,8 @@ public  final class JoseOperationRequest extends
   /**
    * <pre>
    * Compact JWS operations: 1000-1999.
+   * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+   * Rust adapter: jws/suites/es256.rs#sign_es256_jws
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -154,6 +209,8 @@ public  final class JoseOperationRequest extends
   /**
    * <pre>
    * Compact JWS operations: 1000-1999.
+   * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+   * Rust adapter: jws/suites/es256.rs#sign_es256_jws
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -167,6 +224,15 @@ public  final class JoseOperationRequest extends
 
   public static final int JWS_VERIFY_FIELD_NUMBER = 1001;
   /**
+   * <pre>
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
    */
   @java.lang.Override
@@ -174,6 +240,15 @@ public  final class JoseOperationRequest extends
     return operationCase_ == 1001;
   }
   /**
+   * <pre>
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
    */
   @java.lang.Override
@@ -184,6 +259,15 @@ public  final class JoseOperationRequest extends
     return me.really.jose.v1.JoseJwsVerifyRequest.getDefaultInstance();
   }
   /**
+   * <pre>
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
    */
   private void setJwsVerify(me.really.jose.v1.JoseJwsVerifyRequest value) {
@@ -192,6 +276,15 @@ public  final class JoseOperationRequest extends
     operationCase_ = 1001;
   }
   /**
+   * <pre>
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
    */
   private void mergeJwsVerify(me.really.jose.v1.JoseJwsVerifyRequest value) {
@@ -206,6 +299,15 @@ public  final class JoseOperationRequest extends
     operationCase_ = 1001;
   }
   /**
+   * <pre>
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
    */
   private void clearJwsVerify() {
@@ -219,6 +321,7 @@ public  final class JoseOperationRequest extends
   /**
    * <pre>
    * JWT operations: 2000-2999.
+   * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -230,6 +333,7 @@ public  final class JoseOperationRequest extends
   /**
    * <pre>
    * JWT operations: 2000-2999.
+   * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -244,6 +348,7 @@ public  final class JoseOperationRequest extends
   /**
    * <pre>
    * JWT operations: 2000-2999.
+   * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -256,6 +361,7 @@ public  final class JoseOperationRequest extends
   /**
    * <pre>
    * JWT operations: 2000-2999.
+   * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -274,6 +380,7 @@ public  final class JoseOperationRequest extends
   /**
    * <pre>
    * JWT operations: 2000-2999.
+   * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -287,6 +394,11 @@ public  final class JoseOperationRequest extends
 
   public static final int JWT_DECODE_UNSIGNED_FIELD_NUMBER = 2001;
   /**
+   * <pre>
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
    */
   @java.lang.Override
@@ -294,6 +406,11 @@ public  final class JoseOperationRequest extends
     return operationCase_ == 2001;
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
    */
   @java.lang.Override
@@ -304,6 +421,11 @@ public  final class JoseOperationRequest extends
     return me.really.jose.v1.JoseJwtDecodeUnsignedRequest.getDefaultInstance();
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
    */
   private void setJwtDecodeUnsigned(me.really.jose.v1.JoseJwtDecodeUnsignedRequest value) {
@@ -312,6 +434,11 @@ public  final class JoseOperationRequest extends
     operationCase_ = 2001;
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
    */
   private void mergeJwtDecodeUnsigned(me.really.jose.v1.JoseJwtDecodeUnsignedRequest value) {
@@ -326,6 +453,11 @@ public  final class JoseOperationRequest extends
     operationCase_ = 2001;
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
    */
   private void clearJwtDecodeUnsigned() {
@@ -337,6 +469,11 @@ public  final class JoseOperationRequest extends
 
   public static final int JWT_SIGN_FIELD_NUMBER = 2002;
   /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
    */
   @java.lang.Override
@@ -344,6 +481,11 @@ public  final class JoseOperationRequest extends
     return operationCase_ == 2002;
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
    */
   @java.lang.Override
@@ -354,6 +496,11 @@ public  final class JoseOperationRequest extends
     return me.really.jose.v1.JoseJwtSignRequest.getDefaultInstance();
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
    */
   private void setJwtSign(me.really.jose.v1.JoseJwtSignRequest value) {
@@ -362,6 +509,11 @@ public  final class JoseOperationRequest extends
     operationCase_ = 2002;
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
    */
   private void mergeJwtSign(me.really.jose.v1.JoseJwtSignRequest value) {
@@ -376,6 +528,11 @@ public  final class JoseOperationRequest extends
     operationCase_ = 2002;
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
    */
   private void clearJwtSign() {
@@ -387,6 +544,18 @@ public  final class JoseOperationRequest extends
 
   public static final int JWT_VERIFY_FIELD_NUMBER = 2003;
   /**
+   * <pre>
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
    */
   @java.lang.Override
@@ -394,6 +563,18 @@ public  final class JoseOperationRequest extends
     return operationCase_ == 2003;
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
    */
   @java.lang.Override
@@ -404,6 +585,18 @@ public  final class JoseOperationRequest extends
     return me.really.jose.v1.JoseJwtVerifyRequest.getDefaultInstance();
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
    */
   private void setJwtVerify(me.really.jose.v1.JoseJwtVerifyRequest value) {
@@ -412,6 +605,18 @@ public  final class JoseOperationRequest extends
     operationCase_ = 2003;
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
    */
   private void mergeJwtVerify(me.really.jose.v1.JoseJwtVerifyRequest value) {
@@ -426,6 +631,18 @@ public  final class JoseOperationRequest extends
     operationCase_ = 2003;
   }
   /**
+   * <pre>
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
    */
   private void clearJwtVerify() {
@@ -555,6 +772,616 @@ public  final class JoseOperationRequest extends
     }
   }
 
+  public static final int SIGNATURE_SIGN_FIELD_NUMBER = 1010;
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+   */
+  @java.lang.Override
+  public boolean hasSignatureSign() {
+    return operationCase_ == 1010;
+  }
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseSignatureSignRequest getSignatureSign() {
+    if (operationCase_ == 1010) {
+       return (me.really.jose.v1.JoseSignatureSignRequest) operation_;
+    }
+    return me.really.jose.v1.JoseSignatureSignRequest.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+   */
+  private void setSignatureSign(me.really.jose.v1.JoseSignatureSignRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 1010;
+  }
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+   */
+  private void mergeSignatureSign(me.really.jose.v1.JoseSignatureSignRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 1010 &&
+        operation_ != me.really.jose.v1.JoseSignatureSignRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseSignatureSignRequest.newBuilder((me.really.jose.v1.JoseSignatureSignRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 1010;
+  }
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+   */
+  private void clearSignatureSign() {
+    if (operationCase_ == 1010) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int SIGNATURE_VERIFY_FIELD_NUMBER = 1011;
+  /**
+   * <pre>
+   * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   */
+  @java.lang.Override
+  public boolean hasSignatureVerify() {
+    return operationCase_ == 1011;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseSignatureVerifyRequest getSignatureVerify() {
+    if (operationCase_ == 1011) {
+       return (me.really.jose.v1.JoseSignatureVerifyRequest) operation_;
+    }
+    return me.really.jose.v1.JoseSignatureVerifyRequest.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   */
+  private void setSignatureVerify(me.really.jose.v1.JoseSignatureVerifyRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 1011;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   */
+  private void mergeSignatureVerify(me.really.jose.v1.JoseSignatureVerifyRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 1011 &&
+        operation_ != me.really.jose.v1.JoseSignatureVerifyRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseSignatureVerifyRequest.newBuilder((me.really.jose.v1.JoseSignatureVerifyRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 1011;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   */
+  private void clearSignatureVerify() {
+    if (operationCase_ == 1011) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int SIGNATURE_SUITE_INFO_FIELD_NUMBER = 1012;
+  /**
+   * <pre>
+   * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   */
+  @java.lang.Override
+  public boolean hasSignatureSuiteInfo() {
+    return operationCase_ == 1012;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseSignatureSuiteInfoRequest getSignatureSuiteInfo() {
+    if (operationCase_ == 1012) {
+       return (me.really.jose.v1.JoseSignatureSuiteInfoRequest) operation_;
+    }
+    return me.really.jose.v1.JoseSignatureSuiteInfoRequest.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   */
+  private void setSignatureSuiteInfo(me.really.jose.v1.JoseSignatureSuiteInfoRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 1012;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   */
+  private void mergeSignatureSuiteInfo(me.really.jose.v1.JoseSignatureSuiteInfoRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 1012 &&
+        operation_ != me.really.jose.v1.JoseSignatureSuiteInfoRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseSignatureSuiteInfoRequest.newBuilder((me.really.jose.v1.JoseSignatureSuiteInfoRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 1012;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   */
+  private void clearSignatureSuiteInfo() {
+    if (operationCase_ == 1012) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWT_SIGN_WITH_PROVIDER_FIELD_NUMBER = 2010;
+  /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwtSignWithProvider() {
+    return operationCase_ == 2010;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwtSignWithProviderRequest getJwtSignWithProvider() {
+    if (operationCase_ == 2010) {
+       return (me.really.jose.v1.JoseJwtSignWithProviderRequest) operation_;
+    }
+    return me.really.jose.v1.JoseJwtSignWithProviderRequest.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   */
+  private void setJwtSignWithProvider(me.really.jose.v1.JoseJwtSignWithProviderRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 2010;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   */
+  private void mergeJwtSignWithProvider(me.really.jose.v1.JoseJwtSignWithProviderRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 2010 &&
+        operation_ != me.really.jose.v1.JoseJwtSignWithProviderRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJwtSignWithProviderRequest.newBuilder((me.really.jose.v1.JoseJwtSignWithProviderRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 2010;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   */
+  private void clearJwtSignWithProvider() {
+    if (operationCase_ == 2010) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWT_CLAIMS_PARSE_FIELD_NUMBER = 2011;
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwtClaimsParse() {
+    return operationCase_ == 2011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwtClaimsParseRequest getJwtClaimsParse() {
+    if (operationCase_ == 2011) {
+       return (me.really.jose.v1.JoseJwtClaimsParseRequest) operation_;
+    }
+    return me.really.jose.v1.JoseJwtClaimsParseRequest.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   */
+  private void setJwtClaimsParse(me.really.jose.v1.JoseJwtClaimsParseRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 2011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   */
+  private void mergeJwtClaimsParse(me.really.jose.v1.JoseJwtClaimsParseRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 2011 &&
+        operation_ != me.really.jose.v1.JoseJwtClaimsParseRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJwtClaimsParseRequest.newBuilder((me.really.jose.v1.JoseJwtClaimsParseRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 2011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   */
+  private void clearJwtClaimsParse() {
+    if (operationCase_ == 2011) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWE_DERIVE_KEY_FIELD_NUMBER = 3010;
+  /**
+   * <pre>
+   * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJweDeriveKey() {
+    return operationCase_ == 3010;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJweDeriveKeyRequest getJweDeriveKey() {
+    if (operationCase_ == 3010) {
+       return (me.really.jose.v1.JoseJweDeriveKeyRequest) operation_;
+    }
+    return me.really.jose.v1.JoseJweDeriveKeyRequest.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   */
+  private void setJweDeriveKey(me.really.jose.v1.JoseJweDeriveKeyRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 3010;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   */
+  private void mergeJweDeriveKey(me.really.jose.v1.JoseJweDeriveKeyRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 3010 &&
+        operation_ != me.really.jose.v1.JoseJweDeriveKeyRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJweDeriveKeyRequest.newBuilder((me.really.jose.v1.JoseJweDeriveKeyRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 3010;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   */
+  private void clearJweDeriveKey() {
+    if (operationCase_ == 3010) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWE_ENCRYPT_WITH_PROVIDER_FIELD_NUMBER = 3011;
+  /**
+   * <pre>
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJweEncryptWithProvider() {
+    return operationCase_ == 3011;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJweEncryptWithProviderRequest getJweEncryptWithProvider() {
+    if (operationCase_ == 3011) {
+       return (me.really.jose.v1.JoseJweEncryptWithProviderRequest) operation_;
+    }
+    return me.really.jose.v1.JoseJweEncryptWithProviderRequest.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   */
+  private void setJweEncryptWithProvider(me.really.jose.v1.JoseJweEncryptWithProviderRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 3011;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   */
+  private void mergeJweEncryptWithProvider(me.really.jose.v1.JoseJweEncryptWithProviderRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 3011 &&
+        operation_ != me.really.jose.v1.JoseJweEncryptWithProviderRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJweEncryptWithProviderRequest.newBuilder((me.really.jose.v1.JoseJweEncryptWithProviderRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 3011;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   */
+  private void clearJweEncryptWithProvider() {
+    if (operationCase_ == 3011) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWE_DECRYPT_WITH_PROVIDER_FIELD_NUMBER = 3012;
+  /**
+   * <pre>
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJweDecryptWithProvider() {
+    return operationCase_ == 3012;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJweDecryptWithProviderRequest getJweDecryptWithProvider() {
+    if (operationCase_ == 3012) {
+       return (me.really.jose.v1.JoseJweDecryptWithProviderRequest) operation_;
+    }
+    return me.really.jose.v1.JoseJweDecryptWithProviderRequest.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   */
+  private void setJweDecryptWithProvider(me.really.jose.v1.JoseJweDecryptWithProviderRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 3012;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   */
+  private void mergeJweDecryptWithProvider(me.really.jose.v1.JoseJweDecryptWithProviderRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 3012 &&
+        operation_ != me.really.jose.v1.JoseJweDecryptWithProviderRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJweDecryptWithProviderRequest.newBuilder((me.really.jose.v1.JoseJweDecryptWithProviderRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 3012;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   */
+  private void clearJweDecryptWithProvider() {
+    if (operationCase_ == 3012) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int CONTRACT_INFO_FIELD_NUMBER = 7000;
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+   */
+  @java.lang.Override
+  public boolean hasContractInfo() {
+    return operationCase_ == 7000;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseContractInfoRequest getContractInfo() {
+    if (operationCase_ == 7000) {
+       return (me.really.jose.v1.JoseContractInfoRequest) operation_;
+    }
+    return me.really.jose.v1.JoseContractInfoRequest.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+   */
+  private void setContractInfo(me.really.jose.v1.JoseContractInfoRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 7000;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+   */
+  private void mergeContractInfo(me.really.jose.v1.JoseContractInfoRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 7000 &&
+        operation_ != me.really.jose.v1.JoseContractInfoRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseContractInfoRequest.newBuilder((me.really.jose.v1.JoseContractInfoRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 7000;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+   */
+  private void clearContractInfo() {
+    if (operationCase_ == 7000) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
   public static me.really.jose.v1.JoseOperationRequest parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -644,6 +1471,18 @@ public  final class JoseOperationRequest extends
    * FFI, JNI, WASM, and other operation adapters. Native SDKs should keep
    * using typed methods; adapters can use this generated oneof to avoid
    * hand-rolled operation routing and error-envelope plumbing.
+   * Rust adapter: api.rs#execute
+   * Rust adapter: api.rs#execute_with_providers
+   * Rust adapter: wire/operation_response.rs#execute_operation_request
+   * Rust adapter: wire/operation_response.rs#execute_operation_request_with_providers
+   * Rust adapter: wire/operation_response.rs#execute_operation_v1
+   * Rust adapter: wire/operation_response.rs#execute_operation_json_v1
+   * Rust adapter: wire.rs#encode_protobuf
+   * Rust adapter: wire.rs#decode_protobuf
+   * Rust adapter: wire.rs#encode_json
+   * Rust adapter: wire.rs#decode_json
+   * Rust capability: operation_contract/providers.rs#OperationProviders
+   * Rust capability: operation_contract/providers.rs#BuiltinProviders
    * </pre>
    *
    * Protobuf type {@code reallyme.jose.v1.JoseOperationRequest}
@@ -674,6 +1513,8 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * Compact JWS operations: 1000-1999.
+     * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+     * Rust adapter: jws/suites/es256.rs#sign_es256_jws
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -685,6 +1526,8 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * Compact JWS operations: 1000-1999.
+     * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+     * Rust adapter: jws/suites/es256.rs#sign_es256_jws
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -696,6 +1539,8 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * Compact JWS operations: 1000-1999.
+     * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+     * Rust adapter: jws/suites/es256.rs#sign_es256_jws
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -708,6 +1553,8 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * Compact JWS operations: 1000-1999.
+     * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+     * Rust adapter: jws/suites/es256.rs#sign_es256_jws
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -721,6 +1568,8 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * Compact JWS operations: 1000-1999.
+     * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+     * Rust adapter: jws/suites/es256.rs#sign_es256_jws
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -733,6 +1582,8 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * Compact JWS operations: 1000-1999.
+     * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+     * Rust adapter: jws/suites/es256.rs#sign_es256_jws
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -744,6 +1595,15 @@ public  final class JoseOperationRequest extends
     }
 
     /**
+     * <pre>
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
      */
     @java.lang.Override
@@ -751,6 +1611,15 @@ public  final class JoseOperationRequest extends
       return instance.hasJwsVerify();
     }
     /**
+     * <pre>
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
      */
     @java.lang.Override
@@ -758,6 +1627,15 @@ public  final class JoseOperationRequest extends
       return instance.getJwsVerify();
     }
     /**
+     * <pre>
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
      */
     public Builder setJwsVerify(me.really.jose.v1.JoseJwsVerifyRequest value) {
@@ -766,6 +1644,15 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
      */
     public Builder setJwsVerify(
@@ -775,6 +1662,15 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
      */
     public Builder mergeJwsVerify(me.really.jose.v1.JoseJwsVerifyRequest value) {
@@ -783,6 +1679,15 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+     * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+     * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
      */
     public Builder clearJwsVerify() {
@@ -794,6 +1699,7 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * JWT operations: 2000-2999.
+     * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -805,6 +1711,7 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * JWT operations: 2000-2999.
+     * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -816,6 +1723,7 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * JWT operations: 2000-2999.
+     * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -828,6 +1736,7 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * JWT operations: 2000-2999.
+     * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -841,6 +1750,7 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * JWT operations: 2000-2999.
+     * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -853,6 +1763,7 @@ public  final class JoseOperationRequest extends
     /**
      * <pre>
      * JWT operations: 2000-2999.
+     * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
      * </pre>
      *
      * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -864,6 +1775,11 @@ public  final class JoseOperationRequest extends
     }
 
     /**
+     * <pre>
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
      */
     @java.lang.Override
@@ -871,6 +1787,11 @@ public  final class JoseOperationRequest extends
       return instance.hasJwtDecodeUnsigned();
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
      */
     @java.lang.Override
@@ -878,6 +1799,11 @@ public  final class JoseOperationRequest extends
       return instance.getJwtDecodeUnsigned();
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
      */
     public Builder setJwtDecodeUnsigned(me.really.jose.v1.JoseJwtDecodeUnsignedRequest value) {
@@ -886,6 +1812,11 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
      */
     public Builder setJwtDecodeUnsigned(
@@ -895,6 +1826,11 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
      */
     public Builder mergeJwtDecodeUnsigned(me.really.jose.v1.JoseJwtDecodeUnsignedRequest value) {
@@ -903,6 +1839,11 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+     * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
      */
     public Builder clearJwtDecodeUnsigned() {
@@ -912,6 +1853,11 @@ public  final class JoseOperationRequest extends
     }
 
     /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
      */
     @java.lang.Override
@@ -919,6 +1865,11 @@ public  final class JoseOperationRequest extends
       return instance.hasJwtSign();
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
      */
     @java.lang.Override
@@ -926,6 +1877,11 @@ public  final class JoseOperationRequest extends
       return instance.getJwtSign();
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
      */
     public Builder setJwtSign(me.really.jose.v1.JoseJwtSignRequest value) {
@@ -934,6 +1890,11 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
      */
     public Builder setJwtSign(
@@ -943,6 +1904,11 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
      */
     public Builder mergeJwtSign(me.really.jose.v1.JoseJwtSignRequest value) {
@@ -951,6 +1917,11 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
      */
     public Builder clearJwtSign() {
@@ -960,6 +1931,18 @@ public  final class JoseOperationRequest extends
     }
 
     /**
+     * <pre>
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
      */
     @java.lang.Override
@@ -967,6 +1950,18 @@ public  final class JoseOperationRequest extends
       return instance.hasJwtVerify();
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
      */
     @java.lang.Override
@@ -974,6 +1969,18 @@ public  final class JoseOperationRequest extends
       return instance.getJwtVerify();
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
      */
     public Builder setJwtVerify(me.really.jose.v1.JoseJwtVerifyRequest value) {
@@ -982,6 +1989,18 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
      */
     public Builder setJwtVerify(
@@ -991,6 +2010,18 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
      */
     public Builder mergeJwtVerify(me.really.jose.v1.JoseJwtVerifyRequest value) {
@@ -999,6 +2030,18 @@ public  final class JoseOperationRequest extends
       return this;
     }
     /**
+     * <pre>
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+     * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+     * </pre>
+     *
      * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
      */
     public Builder clearJwtVerify() {
@@ -1127,6 +2170,630 @@ public  final class JoseOperationRequest extends
       return this;
     }
 
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    @java.lang.Override
+    public boolean hasSignatureSign() {
+      return instance.hasSignatureSign();
+    }
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseSignatureSignRequest getSignatureSign() {
+      return instance.getSignatureSign();
+    }
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    public Builder setSignatureSign(me.really.jose.v1.JoseSignatureSignRequest value) {
+      copyOnWrite();
+      instance.setSignatureSign(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    public Builder setSignatureSign(
+        me.really.jose.v1.JoseSignatureSignRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setSignatureSign(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    public Builder mergeSignatureSign(me.really.jose.v1.JoseSignatureSignRequest value) {
+      copyOnWrite();
+      instance.mergeSignatureSign(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    public Builder clearSignatureSign() {
+      copyOnWrite();
+      instance.clearSignatureSign();
+      return this;
+    }
+
+    /**
+     * <pre>
+     * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    @java.lang.Override
+    public boolean hasSignatureVerify() {
+      return instance.hasSignatureVerify();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseSignatureVerifyRequest getSignatureVerify() {
+      return instance.getSignatureVerify();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    public Builder setSignatureVerify(me.really.jose.v1.JoseSignatureVerifyRequest value) {
+      copyOnWrite();
+      instance.setSignatureVerify(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    public Builder setSignatureVerify(
+        me.really.jose.v1.JoseSignatureVerifyRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setSignatureVerify(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    public Builder mergeSignatureVerify(me.really.jose.v1.JoseSignatureVerifyRequest value) {
+      copyOnWrite();
+      instance.mergeSignatureVerify(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    public Builder clearSignatureVerify() {
+      copyOnWrite();
+      instance.clearSignatureVerify();
+      return this;
+    }
+
+    /**
+     * <pre>
+     * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    @java.lang.Override
+    public boolean hasSignatureSuiteInfo() {
+      return instance.hasSignatureSuiteInfo();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseSignatureSuiteInfoRequest getSignatureSuiteInfo() {
+      return instance.getSignatureSuiteInfo();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    public Builder setSignatureSuiteInfo(me.really.jose.v1.JoseSignatureSuiteInfoRequest value) {
+      copyOnWrite();
+      instance.setSignatureSuiteInfo(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    public Builder setSignatureSuiteInfo(
+        me.really.jose.v1.JoseSignatureSuiteInfoRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setSignatureSuiteInfo(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    public Builder mergeSignatureSuiteInfo(me.really.jose.v1.JoseSignatureSuiteInfoRequest value) {
+      copyOnWrite();
+      instance.mergeSignatureSuiteInfo(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    public Builder clearSignatureSuiteInfo() {
+      copyOnWrite();
+      instance.clearSignatureSuiteInfo();
+      return this;
+    }
+
+    /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwtSignWithProvider() {
+      return instance.hasJwtSignWithProvider();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwtSignWithProviderRequest getJwtSignWithProvider() {
+      return instance.getJwtSignWithProvider();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    public Builder setJwtSignWithProvider(me.really.jose.v1.JoseJwtSignWithProviderRequest value) {
+      copyOnWrite();
+      instance.setJwtSignWithProvider(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    public Builder setJwtSignWithProvider(
+        me.really.jose.v1.JoseJwtSignWithProviderRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwtSignWithProvider(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    public Builder mergeJwtSignWithProvider(me.really.jose.v1.JoseJwtSignWithProviderRequest value) {
+      copyOnWrite();
+      instance.mergeJwtSignWithProvider(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+     * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    public Builder clearJwtSignWithProvider() {
+      copyOnWrite();
+      instance.clearJwtSignWithProvider();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwtClaimsParse() {
+      return instance.hasJwtClaimsParse();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwtClaimsParseRequest getJwtClaimsParse() {
+      return instance.getJwtClaimsParse();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    public Builder setJwtClaimsParse(me.really.jose.v1.JoseJwtClaimsParseRequest value) {
+      copyOnWrite();
+      instance.setJwtClaimsParse(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    public Builder setJwtClaimsParse(
+        me.really.jose.v1.JoseJwtClaimsParseRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwtClaimsParse(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    public Builder mergeJwtClaimsParse(me.really.jose.v1.JoseJwtClaimsParseRequest value) {
+      copyOnWrite();
+      instance.mergeJwtClaimsParse(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    public Builder clearJwtClaimsParse() {
+      copyOnWrite();
+      instance.clearJwtClaimsParse();
+      return this;
+    }
+
+    /**
+     * <pre>
+     * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJweDeriveKey() {
+      return instance.hasJweDeriveKey();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJweDeriveKeyRequest getJweDeriveKey() {
+      return instance.getJweDeriveKey();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    public Builder setJweDeriveKey(me.really.jose.v1.JoseJweDeriveKeyRequest value) {
+      copyOnWrite();
+      instance.setJweDeriveKey(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    public Builder setJweDeriveKey(
+        me.really.jose.v1.JoseJweDeriveKeyRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJweDeriveKey(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    public Builder mergeJweDeriveKey(me.really.jose.v1.JoseJweDeriveKeyRequest value) {
+      copyOnWrite();
+      instance.mergeJweDeriveKey(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    public Builder clearJweDeriveKey() {
+      copyOnWrite();
+      instance.clearJweDeriveKey();
+      return this;
+    }
+
+    /**
+     * <pre>
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJweEncryptWithProvider() {
+      return instance.hasJweEncryptWithProvider();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJweEncryptWithProviderRequest getJweEncryptWithProvider() {
+      return instance.getJweEncryptWithProvider();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    public Builder setJweEncryptWithProvider(me.really.jose.v1.JoseJweEncryptWithProviderRequest value) {
+      copyOnWrite();
+      instance.setJweEncryptWithProvider(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    public Builder setJweEncryptWithProvider(
+        me.really.jose.v1.JoseJweEncryptWithProviderRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJweEncryptWithProvider(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    public Builder mergeJweEncryptWithProvider(me.really.jose.v1.JoseJweEncryptWithProviderRequest value) {
+      copyOnWrite();
+      instance.mergeJweEncryptWithProvider(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+     * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    public Builder clearJweEncryptWithProvider() {
+      copyOnWrite();
+      instance.clearJweEncryptWithProvider();
+      return this;
+    }
+
+    /**
+     * <pre>
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJweDecryptWithProvider() {
+      return instance.hasJweDecryptWithProvider();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJweDecryptWithProviderRequest getJweDecryptWithProvider() {
+      return instance.getJweDecryptWithProvider();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    public Builder setJweDecryptWithProvider(me.really.jose.v1.JoseJweDecryptWithProviderRequest value) {
+      copyOnWrite();
+      instance.setJweDecryptWithProvider(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    public Builder setJweDecryptWithProvider(
+        me.really.jose.v1.JoseJweDecryptWithProviderRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJweDecryptWithProvider(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    public Builder mergeJweDecryptWithProvider(me.really.jose.v1.JoseJweDecryptWithProviderRequest value) {
+      copyOnWrite();
+      instance.mergeJweDecryptWithProvider(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+     * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    public Builder clearJweDecryptWithProvider() {
+      copyOnWrite();
+      instance.clearJweDecryptWithProvider();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    @java.lang.Override
+    public boolean hasContractInfo() {
+      return instance.hasContractInfo();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseContractInfoRequest getContractInfo() {
+      return instance.getContractInfo();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    public Builder setContractInfo(me.really.jose.v1.JoseContractInfoRequest value) {
+      copyOnWrite();
+      instance.setContractInfo(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    public Builder setContractInfo(
+        me.really.jose.v1.JoseContractInfoRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setContractInfo(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    public Builder mergeContractInfo(me.really.jose.v1.JoseContractInfoRequest value) {
+      copyOnWrite();
+      instance.mergeContractInfo(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    public Builder clearContractInfo() {
+      copyOnWrite();
+      instance.clearContractInfo();
+      return this;
+    }
+
     // @@protoc_insertion_point(builder_scope:reallyme.jose.v1.JoseOperationRequest)
   }
   @java.lang.Override
@@ -1147,16 +2814,27 @@ public  final class JoseOperationRequest extends
             "operationCase_",
             me.really.jose.v1.JoseJwsSignRequest.class,
             me.really.jose.v1.JoseJwsVerifyRequest.class,
+            me.really.jose.v1.JoseSignatureSignRequest.class,
+            me.really.jose.v1.JoseSignatureVerifyRequest.class,
+            me.really.jose.v1.JoseSignatureSuiteInfoRequest.class,
             me.really.jose.v1.JoseJwtEncodeUnsignedRequest.class,
             me.really.jose.v1.JoseJwtDecodeUnsignedRequest.class,
             me.really.jose.v1.JoseJwtSignRequest.class,
             me.really.jose.v1.JoseJwtVerifyRequest.class,
+            me.really.jose.v1.JoseJwtSignWithProviderRequest.class,
+            me.really.jose.v1.JoseJwtClaimsParseRequest.class,
             me.really.jose.v1.JoseJweEncryptRequest.class,
             me.really.jose.v1.JoseJweDecryptRequest.class,
+            me.really.jose.v1.JoseJweDeriveKeyRequest.class,
+            me.really.jose.v1.JoseJweEncryptWithProviderRequest.class,
+            me.really.jose.v1.JoseJweDecryptWithProviderRequest.class,
+            me.really.jose.v1.JoseContractInfoRequest.class,
           };
           java.lang.String info =
-              "\u0000\b\u0001\u0000\u03e8\u0bb9\b\u0000\u0000\u0000\u03e8<\u0000\u03e9<\u0000\u07d0" +
-              "<\u0000\u07d1<\u0000\u07d2<\u0000\u07d3<\u0000\u0bb8<\u0000\u0bb9<\u0000";
+              "\u0000\u0011\u0001\u0000\u03e8\u1b58\u0011\u0000\u0000\u0000\u03e8<\u0000\u03e9<" +
+              "\u0000\u03f2<\u0000\u03f3<\u0000\u03f4<\u0000\u07d0<\u0000\u07d1<\u0000\u07d2<\u0000" +
+              "\u07d3<\u0000\u07da<\u0000\u07db<\u0000\u0bb8<\u0000\u0bb9<\u0000\u0bc2<\u0000\u0bc3" +
+              "<\u0000\u0bc4<\u0000\u1b58<\u0000";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

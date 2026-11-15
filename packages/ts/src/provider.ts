@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { ReallyMeJoseError } from "./errors.js";
+import { ReallyMeJoseError, ReallyMeJoseSdkErrorCode } from "./errors.js";
 
 type OperationFunction = (request: Uint8Array) => unknown;
 
@@ -15,21 +15,26 @@ let installedProvider: ReallyMeJoseWasmProvider | undefined;
 
 const requireObject = (value: unknown): object => {
   if (typeof value !== "object" || value === null) {
-    throw new ReallyMeJoseError("provider-failure");
+    throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.PROVIDER_FAILURE);
   }
   return value;
 };
 
 const requireFunction = (module: object, name: string): OperationFunction => {
-  const value: unknown = Reflect.get(module, name);
+  let value: unknown;
+  try {
+    value = Reflect.get(module, name);
+  } catch (_error: unknown) {
+    throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.PROVIDER_FAILURE);
+  }
   if (typeof value !== "function") {
-    throw new ReallyMeJoseError("provider-failure");
+    throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.PROVIDER_FAILURE);
   }
   return (request: Uint8Array): unknown => {
     try {
       return Reflect.apply(value, undefined, [request]);
     } catch (_error: unknown) {
-      throw new ReallyMeJoseError("provider-failure");
+      throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.PROVIDER_FAILURE);
     }
   };
 };
@@ -50,7 +55,7 @@ export const installReallyMeJoseWasmProvider = (module: unknown): void => {
 
 export const requireReallyMeJoseWasmProvider = (): ReallyMeJoseWasmProvider => {
   if (installedProvider === undefined) {
-    throw new ReallyMeJoseError("provider-not-installed");
+    throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.PROVIDER_NOT_INSTALLED);
   }
   return installedProvider;
 };

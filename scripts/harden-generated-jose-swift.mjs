@@ -5,6 +5,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { schemaMessages } from "./read-proto-schema.mjs";
 
 const path = fileURLToPath(new URL("../gen/swift/reallyme/jose/v1/jose.pb.swift", import.meta.url));
 const marker = "// Generated JOSE message reflection redaction.";
@@ -16,7 +17,9 @@ if (process.argv.length > 3 || (process.argv.length === 3 && !checkIdempotent)) 
 const before = readFileSync(path, "utf8");
 const names = [...before.matchAll(/^public nonisolated struct (ReallyMeProtoJose[A-Za-z0-9_]+): Sendable \{$/gmu)]
   .map((match) => match[1]);
-if (names.length < 30 || new Set(names).size !== names.length) {
+const schemaNames = schemaMessages(readFileSync(new URL("../crates/proto/proto/reallyme/jose/v1/jose.proto", import.meta.url), "utf8"))
+  .map(({ name }) => `ReallyMeProto${name}`);
+if (names.length !== schemaNames.length || new Set(names).size !== names.length || schemaNames.some((name) => !names.includes(name))) {
   throw new Error("generated Swift message inventory changed unexpectedly");
 }
 

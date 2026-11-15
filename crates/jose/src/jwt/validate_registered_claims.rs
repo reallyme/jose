@@ -111,7 +111,7 @@ pub(super) fn validate_claims_for_encoding(payload: &JsonValue) -> Result<(), Jw
             return Err(JwtError::InvalidClaims);
         }
     }
-    if let Some(audience) = claims.get("aud") {
+    if let Some(audience) = claims.get(JwtRegisteredClaim::Audience.as_str()) {
         match audience {
             JsonValue::String(value) if !value.is_empty() => {}
             JsonValue::Array(values)
@@ -132,22 +132,20 @@ pub(super) fn validate_registered_claims(
     policy.validate()?;
     let claims = validate_claims_set(payload)?;
 
-    let audience = claims
-        .get("aud")
-        .ok_or(JwtError::MissingRequiredRegisteredClaim(
-            JwtRegisteredClaim::Audience,
-        ))?;
+    let audience = claims.get(JwtRegisteredClaim::Audience.as_str()).ok_or(
+        JwtError::MissingRequiredRegisteredClaim(JwtRegisteredClaim::Audience),
+    )?;
     validate_audience(audience, policy.expected_audience)?;
     validate_string_claim(
         claims,
-        "iss",
+        JwtRegisteredClaim::Issuer.as_str(),
         JwtRegisteredClaim::Issuer,
         policy.expected_issuer,
         JwtError::IssuerMismatch,
     )?;
     validate_string_claim(
         claims,
-        "sub",
+        JwtRegisteredClaim::Subject.as_str(),
         JwtRegisteredClaim::Subject,
         policy.expected_subject,
         JwtError::SubjectMismatch,

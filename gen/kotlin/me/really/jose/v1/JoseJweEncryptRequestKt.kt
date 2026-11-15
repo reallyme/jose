@@ -11,6 +11,10 @@ package me.really.jose.v1;
 public inline fun joseJweEncryptRequest(block: me.really.jose.v1.JoseJweEncryptRequestKt.Dsl.() -> kotlin.Unit): me.really.jose.v1.JoseJweEncryptRequest =
   me.really.jose.v1.JoseJweEncryptRequestKt.Dsl._create(me.really.jose.v1.JoseJweEncryptRequest.newBuilder()).apply { block() }._build()
 /**
+ * ```
+ * Rust view: jwe/encrypt.rs#CompactJweEncryptRequest
+ * ```
+ *
  * Protobuf type `reallyme.jose.v1.JoseJweEncryptRequest`
  */
 public object JoseJweEncryptRequestKt {
@@ -81,6 +85,7 @@ public object JoseJweEncryptRequestKt {
      * ```
      * Sensitive direct CEK or recipient public/agreement key bytes, depending on
      * key_management_algorithm. Adapters must zeroize after dispatch.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes key = 3 [json_name = "key"];`
@@ -96,6 +101,7 @@ public object JoseJweEncryptRequestKt {
      * ```
      * Sensitive direct CEK or recipient public/agreement key bytes, depending on
      * key_management_algorithm. Adapters must zeroize after dispatch.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes key = 3 [json_name = "key"];`
@@ -108,6 +114,7 @@ public object JoseJweEncryptRequestKt {
      * ```
      * Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes plaintext = 4 [json_name = "plaintext"];`
@@ -123,6 +130,7 @@ public object JoseJweEncryptRequestKt {
      * ```
      * Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes plaintext = 4 [json_name = "plaintext"];`
@@ -132,7 +140,11 @@ public object JoseJweEncryptRequestKt {
     }
 
     /**
-     * `string kid = 5 [json_name = "kid"];`
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional string kid = 5 [json_name = "kid"];`
      */
     public var kid: kotlin.String
       @kotlin.jvm.JvmName("getKid")
@@ -142,19 +154,35 @@ public object JoseJweEncryptRequestKt {
         _builder.kid = value
       }
     /**
-     * `string kid = 5 [json_name = "kid"];`
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional string kid = 5 [json_name = "kid"];`
      */
     public fun clearKid() {
       _builder.clearKid()
+    }
+    /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional string kid = 5 [json_name = "kid"];`
+     * @return Whether the kid field is set.
+     */
+    public fun hasKid(): kotlin.Boolean {
+      return _builder.hasKid()
     }
 
     /**
      * ```
      * Agreement PartyUInfo. This can be correlating protocol metadata and must
      * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
-     * `bytes apu = 6 [json_name = "apu"];`
+     * `optional bytes apu = 6 [json_name = "apu"];`
      */
     public var apu: com.google.protobuf.ByteString
       @kotlin.jvm.JvmName("getApu")
@@ -167,21 +195,36 @@ public object JoseJweEncryptRequestKt {
      * ```
      * Agreement PartyUInfo. This can be correlating protocol metadata and must
      * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
-     * `bytes apu = 6 [json_name = "apu"];`
+     * `optional bytes apu = 6 [json_name = "apu"];`
      */
     public fun clearApu() {
       _builder.clearApu()
+    }
+    /**
+     * ```
+     * Agreement PartyUInfo. This can be correlating protocol metadata and must
+     * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional bytes apu = 6 [json_name = "apu"];`
+     * @return Whether the apu field is set.
+     */
+    public fun hasApu(): kotlin.Boolean {
+      return _builder.hasApu()
     }
 
     /**
      * ```
      * Agreement PartyVInfo. This can be correlating protocol metadata and must
      * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
-     * `bytes apv = 7 [json_name = "apv"];`
+     * `optional bytes apv = 7 [json_name = "apv"];`
      */
     public var apv: com.google.protobuf.ByteString
       @kotlin.jvm.JvmName("getApv")
@@ -194,16 +237,34 @@ public object JoseJweEncryptRequestKt {
      * ```
      * Agreement PartyVInfo. This can be correlating protocol metadata and must
      * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
-     * `bytes apv = 7 [json_name = "apv"];`
+     * `optional bytes apv = 7 [json_name = "apv"];`
      */
     public fun clearApv() {
       _builder.clearApv()
     }
+    /**
+     * ```
+     * Agreement PartyVInfo. This can be correlating protocol metadata and must
+     * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional bytes apv = 7 [json_name = "apv"];`
+     * @return Whether the apv field is set.
+     */
+    public fun hasApv(): kotlin.Boolean {
+      return _builder.hasApv()
+    }
 
     /**
-     * `string typ = 8 [json_name = "typ"];`
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional string typ = 8 [json_name = "typ"];`
      */
     public var typ: kotlin.String
       @kotlin.jvm.JvmName("getTyp")
@@ -213,14 +274,33 @@ public object JoseJweEncryptRequestKt {
         _builder.typ = value
       }
     /**
-     * `string typ = 8 [json_name = "typ"];`
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional string typ = 8 [json_name = "typ"];`
      */
     public fun clearTyp() {
       _builder.clearTyp()
     }
+    /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional string typ = 8 [json_name = "typ"];`
+     * @return Whether the typ field is set.
+     */
+    public fun hasTyp(): kotlin.Boolean {
+      return _builder.hasTyp()
+    }
 
     /**
-     * `string cty = 9 [json_name = "cty"];`
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional string cty = 9 [json_name = "cty"];`
      */
     public var cty: kotlin.String
       @kotlin.jvm.JvmName("getCty")
@@ -230,10 +310,25 @@ public object JoseJweEncryptRequestKt {
         _builder.cty = value
       }
     /**
-     * `string cty = 9 [json_name = "cty"];`
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional string cty = 9 [json_name = "cty"];`
      */
     public fun clearCty() {
       _builder.clearCty()
+    }
+    /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
+     * `optional string cty = 9 [json_name = "cty"];`
+     * @return Whether the cty field is set.
+     */
+    public fun hasCty(): kotlin.Boolean {
+      return _builder.hasCty()
     }
 
     /**

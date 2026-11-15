@@ -1,0 +1,97 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+// Derived from the protobuf contract. Change the schema and regenerate.
+
+package me.really.jose
+
+internal object JoseContractValues {
+    const val NATIVE_ABI_VERSION: Int = 1
+    const val COMPACT_BYTES: Int = 1048576
+    const val PROTO_JSON_BYTES: Int = 1572864
+    const val RESPONSE_OVERHEAD_BYTES: Int = 32
+    const val PROTO_RECURSION_DEPTH: Int = 64
+    const val TEMPORAL_SKEW_SECONDS: Long = 300L
+    const val DEFAULT_TEMPORAL_SKEW_SECONDS: Long = 60L
+    const val ACCEPTED_TYPE_VALUES: Int = 32
+}
+
+/** Schema-derived stable reason codes without caller data. */
+public enum class ReallyMeJoseErrorReason(public val code: Int, internal val branch: ReallyMeJoseErrorBranch) {
+    JWS_INVALID_PAYLOAD_UTF8(103, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_BAD_PAYLOAD_BASE64(104, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_BAD_HEADER_BASE64(120, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_BAD_HEADER_UTF8(121, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_HEADER_MISMATCH(122, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_BAD_SIGNATURE_BASE64(140, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_BAD_RAW_SIGNATURE(141, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_INVALID_SIGNATURE(142, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_SIGN_FAILED(160, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_BAD_DER_SIGNATURE(161, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_INVALID_HEADER(220, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM(221, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM(222, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_MISSING_REQUIRED_HEADER_PARAMETER(223, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_HEADER_POLICY_MISMATCH(224, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_KID_POLICY_MISMATCH(225, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_APU_POLICY_MISMATCH(226, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_APV_POLICY_MISMATCH(227, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_UNSUPPORTED_COMPRESSION_ALGORITHM(228, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_INVALID_ENCRYPTED_KEY(240, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_INVALID_CONTENT_ENCRYPTION_KEY(241, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_INVALID_CONTENT_CIPHER_INPUT(242, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_DECRYPT_FAILED(243, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_ENCRYPT_FAILED(244, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_INVALID_KEY_AGREEMENT_KEY(245, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_INVALID_SHARED_SECRET(247, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_INVALID_PAYLOAD_JSON(260, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_COMPRESSION_FAILED(261, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_DECOMPRESSION_FAILED(262, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE(263, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_INVALID_HEADER(320, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_UNSUPPORTED_ALGORITHM(321, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_ALGORITHM_MISMATCH(322, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_MISSING_ALGORITHM(323, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_MISSING_PRIVATE_KEY(324, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_MISSING_PUBLIC_KEY(325, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_KID_POLICY_MISMATCH(326, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_PUBLIC_KEY_MISMATCH(327, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_INVALID_PUBLIC_KEY(328, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_INVALID_JWK(329, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_INVALID_SIGNATURE(340, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_CRYPTO_FAILED(341, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_INVALID_CLAIMS(360, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_SERIALIZATION_FAILED(361, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_MISSING_REQUIRED_TEMPORAL_CLAIM(380, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_INVALID_TEMPORAL_CLAIM_VALUE(381, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_EXPIRED(382, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_NOT_YET_VALID(383, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_ISSUED_AT_IN_FUTURE(384, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_INVALID_VERIFICATION_TIME(385, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_INVALID_VERIFICATION_POLICY(386, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_SIGNING_KEY_MISMATCH(387, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_MISSING_REQUIRED_REGISTERED_CLAIM(388, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_INVALID_REGISTERED_CLAIM_VALUE(389, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_AUDIENCE_MISMATCH(390, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_ISSUER_MISMATCH(391, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWT_SUBJECT_MISMATCH(392, ReallyMeJoseErrorBranch.PRIMITIVE),
+    COMMON_MALFORMED_PROTOBUF(700, ReallyMeJoseErrorBranch.PRIMITIVE),
+    COMMON_MALFORMED_JSON(701, ReallyMeJoseErrorBranch.PRIMITIVE),
+    COMMON_MISSING_OPERATION(702, ReallyMeJoseErrorBranch.PRIMITIVE),
+    COMMON_RESOURCE_LIMIT_EXCEEDED(703, ReallyMeJoseErrorBranch.PRIMITIVE),
+    COMMON_LENGTH_OVERFLOW(704, ReallyMeJoseErrorBranch.PRIMITIVE),
+    COMMON_INVALID_COMPACT(705, ReallyMeJoseErrorBranch.PRIMITIVE),
+    COMMON_INVALID_ENCODING(706, ReallyMeJoseErrorBranch.PRIMITIVE),
+    PROVIDER_UNAVAILABLE(800, ReallyMeJoseErrorBranch.PROVIDER),
+    PROVIDER_UNSUPPORTED(801, ReallyMeJoseErrorBranch.PROVIDER),
+    PROVIDER_RANDOMNESS_UNAVAILABLE(802, ReallyMeJoseErrorBranch.PROVIDER),
+    BACKEND_INTERNAL(900, ReallyMeJoseErrorBranch.BACKEND),
+    BACKEND_JSON_SERIALIZATION(901, ReallyMeJoseErrorBranch.BACKEND),
+    BACKEND_KEY_DERIVATION_FAILED(902, ReallyMeJoseErrorBranch.BACKEND),
+    ;
+    internal companion object {
+        private val byCode: Map<Int, ReallyMeJoseErrorReason> = entries.associateBy { it.code }
+        fun fromCode(code: Int): ReallyMeJoseErrorReason? = byCode[code]
+    }
+}

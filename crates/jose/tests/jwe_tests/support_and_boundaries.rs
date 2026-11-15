@@ -415,13 +415,10 @@ impl reallyme_crypto::csprng::SecureRandom for FixedRandom {
     fn fill_secure(
         &mut self,
         output: &mut [u8],
-        output_kind: RngOutputKind,
+        _output_kind: RngOutputKind,
     ) -> Result<(), CryptoError> {
         if output.len() != self.bytes.len() {
-            return Err(CryptoError::Rng {
-                output: output_kind,
-                kind: RngFailureKind::InvalidOutputLength,
-            });
+            return Err(CryptoError::PRIMITIVE_INVALID_LENGTH);
         }
         output.copy_from_slice(&self.bytes);
         Ok(())

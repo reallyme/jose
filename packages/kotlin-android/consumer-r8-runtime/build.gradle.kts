@@ -15,7 +15,7 @@ android {
         minSdk = 24
         targetSdk = 37
         versionCode = 1
-        versionName = "0.4.6"
+        versionName = "0.5.0"
     }
 
     compileOptions {
@@ -41,5 +41,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":"))
+    if (providers.gradleProperty("reallyme.jose.androidConsumerRepository").isPresent) {
+        implementation("me.really:jose-android:${rootProject.version}")
+    } else {
+        implementation(project(":"))
+    }
 }

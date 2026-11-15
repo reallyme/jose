@@ -15,11 +15,13 @@ import {
   JoseJweCompressionAlgorithm,
   JoseJweContentEncryptionAlgorithm,
   JoseJweKeyManagementAlgorithm,
+  JoseSdkErrorCode,
   JoseSignatureAlgorithm,
   ReallyMeJose,
   ReallyMeJoseError,
+  ReallyMeJoseSdkErrorCode,
 } from "../dist/index.js";
-import { JoseOperationResponseSchema, JoseOperationRequestSchema } from "../dist/proto.js";
+import { JoseOperationResponseSchema, JoseOperationRequestSchema, JoseContractLimit } from "../dist/proto.js";
 import { initializeWasmProvider } from "./wasm-provider-module.mjs";
 
 const textEncoder = new TextEncoder();
@@ -33,11 +35,51 @@ const assertSdkError = (expectedCode, expectedReason) => (error) => {
   return true;
 };
 
+test("SDK errors preserve public labels and expose protobuf codes", () => {
+  const cases = [
+    [ReallyMeJoseSdkErrorCode.INVALID_INPUT, "invalid-input", JoseSdkErrorCode.INVALID_INPUT],
+    [ReallyMeJoseSdkErrorCode.PROVIDER_NOT_INSTALLED, "provider-not-installed", JoseSdkErrorCode.PROVIDER_NOT_INSTALLED],
+    [ReallyMeJoseSdkErrorCode.PROVIDER_FAILURE, "provider-failure", JoseSdkErrorCode.PROVIDER_FAILURE],
+    [ReallyMeJoseSdkErrorCode.MALFORMED_PROVIDER_RESPONSE, "malformed-provider-response", JoseSdkErrorCode.MALFORMED_PROVIDER_RESPONSE],
+    [ReallyMeJoseSdkErrorCode.JOSE_FAILURE, "jose-failure", JoseSdkErrorCode.JOSE_FAILURE],
+  ];
+  for (const [code, expectedLabel, schemaCode] of cases) {
+    const error = new ReallyMeJoseError(code, "primitive", JoseErrorReason.JWS_INVALID_SIGNATURE);
+    assert.equal(error.code, expectedLabel);
+    assert.equal(error.schemaCode, schemaCode);
+    const isOperationFailure = schemaCode === JoseSdkErrorCode.JOSE_FAILURE;
+    assert.equal(error.branch, isOperationFailure ? "primitive" : undefined);
+    assert.equal(error.reason, isOperationFailure ? JoseErrorReason.JWS_INVALID_SIGNATURE : undefined);
+  }
+  const marker = "private-provider-error-detail";
+  const invalid = new ReallyMeJoseError(marker, marker, marker);
+  assert.equal(invalid.schemaCode, JoseSdkErrorCode.INVALID_INPUT);
+  assert.equal(invalid.branch, undefined);
+  assert.equal(invalid.reason, undefined);
+  assert.doesNotMatch(invalid.message, /private-provider-error-detail/u);
+  for (const [branch, reason] of [
+    ["primitive", JoseErrorReason.UNSPECIFIED],
+    ["primitive", 9_999],
+    ["provider", JoseErrorReason.JWS_INVALID_SIGNATURE],
+    [undefined, undefined],
+  ]) {
+    const malformed = new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.JOSE_FAILURE, branch, reason);
+    assert.equal(malformed.schemaCode, JoseSdkErrorCode.MALFORMED_PROVIDER_RESPONSE);
+    assert.equal(malformed.reason, undefined);
+  }
+});
+
 test("production WASM provider and TypeScript facade", async (suite) => {
   await suite.test("fails closed before provider installation", () => {
     assert.throws(
       () => ReallyMeJose.encodeUnsignedJwt(textEncoder.encode("{}")),
-      assertSdkError("provider-not-installed"),
+      (error) => {
+        assertSdkError("provider-not-installed")(error);
+        assert.equal(error.schemaCode, JoseSdkErrorCode.PROVIDER_NOT_INSTALLED);
+        assert.equal(error.branch, undefined);
+        assert.equal(error.reason, undefined);
+        return true;
+      },
     );
   });
 
@@ -45,6 +87,19 @@ test("production WASM provider and TypeScript facade", async (suite) => {
     assert.throws(
       () => installReallyMeJoseWasmProvider(Object.create(null)),
       assertSdkError("provider-failure"),
+    );
+    assert.throws(
+      () => installReallyMeJoseWasmProvider({
+        get executeOperation() {
+          throw new Error("private provider detail");
+        },
+      }),
+      (error) => {
+        assertSdkError("provider-failure")(error);
+        assert.equal(error.schemaCode, JoseSdkErrorCode.PROVIDER_FAILURE);
+        assert.doesNotMatch(error.message, /private provider detail/u);
+        return true;
+      },
     );
 
     let providerCalls = 0;
@@ -98,7 +153,7 @@ test("production WASM provider and TypeScript facade", async (suite) => {
       const execute = () => {
         returned = Buffer.from(toBinary(JoseOperationResponseSchema, create(
           JoseOperationResponseSchema,
-          { contractVersion: 1, response: { case: operation, value: {
+          { contractVersion: 2, response: { case: operation, value: {
             outcome: { case: "result", value: { [field]: expected } },
           } } },
         )));
@@ -115,7 +170,7 @@ test("production WASM provider and TypeScript facade", async (suite) => {
   await suite.test("rejects unknown response fields at every contract layer", () => {
     for (const layer of ["response", "operation", "result", "error", "reason"]) {
       const message = create(JoseOperationResponseSchema, {
-        contractVersion: 1,
+        contractVersion: 2,
         response: { case: "jwtDecodeUnsigned", value: { outcome: {
           case: "result", value: { claimsJson: new Uint8Array([123, 125]) },
         } } },
@@ -125,7 +180,7 @@ test("production WASM provider and TypeScript facade", async (suite) => {
           case: "error", value: {
             $typeName: "reallyme.jose.v1.JoseError",
             error: { case: "primitive", value: {
-              $typeName: "reallyme.jose.v1.JosePrimitiveError", reason: JoseErrorReason.JWT_INVALID_COMPACT,
+              $typeName: "reallyme.jose.v1.JosePrimitiveError", reason: JoseErrorReason.COMMON_INVALID_COMPACT,
             } },
           },
         };
@@ -158,7 +213,7 @@ test("production WASM provider and TypeScript facade", async (suite) => {
     const jwk = Buffer.from("{}");
     for (const [expectedCopies, invoke] of [
       [1, () => ReallyMeJose.signJws({ algorithm: JoseSignatureAlgorithm.EDDSA, privateKey, payload: null })],
-      [3, () => ReallyMeJose.signJwt({ claimsJson: claims, jwkJson: jwk, privateKey, type: 123 })],
+      [3, () => ReallyMeJose.signJwt({ claimsJson: claims, jwkJson: jwk, privateKey, headerOptions: { type: 123 } })],
       [2, () => ReallyMeJose.encryptJwe({
         keyManagementAlgorithm: JoseJweKeyManagementAlgorithm.DIRECT,
         contentEncryptionAlgorithm: JoseJweContentEncryptionAlgorithm.A128GCM,
@@ -183,6 +238,41 @@ test("production WASM provider and TypeScript facade", async (suite) => {
 
   const wasm = await initializeWasmProvider();
   installReallyMeJoseWasmProvider(wasm);
+
+  await suite.test("optional headers preserve absent, empty, and explicitly omitted JWT types", () => {
+    const key = new Uint8Array(16).fill(8);
+    const plaintext = textEncoder.encode("presence");
+    const base = { keyManagementAlgorithm: JoseJweKeyManagementAlgorithm.DIRECT,
+      contentEncryptionAlgorithm: JoseJweContentEncryptionAlgorithm.A128GCM, key, plaintext };
+    try {
+      for (const values of [{}, { keyIdentifier: "", type: "", contentType: "" }]) {
+        const compact = ReallyMeJose.encryptJwe({ ...base, ...values });
+        const header = JSON.parse(Buffer.from(compact.split(".")[0], "base64url").toString("utf8"));
+        assert.equal(Object.hasOwn(header, "kid"), Object.hasOwn(values, "keyIdentifier"));
+        if (Object.hasOwn(values, "keyIdentifier")) {
+          assert.equal(header.kid, ""); assert.equal(header.typ, ""); assert.equal(header.cty, "");
+        }
+      }
+      assert.throws(() => ReallyMeJose.encryptJwe({ ...base, agreementPartyUInfo: new Uint8Array() }),
+        assertSdkError("jose-failure", JoseErrorReason.JWE_INVALID_HEADER));
+      const privateKey = fromHex("09".repeat(32));
+      const jwkJson = textEncoder.encode('{"alg":"EdDSA","crv":"Ed25519","kty":"OKP","use":"sig","x":"_RckOFqgx1tk-3jNYC-h2ZH96_drE8WO1wLqyDXp9hg"}');
+      const claimsJson = textEncoder.encode("{}");
+      const options = { privateKey, jwkJson, claimsJson };
+      try {
+        for (const [headerOptions, expected] of [[undefined, "JWT"], [{}, undefined], [{ type: "example+jwt" }, "example+jwt"]]) {
+          const compact = ReallyMeJose.signJwt({ ...options, headerOptions });
+          const header = JSON.parse(Buffer.from(compact.split(".")[0], "base64url").toString("utf8"));
+          assert.equal(header.typ, expected);
+          assert.equal(Object.hasOwn(header, "typ"), expected !== undefined);
+        }
+        assert.throws(() => ReallyMeJose.signJwt({ ...options, headerOptions: { type: "" } }),
+          assertSdkError("jose-failure", JoseErrorReason.JWT_INVALID_HEADER));
+        assert.throws(() => ReallyMeJose.signJwt({ ...options, type: "ignored-legacy-field" }), assertSdkError("invalid-input"));
+        assert.throws(() => ReallyMeJose.signJwt({ ...options, headerOptions: { typ: "ignored-field" } }), assertSdkError("invalid-input"));
+      } finally { privateKey.fill(0); jwkJson.fill(0); claimsJson.fill(0); }
+    } finally { key.fill(0); plaintext.fill(0); }
+  });
 
   await suite.test("Buffer inputs retain caller ownership through signing and encryption", () => {
     const key = Buffer.alloc(16, 8);
@@ -283,7 +373,7 @@ test("production WASM provider and TypeScript facade", async (suite) => {
     assert.deepEqual(decoded, claims);
     assert.throws(
       () => ReallyMeJose.decodeUnsignedJwt(`${compact}AAAA`),
-      assertSdkError("jose-failure", JoseErrorReason.JWT_INVALID_COMPACT),
+      assertSdkError("jose-failure", JoseErrorReason.COMMON_INVALID_COMPACT),
     );
     claims.fill(0);
     decoded.fill(0);
@@ -303,7 +393,7 @@ test("production WASM provider and TypeScript facade", async (suite) => {
       compact,
       jwkJson: jwk,
       publicKey,
-      signatureOnly: true,
+      verification: { mode: "signatureOnly" },
     });
     assert.deepEqual(verified, claims);
     privateKey.fill(0);
@@ -333,9 +423,17 @@ test("production WASM provider and TypeScript facade", async (suite) => {
       compact,
       jwkJson: jwk,
       publicKey,
-      temporalPolicy,
+      verification: { mode: "claims", policy: temporalPolicy },
     });
 
+    const temporal = ReallyMeJose.verifyJwt({ compact, jwkJson: jwk, publicKey,
+      verification: { mode: "temporalOnly", policy: { verificationTimeUnixSeconds: 1720000000n } },
+    });
+    assert.deepEqual(temporal, claims);
+    temporal.fill(0);
+    assert.throws(() => ReallyMeJose.verifyJwt({ compact, jwkJson: jwk, publicKey,
+      verification: { mode: "temporalOnly", policy: { verificationTimeUnixSeconds: 1720000200n, clockSkewSeconds: 0n } },
+    }), assertSdkError("jose-failure", JoseErrorReason.JWT_EXPIRED));
     const unconstrained = verify(basePolicy);
     assert.deepEqual(unconstrained, claims);
     const constrained = verify({
@@ -370,7 +468,7 @@ test("production WASM provider and TypeScript facade", async (suite) => {
         compact: noExpirationCompact,
         jwkJson: jwk,
         publicKey,
-        temporalPolicy: basePolicy,
+        verification: { mode: "claims", policy: basePolicy },
       }),
       assertSdkError("jose-failure", JoseErrorReason.JWT_MISSING_REQUIRED_TEMPORAL_CLAIM),
     );
@@ -461,11 +559,81 @@ test("production WASM provider and TypeScript facade", async (suite) => {
         assert.throws(() => ReallyMeJose[method](options), assertSdkError("invalid-input"));
       }
     }
-    for (const headerPolicy of [null, [], { acceptedTypes: "JWT" }]) {
+    for (const headerPolicy of [null, [], { acceptedTypes: "JWT" }, { acceptedTypes: null }, { acceptedTypes: [null] }]) {
       assert.throws(() => ReallyMeJose.verifyJwt({
         compact: "a.b.c", jwkJson: new Uint8Array(), publicKey: new Uint8Array(), headerPolicy,
       }), assertSdkError("invalid-input"));
     }
+  });
+
+  await suite.test("unknown and inherited facade fields cannot disable policy constraints", () => {
+    let calls = 0;
+    const unavailable = () => { calls += 1; return new Uint8Array(); };
+    installReallyMeJoseWasmProvider({ executeOperation: unavailable, executeOperationJson: unavailable });
+    const signature = { algorithm: JoseSignatureAlgorithm.EDDSA, privateKey: new Uint8Array(), payload: new Uint8Array() };
+    const verification = { compact: "a.b.c", jwkJson: new Uint8Array(), publicKey: new Uint8Array(), verification: { mode: "signatureOnly" } };
+    const encryption = { keyManagementAlgorithm: JoseJweKeyManagementAlgorithm.DIRECT,
+      contentEncryptionAlgorithm: JoseJweContentEncryptionAlgorithm.A128GCM,
+      key: new Uint8Array(16), plaintext: new Uint8Array() };
+    try {
+      for (const [method, options] of [
+        ["signJws", signature],
+        ["verifyJws", { algorithm: JoseSignatureAlgorithm.EDDSA, compact: "a.b.c", publicKey: new Uint8Array() }],
+        ["signJwt", { claimsJson: new Uint8Array(), jwkJson: new Uint8Array(), privateKey: new Uint8Array() }],
+        ["verifyJwt", verification],
+        ["encryptJwe", encryption],
+        ["decryptJwe", { compact: "a..b.c.d", keyManagementAlgorithm: encryption.keyManagementAlgorithm,
+          contentEncryptionAlgorithm: encryption.contentEncryptionAlgorithm, key: encryption.key }],
+      ]) {
+        for (const extra of [{ unknownOption: true }, { [Symbol("unknown")]: true }, JSON.parse('{"__proto__":{}}')]) {
+          assert.throws(() => ReallyMeJose[method]({ ...options, ...extra }), assertSdkError("invalid-input"));
+        }
+      }
+      for (const headerPolicy of [
+        { acceptedTypes: null },
+        { allowMissingTyp: true },
+        { acceptedTypes: ["JWT"], unexpected: true },
+      ]) {
+        assert.throws(() => ReallyMeJose.verifyJwt({ ...verification, headerPolicy }), assertSdkError("invalid-input"));
+      }
+      assert.throws(() => ReallyMeJose.verifyJwt({ ...verification, verification: { mode: "claims", policy: { verificationTimeUnixSeconds: 1n, expectedAudience: "recipient", expected_issuer: "required" } },
+      }), assertSdkError("invalid-input"));
+      for (const headerPolicy of [{ allowedCompressionAlgorithms: null }, { expected_kid: "required" }]) {
+        assert.throws(() => ReallyMeJose.decryptJwe({ compact: "a..b.c.d", key: encryption.key,
+          keyManagementAlgorithm: encryption.keyManagementAlgorithm,
+          contentEncryptionAlgorithm: encryption.contentEncryptionAlgorithm, headerPolicy,
+        }), assertSdkError("invalid-input"));
+      }
+      assert.throws(() => ReallyMeJose.decryptJwe({ compact: "a..b.c.d", key: encryption.key,
+        keyManagementAlgorithm: encryption.keyManagementAlgorithm,
+        contentEncryptionAlgorithm: encryption.contentEncryptionAlgorithm,
+        headerPolicy: { allowedCompressionAlgorithms: new Array(JoseContractLimit.COMPACT_BYTES + 1) },
+      }), assertSdkError("jose-failure", JoseErrorReason.COMMON_RESOURCE_LIMIT_EXCEEDED));
+      const inherited = Object.assign(Object.create({ verification: { mode: "signatureOnly" } }), verification);
+      assert.throws(() => ReallyMeJose.verifyJwt(inherited), assertSdkError("invalid-input"));
+      let getterCalls = 0;
+      const accessor = { ...verification };
+      Object.defineProperty(accessor, "jwkJson", { get() { getterCalls += 1; return new Uint8Array(); } });
+      assert.throws(() => ReallyMeJose.verifyJwt(accessor), assertSdkError("invalid-input"));
+      assert.equal(getterCalls, 0);
+      const previous = Object.getOwnPropertyDescriptor(Object.prototype, "verification");
+      try {
+        Object.defineProperty(Object.prototype, "verification", { value: { mode: "signatureOnly" }, configurable: true });
+        assert.throws(() => ReallyMeJose.verifyJwt({ compact: "a.b.c", jwkJson: new Uint8Array(),
+          publicKey: new Uint8Array(),
+        }), assertSdkError("invalid-input"));
+      } finally {
+        if (previous === undefined) Reflect.deleteProperty(Object.prototype, "verification");
+        else Object.defineProperty(Object.prototype, "verification", previous);
+      }
+      for (const mode of [undefined, null, {}, { mode: "unknown" },
+        { mode: "signatureOnly", policy: {} }, { mode: "claims" },
+        { mode: "temporalOnly", policy: { verificationTimeUnixSeconds: 0n } },
+        { mode: "temporalOnly", policy: { verificationTimeUnixSeconds: 1n, expectedAudience: "ignored" } }]) {
+        assert.throws(() => ReallyMeJose.verifyJwt({ ...verification, verification: mode }), assertSdkError("invalid-input"));
+      }
+      assert.equal(calls, 0);
+    } finally { installReallyMeJoseWasmProvider(wasm); encryption.key.fill(0); }
   });
 
   await suite.test("runtime enum and temporal-policy validation reject malicious JS input", () => {
@@ -482,10 +650,10 @@ test("production WASM provider and TypeScript facade", async (suite) => {
         compact: "a.b.c",
         jwkJson: new Uint8Array(),
         publicKey: new Uint8Array(),
-        temporalPolicy: {
+        verification: { mode: "claims", policy: {
           verificationTimeUnixSeconds: 0n,
           expectedAudience: "required-audience",
-        },
+        } },
       }),
       assertSdkError("invalid-input"),
     );

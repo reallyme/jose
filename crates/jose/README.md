@@ -11,18 +11,20 @@ The crate keeps the JOSE policy layer separate from lower-level primitives:
 - codec operations go through `reallyme-codec`.
 
 The companion `reallyme-jose-proto` crate publishes the generated protobuf
-types used by the optional `wire` feature. It is versioned with this crate so
+types included by both runtime lanes. It is versioned with this crate so
 FFI, WASM, Swift, Kotlin, TypeScript, and generated-SDK adapters can share one
 transport-neutral operation contract. It does not define a network or RPC
 protocol; the embedding adapter owns transport and lifecycle concerns. The
-feature is opt-in, so native SDK users do not compile Buffa or generated
-protobuf code by default.
+schema is the public contract for operations, policies, algorithms, and errors.
+`api::contract` re-exports the generated types, while `api::execute` and
+`api::execute_with_providers` execute them through the same semantic functions
+as the borrowed native APIs. Injected provider handles are scoped to the caller.
 
 ## Install
 
 ```toml
 [dependencies]
-reallyme-jose = "0.4.6"
+reallyme-jose = "0.5.0"
 ```
 
 ## Security Model
@@ -106,11 +108,12 @@ tests, and conformance records.
 
 ## Operation Execution Boundary
 
-With the `wire` feature enabled, use `reallyme_jose::wire::execute_operation_v1`
+Use `reallyme_jose::wire::execute_operation_v1`
 for the canonical binary protobuf entrypoint and `execute_operation_json_v1` for the
 generated ProtoJSON request adapter. Both return zeroizing binary
 `JoseOperationResponse` bytes. Callers must use
-`decode_operation_response_v1` with the submitted `JoseOperationKind`; it
+`decode_operation_response_v1` with the submitted `JoseOperationKind`; it requires
+response contract V2 and
 rejects unknown versions, missing outcomes, malformed errors, and operation
 mismatches as typed backend failures.
 
@@ -133,10 +136,12 @@ JWT wire header policy is presence-sensitive. Omitting the policy requires an
 explicit `typ: JWT` header. An explicit policy may accept missing `typ` for a
 legacy issuer by setting `allow_missing_typ` to true.
 
-JWT wire temporal validation is also explicit. A verify request must either set
-`signature_only` or provide `temporal_policy` with a nonzero
-`temporal_policy.now_unix`; omitting both fails closed instead of silently
-selecting weaker validation.
+JWT wire temporal validation is also explicit. A verify request selects one
+`verification.mode`: `signature_only`, `claims`, or `temporal_only`.
+Time-validating modes require a valid current time and bounded skew; omitting
+the mode fails closed. JWT signing's optional `header_options` distinguishes
+the default JWT type, an explicitly omitted type, and a caller-selected type.
+An empty selected type is rejected.
 
 JWE decrypt requests expose the native protected-header policy at the wire
 boundary. Adapters can require `kid` and bind exact `kid`, `typ`, `cty`, `apu`,

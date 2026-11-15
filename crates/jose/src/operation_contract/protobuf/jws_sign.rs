@@ -7,13 +7,11 @@
 use core::str;
 
 use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
-    JoseCompactResult, JoseErrorReason, JoseJwsSignRequest, JoseSignatureAlgorithm,
+    JoseCompactResult, JoseErrorReason, JoseJwsSignRequest,
 };
 use zeroize::Zeroizing;
 
-use crate::operation_contract::jws::{
-    sign_jws, JwsSignAlgorithm, JwsSignError, JwsSignErrorReason, JwsSignInput,
-};
+use crate::operation_contract::jws::{sign_jws, JwsAlgorithm, JwsSignInput};
 use crate::wire::{JoseWireError, JoseWireResult};
 
 /// Validates and executes a generated compact-JWS signing request.
@@ -27,35 +25,12 @@ pub(crate) fn sign_jws_request(
             JoseErrorReason::JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8,
         )
     })?;
-    let algorithm = match request.algorithm.as_known() {
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_ES256) => JwsSignAlgorithm::Es256,
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_EDDSA) => JwsSignAlgorithm::Eddsa,
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED) | None => {
-            return Err(JoseWireError::provider_internal(
-                JoseErrorReason::JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED,
-            ));
-        }
-    };
+    let algorithm = JwsAlgorithm::try_from(request.algorithm)?;
     let compact = sign_jws(JwsSignInput::new(algorithm, &private_key, payload))
-        .map_err(map_sign_error)?
+        .map_err(|error| crate::map_failure::jws_sign(&error))?
         .into_string();
 
     Ok(JoseCompactResult {
-        compact,
-        __buffa_unknown_fields: Default::default(),
+        compact: compact.into(),
     })
-}
-
-const fn map_sign_error(error: JwsSignError) -> JoseWireError {
-    let reason = match error.reason() {
-        JwsSignErrorReason::LengthOverflow => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW
-        }
-        JwsSignErrorReason::InputTooLarge => JoseErrorReason::JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE,
-        JwsSignErrorReason::SignFailed => JoseErrorReason::JOSE_ERROR_REASON_JWS_SIGN_FAILED,
-        JwsSignErrorReason::BadDerSignature => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE
-        }
-    };
-    JoseWireError::primitive_internal(reason)
 }

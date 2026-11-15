@@ -36,3 +36,5 @@ impl From<String> for StringOrURI {
         Self(s)
     }
 }
+
+impl zeroize::ZeroizeOnDrop for StringOrURI {}

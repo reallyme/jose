@@ -11,6 +11,10 @@ public interface JoseExpectedBytesOrBuilder extends
     com.google.protobuf.MessageLiteOrBuilder {
 
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>bytes value = 1 [json_name = "value"];</code>
    * @return The value.
    */

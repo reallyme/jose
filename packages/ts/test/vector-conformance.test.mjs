@@ -10,6 +10,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   installReallyMeJoseWasmProvider,
+  executeOperation,
+  executeOperationJson,
   JoseErrorReason,
   JoseJweCompressionAlgorithm,
   JoseJweContentEncryptionAlgorithm,
@@ -64,14 +66,14 @@ const assertJsonBytesEqual = (actual, expected) => {
 };
 
 const expectedJwsReasons = new Map([
-  ["InvalidCompactEncoding", JoseErrorReason.JWS_INVALID_COMPACT],
+  ["InvalidCompactEncoding", JoseErrorReason.COMMON_INVALID_COMPACT],
   ["HeaderMismatch", JoseErrorReason.JWS_HEADER_MISMATCH],
   ["BadSignatureBase64", JoseErrorReason.JWS_BAD_SIGNATURE_BASE64],
   ["InvalidSignature", JoseErrorReason.JWS_INVALID_SIGNATURE],
 ]);
 
 const expectedJwtReasons = new Map([
-  ["InvalidJwtFormat", JoseErrorReason.JWT_INVALID_COMPACT],
+  ["InvalidJwtFormat", JoseErrorReason.COMMON_INVALID_COMPACT],
   ["InvalidHeader", JoseErrorReason.JWT_INVALID_HEADER],
   ["UnsupportedAlgorithm", JoseErrorReason.JWT_UNSUPPORTED_ALGORITHM],
   ["AlgorithmMismatch", JoseErrorReason.JWT_ALGORITHM_MISMATCH],
@@ -85,8 +87,8 @@ const expectedJwtReasons = new Map([
 ]);
 
 const expectedJweReasons = new Map([
-  ["InvalidCompact", JoseErrorReason.JWE_INVALID_COMPACT],
-  ["InvalidEncoding", JoseErrorReason.JWE_INVALID_ENCODING],
+  ["InvalidCompact", JoseErrorReason.COMMON_INVALID_COMPACT],
+  ["InvalidEncoding", JoseErrorReason.COMMON_INVALID_ENCODING],
   ["InvalidHeader", JoseErrorReason.JWE_INVALID_HEADER],
   ["UnsupportedKeyManagementAlgorithm", JoseErrorReason.JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM],
   ["UnsupportedContentEncryptionAlgorithm", JoseErrorReason.JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM],
@@ -185,8 +187,7 @@ const runSignedJwtCase = (vector) => {
       compact: requireString(vector, "compact"),
       jwkJson: jwk,
       publicKey,
-      temporalPolicy,
-      signatureOnly: temporalPolicy === undefined,
+      verification: temporalPolicy === undefined ? { mode: "signatureOnly" } : { mode: "claims", policy: temporalPolicy },
     });
     const expected = optionalRecord(vector, "expected_claims_json");
     if (expected !== undefined) {
@@ -279,4 +280,22 @@ test("TypeScript/WASM executes all 104 cross-lane conformance vectors", async (s
       runJweCase(vector);
     }
   });
+});
+
+
+test("V2 operations preserve exact native binary and JSON response parity", async () => {
+  installReallyMeJoseWasmProvider(await initializeWasmProvider());
+  for (const vector of await loadCases("schema-operations.json")) {
+    const binary = bytesFromHex(requireString(vector, "request_hex"));
+    const json = textEncoder.encode(requireString(vector, "request_json"));
+    const expected = bytesFromHex(requireString(vector, "response_hex"));
+    const binaryResponse = executeOperation(binary);
+    const jsonResponse = executeOperationJson(json);
+    try {
+      assert.deepEqual(binaryResponse, expected, requireString(vector, "name"));
+      assert.deepEqual(jsonResponse, expected, requireString(vector, "name"));
+    } finally {
+      for (const buffer of [binary, json, expected, binaryResponse, jsonResponse]) buffer.fill(0);
+    }
+  }
 });

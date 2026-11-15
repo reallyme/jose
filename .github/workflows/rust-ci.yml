@@ -5,25 +5,10 @@
 name: Rust CI
 
 on:
-  workflow_dispatch:
-  pull_request:
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "LICENSE-APACHE"
-      - "LICENSE-MIT"
-      - "NOTICE"
-      - ".github/renovate.json"
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "LICENSE-APACHE"
-      - "LICENSE-MIT"
-      - "NOTICE"
-      - ".github/renovate.json"
+  workflow_call:
+    outputs:
+      verified_sha:
+        value: ${{ jobs.verify.outputs.verified_sha }}
 
 permissions:
   contents: read
@@ -31,7 +16,6 @@ permissions:
 env:
   CARGO_AUDIT_VERSION: 0.22.2
   CARGO_CHECK_EXTERNAL_TYPES_VERSION: 0.5.0
-  CARGO_DENY_VERSION: 0.20.2
   CARGO_NEXTEST_VERSION: 0.9.146
   EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20
   WASM_BINDGEN_CLI_VERSION: 0.2.130
@@ -50,14 +34,16 @@ jobs:
       - name: Install minimum supported Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.99.1
+          toolchain: 1.99.0
 
       - name: Cache Cargo
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
-      # Keep the published rust-version honest on the exact supported release.
-      - name: Check minimum supported Rust version
-        run: cargo +1.99.1 check --locked --workspace --all-features
+      - name: Test JOSE at its declared MSRV
+        run: cargo +1.99.0 test --locked --package reallyme-jose --all-features
+
+      - name: Test JOSE protobuf at its declared MSRV
+        run: cargo +1.99.0 test --locked --package reallyme-jose-proto --all-features
 
   rust:
     name: fmt, lint, test, audit, package
@@ -71,7 +57,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.99.1
+          toolchain: 1.100.0
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 
@@ -89,9 +75,7 @@ jobs:
           tool: cargo-nextest@${{ env.CARGO_NEXTEST_VERSION }}
 
       - name: Install cargo-deny
-        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
-        with:
-          tool: cargo-deny@${{ env.CARGO_DENY_VERSION }}
+        run: cargo +1.100.0 install cargo-deny --version '=0.20.2' --locked --force
 
       - name: Install cargo-audit
         uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
@@ -165,8 +149,8 @@ jobs:
       - name: Test native lane
         run: cargo nextest run --locked --workspace --no-default-features --features native
 
-      - name: Test all features
-        run: cargo nextest run --locked --workspace --all-features
+      - name: Test on the release toolchain
+        run: cargo +1.100.0 test --locked --workspace --all-features
 
       # The workspace release profile intentionally aborts, while the FFI
       # boundary requires release-ffi/unwind. Exercise only publishable Rust
@@ -185,9 +169,6 @@ jobs:
         run: cargo doc --locked --workspace --no-deps --all-features
         env:
           RUSTDOCFLAGS: -D warnings
-
-      - name: Doctests
-        run: cargo test --locked --workspace --all-features --doc
 
       - name: Install TypeScript package dependencies
         run: npm ci --prefix packages/ts
@@ -226,24 +207,37 @@ jobs:
       - name: Native boundary sanitizers
         run: scripts/test_native_sanitizers.sh
 
-      - name: Dependency policy
-        run: cargo deny check
+      - name: Check locked dependencies
+        run: cargo +1.100.0 deny --locked --workspace --all-features --config deny.toml check advisories licenses sources
+
+      - name: Check dependency bans
+        run: cargo +1.100.0 deny --locked --workspace --all-features --config deny.toml check bans
 
       - name: Security advisory audit
         run: scripts/audit_committed_lockfiles.sh
-
-      - name: Checkout release-readiness runner
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: reallyme/release-readiness
-          ref: 18a6d91d99837e80f92e41fe04effb0b043d754e
-          path: .release-readiness
-          persist-credentials: false
-
-      - name: Release readiness
-        run: node .release-readiness/scripts/run-consumer-check.mjs --policy-only
 
       - name: Crates.io package preflight
         run: node scripts/publish_crates_in_order.mjs inspect
         env:
           CARGO_HOME: ${{ runner.temp }}/package-preflight-cargo-home
+
+
+  verify:
+    name: Verify Rust, WASM and TypeScript
+    needs: [msrv, rust]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      verified_sha: ${{ steps.verified.outputs.sha }}
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Record verified source
+        id: verified
+        shell: bash
+        run: |
+          sha=$(git rev-parse --verify HEAD)
+          test "$sha" = "$GITHUB_SHA"
+          printf 'sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"

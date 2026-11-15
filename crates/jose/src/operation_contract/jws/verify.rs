@@ -17,22 +17,13 @@ use crate::jws::AuthenticatedCompactJws;
 const ED25519_SIGNATURE_LENGTH: usize = 64;
 const ES256_SIGNATURE_LENGTH: usize = reallyme_crypto::p256::P256_ECDSA_JOSE_SIGNATURE_LEN;
 
-/// Supported algorithms for the compact-JWS verification operation.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum JwsVerifyAlgorithm {
-    /// ECDSA over P-256 with SHA-256.
-    Es256,
-    /// EdDSA with Ed25519.
-    Eddsa,
-}
-
 /// Borrowed input for one compact-JWS verification operation.
 ///
 /// The input deliberately owns no token or key bytes. Native callers retain
 /// their buffers, while generated request owners remain alive until the
 /// protobuf adapter has completed the semantic call and encoded its result.
 pub(crate) struct JwsVerifyInput<'a> {
-    algorithm: JwsVerifyAlgorithm,
+    algorithm: JwsAlgorithm,
     compact: &'a str,
     public_key: &'a [u8],
 }
@@ -40,7 +31,7 @@ pub(crate) struct JwsVerifyInput<'a> {
 impl<'a> JwsVerifyInput<'a> {
     /// Builds a borrowed semantic verification request.
     pub(crate) const fn new(
-        algorithm: JwsVerifyAlgorithm,
+        algorithm: JwsAlgorithm,
         compact: &'a str,
         public_key: &'a [u8],
     ) -> Self {
@@ -88,7 +79,7 @@ impl JwsVerifyError {
     }
 
     /// Returns the fixed, non-sensitive failure reason.
-    pub(crate) const fn reason(self) -> JwsVerifyErrorReason {
+    pub(crate) const fn reason(&self) -> JwsVerifyErrorReason {
         self.reason
     }
 }
@@ -105,10 +96,7 @@ pub(crate) fn verify_jws(
         input.compact,
         JwsVerifyError::new(JwsVerifyErrorReason::InvalidCompact),
     )?;
-    let header_algorithm = match input.algorithm {
-        JwsVerifyAlgorithm::Es256 => JwsAlgorithm::Es256,
-        JwsVerifyAlgorithm::Eddsa => JwsAlgorithm::Eddsa,
-    };
+    let header_algorithm = input.algorithm;
     let protected_header = decode_and_validate_header(
         parts.protected_header,
         header_algorithm,
@@ -130,10 +118,10 @@ pub(crate) fn verify_jws(
     )?;
 
     match input.algorithm {
-        JwsVerifyAlgorithm::Es256 => {
+        JwsAlgorithm::Es256 => {
             verify_es256(&signature, &signing_input, input.public_key)?;
         }
-        JwsVerifyAlgorithm::Eddsa => {
+        JwsAlgorithm::Eddsa => {
             verify_eddsa(&signature, &signing_input, input.public_key)?;
         }
     }

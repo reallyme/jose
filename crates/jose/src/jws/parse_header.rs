@@ -8,26 +8,11 @@ use std::fmt::{Display, Formatter};
 use serde::de::{IgnoredAny, MapAccess, Visitor};
 use serde::Deserialize;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum JwsAlgorithm {
-    Es256,
-    Eddsa,
-}
+pub(crate) use crate::generated_contract::JwsAlgorithm;
 
 impl JwsAlgorithm {
-    pub(crate) const fn protected_header_json(self) -> &'static [u8] {
-        match self {
-            JwsAlgorithm::Es256 => br#"{"alg":"ES256"}"#,
-            JwsAlgorithm::Eddsa => br#"{"alg":"EdDSA"}"#,
-        }
-    }
-
     fn parse(input: &str) -> Result<Self, JwsHeaderError> {
-        match input {
-            "ES256" => Ok(Self::Es256),
-            "EdDSA" => Ok(Self::Eddsa),
-            _ => Err(JwsHeaderError::Invalid),
-        }
+        Self::from_jose_name(input).ok_or(JwsHeaderError::Invalid)
     }
 }
 

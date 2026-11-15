@@ -1,6 +1,6 @@
 # ReallyMe JOSE for Android
 
-`me.really:jose-android:0.4.6` is the Android AAR form of the typed Kotlin/JVM
+`me.really:jose-android:0.5.0` is the Android AAR form of the typed Kotlin/JVM
 JOSE facade. It packages the same Java/Kotlin API and Rust JNI boundary for
 API 24 or newer. The normal Android loader uses the packaged native library;
 the public `loadLibrary(path)` entry point remains available for explicit
@@ -20,7 +20,8 @@ Consumer rules preserve the JNI-resolved class and generated Protobuf Lite
 field layout. The release gate builds a minified consumer APK and an emulator
 test launches the consumer activity through all 104 checked-in JWS, JWT, JWE,
 and panva cases, binary/ProtoJSON parity, typed wire failures, and managed
-cleanup paths.
+cleanup paths. The shared `schema-operations.json` corpus adds 16 exact-byte V2
+operation checks through both binary and ProtoJSON routes.
 
 ```sh
 ANDROID_NDK_HOME="$ANDROID_HOME/ndk/29.0.14206865" \

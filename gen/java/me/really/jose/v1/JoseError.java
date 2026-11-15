@@ -11,6 +11,10 @@ package me.really.jose.v1;
  * The oneof keeps caller-owned input/primitive failures, provider availability
  * failures, and backend/internal failures distinct while JoseErrorReason keeps
  * the exact JOSE-specific reason stable end-to-end.
+ * Rust view: wire.rs#JoseWireError
+ * Rust view: wire.rs#JoseWireResult
+ * Rust adapter: wire.rs#jose_error
+ * Rust adapter: wire.rs#jose_error_bytes
  * </pre>
  *
  * Protobuf type {@code reallyme.jose.v1.JoseError}
@@ -24,7 +28,10 @@ public  final class JoseError extends
   // Security post-processing: generated Lite messages otherwise expose
   // neither unknown-field presence nor a safe redacted debug representation.
   public boolean reallyMeHasUnknownFieldsForValidation() {
-    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance();
+    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance()
+        || (hasPrimitive() && getPrimitive().reallyMeHasUnknownFieldsForValidation())
+        || (hasProvider() && getProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasBackend() && getBackend().reallyMeHasUnknownFieldsForValidation());
   }
 
   @java.lang.Override
@@ -324,6 +331,10 @@ public  final class JoseError extends
    * The oneof keeps caller-owned input/primitive failures, provider availability
    * failures, and backend/internal failures distinct while JoseErrorReason keeps
    * the exact JOSE-specific reason stable end-to-end.
+   * Rust view: wire.rs#JoseWireError
+   * Rust view: wire.rs#JoseWireResult
+   * Rust adapter: wire.rs#jose_error
+   * Rust adapter: wire.rs#jose_error_bytes
    * </pre>
    *
    * Protobuf type {@code reallyme.jose.v1.JoseError}

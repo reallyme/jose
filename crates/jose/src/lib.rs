@@ -53,6 +53,10 @@ pub use serde_json::Value as JsonValue;
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub use zeroize::Zeroizing;
 
+#[cfg(any(feature = "native", feature = "wasm"))]
+mod generated_contract;
+#[cfg(any(feature = "native", feature = "wasm"))]
+mod map_failure;
 mod match_media_type;
 #[cfg(test)]
 mod match_media_type_tests;
@@ -64,6 +68,8 @@ mod measure_encoding_tests;
 mod operation_contract;
 #[cfg(any(feature = "native", feature = "wasm"))]
 mod reject_duplicate_json_members;
+#[cfg(any(feature = "native", feature = "wasm"))]
+mod resolve_algorithm;
 
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub mod jwe;
@@ -73,3 +79,7 @@ pub mod jws;
 pub mod jwt;
 #[cfg(all(any(feature = "native", feature = "wasm"), feature = "wire"))]
 pub mod wire;
+
+/// Generated public operation contract and caller-scoped capability adapters.
+#[cfg(any(feature = "native", feature = "wasm"))]
+pub mod api;

@@ -30,6 +30,10 @@ public object JoseJwtDecodeUnsignedRequestKt {
     internal fun _build(): me.really.jose.v1.JoseJwtDecodeUnsignedRequest = _builder.build()
 
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `string compact = 1 [json_name = "compact"];`
      */
     public var compact: kotlin.String
@@ -40,6 +44,10 @@ public object JoseJwtDecodeUnsignedRequestKt {
         _builder.compact = value
       }
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `string compact = 1 [json_name = "compact"];`
      */
     public fun clearCompact() {

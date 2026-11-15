@@ -17,7 +17,9 @@ public  final class JoseJwtVerifyRequest extends
   // Security post-processing: generated Lite messages otherwise expose
   // neither unknown-field presence nor a safe redacted debug representation.
   public boolean reallyMeHasUnknownFieldsForValidation() {
-    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance();
+    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance()
+        || (hasHeaderPolicy() && getHeaderPolicy().reallyMeHasUnknownFieldsForValidation())
+        || (hasVerification() && getVerification().reallyMeHasUnknownFieldsForValidation());
   }
 
   @java.lang.Override
@@ -39,6 +41,10 @@ public  final class JoseJwtVerifyRequest extends
   public static final int COMPACT_FIELD_NUMBER = 1;
   private java.lang.String compact_;
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @return The compact.
    */
@@ -47,6 +53,10 @@ public  final class JoseJwtVerifyRequest extends
     return compact_;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @return The bytes for compact.
    */
@@ -56,6 +66,10 @@ public  final class JoseJwtVerifyRequest extends
     return com.google.protobuf.ByteString.copyFromUtf8(compact_);
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @param value The compact to set.
    */
@@ -66,6 +80,10 @@ public  final class JoseJwtVerifyRequest extends
     compact_ = value;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    */
   private void clearCompact() {
@@ -73,6 +91,10 @@ public  final class JoseJwtVerifyRequest extends
     compact_ = getDefaultInstance().getCompact();
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @param value The bytes for compact to set.
    */
@@ -89,6 +111,7 @@ public  final class JoseJwtVerifyRequest extends
    * <pre>
    * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
    * this as sensitive boundary input and avoid logging it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -102,6 +125,7 @@ public  final class JoseJwtVerifyRequest extends
    * <pre>
    * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
    * this as sensitive boundary input and avoid logging it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -116,6 +140,7 @@ public  final class JoseJwtVerifyRequest extends
    * <pre>
    * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
    * this as sensitive boundary input and avoid logging it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -131,6 +156,7 @@ public  final class JoseJwtVerifyRequest extends
    * <pre>
    * Public verification key bytes. Public material is still boundary data and
    * must not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -144,6 +170,7 @@ public  final class JoseJwtVerifyRequest extends
    * <pre>
    * Public verification key bytes. Public material is still boundary data and
    * must not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -158,6 +185,7 @@ public  final class JoseJwtVerifyRequest extends
    * <pre>
    * Public verification key bytes. Public material is still boundary data and
    * must not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -244,122 +272,71 @@ public  final class JoseJwtVerifyRequest extends
     bitField0_ = (bitField0_ & ~0x00000001);
   }
 
-  public static final int TEMPORAL_POLICY_FIELD_NUMBER = 5;
-  private me.really.jose.v1.JoseJwtTemporalValidationPolicy temporalPolicy_;
+  public static final int VERIFICATION_FIELD_NUMBER = 7;
+  private me.really.jose.v1.JoseJwtVerificationPolicy verification_;
   /**
    * <pre>
-   * Presence-sensitive temporal policy. If absent/unset, signature-only
-   * verification is performed only when signature_only is true. If present,
-   * every boolean, skew, and timestamp field is interpreted literally.
+   * A mode must be selected explicitly. Contradictory modes cannot be encoded.
    * </pre>
    *
-   * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+   * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
    */
   @java.lang.Override
-  public boolean hasTemporalPolicy() {
+  public boolean hasVerification() {
     return ((bitField0_ & 0x00000002) != 0);
   }
   /**
    * <pre>
-   * Presence-sensitive temporal policy. If absent/unset, signature-only
-   * verification is performed only when signature_only is true. If present,
-   * every boolean, skew, and timestamp field is interpreted literally.
+   * A mode must be selected explicitly. Contradictory modes cannot be encoded.
    * </pre>
    *
-   * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+   * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
    */
   @java.lang.Override
-  public me.really.jose.v1.JoseJwtTemporalValidationPolicy getTemporalPolicy() {
-    return temporalPolicy_ == null ? me.really.jose.v1.JoseJwtTemporalValidationPolicy.getDefaultInstance() : temporalPolicy_;
+  public me.really.jose.v1.JoseJwtVerificationPolicy getVerification() {
+    return verification_ == null ? me.really.jose.v1.JoseJwtVerificationPolicy.getDefaultInstance() : verification_;
   }
   /**
    * <pre>
-   * Presence-sensitive temporal policy. If absent/unset, signature-only
-   * verification is performed only when signature_only is true. If present,
-   * every boolean, skew, and timestamp field is interpreted literally.
+   * A mode must be selected explicitly. Contradictory modes cannot be encoded.
    * </pre>
    *
-   * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+   * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
    */
-  private void setTemporalPolicy(me.really.jose.v1.JoseJwtTemporalValidationPolicy value) {
+  private void setVerification(me.really.jose.v1.JoseJwtVerificationPolicy value) {
     java.util.Objects.requireNonNull(value);
-    temporalPolicy_ = value;
+    verification_ = value;
     bitField0_ |= 0x00000002;
   }
   /**
    * <pre>
-   * Presence-sensitive temporal policy. If absent/unset, signature-only
-   * verification is performed only when signature_only is true. If present,
-   * every boolean, skew, and timestamp field is interpreted literally.
+   * A mode must be selected explicitly. Contradictory modes cannot be encoded.
    * </pre>
    *
-   * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+   * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
    */
   @java.lang.SuppressWarnings("ReferenceEquality")
-  private void mergeTemporalPolicy(me.really.jose.v1.JoseJwtTemporalValidationPolicy value) {
+  private void mergeVerification(me.really.jose.v1.JoseJwtVerificationPolicy value) {
     java.util.Objects.requireNonNull(value);
-    if (temporalPolicy_ != null &&
-        temporalPolicy_ != me.really.jose.v1.JoseJwtTemporalValidationPolicy.getDefaultInstance()) {
-      temporalPolicy_ =
-        me.really.jose.v1.JoseJwtTemporalValidationPolicy.newBuilder(temporalPolicy_).mergeFrom(value).buildPartial();
+    if (verification_ != null &&
+        verification_ != me.really.jose.v1.JoseJwtVerificationPolicy.getDefaultInstance()) {
+      verification_ =
+        me.really.jose.v1.JoseJwtVerificationPolicy.newBuilder(verification_).mergeFrom(value).buildPartial();
     } else {
-      temporalPolicy_ = value;
+      verification_ = value;
     }
     bitField0_ |= 0x00000002;
   }
   /**
    * <pre>
-   * Presence-sensitive temporal policy. If absent/unset, signature-only
-   * verification is performed only when signature_only is true. If present,
-   * every boolean, skew, and timestamp field is interpreted literally.
+   * A mode must be selected explicitly. Contradictory modes cannot be encoded.
    * </pre>
    *
-   * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+   * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
    */
-  private void clearTemporalPolicy() {
-    temporalPolicy_ = null;
+  private void clearVerification() {
+    verification_ = null;
     bitField0_ = (bitField0_ & ~0x00000002);
-  }
-
-  public static final int SIGNATURE_ONLY_FIELD_NUMBER = 6;
-  private boolean signatureOnly_;
-  /**
-   * <pre>
-   * Required when temporal_policy is absent. This makes signature-only
-   * verification an explicit adapter choice rather than a proto3 default.
-   * </pre>
-   *
-   * <code>bool signature_only = 6 [json_name = "signatureOnly"];</code>
-   * @return The signatureOnly.
-   */
-  @java.lang.Override
-  public boolean getSignatureOnly() {
-    return signatureOnly_;
-  }
-  /**
-   * <pre>
-   * Required when temporal_policy is absent. This makes signature-only
-   * verification an explicit adapter choice rather than a proto3 default.
-   * </pre>
-   *
-   * <code>bool signature_only = 6 [json_name = "signatureOnly"];</code>
-   * @param value The signatureOnly to set.
-   */
-  private void setSignatureOnly(boolean value) {
-
-    signatureOnly_ = value;
-  }
-  /**
-   * <pre>
-   * Required when temporal_policy is absent. This makes signature-only
-   * verification an explicit adapter choice rather than a proto3 default.
-   * </pre>
-   *
-   * <code>bool signature_only = 6 [json_name = "signatureOnly"];</code>
-   */
-  private void clearSignatureOnly() {
-
-    signatureOnly_ = false;
   }
 
   public static me.really.jose.v1.JoseJwtVerifyRequest parseFrom(
@@ -460,6 +437,10 @@ public  final class JoseJwtVerifyRequest extends
 
 
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 1 [json_name = "compact"];</code>
      * @return The compact.
      */
@@ -468,6 +449,10 @@ public  final class JoseJwtVerifyRequest extends
       return instance.getCompact();
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 1 [json_name = "compact"];</code>
      * @return The bytes for compact.
      */
@@ -477,6 +462,10 @@ public  final class JoseJwtVerifyRequest extends
       return instance.getCompactBytes();
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 1 [json_name = "compact"];</code>
      * @param value The compact to set.
      * @return This builder for chaining.
@@ -488,6 +477,10 @@ public  final class JoseJwtVerifyRequest extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 1 [json_name = "compact"];</code>
      * @return This builder for chaining.
      */
@@ -497,6 +490,10 @@ public  final class JoseJwtVerifyRequest extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 1 [json_name = "compact"];</code>
      * @param value The bytes for compact to set.
      * @return This builder for chaining.
@@ -512,6 +509,7 @@ public  final class JoseJwtVerifyRequest extends
      * <pre>
      * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
      * this as sensitive boundary input and avoid logging it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -525,6 +523,7 @@ public  final class JoseJwtVerifyRequest extends
      * <pre>
      * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
      * this as sensitive boundary input and avoid logging it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -540,6 +539,7 @@ public  final class JoseJwtVerifyRequest extends
      * <pre>
      * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
      * this as sensitive boundary input and avoid logging it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -555,6 +555,7 @@ public  final class JoseJwtVerifyRequest extends
      * <pre>
      * Public verification key bytes. Public material is still boundary data and
      * must not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -568,6 +569,7 @@ public  final class JoseJwtVerifyRequest extends
      * <pre>
      * Public verification key bytes. Public material is still boundary data and
      * must not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -583,6 +585,7 @@ public  final class JoseJwtVerifyRequest extends
      * <pre>
      * Public verification key bytes. Public material is still boundary data and
      * must not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -679,127 +682,72 @@ public  final class JoseJwtVerifyRequest extends
 
     /**
      * <pre>
-     * Presence-sensitive temporal policy. If absent/unset, signature-only
-     * verification is performed only when signature_only is true. If present,
-     * every boolean, skew, and timestamp field is interpreted literally.
+     * A mode must be selected explicitly. Contradictory modes cannot be encoded.
      * </pre>
      *
-     * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+     * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
      */
     @java.lang.Override
-    public boolean hasTemporalPolicy() {
-      return instance.hasTemporalPolicy();
+    public boolean hasVerification() {
+      return instance.hasVerification();
     }
     /**
      * <pre>
-     * Presence-sensitive temporal policy. If absent/unset, signature-only
-     * verification is performed only when signature_only is true. If present,
-     * every boolean, skew, and timestamp field is interpreted literally.
+     * A mode must be selected explicitly. Contradictory modes cannot be encoded.
      * </pre>
      *
-     * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+     * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
      */
     @java.lang.Override
-    public me.really.jose.v1.JoseJwtTemporalValidationPolicy getTemporalPolicy() {
-      return instance.getTemporalPolicy();
+    public me.really.jose.v1.JoseJwtVerificationPolicy getVerification() {
+      return instance.getVerification();
     }
     /**
      * <pre>
-     * Presence-sensitive temporal policy. If absent/unset, signature-only
-     * verification is performed only when signature_only is true. If present,
-     * every boolean, skew, and timestamp field is interpreted literally.
+     * A mode must be selected explicitly. Contradictory modes cannot be encoded.
      * </pre>
      *
-     * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+     * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
      */
-    public Builder setTemporalPolicy(me.really.jose.v1.JoseJwtTemporalValidationPolicy value) {
+    public Builder setVerification(me.really.jose.v1.JoseJwtVerificationPolicy value) {
       copyOnWrite();
-      instance.setTemporalPolicy(value);
+      instance.setVerification(value);
       return this;
       }
     /**
      * <pre>
-     * Presence-sensitive temporal policy. If absent/unset, signature-only
-     * verification is performed only when signature_only is true. If present,
-     * every boolean, skew, and timestamp field is interpreted literally.
+     * A mode must be selected explicitly. Contradictory modes cannot be encoded.
      * </pre>
      *
-     * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+     * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
      */
-    public Builder setTemporalPolicy(
-        me.really.jose.v1.JoseJwtTemporalValidationPolicy.Builder builderForValue) {
+    public Builder setVerification(
+        me.really.jose.v1.JoseJwtVerificationPolicy.Builder builderForValue) {
       copyOnWrite();
-      instance.setTemporalPolicy(builderForValue.build());
+      instance.setVerification(builderForValue.build());
       return this;
     }
     /**
      * <pre>
-     * Presence-sensitive temporal policy. If absent/unset, signature-only
-     * verification is performed only when signature_only is true. If present,
-     * every boolean, skew, and timestamp field is interpreted literally.
+     * A mode must be selected explicitly. Contradictory modes cannot be encoded.
      * </pre>
      *
-     * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+     * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
      */
-    public Builder mergeTemporalPolicy(me.really.jose.v1.JoseJwtTemporalValidationPolicy value) {
+    public Builder mergeVerification(me.really.jose.v1.JoseJwtVerificationPolicy value) {
       copyOnWrite();
-      instance.mergeTemporalPolicy(value);
+      instance.mergeVerification(value);
       return this;
     }
     /**
      * <pre>
-     * Presence-sensitive temporal policy. If absent/unset, signature-only
-     * verification is performed only when signature_only is true. If present,
-     * every boolean, skew, and timestamp field is interpreted literally.
+     * A mode must be selected explicitly. Contradictory modes cannot be encoded.
      * </pre>
      *
-     * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
+     * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
      */
-    public Builder clearTemporalPolicy() {  copyOnWrite();
-      instance.clearTemporalPolicy();
-      return this;
-    }
-
-    /**
-     * <pre>
-     * Required when temporal_policy is absent. This makes signature-only
-     * verification an explicit adapter choice rather than a proto3 default.
-     * </pre>
-     *
-     * <code>bool signature_only = 6 [json_name = "signatureOnly"];</code>
-     * @return The signatureOnly.
-     */
-    @java.lang.Override
-    public boolean getSignatureOnly() {
-      return instance.getSignatureOnly();
-    }
-    /**
-     * <pre>
-     * Required when temporal_policy is absent. This makes signature-only
-     * verification an explicit adapter choice rather than a proto3 default.
-     * </pre>
-     *
-     * <code>bool signature_only = 6 [json_name = "signatureOnly"];</code>
-     * @param value The signatureOnly to set.
-     * @return This builder for chaining.
-     */
-    public Builder setSignatureOnly(boolean value) {
-      copyOnWrite();
-      instance.setSignatureOnly(value);
-      return this;
-    }
-    /**
-     * <pre>
-     * Required when temporal_policy is absent. This makes signature-only
-     * verification an explicit adapter choice rather than a proto3 default.
-     * </pre>
-     *
-     * <code>bool signature_only = 6 [json_name = "signatureOnly"];</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearSignatureOnly() {
-      copyOnWrite();
-      instance.clearSignatureOnly();
+    public Builder clearVerification() {  copyOnWrite();
+      instance.clearVerification();
       return this;
     }
 
@@ -824,12 +772,11 @@ public  final class JoseJwtVerifyRequest extends
             "jwkJson_",
             "publicKey_",
             "headerPolicy_",
-            "temporalPolicy_",
-            "signatureOnly_",
+            "verification_",
           };
           java.lang.String info =
-              "\u0000\u0006\u0000\u0001\u0001\u0006\u0006\u0000\u0000\u0000\u0001\u0208\u0002\n" +
-              "\u0003\n\u0004\u1009\u0000\u0005\u1009\u0001\u0006\u0007";
+              "\u0000\u0005\u0000\u0001\u0001\u0007\u0005\u0000\u0000\u0000\u0001\u0208\u0002\n" +
+              "\u0003\n\u0004\u1009\u0000\u0007\u1009\u0001";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

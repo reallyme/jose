@@ -4,6 +4,8 @@
 
 //! Generated protobuf conversion for operation contracts.
 
+pub(crate) mod capabilities;
+pub(crate) mod extended;
 mod jwe;
 mod jws_sign;
 mod jws_verify;

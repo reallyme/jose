@@ -17,6 +17,7 @@ public inline fun joseVerifyResult(block: me.really.jose.v1.JoseVerifyResultKt.D
  * compact profile; it does not imply support for JWS JSON Serialization,
  * detached payloads, or RFC 7797 unencoded payloads. Profile-aware callers must
  * parse and authorize these returned bytes instead of the original input.
+ * Rust view: jws/authenticated.rs#AuthenticatedCompactJws
  * ```
  *
  * Protobuf type `reallyme.jose.v1.JoseVerifyResult`
@@ -41,6 +42,7 @@ public object JoseVerifyResultKt {
      * ```
      * Exact decoded JWS Protected Header bytes authenticated by the signature.
      * JOSE binds alg but does not interpret application/profile parameters.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];`
@@ -56,6 +58,7 @@ public object JoseVerifyResultKt {
      * ```
      * Exact decoded JWS Protected Header bytes authenticated by the signature.
      * JOSE binds alg but does not interpret application/profile parameters.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];`
@@ -67,6 +70,7 @@ public object JoseVerifyResultKt {
     /**
      * ```
      * Decoded JWS Payload bytes authenticated by the signature.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes payload = 2 [json_name = "payload"];`
@@ -81,6 +85,7 @@ public object JoseVerifyResultKt {
     /**
      * ```
      * Decoded JWS Payload bytes authenticated by the signature.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes payload = 2 [json_name = "payload"];`

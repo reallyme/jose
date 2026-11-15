@@ -5,114 +5,30 @@
 //! Protobuf conversion for compact-JWS verification.
 
 use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
-    JoseErrorReason, JoseJwsVerifyRequest, JoseSignatureAlgorithm, JoseVerifyResult,
+    JoseJwsVerifyRequest, JoseVerifyResult,
 };
-use thiserror::Error;
 
-use crate::operation_contract::jws::{
-    verify_jws, JwsVerifyAlgorithm, JwsVerifyError, JwsVerifyErrorReason, JwsVerifyInput,
-};
-use crate::wire::{JoseWireError, JoseWireResult};
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum JwsVerifyRequestErrorReason {
-    UnsupportedAlgorithm,
-}
-
-#[derive(Clone, Copy, Debug, Eq, Error, PartialEq)]
-#[error("JWS verification request selection failed")]
-struct JwsVerifyRequestError {
-    reason: JwsVerifyRequestErrorReason,
-}
-
-impl JwsVerifyRequestError {
-    const fn unsupported_algorithm() -> Self {
-        Self {
-            reason: JwsVerifyRequestErrorReason::UnsupportedAlgorithm,
-        }
-    }
-
-    const fn reason(self) -> JwsVerifyRequestErrorReason {
-        self.reason
-    }
-}
+use crate::operation_contract::jws::{verify_jws, JwsAlgorithm, JwsVerifyInput};
+use crate::wire::JoseWireResult;
 
 /// Validates and executes a generated compact-JWS verification request.
 pub(crate) fn verify_jws_request(
     request: &JoseJwsVerifyRequest,
 ) -> JoseWireResult<JoseVerifyResult> {
-    let algorithm = request_algorithm(request.algorithm).map_err(map_request_error)?;
+    let algorithm = JwsAlgorithm::try_from(request.algorithm)?;
     let verified = verify_jws(JwsVerifyInput::new(
         algorithm,
         &request.compact,
         &request.public_key,
     ))
-    .map_err(map_verify_error)?;
+    .map_err(|error| crate::map_failure::jws_verify(&error))?;
 
     let (mut protected_header_json, mut payload) = verified.into_parts();
     Ok(JoseVerifyResult {
         // Transfer both allocations directly into the hardened generated
         // owner. Copying here would leave avoidable duplicate identity and
         // payload bytes in memory until the temporary owners were dropped.
-        protected_header_json: core::mem::take(&mut *protected_header_json),
-        payload: core::mem::take(&mut *payload),
-        __buffa_unknown_fields: Default::default(),
+        protected_header_json: core::mem::take(&mut *protected_header_json).into(),
+        payload: core::mem::take(&mut *payload).into(),
     })
-}
-
-fn request_algorithm(
-    algorithm: buffa::EnumValue<JoseSignatureAlgorithm>,
-) -> Result<JwsVerifyAlgorithm, JwsVerifyRequestError> {
-    match algorithm.as_known() {
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_ES256) => {
-            Ok(JwsVerifyAlgorithm::Es256)
-        }
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_EDDSA) => {
-            Ok(JwsVerifyAlgorithm::Eddsa)
-        }
-        Some(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED) | None => {
-            Err(JwsVerifyRequestError::unsupported_algorithm())
-        }
-    }
-}
-
-const fn map_request_error(error: JwsVerifyRequestError) -> JoseWireError {
-    match error.reason() {
-        JwsVerifyRequestErrorReason::UnsupportedAlgorithm => JoseWireError::provider_internal(
-            JoseErrorReason::JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED,
-        ),
-    }
-}
-
-const fn map_verify_error(error: JwsVerifyError) -> JoseWireError {
-    let reason = match error.reason() {
-        JwsVerifyErrorReason::InvalidCompact => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_INVALID_COMPACT
-        }
-        JwsVerifyErrorReason::LengthOverflow => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW
-        }
-        JwsVerifyErrorReason::BadHeaderBase64 => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64
-        }
-        JwsVerifyErrorReason::BadHeaderUtf8 => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8
-        }
-        JwsVerifyErrorReason::HeaderMismatch => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_HEADER_MISMATCH
-        }
-        JwsVerifyErrorReason::BadPayloadBase64 => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64
-        }
-        JwsVerifyErrorReason::BadSignatureBase64 => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64
-        }
-        JwsVerifyErrorReason::BadRawSignature => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE
-        }
-        JwsVerifyErrorReason::InvalidSignature => {
-            JoseErrorReason::JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE
-        }
-    };
-    JoseWireError::primitive_internal(reason)
 }

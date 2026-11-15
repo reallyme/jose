@@ -7,7 +7,8 @@ use serde_json::Value as JsonValue;
 use super::validate_registered_claims::validate_claims_set;
 use super::{JwtError, JwtTemporalClaim};
 
-const MAX_TEMPORAL_SKEW_SECONDS: u64 = 300;
+const MAX_TEMPORAL_SKEW_SECONDS: u64 =
+    reallyme_jose_proto::generated::contract_values::TEMPORAL_SKEW_SECONDS;
 
 /// Temporal claim validation policy for signed JWT verification.
 #[derive(Debug, Clone, Copy)]
@@ -46,7 +47,13 @@ impl JwtTemporalValidationPolicy {
     /// Returns a verifier-grade default policy that requires expiration.
     #[must_use]
     pub const fn strict() -> Self {
-        Self::new(true, false, false, 60, 60)
+        Self::new(
+            crate::generated_contract::policy_defaults::TEMPORAL_REQUIRE_EXP,
+            crate::generated_contract::policy_defaults::TEMPORAL_REQUIRE_NBF,
+            crate::generated_contract::policy_defaults::TEMPORAL_REQUIRE_IAT,
+            reallyme_jose_proto::generated::contract_values::DEFAULT_TEMPORAL_SKEW_SECONDS,
+            reallyme_jose_proto::generated::contract_values::DEFAULT_TEMPORAL_SKEW_SECONDS,
+        )
     }
 
     /// Returns whether `exp` is required.
@@ -132,11 +139,7 @@ fn parse_optional_numeric_date(
     payload: &JsonValue,
     claim: JwtTemporalClaim,
 ) -> Result<Option<u64>, JwtError> {
-    let key = match claim {
-        JwtTemporalClaim::Exp => "exp",
-        JwtTemporalClaim::Nbf => "nbf",
-        JwtTemporalClaim::Iat => "iat",
-    };
+    let key = claim.as_str();
 
     let Some(value) = payload.get(key) else {
         return Ok(None);

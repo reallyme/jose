@@ -12,21 +12,24 @@ import {
 } from "./proto/generated/reallyme/jose/v1/jose_pb.js";
 import {
   ensureAggregateLength,
-  ensureObject,
+  ensureObjectFields,
   ensureString,
   utf8Length,
 } from "./validate.js";
+import {
+  SIGN_JWS_FIELDS, VERIFY_JWS_FIELDS, SIGN_JWT_FIELDS, VERIFY_JWT_FIELDS,
+  ENCRYPT_JWE_FIELDS, DECRYPT_JWE_FIELDS, JWE_HEADER_POLICY_FIELDS,
+} from "./facade-shapes.js";
 import {
   claimsOutcome,
   compactOutcome,
   jweHeaderPolicy,
   jwtHeaderPolicy,
+  jwtHeaderOptions,
   jwtHeaderPolicyLength,
-  jwtTemporalPolicy,
-  jwtTemporalPolicyLength,
+  jwtVerification,
   malformedProviderResponse,
-  optionalBoolean,
-  optionalString,
+  optionalHeaderString,
   ownedBytes,
   plaintextOutcome,
   validateAlgorithm,
@@ -40,7 +43,7 @@ export type ReallyMeJoseJwtHeaderPolicy = Readonly<{
   acceptedTypes?: ReadonlyArray<string>;
 }>;
 
-export type ReallyMeJoseJwtTemporalPolicy = Readonly<{
+export type ReallyMeJoseJwtClaimsPolicy = Readonly<{
   requireExpiration?: boolean;
   requireNotBefore?: boolean;
   requireIssuedAt?: boolean;
@@ -78,6 +81,10 @@ export type ReallyMeJoseSignJwtOptions = Readonly<{
   claimsJson: Uint8Array;
   jwkJson: Uint8Array;
   privateKey: Uint8Array;
+  headerOptions?: ReallyMeJoseJwtHeaderOptions;
+}>;
+
+export type ReallyMeJoseJwtHeaderOptions = Readonly<{
   type?: string;
 }>;
 
@@ -86,8 +93,7 @@ export type ReallyMeJoseVerifyJwtOptions = Readonly<{
   jwkJson: Uint8Array;
   publicKey: Uint8Array;
   headerPolicy?: ReallyMeJoseJwtHeaderPolicy;
-  temporalPolicy?: ReallyMeJoseJwtTemporalPolicy;
-  signatureOnly?: boolean;
+  verification: import("./contract-verification.js").ReallyMeJoseJwtVerification;
 }>;
 
 export type ReallyMeJoseEncryptJweOptions = Readonly<{
@@ -114,8 +120,8 @@ export type ReallyMeJoseDecryptJweOptions = Readonly<{
 
 export const ReallyMeJose = Object.freeze({
   signJws(options: ReallyMeJoseSignJwsOptions): string {
-    ensureObject(options);
-    validateAlgorithm(options.algorithm, [JoseSignatureAlgorithm.EDDSA, JoseSignatureAlgorithm.ES256]);
+    ensureObjectFields(options, SIGN_JWS_FIELDS);
+    validateAlgorithm(options.algorithm, [JoseSignatureAlgorithm.EDDSA, JoseSignatureAlgorithm.ES256, JoseSignatureAlgorithm.ES256K]);
     const owners: Uint8Array[] = [];
     try {
       const privateKey = ownedBytes(options.privateKey, owners);
@@ -135,8 +141,8 @@ export const ReallyMeJose = Object.freeze({
   },
 
   verifyJws(options: ReallyMeJoseVerifyJwsOptions): void {
-    ensureObject(options);
-    validateAlgorithm(options.algorithm, [JoseSignatureAlgorithm.EDDSA, JoseSignatureAlgorithm.ES256]);
+    ensureObjectFields(options, VERIFY_JWS_FIELDS);
+    validateAlgorithm(options.algorithm, [JoseSignatureAlgorithm.EDDSA, JoseSignatureAlgorithm.ES256, JoseSignatureAlgorithm.ES256K]);
     ensureString(options.compact);
     const owners: Uint8Array[] = [];
     try {
@@ -192,18 +198,18 @@ export const ReallyMeJose = Object.freeze({
   },
 
   signJwt(options: ReallyMeJoseSignJwtOptions): string {
-    ensureObject(options);
+    ensureObjectFields(options, SIGN_JWT_FIELDS);
     const owners: Uint8Array[] = [];
     try {
       const claims = ownedBytes(options.claimsJson, owners);
       const jwk = ownedBytes(options.jwkJson, owners);
       const privateKey = ownedBytes(options.privateKey, owners);
-      const type = optionalString(options.type);
-      ensureAggregateLength(claims.length, jwk.length, privateKey.length, utf8Length(type));
+      const headerOptions = jwtHeaderOptions(options.headerOptions);
+      ensureAggregateLength(claims.length, jwk.length, privateKey.length, utf8Length(headerOptions?.typ ?? ""));
       const request = create(JoseOperationRequestSchema, {
         operation: {
           case: "jwtSign",
-          value: { claimsJson: claims, jwkJson: jwk, privateKey, typ: type },
+          value: { claimsJson: claims, jwkJson: jwk, privateKey, headerOptions },
         },
       });
       return withResponse(request, (response) => {
@@ -217,20 +223,22 @@ export const ReallyMeJose = Object.freeze({
   },
 
   verifyJwt(options: ReallyMeJoseVerifyJwtOptions): Uint8Array {
-    ensureObject(options);
+    ensureObjectFields(options, VERIFY_JWT_FIELDS);
     ensureString(options.compact);
     const owners: Uint8Array[] = [];
     try {
       const jwk = ownedBytes(options.jwkJson, owners);
       const publicKey = ownedBytes(options.publicKey, owners);
       const headerPolicy = jwtHeaderPolicy(options.headerPolicy);
-      const temporalPolicy = jwtTemporalPolicy(options.temporalPolicy);
+      const verification = jwtVerification(options.verification);
       ensureAggregateLength(
         utf8Length(options.compact),
         jwk.length,
         publicKey.length,
         jwtHeaderPolicyLength(headerPolicy),
-        jwtTemporalPolicyLength(temporalPolicy),
+        verification.mode.case === "claims" ? utf8Length(verification.mode.value.expectedAudience) +
+          utf8Length(verification.mode.value.expectedIssuerConstraint?.value ?? "") +
+          utf8Length(verification.mode.value.expectedSubjectConstraint?.value ?? "") : 0,
       );
       const request = create(JoseOperationRequestSchema, {
         operation: {
@@ -240,8 +248,7 @@ export const ReallyMeJose = Object.freeze({
             jwkJson: jwk,
             publicKey,
             headerPolicy,
-            temporalPolicy,
-            signatureOnly: optionalBoolean(options.signatureOnly, false),
+            verification,
           },
         },
       });
@@ -256,7 +263,7 @@ export const ReallyMeJose = Object.freeze({
   },
 
   encryptJwe(options: ReallyMeJoseEncryptJweOptions): string {
-    ensureObject(options);
+    ensureObjectFields(options, ENCRYPT_JWE_FIELDS);
     validateAlgorithm(options.keyManagementAlgorithm, [
       JoseJweKeyManagementAlgorithm.DIRECT,
       JoseJweKeyManagementAlgorithm.ECDH_ES_P256,
@@ -275,19 +282,19 @@ export const ReallyMeJose = Object.freeze({
     try {
       const key = ownedBytes(options.key, owners);
       const plaintext = ownedBytes(options.plaintext, owners);
-      const apu = ownedBytes(options.agreementPartyUInfo === undefined ? new Uint8Array() : options.agreementPartyUInfo, owners);
-      const apv = ownedBytes(options.agreementPartyVInfo === undefined ? new Uint8Array() : options.agreementPartyVInfo, owners);
-      const keyIdentifier = optionalString(options.keyIdentifier);
-      const type = optionalString(options.type);
-      const contentType = optionalString(options.contentType);
+      const apu = options.agreementPartyUInfo === undefined ? undefined : ownedBytes(options.agreementPartyUInfo, owners);
+      const apv = options.agreementPartyVInfo === undefined ? undefined : ownedBytes(options.agreementPartyVInfo, owners);
+      const keyIdentifier = optionalHeaderString(options.keyIdentifier);
+      const type = optionalHeaderString(options.type);
+      const contentType = optionalHeaderString(options.contentType);
       ensureAggregateLength(
         key.length,
         plaintext.length,
-        apu.length,
-        apv.length,
-        utf8Length(keyIdentifier),
-        utf8Length(type),
-        utf8Length(contentType),
+        apu?.length ?? 0,
+        apv?.length ?? 0,
+        utf8Length(keyIdentifier ?? ""),
+        utf8Length(type ?? ""),
+        utf8Length(contentType ?? ""),
       );
       const request = create(JoseOperationRequestSchema, {
         operation: {
@@ -318,9 +325,9 @@ export const ReallyMeJose = Object.freeze({
   },
 
   decryptJwe(options: ReallyMeJoseDecryptJweOptions): Uint8Array {
-    ensureObject(options);
+    ensureObjectFields(options, DECRYPT_JWE_FIELDS);
     ensureString(options.compact);
-    if (options.headerPolicy !== undefined) ensureObject(options.headerPolicy);
+    if (options.headerPolicy !== undefined) ensureObjectFields(options.headerPolicy, JWE_HEADER_POLICY_FIELDS);
     validateAlgorithm(options.keyManagementAlgorithm, [
       JoseJweKeyManagementAlgorithm.DIRECT,
       JoseJweKeyManagementAlgorithm.ECDH_ES_P256,

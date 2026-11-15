@@ -6,3 +6,17 @@
 
 /// Generated protobuf boundary.
 pub mod generated;
+
+#[cfg(feature = "generated")]
+mod secret_json_bytes;
+
+#[cfg(feature = "generated")]
+mod guarded_decode;
+#[cfg(feature = "generated")]
+mod secret_bytes;
+#[cfg(feature = "generated")]
+mod secret_string;
+#[cfg(feature = "generated")]
+pub use secret_bytes::SecretBytes;
+#[cfg(feature = "generated")]
+pub use secret_string::SecretString;

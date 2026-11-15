@@ -17,7 +17,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 
 use reallyme_codec::base64url::{base64url_to_bytes, bytes_to_base64url};
-use reallyme_crypto::core::{CryptoError, RngFailureKind, RngOutputKind};
+use reallyme_crypto::core::{CryptoError, RngOutputKind};
 use reallyme_jose::jwe::{
     decrypt_compact_jwe_bytes, decrypt_compact_jwe_json, derive_ecdh_es_content_encryption_key,
     encrypt_compact_jwe_bytes, CompactJweEncryptRequest, CompactJwePolicy,

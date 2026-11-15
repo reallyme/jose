@@ -151,7 +151,7 @@ find_successful_native_resource_run() {
     --status success \
     --limit 20 \
     --json databaseId,displayTitle,headSha \
-    --jq ".[] | select(.headSha == \"${head_sha}\" and .displayTitle == \"Kotlin Android package preflight ${VERSION}\") | .databaseId" \
+    --jq ".[] | select(.headSha == \"${head_sha}\" and .displayTitle == \"Preflight maven ${VERSION} ${head_sha}\") | .databaseId" \
     | head -n 1
 }
 
@@ -162,7 +162,7 @@ latest_native_resource_run_for_head() {
     --commit "$head_sha" \
     --limit 20 \
     --json databaseId,displayTitle,headSha \
-    --jq ".[] | select(.headSha == \"${head_sha}\" and .displayTitle == \"Kotlin Android package preflight ${VERSION}\") | .databaseId" \
+    --jq ".[] | select(.headSha == \"${head_sha}\" and .displayTitle == \"Preflight maven ${VERSION} ${head_sha}\") | .databaseId" \
     | head -n 1
 }
 
@@ -206,7 +206,7 @@ validate_native_resource_run() {
   if [ "$run_head_sha" != "$expected_head_sha" ]; then
     fail "GitHub Actions run ${run_id} does not belong to the current commit"
   fi
-  if [ "$run_title" != "Kotlin Android package preflight ${VERSION}" ]; then
+  if [ "$run_title" != "Preflight maven ${VERSION} ${expected_head_sha}" ]; then
     fail "GitHub Actions run ${run_id} does not certify package version ${VERSION}"
   fi
   if [ "$run_status" != "completed" ] || [ "$run_conclusion" != "success" ]; then
@@ -352,7 +352,7 @@ ensure_kotlin_native_resources() {
     info "Dispatching ${NATIVE_RESOURCE_WORKFLOW} on ${git_ref} to build cross-platform Kotlin native resources"
     gh workflow run "$NATIVE_RESOURCE_WORKFLOW" \
       --ref "$git_ref" \
-      -f release_sha="$head_sha" \
+      -f source_sha="$head_sha" \
       -f version="$VERSION"
     run_id="$(wait_for_native_resource_run_id "$head_sha" "$stale_run_id")"
     gh run watch "$run_id" --exit-status
@@ -405,18 +405,30 @@ prepare_android_ndk_home() {
     if ! packages="$(LC_ALL=C "$sdkmanager" --sdk_root="$sdk_root" --list --channel=0)"; then
       fail "could not query Android NDK packages; check SDK command-line tools and network access"
     fi
-    # Compare revision components numerically: lexical ordering would place
-    # revision 9 after 30. Ignore previews and anything that is not an NDK path.
-    ANDROID_NDK_VERSION="$(printf '%s\n' "$packages" | awk -F '|' '
+    # The legacy SDK Manager prints a pipe-delimited table of package IDs.
+    # The Android CLI wrapper prints slash-separated paths in aligned columns.
+    ANDROID_NDK_VERSION="$(printf '%s\n' "$packages" | LC_ALL=C awk '
       {
-        path = $1
-        gsub(/^[[:space:]]+|[[:space:]]+$/, "", path)
-        if (path !~ /^ndk;[0-9]+\.[0-9]+\.[0-9]+$/) next
-        sub(/^ndk;/, "", path)
-        version = $2
+        row = $0
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", row)
+        if (row ~ /^ndk;/) {
+          split(row, columns, /\|/)
+        } else if (row ~ /^ndk\//) {
+          # Split at column padding so a version with a space before a
+          # preview suffix is checked in full.
+          split(row, columns, /[[:blank:]][[:blank:]]+|\t/)
+        } else {
+          next
+        }
+        path = columns[1]
+        version = columns[2]
+        sub(/[[:space:]]+$/, "", path)
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", version)
-        # Installed previews can still appear in a stable-channel listing.
+        sub(/^ndk[;\/]/, "", path)
+        if (path !~ /^[0-9]+\.[0-9]+\.[0-9]+$/) next
+        # Previews can appear in the listing with a numeric package path.
         if (version != path) next
+        # Integer comparison keeps 30.10 newer than 30.2.
         split(path, revision, ".")
         if (latest == "" || revision[1] + 0 > major ||
             (revision[1] + 0 == major && revision[2] + 0 > minor) ||

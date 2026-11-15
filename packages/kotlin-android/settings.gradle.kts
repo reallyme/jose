@@ -13,8 +13,14 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()
-        mavenCentral()
+        providers.gradleProperty("reallyme.jose.androidConsumerRepository").orNull?.let { directory ->
+            exclusiveContent {
+                forRepository { maven { url = uri(directory) } }
+                filter { includeModule("me.really", "jose-android") }
+            }
+        }
+        google { content { excludeModule("me.really", "jose-android") } }
+        mavenCentral { content { excludeModule("me.really", "jose-android") } }
     }
 }
 

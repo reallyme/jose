@@ -36,6 +36,7 @@ public interface JoseJweEncryptRequestOrBuilder extends
    * <pre>
    * Sensitive direct CEK or recipient public/agreement key bytes, depending on
    * key_management_algorithm. Adapters must zeroize after dispatch.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes key = 3 [json_name = "key"];</code>
@@ -47,6 +48,7 @@ public interface JoseJweEncryptRequestOrBuilder extends
    * <pre>
    * Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes plaintext = 4 [json_name = "plaintext"];</code>
@@ -55,12 +57,29 @@ public interface JoseJweEncryptRequestOrBuilder extends
   com.google.protobuf.ByteString getPlaintext();
 
   /**
-   * <code>string kid = 5 [json_name = "kid"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string kid = 5 [json_name = "kid"];</code>
+   * @return Whether the kid field is set.
+   */
+  boolean hasKid();
+  /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string kid = 5 [json_name = "kid"];</code>
    * @return The kid.
    */
   java.lang.String getKid();
   /**
-   * <code>string kid = 5 [json_name = "kid"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string kid = 5 [json_name = "kid"];</code>
    * @return The bytes for kid.
    */
   com.google.protobuf.ByteString
@@ -70,9 +89,21 @@ public interface JoseJweEncryptRequestOrBuilder extends
    * <pre>
    * Agreement PartyUInfo. This can be correlating protocol metadata and must
    * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
-   * <code>bytes apu = 6 [json_name = "apu"];</code>
+   * <code>optional bytes apu = 6 [json_name = "apu"];</code>
+   * @return Whether the apu field is set.
+   */
+  boolean hasApu();
+  /**
+   * <pre>
+   * Agreement PartyUInfo. This can be correlating protocol metadata and must
+   * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional bytes apu = 6 [json_name = "apu"];</code>
    * @return The apu.
    */
   com.google.protobuf.ByteString getApu();
@@ -81,32 +112,78 @@ public interface JoseJweEncryptRequestOrBuilder extends
    * <pre>
    * Agreement PartyVInfo. This can be correlating protocol metadata and must
    * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
-   * <code>bytes apv = 7 [json_name = "apv"];</code>
+   * <code>optional bytes apv = 7 [json_name = "apv"];</code>
+   * @return Whether the apv field is set.
+   */
+  boolean hasApv();
+  /**
+   * <pre>
+   * Agreement PartyVInfo. This can be correlating protocol metadata and must
+   * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional bytes apv = 7 [json_name = "apv"];</code>
    * @return The apv.
    */
   com.google.protobuf.ByteString getApv();
 
   /**
-   * <code>string typ = 8 [json_name = "typ"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string typ = 8 [json_name = "typ"];</code>
+   * @return Whether the typ field is set.
+   */
+  boolean hasTyp();
+  /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string typ = 8 [json_name = "typ"];</code>
    * @return The typ.
    */
   java.lang.String getTyp();
   /**
-   * <code>string typ = 8 [json_name = "typ"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string typ = 8 [json_name = "typ"];</code>
    * @return The bytes for typ.
    */
   com.google.protobuf.ByteString
       getTypBytes();
 
   /**
-   * <code>string cty = 9 [json_name = "cty"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string cty = 9 [json_name = "cty"];</code>
+   * @return Whether the cty field is set.
+   */
+  boolean hasCty();
+  /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string cty = 9 [json_name = "cty"];</code>
    * @return The cty.
    */
   java.lang.String getCty();
   /**
-   * <code>string cty = 9 [json_name = "cty"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string cty = 9 [json_name = "cty"];</code>
    * @return The bytes for cty.
    */
   com.google.protobuf.ByteString

@@ -11,11 +11,19 @@ public interface JoseCompactResultOrBuilder extends
     com.google.protobuf.MessageLiteOrBuilder {
 
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @return The compact.
    */
   java.lang.String getCompact();
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @return The bytes for compact.
    */

@@ -5,7 +5,7 @@
 //! Versioned native C ABI for the canonical JOSE operation contract.
 //!
 //! The ABI accepts binary protobuf or generated ProtoJSON requests and always
-//! returns the canonical binary V1 response. Operation failures remain inside
+//! returns the canonical binary V2 response. Operation failures remain inside
 //! the generated response; C status codes describe only ABI transport state.
 
 #![cfg(not(target_arch = "wasm32"))]
@@ -16,13 +16,13 @@
 compile_error!("reallyme-jose-ffi must be compiled with panic=unwind");
 
 /// Panic containment shared by every non-leaf exported function.
-pub mod guard;
+pub(crate) mod guard;
 /// JNI adapter for the typed Kotlin/JVM facade.
-pub mod kotlin;
+mod kotlin;
 /// Canonical operation-contract exports.
 pub mod operation;
 /// Shared raw-pointer and alias validation.
-pub mod pointer;
+pub(crate) mod pointer;
 /// Stable C ABI status values.
 pub mod status;
 
@@ -31,3 +31,6 @@ pub use operation::{
     rm_jose_max_json_request_bytes, rm_jose_max_request_bytes, rm_jose_max_response_bytes,
     rm_jose_zeroize_buffer, JOSE_ABI_VERSION,
 };
+
+#[cfg(test)]
+mod guard_tests;

@@ -30,6 +30,10 @@ public object JoseJwtVerifyRequestKt {
     internal fun _build(): me.really.jose.v1.JoseJwtVerifyRequest = _builder.build()
 
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `string compact = 1 [json_name = "compact"];`
      */
     public var compact: kotlin.String
@@ -40,6 +44,10 @@ public object JoseJwtVerifyRequestKt {
         _builder.compact = value
       }
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `string compact = 1 [json_name = "compact"];`
      */
     public fun clearCompact() {
@@ -50,6 +58,7 @@ public object JoseJwtVerifyRequestKt {
      * ```
      * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
      * this as sensitive boundary input and avoid logging it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes jwk_json = 2 [json_name = "jwkJson"];`
@@ -65,6 +74,7 @@ public object JoseJwtVerifyRequestKt {
      * ```
      * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
      * this as sensitive boundary input and avoid logging it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes jwk_json = 2 [json_name = "jwkJson"];`
@@ -77,6 +87,7 @@ public object JoseJwtVerifyRequestKt {
      * ```
      * Public verification key bytes. Public material is still boundary data and
      * must not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes public_key = 3 [json_name = "publicKey"];`
@@ -92,6 +103,7 @@ public object JoseJwtVerifyRequestKt {
      * ```
      * Public verification key bytes. Public material is still boundary data and
      * must not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes public_key = 3 [json_name = "publicKey"];`
@@ -147,75 +159,42 @@ public object JoseJwtVerifyRequestKt {
 
     /**
      * ```
-     * Presence-sensitive temporal policy. If absent/unset, signature-only
-     * verification is performed only when signature_only is true. If present,
-     * every boolean, skew, and timestamp field is interpreted literally.
+     * A mode must be selected explicitly. Contradictory modes cannot be encoded.
      * ```
      *
-     * `.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];`
+     * `.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];`
      */
-    public var temporalPolicy: me.really.jose.v1.JoseJwtTemporalValidationPolicy
-      @kotlin.jvm.JvmName("getTemporalPolicy")
-        get() = _builder.temporalPolicy
-      @kotlin.jvm.JvmName("setTemporalPolicy")
+    public var verification: me.really.jose.v1.JoseJwtVerificationPolicy
+      @kotlin.jvm.JvmName("getVerification")
+        get() = _builder.verification
+      @kotlin.jvm.JvmName("setVerification")
         set(value) {
-        _builder.temporalPolicy = value
+        _builder.verification = value
       }
     /**
      * ```
-     * Presence-sensitive temporal policy. If absent/unset, signature-only
-     * verification is performed only when signature_only is true. If present,
-     * every boolean, skew, and timestamp field is interpreted literally.
+     * A mode must be selected explicitly. Contradictory modes cannot be encoded.
      * ```
      *
-     * `.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];`
+     * `.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];`
      */
-    public fun clearTemporalPolicy() {
-      _builder.clearTemporalPolicy()
+    public fun clearVerification() {
+      _builder.clearVerification()
     }
     /**
      * ```
-     * Presence-sensitive temporal policy. If absent/unset, signature-only
-     * verification is performed only when signature_only is true. If present,
-     * every boolean, skew, and timestamp field is interpreted literally.
+     * A mode must be selected explicitly. Contradictory modes cannot be encoded.
      * ```
      *
-     * `.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];`
-     * @return Whether the temporalPolicy field is set.
+     * `.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];`
+     * @return Whether the verification field is set.
      */
-    public fun hasTemporalPolicy(): kotlin.Boolean {
-      return _builder.hasTemporalPolicy()
+    public fun hasVerification(): kotlin.Boolean {
+      return _builder.hasVerification()
     }
 
-    public val JoseJwtVerifyRequestKt.Dsl.temporalPolicyOrNull: me.really.jose.v1.JoseJwtTemporalValidationPolicy?
-      get() = _builder.temporalPolicyOrNull
-
-    /**
-     * ```
-     * Required when temporal_policy is absent. This makes signature-only
-     * verification an explicit adapter choice rather than a proto3 default.
-     * ```
-     *
-     * `bool signature_only = 6 [json_name = "signatureOnly"];`
-     */
-    public var signatureOnly: kotlin.Boolean
-      @kotlin.jvm.JvmName("getSignatureOnly")
-        get() = _builder.signatureOnly
-      @kotlin.jvm.JvmName("setSignatureOnly")
-        set(value) {
-        _builder.signatureOnly = value
-      }
-    /**
-     * ```
-     * Required when temporal_policy is absent. This makes signature-only
-     * verification an explicit adapter choice rather than a proto3 default.
-     * ```
-     *
-     * `bool signature_only = 6 [json_name = "signatureOnly"];`
-     */
-    public fun clearSignatureOnly() {
-      _builder.clearSignatureOnly()
-    }
+    public val JoseJwtVerifyRequestKt.Dsl.verificationOrNull: me.really.jose.v1.JoseJwtVerificationPolicy?
+      get() = _builder.verificationOrNull
   }
 }
 public inline fun me.really.jose.v1.JoseJwtVerifyRequest.copy(block: `me.really.jose.v1`.JoseJwtVerifyRequestKt.Dsl.() -> kotlin.Unit): me.really.jose.v1.JoseJwtVerifyRequest =
@@ -224,5 +203,5 @@ public inline fun me.really.jose.v1.JoseJwtVerifyRequest.copy(block: `me.really.
 public val me.really.jose.v1.JoseJwtVerifyRequestOrBuilder.headerPolicyOrNull: me.really.jose.v1.JoseJwtHeaderValidationPolicy?
   get() = if (hasHeaderPolicy()) getHeaderPolicy() else null
 
-public val me.really.jose.v1.JoseJwtVerifyRequestOrBuilder.temporalPolicyOrNull: me.really.jose.v1.JoseJwtTemporalValidationPolicy?
-  get() = if (hasTemporalPolicy()) getTemporalPolicy() else null
+public val me.really.jose.v1.JoseJwtVerifyRequestOrBuilder.verificationOrNull: me.really.jose.v1.JoseJwtVerificationPolicy?
+  get() = if (hasVerification()) getVerification() else null

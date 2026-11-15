@@ -6,6 +6,10 @@
 package me.really.jose.v1;
 
 /**
+ * <pre>
+ * Rust view: jwe/encrypt.rs#CompactJweEncryptRequest
+ * </pre>
+ *
  * Protobuf type {@code reallyme.jose.v1.JoseJweEncryptRequest}
  */
 @com.google.protobuf.Generated
@@ -39,6 +43,7 @@ public  final class JoseJweEncryptRequest extends
     typ_ = "";
     cty_ = "";
   }
+  private int bitField0_;
   public static final int KEY_MANAGEMENT_ALGORITHM_FIELD_NUMBER = 1;
   private int keyManagementAlgorithm_;
   /**
@@ -131,6 +136,7 @@ public  final class JoseJweEncryptRequest extends
    * <pre>
    * Sensitive direct CEK or recipient public/agreement key bytes, depending on
    * key_management_algorithm. Adapters must zeroize after dispatch.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes key = 3 [json_name = "key"];</code>
@@ -144,6 +150,7 @@ public  final class JoseJweEncryptRequest extends
    * <pre>
    * Sensitive direct CEK or recipient public/agreement key bytes, depending on
    * key_management_algorithm. Adapters must zeroize after dispatch.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes key = 3 [json_name = "key"];</code>
@@ -158,6 +165,7 @@ public  final class JoseJweEncryptRequest extends
    * <pre>
    * Sensitive direct CEK or recipient public/agreement key bytes, depending on
    * key_management_algorithm. Adapters must zeroize after dispatch.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes key = 3 [json_name = "key"];</code>
@@ -173,6 +181,7 @@ public  final class JoseJweEncryptRequest extends
    * <pre>
    * Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes plaintext = 4 [json_name = "plaintext"];</code>
@@ -186,6 +195,7 @@ public  final class JoseJweEncryptRequest extends
    * <pre>
    * Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes plaintext = 4 [json_name = "plaintext"];</code>
@@ -200,6 +210,7 @@ public  final class JoseJweEncryptRequest extends
    * <pre>
    * Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes plaintext = 4 [json_name = "plaintext"];</code>
@@ -212,7 +223,23 @@ public  final class JoseJweEncryptRequest extends
   public static final int KID_FIELD_NUMBER = 5;
   private java.lang.String kid_;
   /**
-   * <code>string kid = 5 [json_name = "kid"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string kid = 5 [json_name = "kid"];</code>
+   * @return Whether the kid field is set.
+   */
+  @java.lang.Override
+  public boolean hasKid() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string kid = 5 [json_name = "kid"];</code>
    * @return The kid.
    */
   @java.lang.Override
@@ -220,7 +247,11 @@ public  final class JoseJweEncryptRequest extends
     return kid_;
   }
   /**
-   * <code>string kid = 5 [json_name = "kid"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string kid = 5 [json_name = "kid"];</code>
    * @return The bytes for kid.
    */
   @java.lang.Override
@@ -229,31 +260,43 @@ public  final class JoseJweEncryptRequest extends
     return com.google.protobuf.ByteString.copyFromUtf8(kid_);
   }
   /**
-   * <code>string kid = 5 [json_name = "kid"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string kid = 5 [json_name = "kid"];</code>
    * @param value The kid to set.
    */
   private void setKid(
       java.lang.String value) {
     java.util.Objects.requireNonNull(value);
-
+    bitField0_ |= 0x00000001;
     kid_ = value;
   }
   /**
-   * <code>string kid = 5 [json_name = "kid"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string kid = 5 [json_name = "kid"];</code>
    */
   private void clearKid() {
-
+    bitField0_ = (bitField0_ & ~0x00000001);
     kid_ = getDefaultInstance().getKid();
   }
   /**
-   * <code>string kid = 5 [json_name = "kid"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string kid = 5 [json_name = "kid"];</code>
    * @param value The bytes for kid to set.
    */
   private void setKidBytes(
       com.google.protobuf.ByteString value) {
     checkByteStringIsUtf8(value);
     kid_ = value.toStringUtf8();
-
+    bitField0_ |= 0x00000001;
   }
 
   public static final int APU_FIELD_NUMBER = 6;
@@ -262,9 +305,24 @@ public  final class JoseJweEncryptRequest extends
    * <pre>
    * Agreement PartyUInfo. This can be correlating protocol metadata and must
    * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
-   * <code>bytes apu = 6 [json_name = "apu"];</code>
+   * <code>optional bytes apu = 6 [json_name = "apu"];</code>
+   * @return Whether the apu field is set.
+   */
+  @java.lang.Override
+  public boolean hasApu() {
+    return ((bitField0_ & 0x00000002) != 0);
+  }
+  /**
+   * <pre>
+   * Agreement PartyUInfo. This can be correlating protocol metadata and must
+   * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional bytes apu = 6 [json_name = "apu"];</code>
    * @return The apu.
    */
   @java.lang.Override
@@ -275,26 +333,28 @@ public  final class JoseJweEncryptRequest extends
    * <pre>
    * Agreement PartyUInfo. This can be correlating protocol metadata and must
    * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
-   * <code>bytes apu = 6 [json_name = "apu"];</code>
+   * <code>optional bytes apu = 6 [json_name = "apu"];</code>
    * @param value The apu to set.
    */
   private void setApu(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-
+  bitField0_ |= 0x00000002;
     apu_ = value;
   }
   /**
    * <pre>
    * Agreement PartyUInfo. This can be correlating protocol metadata and must
    * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
-   * <code>bytes apu = 6 [json_name = "apu"];</code>
+   * <code>optional bytes apu = 6 [json_name = "apu"];</code>
    */
   private void clearApu() {
-
+    bitField0_ = (bitField0_ & ~0x00000002);
     apu_ = getDefaultInstance().getApu();
   }
 
@@ -304,9 +364,24 @@ public  final class JoseJweEncryptRequest extends
    * <pre>
    * Agreement PartyVInfo. This can be correlating protocol metadata and must
    * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
-   * <code>bytes apv = 7 [json_name = "apv"];</code>
+   * <code>optional bytes apv = 7 [json_name = "apv"];</code>
+   * @return Whether the apv field is set.
+   */
+  @java.lang.Override
+  public boolean hasApv() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+  /**
+   * <pre>
+   * Agreement PartyVInfo. This can be correlating protocol metadata and must
+   * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional bytes apv = 7 [json_name = "apv"];</code>
    * @return The apv.
    */
   @java.lang.Override
@@ -317,33 +392,51 @@ public  final class JoseJweEncryptRequest extends
    * <pre>
    * Agreement PartyVInfo. This can be correlating protocol metadata and must
    * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
-   * <code>bytes apv = 7 [json_name = "apv"];</code>
+   * <code>optional bytes apv = 7 [json_name = "apv"];</code>
    * @param value The apv to set.
    */
   private void setApv(com.google.protobuf.ByteString value) {
     java.util.Objects.requireNonNull(value);
-
+  bitField0_ |= 0x00000004;
     apv_ = value;
   }
   /**
    * <pre>
    * Agreement PartyVInfo. This can be correlating protocol metadata and must
    * not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
-   * <code>bytes apv = 7 [json_name = "apv"];</code>
+   * <code>optional bytes apv = 7 [json_name = "apv"];</code>
    */
   private void clearApv() {
-
+    bitField0_ = (bitField0_ & ~0x00000004);
     apv_ = getDefaultInstance().getApv();
   }
 
   public static final int TYP_FIELD_NUMBER = 8;
   private java.lang.String typ_;
   /**
-   * <code>string typ = 8 [json_name = "typ"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string typ = 8 [json_name = "typ"];</code>
+   * @return Whether the typ field is set.
+   */
+  @java.lang.Override
+  public boolean hasTyp() {
+    return ((bitField0_ & 0x00000008) != 0);
+  }
+  /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string typ = 8 [json_name = "typ"];</code>
    * @return The typ.
    */
   @java.lang.Override
@@ -351,7 +444,11 @@ public  final class JoseJweEncryptRequest extends
     return typ_;
   }
   /**
-   * <code>string typ = 8 [json_name = "typ"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string typ = 8 [json_name = "typ"];</code>
    * @return The bytes for typ.
    */
   @java.lang.Override
@@ -360,37 +457,65 @@ public  final class JoseJweEncryptRequest extends
     return com.google.protobuf.ByteString.copyFromUtf8(typ_);
   }
   /**
-   * <code>string typ = 8 [json_name = "typ"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string typ = 8 [json_name = "typ"];</code>
    * @param value The typ to set.
    */
   private void setTyp(
       java.lang.String value) {
     java.util.Objects.requireNonNull(value);
-
+    bitField0_ |= 0x00000008;
     typ_ = value;
   }
   /**
-   * <code>string typ = 8 [json_name = "typ"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string typ = 8 [json_name = "typ"];</code>
    */
   private void clearTyp() {
-
+    bitField0_ = (bitField0_ & ~0x00000008);
     typ_ = getDefaultInstance().getTyp();
   }
   /**
-   * <code>string typ = 8 [json_name = "typ"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string typ = 8 [json_name = "typ"];</code>
    * @param value The bytes for typ to set.
    */
   private void setTypBytes(
       com.google.protobuf.ByteString value) {
     checkByteStringIsUtf8(value);
     typ_ = value.toStringUtf8();
-
+    bitField0_ |= 0x00000008;
   }
 
   public static final int CTY_FIELD_NUMBER = 9;
   private java.lang.String cty_;
   /**
-   * <code>string cty = 9 [json_name = "cty"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string cty = 9 [json_name = "cty"];</code>
+   * @return Whether the cty field is set.
+   */
+  @java.lang.Override
+  public boolean hasCty() {
+    return ((bitField0_ & 0x00000010) != 0);
+  }
+  /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string cty = 9 [json_name = "cty"];</code>
    * @return The cty.
    */
   @java.lang.Override
@@ -398,7 +523,11 @@ public  final class JoseJweEncryptRequest extends
     return cty_;
   }
   /**
-   * <code>string cty = 9 [json_name = "cty"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string cty = 9 [json_name = "cty"];</code>
    * @return The bytes for cty.
    */
   @java.lang.Override
@@ -407,31 +536,43 @@ public  final class JoseJweEncryptRequest extends
     return com.google.protobuf.ByteString.copyFromUtf8(cty_);
   }
   /**
-   * <code>string cty = 9 [json_name = "cty"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string cty = 9 [json_name = "cty"];</code>
    * @param value The cty to set.
    */
   private void setCty(
       java.lang.String value) {
     java.util.Objects.requireNonNull(value);
-
+    bitField0_ |= 0x00000010;
     cty_ = value;
   }
   /**
-   * <code>string cty = 9 [json_name = "cty"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string cty = 9 [json_name = "cty"];</code>
    */
   private void clearCty() {
-
+    bitField0_ = (bitField0_ & ~0x00000010);
     cty_ = getDefaultInstance().getCty();
   }
   /**
-   * <code>string cty = 9 [json_name = "cty"];</code>
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
+   * <code>optional string cty = 9 [json_name = "cty"];</code>
    * @param value The bytes for cty to set.
    */
   private void setCtyBytes(
       com.google.protobuf.ByteString value) {
     checkByteStringIsUtf8(value);
     cty_ = value.toStringUtf8();
-
+    bitField0_ |= 0x00000010;
   }
 
   public static final int COMPRESSION_ALGORITHM_FIELD_NUMBER = 10;
@@ -581,6 +722,10 @@ public  final class JoseJweEncryptRequest extends
   }
 
   /**
+   * <pre>
+   * Rust view: jwe/encrypt.rs#CompactJweEncryptRequest
+   * </pre>
+   *
    * Protobuf type {@code reallyme.jose.v1.JoseJweEncryptRequest}
    */
   public static final class Builder extends
@@ -692,6 +837,7 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Sensitive direct CEK or recipient public/agreement key bytes, depending on
      * key_management_algorithm. Adapters must zeroize after dispatch.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes key = 3 [json_name = "key"];</code>
@@ -705,6 +851,7 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Sensitive direct CEK or recipient public/agreement key bytes, depending on
      * key_management_algorithm. Adapters must zeroize after dispatch.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes key = 3 [json_name = "key"];</code>
@@ -720,6 +867,7 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Sensitive direct CEK or recipient public/agreement key bytes, depending on
      * key_management_algorithm. Adapters must zeroize after dispatch.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes key = 3 [json_name = "key"];</code>
@@ -735,6 +883,7 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes plaintext = 4 [json_name = "plaintext"];</code>
@@ -748,6 +897,7 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes plaintext = 4 [json_name = "plaintext"];</code>
@@ -763,6 +913,7 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes plaintext = 4 [json_name = "plaintext"];</code>
@@ -775,7 +926,23 @@ public  final class JoseJweEncryptRequest extends
     }
 
     /**
-     * <code>string kid = 5 [json_name = "kid"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string kid = 5 [json_name = "kid"];</code>
+     * @return Whether the kid field is set.
+     */
+    @java.lang.Override
+    public boolean hasKid() {
+      return instance.hasKid();
+    }
+    /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string kid = 5 [json_name = "kid"];</code>
      * @return The kid.
      */
     @java.lang.Override
@@ -783,7 +950,11 @@ public  final class JoseJweEncryptRequest extends
       return instance.getKid();
     }
     /**
-     * <code>string kid = 5 [json_name = "kid"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string kid = 5 [json_name = "kid"];</code>
      * @return The bytes for kid.
      */
     @java.lang.Override
@@ -792,7 +963,11 @@ public  final class JoseJweEncryptRequest extends
       return instance.getKidBytes();
     }
     /**
-     * <code>string kid = 5 [json_name = "kid"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string kid = 5 [json_name = "kid"];</code>
      * @param value The kid to set.
      * @return This builder for chaining.
      */
@@ -803,7 +978,11 @@ public  final class JoseJweEncryptRequest extends
       return this;
     }
     /**
-     * <code>string kid = 5 [json_name = "kid"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string kid = 5 [json_name = "kid"];</code>
      * @return This builder for chaining.
      */
     public Builder clearKid() {
@@ -812,7 +991,11 @@ public  final class JoseJweEncryptRequest extends
       return this;
     }
     /**
-     * <code>string kid = 5 [json_name = "kid"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string kid = 5 [json_name = "kid"];</code>
      * @param value The bytes for kid to set.
      * @return This builder for chaining.
      */
@@ -827,9 +1010,24 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Agreement PartyUInfo. This can be correlating protocol metadata and must
      * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
-     * <code>bytes apu = 6 [json_name = "apu"];</code>
+     * <code>optional bytes apu = 6 [json_name = "apu"];</code>
+     * @return Whether the apu field is set.
+     */
+    @java.lang.Override
+    public boolean hasApu() {
+      return instance.hasApu();
+    }
+    /**
+     * <pre>
+     * Agreement PartyUInfo. This can be correlating protocol metadata and must
+     * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional bytes apu = 6 [json_name = "apu"];</code>
      * @return The apu.
      */
     @java.lang.Override
@@ -840,9 +1038,10 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Agreement PartyUInfo. This can be correlating protocol metadata and must
      * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
-     * <code>bytes apu = 6 [json_name = "apu"];</code>
+     * <code>optional bytes apu = 6 [json_name = "apu"];</code>
      * @param value The apu to set.
      * @return This builder for chaining.
      */
@@ -855,9 +1054,10 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Agreement PartyUInfo. This can be correlating protocol metadata and must
      * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
-     * <code>bytes apu = 6 [json_name = "apu"];</code>
+     * <code>optional bytes apu = 6 [json_name = "apu"];</code>
      * @return This builder for chaining.
      */
     public Builder clearApu() {
@@ -870,9 +1070,24 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Agreement PartyVInfo. This can be correlating protocol metadata and must
      * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
-     * <code>bytes apv = 7 [json_name = "apv"];</code>
+     * <code>optional bytes apv = 7 [json_name = "apv"];</code>
+     * @return Whether the apv field is set.
+     */
+    @java.lang.Override
+    public boolean hasApv() {
+      return instance.hasApv();
+    }
+    /**
+     * <pre>
+     * Agreement PartyVInfo. This can be correlating protocol metadata and must
+     * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional bytes apv = 7 [json_name = "apv"];</code>
      * @return The apv.
      */
     @java.lang.Override
@@ -883,9 +1098,10 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Agreement PartyVInfo. This can be correlating protocol metadata and must
      * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
-     * <code>bytes apv = 7 [json_name = "apv"];</code>
+     * <code>optional bytes apv = 7 [json_name = "apv"];</code>
      * @param value The apv to set.
      * @return This builder for chaining.
      */
@@ -898,9 +1114,10 @@ public  final class JoseJweEncryptRequest extends
      * <pre>
      * Agreement PartyVInfo. This can be correlating protocol metadata and must
      * not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
-     * <code>bytes apv = 7 [json_name = "apv"];</code>
+     * <code>optional bytes apv = 7 [json_name = "apv"];</code>
      * @return This builder for chaining.
      */
     public Builder clearApv() {
@@ -910,7 +1127,23 @@ public  final class JoseJweEncryptRequest extends
     }
 
     /**
-     * <code>string typ = 8 [json_name = "typ"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string typ = 8 [json_name = "typ"];</code>
+     * @return Whether the typ field is set.
+     */
+    @java.lang.Override
+    public boolean hasTyp() {
+      return instance.hasTyp();
+    }
+    /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string typ = 8 [json_name = "typ"];</code>
      * @return The typ.
      */
     @java.lang.Override
@@ -918,7 +1151,11 @@ public  final class JoseJweEncryptRequest extends
       return instance.getTyp();
     }
     /**
-     * <code>string typ = 8 [json_name = "typ"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string typ = 8 [json_name = "typ"];</code>
      * @return The bytes for typ.
      */
     @java.lang.Override
@@ -927,7 +1164,11 @@ public  final class JoseJweEncryptRequest extends
       return instance.getTypBytes();
     }
     /**
-     * <code>string typ = 8 [json_name = "typ"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string typ = 8 [json_name = "typ"];</code>
      * @param value The typ to set.
      * @return This builder for chaining.
      */
@@ -938,7 +1179,11 @@ public  final class JoseJweEncryptRequest extends
       return this;
     }
     /**
-     * <code>string typ = 8 [json_name = "typ"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string typ = 8 [json_name = "typ"];</code>
      * @return This builder for chaining.
      */
     public Builder clearTyp() {
@@ -947,7 +1192,11 @@ public  final class JoseJweEncryptRequest extends
       return this;
     }
     /**
-     * <code>string typ = 8 [json_name = "typ"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string typ = 8 [json_name = "typ"];</code>
      * @param value The bytes for typ to set.
      * @return This builder for chaining.
      */
@@ -959,7 +1208,23 @@ public  final class JoseJweEncryptRequest extends
     }
 
     /**
-     * <code>string cty = 9 [json_name = "cty"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string cty = 9 [json_name = "cty"];</code>
+     * @return Whether the cty field is set.
+     */
+    @java.lang.Override
+    public boolean hasCty() {
+      return instance.hasCty();
+    }
+    /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string cty = 9 [json_name = "cty"];</code>
      * @return The cty.
      */
     @java.lang.Override
@@ -967,7 +1232,11 @@ public  final class JoseJweEncryptRequest extends
       return instance.getCty();
     }
     /**
-     * <code>string cty = 9 [json_name = "cty"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string cty = 9 [json_name = "cty"];</code>
      * @return The bytes for cty.
      */
     @java.lang.Override
@@ -976,7 +1245,11 @@ public  final class JoseJweEncryptRequest extends
       return instance.getCtyBytes();
     }
     /**
-     * <code>string cty = 9 [json_name = "cty"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string cty = 9 [json_name = "cty"];</code>
      * @param value The cty to set.
      * @return This builder for chaining.
      */
@@ -987,7 +1260,11 @@ public  final class JoseJweEncryptRequest extends
       return this;
     }
     /**
-     * <code>string cty = 9 [json_name = "cty"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string cty = 9 [json_name = "cty"];</code>
      * @return This builder for chaining.
      */
     public Builder clearCty() {
@@ -996,7 +1273,11 @@ public  final class JoseJweEncryptRequest extends
       return this;
     }
     /**
-     * <code>string cty = 9 [json_name = "cty"];</code>
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
+     * <code>optional string cty = 9 [json_name = "cty"];</code>
      * @param value The bytes for cty to set.
      * @return This builder for chaining.
      */
@@ -1090,6 +1371,7 @@ public  final class JoseJweEncryptRequest extends
       }
       case BUILD_MESSAGE_INFO: {
           java.lang.Object[] objects = new java.lang.Object[] {
+            "bitField0_",
             "keyManagementAlgorithm_",
             "contentEncryptionAlgorithm_",
             "key_",
@@ -1102,8 +1384,9 @@ public  final class JoseJweEncryptRequest extends
             "compressionAlgorithm_",
           };
           java.lang.String info =
-              "\u0000\n\u0000\u0000\u0001\n\n\u0000\u0000\u0000\u0001\f\u0002\f\u0003\n\u0004\n" +
-              "\u0005\u0208\u0006\n\u0007\n\b\u0208\t\u0208\n\f";
+              "\u0000\n\u0000\u0001\u0001\n\n\u0000\u0000\u0000\u0001\f\u0002\f\u0003\n\u0004\n" +
+              "\u0005\u1208\u0000\u0006\u100a\u0001\u0007\u100a\u0002\b\u1208\u0003\t\u1208\u0004" +
+              "\n\f";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

@@ -24,26 +24,23 @@ fn canonical_response_version_and_field_numbers_are_stable() -> Result<(), buffa
         0
     );
     assert_eq!(
-        JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1.to_i32(),
-        1
+        JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V2.to_i32(),
+        2
     );
-    assert!(JoseOperationContractVersion::from_i32(2).is_none());
+    assert!(JoseOperationContractVersion::from_i32(1).is_none());
 
     let response = JoseOperationResponse {
         contract_version: EnumValue::from(
-            JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1,
+            JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V2,
         ),
         response: Some(Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
             outcome: Some(JwsVerifyOutcome::Result(Box::new(JoseVerifyResult {
-                protected_header_json: Vec::new(),
-                payload: Vec::new(),
-                __buffa_unknown_fields: Default::default(),
+                protected_header_json: Vec::new().into(),
+                payload: Vec::new().into(),
             }))),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
-    let expected = [0x50, 0x01, 0xca, 0x3e, 0x02, 0x0a, 0x00];
+    let expected = [0x50, 0x02, 0xca, 0x3e, 0x02, 0x0a, 0x00];
     assert_eq!(response.encode_to_vec(), expected);
     assert_eq!(
         JoseOperationResponse::decode_from_slice(&expected)?,
@@ -57,17 +54,14 @@ fn canonical_response_proto_json_round_trips_with_generated_oneofs(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let response = JoseOperationResponse {
         contract_version: EnumValue::from(
-            JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1,
+            JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V2,
         ),
         response: Some(Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
             outcome: Some(JwsVerifyOutcome::Result(Box::new(JoseVerifyResult {
-                protected_header_json: Vec::new(),
-                payload: Vec::new(),
-                __buffa_unknown_fields: Default::default(),
+                protected_header_json: Vec::new().into(),
+                payload: Vec::new().into(),
             }))),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
 
     let json = serde_json::to_vec(&response)?;
@@ -80,33 +74,30 @@ fn canonical_response_proto_json_round_trips_with_generated_oneofs(
 fn canonical_response_debug_redacts_nested_plaintext() {
     let response = JoseOperationResponse {
         contract_version: EnumValue::from(
-            JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1,
+            JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V2,
         ),
         response: Some(Response::JweDecrypt(Box::new(JoseJweDecryptResponse {
             outcome: Some(JweDecryptOutcome::Result(Box::new(
                 JoseJwePlaintextResult {
-                    plaintext: vec![0x30, 0x82, 0x04, 0x0d],
-                    __buffa_unknown_fields: Default::default(),
+                    plaintext: vec![0x30, 0x82, 0x04, 0x0d].into(),
                 },
             ))),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
 
     let debug = format!("{response:?}");
-    assert!(debug.contains("<redacted>"), "{debug}");
+    assert!(debug.contains("[REDACTED]"), "{debug}");
     assert!(!debug.contains("130"), "{debug}");
     assert!(!debug.contains("[48"), "{debug}");
 }
 
 #[test]
 fn canonical_response_proto_json_rejects_unknown_and_conflicting_oneof_fields() {
-    let unknown = br#"{"contractVersion":"JOSE_OPERATION_CONTRACT_VERSION_V1","unknown":{}}"#;
+    let unknown = br#"{"contractVersion":"JOSE_OPERATION_CONTRACT_VERSION_V2","unknown":{}}"#;
     assert!(serde_json::from_slice::<JoseOperationResponse>(unknown).is_err());
 
     let conflicting = br#"{
-        "contractVersion":"JOSE_OPERATION_CONTRACT_VERSION_V1",
+        "contractVersion":"JOSE_OPERATION_CONTRACT_VERSION_V2",
         "jwsVerify":{"result":{}},
         "jweDecrypt":{"result":{"plaintext":""}}
     }"#;

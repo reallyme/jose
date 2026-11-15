@@ -4,6 +4,7 @@
 
 //! Integration tests for the exported JOSE C ABI contract.
 
+#![cfg(not(target_arch = "wasm32"))]
 #![allow(unsafe_code)]
 
 use reallyme_jose::wire::{

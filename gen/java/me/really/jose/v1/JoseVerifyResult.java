@@ -12,6 +12,7 @@ package me.really.jose.v1;
  * compact profile; it does not imply support for JWS JSON Serialization,
  * detached payloads, or RFC 7797 unencoded payloads. Profile-aware callers must
  * parse and authorize these returned bytes instead of the original input.
+ * Rust view: jws/authenticated.rs#AuthenticatedCompactJws
  * </pre>
  *
  * Protobuf type {@code reallyme.jose.v1.JoseVerifyResult}
@@ -48,6 +49,7 @@ public  final class JoseVerifyResult extends
    * <pre>
    * Exact decoded JWS Protected Header bytes authenticated by the signature.
    * JOSE binds alg but does not interpret application/profile parameters.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
@@ -61,6 +63,7 @@ public  final class JoseVerifyResult extends
    * <pre>
    * Exact decoded JWS Protected Header bytes authenticated by the signature.
    * JOSE binds alg but does not interpret application/profile parameters.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
@@ -75,6 +78,7 @@ public  final class JoseVerifyResult extends
    * <pre>
    * Exact decoded JWS Protected Header bytes authenticated by the signature.
    * JOSE binds alg but does not interpret application/profile parameters.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
@@ -89,6 +93,7 @@ public  final class JoseVerifyResult extends
   /**
    * <pre>
    * Decoded JWS Payload bytes authenticated by the signature.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes payload = 2 [json_name = "payload"];</code>
@@ -101,6 +106,7 @@ public  final class JoseVerifyResult extends
   /**
    * <pre>
    * Decoded JWS Payload bytes authenticated by the signature.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes payload = 2 [json_name = "payload"];</code>
@@ -114,6 +120,7 @@ public  final class JoseVerifyResult extends
   /**
    * <pre>
    * Decoded JWS Payload bytes authenticated by the signature.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes payload = 2 [json_name = "payload"];</code>
@@ -213,6 +220,7 @@ public  final class JoseVerifyResult extends
    * compact profile; it does not imply support for JWS JSON Serialization,
    * detached payloads, or RFC 7797 unencoded payloads. Profile-aware callers must
    * parse and authorize these returned bytes instead of the original input.
+   * Rust view: jws/authenticated.rs#AuthenticatedCompactJws
    * </pre>
    *
    * Protobuf type {@code reallyme.jose.v1.JoseVerifyResult}
@@ -232,6 +240,7 @@ public  final class JoseVerifyResult extends
      * <pre>
      * Exact decoded JWS Protected Header bytes authenticated by the signature.
      * JOSE binds alg but does not interpret application/profile parameters.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
@@ -245,6 +254,7 @@ public  final class JoseVerifyResult extends
      * <pre>
      * Exact decoded JWS Protected Header bytes authenticated by the signature.
      * JOSE binds alg but does not interpret application/profile parameters.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
@@ -260,6 +270,7 @@ public  final class JoseVerifyResult extends
      * <pre>
      * Exact decoded JWS Protected Header bytes authenticated by the signature.
      * JOSE binds alg but does not interpret application/profile parameters.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
@@ -274,6 +285,7 @@ public  final class JoseVerifyResult extends
     /**
      * <pre>
      * Decoded JWS Payload bytes authenticated by the signature.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes payload = 2 [json_name = "payload"];</code>
@@ -286,6 +298,7 @@ public  final class JoseVerifyResult extends
     /**
      * <pre>
      * Decoded JWS Payload bytes authenticated by the signature.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes payload = 2 [json_name = "payload"];</code>
@@ -300,6 +313,7 @@ public  final class JoseVerifyResult extends
     /**
      * <pre>
      * Decoded JWS Payload bytes authenticated by the signature.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes payload = 2 [json_name = "payload"];</code>

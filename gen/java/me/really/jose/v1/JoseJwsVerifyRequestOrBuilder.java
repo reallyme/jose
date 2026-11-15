@@ -22,11 +22,19 @@ public interface JoseJwsVerifyRequestOrBuilder extends
   me.really.jose.v1.JoseSignatureAlgorithm getAlgorithm();
 
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 2 [json_name = "compact"];</code>
    * @return The compact.
    */
   java.lang.String getCompact();
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 2 [json_name = "compact"];</code>
    * @return The bytes for compact.
    */
@@ -37,6 +45,7 @@ public interface JoseJwsVerifyRequestOrBuilder extends
    * <pre>
    * Public verification key bytes. Public material is still boundary data and
    * must not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes public_key = 3 [json_name = "publicKey"];</code>

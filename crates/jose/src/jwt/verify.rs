@@ -8,8 +8,8 @@ use crate::jws::{parse_compact::build_sig_structure, suites::es256::verify_p256_
 use crate::reject_duplicate_json_members::reject_duplicate_json_members;
 use crate::{Algorithm, Jwk, Zeroizing};
 use reallyme_codec::base64url::base64url_bytes_to_bytes;
+use reallyme_crypto::core::{CryptoError, CryptoErrorReason};
 use reallyme_crypto::dispatch::verify;
-use reallyme_crypto::jwk::JwtError as CryptoJwkError;
 
 use super::{
     algorithm_from_jwt_alg,
@@ -25,8 +25,9 @@ use super::{
     JwtError,
 };
 
-const ECDSA_JOSE_SIGNATURE_LEN: usize = 64;
-const ED25519_SIGNATURE_LEN: usize = 64;
+const ECDSA_JOSE_SIGNATURE_LEN: usize =
+    crate::resolve_algorithm::JwtAlgorithm::Es256k.signature_len();
+const ED25519_SIGNATURE_LEN: usize = crate::resolve_algorithm::JwtAlgorithm::Eddsa.signature_len();
 
 /// Decode and verify a signed JWT (signature-only).
 ///
@@ -374,7 +375,10 @@ fn validate_jwk_key_binding(
     let expected_public_key = jwk.public_key_bytes().map_err(map_jwk_public_key_error)?;
     // WebCrypto commonly exports the same P-256 point in uncompressed SEC1.
     // Canonicalize that representation before comparing it with JWK bytes.
-    let normalized_public_key = if header.alg == "ES256" && public_key.len() == 65 {
+    let normalized_public_key = if header.alg
+        == crate::resolve_algorithm::JwtAlgorithm::Es256.as_str()
+        && public_key.len() == 65
+    {
         std::borrow::Cow::Owned(
             reallyme_crypto::p256::compress_public_key(public_key)
                 .map_err(|_| JwtError::InvalidPublicKey)?,
@@ -388,23 +392,11 @@ fn validate_jwk_key_binding(
     Ok(())
 }
 
-const fn map_jwk_public_key_error(error: CryptoJwkError) -> JwtError {
-    match error {
-        CryptoJwkError::UnsupportedKeyFormat | CryptoJwkError::EncodingError => {
-            JwtError::UnsupportedAlgorithm
-        }
-        CryptoJwkError::InvalidMlDsa44Key
-        | CryptoJwkError::InvalidMlDsa65Key
-        | CryptoJwkError::InvalidP256Key
-        | CryptoJwkError::InvalidSecp256k1Key
-        | CryptoJwkError::InvalidEd25519Key
-        | CryptoJwkError::InvalidX25519Key
-        | CryptoJwkError::InvalidMlDsa87Key
-        | CryptoJwkError::InvalidMlKem512Key
-        | CryptoJwkError::InvalidMlKem768Key
-        | CryptoJwkError::InvalidMlKem1024Key
-        | CryptoJwkError::InvalidSlhDsaSha2128sKey
-        | CryptoJwkError::InvalidXWing768Key => JwtError::InvalidPublicKey,
+const fn map_jwk_public_key_error(error: CryptoError) -> JwtError {
+    match error.reason() {
+        // JWK extraction uses invalidParameter for incompatible key metadata.
+        CryptoErrorReason::PrimitiveInvalidParameter
+        | CryptoErrorReason::ProviderUnsupportedAlgorithm => JwtError::UnsupportedAlgorithm,
         _ => JwtError::InvalidPublicKey,
     }
 }

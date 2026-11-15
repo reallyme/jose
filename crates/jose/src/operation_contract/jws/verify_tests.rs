@@ -16,9 +16,7 @@ use crate::jws::suites::eddsa::sign_eddsa_jws;
 use crate::jws::suites::es256::{sign_es256_jws, sign_p256_jose_prehash};
 use crate::jws::AuthenticatedCompactJws;
 
-use super::verify::{
-    verify_jws, JwsVerifyAlgorithm, JwsVerifyError, JwsVerifyErrorReason, JwsVerifyInput,
-};
+use super::{verify_jws, JwsAlgorithm, JwsVerifyError, JwsVerifyErrorReason, JwsVerifyInput};
 
 const P256_N: [u8; 32] = [
     0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -35,7 +33,7 @@ fn verifies_supported_algorithms() {
     let (es256_public, es256_private) = generate_keypair(Algorithm::P256).unwrap();
     let es256_compact = sign_es256_jws(&es256_private, "stage-5-es256").unwrap();
     let es256_payload = verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Es256,
+        JwsAlgorithm::Es256,
         &es256_compact,
         &es256_public,
     ))
@@ -46,7 +44,7 @@ fn verifies_supported_algorithms() {
     let (eddsa_public, eddsa_private) = generate_keypair(Algorithm::Ed25519).unwrap();
     let eddsa_compact = sign_eddsa_jws(&eddsa_private, "stage-5-eddsa").unwrap();
     let eddsa_payload = verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Eddsa,
+        JwsAlgorithm::Eddsa,
         &eddsa_compact,
         &eddsa_public,
     ))
@@ -70,7 +68,7 @@ fn returns_the_exact_authenticated_protected_header() {
     );
 
     let authenticated = verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Es256,
+        JwsAlgorithm::Es256,
         &compact,
         &public_key,
     ))
@@ -94,7 +92,7 @@ fn never_releases_a_modified_protected_header() {
     );
 
     let error = expect_verify_error(verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Es256,
+        JwsAlgorithm::Es256,
         &compact,
         &public_key,
     )));
@@ -163,7 +161,7 @@ fn eddsa_never_reports_the_es256_raw_signature_reason() {
     let signature = bytes_to_base64url(&[0u8; 64]);
     let compact = format!("{header}.payload.{signature}");
     let error = expect_verify_error(verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Eddsa,
+        JwsAlgorithm::Eddsa,
         &compact,
         &public_key,
     )));
@@ -183,7 +181,7 @@ fn authenticates_encoded_payload_before_rejecting_invalid_base64url() {
     );
 
     let error = expect_verify_error(verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Es256,
+        JwsAlgorithm::Es256,
         &compact,
         &public_key,
     )));
@@ -203,7 +201,7 @@ fn checks_signature_before_decoding_payload() {
     );
 
     let error = expect_verify_error(verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Es256,
+        JwsAlgorithm::Es256,
         &compact,
         &public_key,
     )));
@@ -224,7 +222,7 @@ fn accepts_valid_high_s_es256_signature() {
     );
 
     let verified_payload = verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Es256,
+        JwsAlgorithm::Es256,
         &compact,
         &public_key,
     ))
@@ -235,7 +233,7 @@ fn accepts_valid_high_s_es256_signature() {
 
 fn assert_reason(compact: &str, public_key: &[u8], expected: JwsVerifyErrorReason) {
     let error = expect_verify_error(verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Es256,
+        JwsAlgorithm::Es256,
         compact,
         public_key,
     )));

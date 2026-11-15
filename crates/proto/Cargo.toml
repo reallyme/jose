@@ -1,6 +1,6 @@
 [package]
 name = "reallyme-jose-proto"
-version = "0.4.6"
+version = "0.5.0"
 description = "ReallyMe JOSE protobuf boundary messages generated with Buffa."
 edition.workspace = true
 rust-version.workspace = true
@@ -22,13 +22,16 @@ include = [
 
 [features]
 default = ["generated"]
-generated = ["dep:buffa", "buffa/json", "dep:serde", "dep:zeroize"]
+generated = ["dep:base64", "dep:buffa", "buffa/json", "dep:serde", "dep:zeroize", "dep:secrecy", "dep:subtle"]
 
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
+secrecy = { workspace = true, optional = true }
+subtle = { workspace = true, optional = true }
+base64 = { workspace = true, optional = true }
 buffa = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
 zeroize = { workspace = true, optional = true }

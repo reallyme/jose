@@ -6,8 +6,8 @@
 
 #![allow(clippy::panic)]
 
-use reallyme_jose_ffi::guard::{ffi_guard, with_redacted_panic_hook};
-use reallyme_jose_ffi::status::JoseFfiStatus;
+use crate::guard::{ffi_guard, with_redacted_panic_hook};
+use crate::status::JoseFfiStatus;
 
 extern "C" fn deliberate_panic_boundary() -> i32 {
     ffi_guard(|| panic!("test-only extern boundary panic")).code()

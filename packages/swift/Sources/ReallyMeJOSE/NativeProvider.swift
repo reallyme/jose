@@ -8,7 +8,7 @@ import Foundation
   import Darwin
 #endif
 
-private let expectedJoseABIVersion: UInt32 = 1
+private let expectedJoseABIVersion: UInt32 = JoseContractValues.nativeAbiVersion
 
 private typealias ABIVersionFunction = @convention(c) () -> UInt32
 private typealias SizeLimitFunction = @convention(c) () -> UInt

@@ -4,7 +4,9 @@
 
 //! Canonical versioned protobuf responses for executable JOSE operations.
 
-use buffa::EnumValue;
+use crate::operation_contract::protobuf::{capabilities, extended};
+use crate::operation_contract::providers::{BuiltinProviders, OperationProviders};
+use buffa::{EnumValue, Message};
 use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
     __buffa::oneof::{
         jose_jwe_decrypt_response::Outcome as JweDecryptOutcome,
@@ -17,11 +19,8 @@ use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
         jose_jwt_verify_response::Outcome as JwtVerifyOutcome,
         jose_operation_request::Operation as RequestOperation, jose_operation_response::Response,
     },
-    JoseCompactResult, JoseError, JoseErrorReason, JoseJweDecryptResponse, JoseJweEncryptResponse,
-    JoseJwePlaintextResult, JoseJwsSignResponse, JoseJwsVerifyResponse, JoseJwtClaimsResult,
-    JoseJwtDecodeUnsignedResponse, JoseJwtEncodeUnsignedResponse, JoseJwtSignResponse,
-    JoseJwtVerifyResponse, JoseOperationContractVersion, JoseOperationRequest,
-    JoseOperationResponse, JoseVerifyResult,
+    JoseError, JoseErrorReason, JoseOperationContractVersion, JoseOperationRequest,
+    JoseOperationResponse,
 };
 use zeroize::Zeroizing;
 
@@ -37,29 +36,9 @@ use crate::operation_contract::protobuf::{
 };
 use crate::SecureRandom;
 
-/// Operation identity expected by a canonical response consumer.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-#[non_exhaustive]
-pub enum JoseOperationKind {
-    /// Compact-JWS signing.
-    JwsSign,
-    /// Compact-JWS verification.
-    JwsVerify,
-    /// Unsigned-JWT encoding.
-    JwtEncodeUnsigned,
-    /// Unsigned-JWT decoding.
-    JwtDecodeUnsigned,
-    /// Signed-JWT encoding.
-    JwtSign,
-    /// Signed-JWT verification.
-    JwtVerify,
-    /// Compact-JWE encryption.
-    JweEncrypt,
-    /// Compact-JWE decryption.
-    JweDecrypt,
-}
+pub use crate::generated_contract::JoseOperationKind;
 
-/// Executes a trusted generated operation request into the canonical V1
+/// Executes a trusted generated operation request into the canonical V2
 /// generated response.
 ///
 /// A missing operation becomes a top-level boundary error. Once an operation
@@ -67,39 +46,94 @@ pub enum JoseOperationKind {
 /// callers never infer the result type from opaque bytes.
 #[must_use]
 pub fn execute_operation_request<R: SecureRandom + ?Sized>(
-    mut request: JoseOperationRequest,
+    request: JoseOperationRequest,
     rng: &mut R,
 ) -> JoseOperationResponse {
-    // Preserve the generated owner until return so its Drop implementation
-    // wipes retained unknown fields after the selected child is transferred.
-    let Some(operation) = request.operation.take() else {
+    execute_operation_request_with_providers(request, rng, &mut BuiltinProviders)
+}
+
+/// Executes the generated contract using explicit caller-scoped capabilities.
+#[must_use]
+pub fn execute_operation_request_with_providers<R: SecureRandom + ?Sized>(
+    mut request: JoseOperationRequest,
+    rng: &mut R,
+    providers: &mut dyn OperationProviders,
+) -> JoseOperationResponse {
+    match request
+        .try_encoded_len()
+        .ok()
+        .and_then(|length| usize::try_from(length).ok())
+    {
+        Some(length) if length <= MAX_JOSE_PROTO_MESSAGE_BYTES => {}
+        _ => {
+            return boundary_response(JoseWireError::primitive_internal(
+                JoseErrorReason::CommonResourceLimitExceeded,
+            ))
+        }
+    }
+    // Keep both dropping owners alive while extracting the selected child. The
+    // native cleanup profile also wipes the oneof discriminator on return.
+    let Some(mut operation) = request.operation.take() else {
         return boundary_response(JoseWireError::primitive_internal(
             JoseErrorReason::JOSE_ERROR_REASON_COMMON_MISSING_OPERATION,
         ));
     };
 
-    match operation {
-        RequestOperation::JwsSign(request) => jws_sign_response(sign_jws_request(*request)),
-        RequestOperation::JwsVerify(request) => jws_verify_response(verify_jws_request(&request)),
-        RequestOperation::JwtEncodeUnsigned(request) => {
-            jwt_encode_unsigned_response(encode_unsigned_jwt_request(*request))
+    match &mut operation {
+        RequestOperation::JwsSign(request) => {
+            jws_sign_response(sign_jws_request(core::mem::take(request.as_mut())))
         }
-        RequestOperation::JwtDecodeUnsigned(request) => {
-            jwt_decode_unsigned_response(decode_unsigned_jwt_request(*request))
+        RequestOperation::JwsVerify(request) => jws_verify_response(verify_jws_request(request)),
+        RequestOperation::JwtEncodeUnsigned(request) => jwt_encode_unsigned_response(
+            encode_unsigned_jwt_request(core::mem::take(request.as_mut())),
+        ),
+        RequestOperation::JwtDecodeUnsigned(request) => jwt_decode_unsigned_response(
+            decode_unsigned_jwt_request(core::mem::take(request.as_mut())),
+        ),
+        RequestOperation::JwtSign(request) => {
+            jwt_sign_response(sign_jwt_request(core::mem::take(request.as_mut())))
         }
-        RequestOperation::JwtSign(request) => jwt_sign_response(sign_jwt_request(*request)),
-        RequestOperation::JwtVerify(request) => jwt_verify_response(verify_jwt_request(*request)),
+        RequestOperation::JwtVerify(request) => {
+            jwt_verify_response(verify_jwt_request(core::mem::take(request.as_mut())))
+        }
         RequestOperation::JweEncrypt(request) => {
-            jwe_encrypt_response(encrypt_jwe_request(*request, rng))
+            jwe_encrypt_response(encrypt_jwe_request(core::mem::take(request.as_mut()), rng))
         }
         RequestOperation::JweDecrypt(request) => {
-            jwe_decrypt_response(decrypt_jwe_request(*request))
+            jwe_decrypt_response(decrypt_jwe_request(core::mem::take(request.as_mut())))
+        }
+        RequestOperation::SignatureSign(request) => {
+            signature_sign_response(extended::signature_sign(core::mem::take(request.as_mut())))
+        }
+        RequestOperation::SignatureVerify(request) => signature_verify_response(
+            extended::signature_verify(core::mem::take(request.as_mut())),
+        ),
+        RequestOperation::SignatureSuiteInfo(request) => signature_suite_info_response(
+            extended::signature_suite_info(core::mem::take(request.as_mut())),
+        ),
+        RequestOperation::JwtSignWithProvider(request) => jwt_sign_with_provider_response(
+            capabilities::sign_jwt(core::mem::take(request.as_mut()), providers),
+        ),
+        RequestOperation::JweDeriveKey(request) => {
+            jwe_derive_key_response(extended::derive_key(core::mem::take(request.as_mut())))
+        }
+        RequestOperation::JweEncryptWithProvider(request) => jwe_encrypt_with_provider_response(
+            capabilities::encrypt_jwe(core::mem::take(request.as_mut()), providers, rng),
+        ),
+        RequestOperation::JweDecryptWithProvider(request) => jwe_decrypt_with_provider_response(
+            capabilities::decrypt_with_provider(core::mem::take(request.as_mut()), providers),
+        ),
+        RequestOperation::ContractInfo(request) => {
+            contract_info_response(extended::contract_info(core::mem::take(request.as_mut())))
+        }
+        RequestOperation::JwtClaimsParse(request) => {
+            jwt_claims_parse_response(extended::parse_claims(core::mem::take(request.as_mut())))
         }
     }
 }
 
 /// Decodes and executes a binary protobuf request and returns an encoded
-/// canonical V1 response.
+/// canonical V2 response.
 #[must_use]
 pub fn execute_operation_v1<R: SecureRandom + ?Sized>(
     request_bytes: &[u8],
@@ -113,7 +147,7 @@ pub fn execute_operation_v1<R: SecureRandom + ?Sized>(
 }
 
 /// Decodes and executes a generated ProtoJSON request and returns an encoded
-/// canonical V1 binary protobuf response.
+/// canonical V2 binary protobuf response.
 #[must_use]
 pub fn execute_operation_json_v1<R: SecureRandom + ?Sized>(
     request_json: &[u8],
@@ -126,7 +160,7 @@ pub fn execute_operation_json_v1<R: SecureRandom + ?Sized>(
     encode_response_or_error(response)
 }
 
-/// Decodes and validates an untrusted canonical V1 response for the operation
+/// Decodes and validates an untrusted canonical V2 response for the operation
 /// submitted by the caller.
 ///
 /// # Errors
@@ -153,7 +187,7 @@ fn validate_response(
     expected_operation: JoseOperationKind,
 ) -> JoseWireResult<()> {
     if response.contract_version.as_known()
-        != Some(JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1)
+        != Some(JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V2)
     {
         return Err(backend_output_error());
     }
@@ -227,6 +261,91 @@ fn validate_response(
                 None => Err(backend_output_error()),
             }
         }
+        Response::SignatureSign(response) => {
+            require_operation(expected_operation, JoseOperationKind::SignatureSign)?;
+            match &response.outcome {
+                Some(SignatureSignOutcome::Result(_)) => Ok(()),
+                Some(SignatureSignOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+
+        Response::SignatureVerify(response) => {
+            require_operation(expected_operation, JoseOperationKind::SignatureVerify)?;
+            match &response.outcome {
+                Some(SignatureVerifyOutcome::Result(_)) => Ok(()),
+                Some(SignatureVerifyOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+
+        Response::SignatureSuiteInfo(response) => {
+            require_operation(expected_operation, JoseOperationKind::SignatureSuiteInfo)?;
+            match &response.outcome {
+                Some(SignatureSuiteInfoOutcome::Result(_)) => Ok(()),
+                Some(SignatureSuiteInfoOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+
+        Response::JwtSignWithProvider(response) => {
+            require_operation(expected_operation, JoseOperationKind::JwtSignWithProvider)?;
+            match &response.outcome {
+                Some(JwtSignWithProviderOutcome::Result(_)) => Ok(()),
+                Some(JwtSignWithProviderOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+
+        Response::JweDeriveKey(response) => {
+            require_operation(expected_operation, JoseOperationKind::JweDeriveKey)?;
+            match &response.outcome {
+                Some(JweDeriveKeyOutcome::Result(_)) => Ok(()),
+                Some(JweDeriveKeyOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+
+        Response::JweEncryptWithProvider(response) => {
+            require_operation(
+                expected_operation,
+                JoseOperationKind::JweEncryptWithProvider,
+            )?;
+            match &response.outcome {
+                Some(JweEncryptWithProviderOutcome::Result(_)) => Ok(()),
+                Some(JweEncryptWithProviderOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+
+        Response::JweDecryptWithProvider(response) => {
+            require_operation(
+                expected_operation,
+                JoseOperationKind::JweDecryptWithProvider,
+            )?;
+            match &response.outcome {
+                Some(JweDecryptWithProviderOutcome::Result(_)) => Ok(()),
+                Some(JweDecryptWithProviderOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+
+        Response::ContractInfo(response) => {
+            require_operation(expected_operation, JoseOperationKind::ContractInfo)?;
+            match &response.outcome {
+                Some(ContractInfoOutcome::Result(_)) => Ok(()),
+                Some(ContractInfoOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+        Response::JwtClaimsParse(response) => {
+            require_operation(expected_operation, JoseOperationKind::JwtClaimsParse)?;
+            match &response.outcome {
+                Some(crate::api::contract::__buffa::oneof::jose_jwt_claims_parse_response::Outcome::Result(_)) => Ok(()),
+                Some(crate::api::contract::__buffa::oneof::jose_jwt_claims_parse_response::Outcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
     }
 }
 
@@ -273,16 +392,24 @@ fn operation_scoped_backend_error(mut response: JoseOperationResponse) -> JoseOp
         Some(Response::JweEncrypt(_)) => jwe_encrypt_response(Err(error)),
         Some(Response::JweDecrypt(_)) => jwe_decrypt_response(Err(error)),
         Some(Response::BoundaryError(_)) | None => boundary_response(error),
+        Some(Response::SignatureSign(_)) => signature_sign_response(Err(error)),
+        Some(Response::SignatureVerify(_)) => signature_verify_response(Err(error)),
+        Some(Response::SignatureSuiteInfo(_)) => signature_suite_info_response(Err(error)),
+        Some(Response::JwtSignWithProvider(_)) => jwt_sign_with_provider_response(Err(error)),
+        Some(Response::JweDeriveKey(_)) => jwe_derive_key_response(Err(error)),
+        Some(Response::JweEncryptWithProvider(_)) => jwe_encrypt_with_provider_response(Err(error)),
+        Some(Response::JweDecryptWithProvider(_)) => jwe_decrypt_with_provider_response(Err(error)),
+        Some(Response::ContractInfo(_)) => contract_info_response(Err(error)),
+        Some(Response::JwtClaimsParse(_)) => jwt_claims_parse_response(Err(error)),
     }
 }
 
 fn canonical_response(response: Response) -> JoseOperationResponse {
     JoseOperationResponse {
         contract_version: EnumValue::from(
-            JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1,
+            JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V2,
         ),
         response: Some(response),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -290,102 +417,27 @@ fn boundary_response(error: JoseWireError) -> JoseOperationResponse {
     canonical_response(Response::BoundaryError(Box::new(jose_error(error))))
 }
 
-fn jws_sign_response(result: JoseWireResult<JoseCompactResult>) -> JoseOperationResponse {
-    let outcome = match result {
-        Ok(result) => JwsSignOutcome::Result(Box::new(result)),
-        Err(error) => JwsSignOutcome::Error(Box::new(jose_error(error))),
-    };
-    canonical_response(Response::JwsSign(Box::new(JoseJwsSignResponse {
-        outcome: Some(outcome),
-        __buffa_unknown_fields: Default::default(),
-    })))
-}
-
-fn jws_verify_response(result: JoseWireResult<JoseVerifyResult>) -> JoseOperationResponse {
-    let outcome = match result {
-        Ok(result) => JwsVerifyOutcome::Result(Box::new(result)),
-        Err(error) => JwsVerifyOutcome::Error(Box::new(jose_error(error))),
-    };
-    canonical_response(Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
-        outcome: Some(outcome),
-        __buffa_unknown_fields: Default::default(),
-    })))
-}
-
-fn jwt_encode_unsigned_response(
-    result: JoseWireResult<JoseCompactResult>,
-) -> JoseOperationResponse {
-    let outcome = match result {
-        Ok(result) => JwtEncodeUnsignedOutcome::Result(Box::new(result)),
-        Err(error) => JwtEncodeUnsignedOutcome::Error(Box::new(jose_error(error))),
-    };
-    canonical_response(Response::JwtEncodeUnsigned(Box::new(
-        JoseJwtEncodeUnsignedResponse {
-            outcome: Some(outcome),
-            __buffa_unknown_fields: Default::default(),
-        },
-    )))
-}
-
-fn jwt_decode_unsigned_response(
-    result: JoseWireResult<JoseJwtClaimsResult>,
-) -> JoseOperationResponse {
-    let outcome = match result {
-        Ok(result) => JwtDecodeUnsignedOutcome::Result(Box::new(result)),
-        Err(error) => JwtDecodeUnsignedOutcome::Error(Box::new(jose_error(error))),
-    };
-    canonical_response(Response::JwtDecodeUnsigned(Box::new(
-        JoseJwtDecodeUnsignedResponse {
-            outcome: Some(outcome),
-            __buffa_unknown_fields: Default::default(),
-        },
-    )))
-}
-
-fn jwt_sign_response(result: JoseWireResult<JoseCompactResult>) -> JoseOperationResponse {
-    let outcome = match result {
-        Ok(result) => JwtSignOutcome::Result(Box::new(result)),
-        Err(error) => JwtSignOutcome::Error(Box::new(jose_error(error))),
-    };
-    canonical_response(Response::JwtSign(Box::new(JoseJwtSignResponse {
-        outcome: Some(outcome),
-        __buffa_unknown_fields: Default::default(),
-    })))
-}
-
-fn jwt_verify_response(result: JoseWireResult<JoseJwtClaimsResult>) -> JoseOperationResponse {
-    let outcome = match result {
-        Ok(result) => JwtVerifyOutcome::Result(Box::new(result)),
-        Err(error) => JwtVerifyOutcome::Error(Box::new(jose_error(error))),
-    };
-    canonical_response(Response::JwtVerify(Box::new(JoseJwtVerifyResponse {
-        outcome: Some(outcome),
-        __buffa_unknown_fields: Default::default(),
-    })))
-}
-
-fn jwe_encrypt_response(result: JoseWireResult<JoseCompactResult>) -> JoseOperationResponse {
-    let outcome = match result {
-        Ok(result) => JweEncryptOutcome::Result(Box::new(result)),
-        Err(error) => JweEncryptOutcome::Error(Box::new(jose_error(error))),
-    };
-    canonical_response(Response::JweEncrypt(Box::new(JoseJweEncryptResponse {
-        outcome: Some(outcome),
-        __buffa_unknown_fields: Default::default(),
-    })))
-}
-
-fn jwe_decrypt_response(result: JoseWireResult<JoseJwePlaintextResult>) -> JoseOperationResponse {
-    let outcome = match result {
-        Ok(result) => JweDecryptOutcome::Result(Box::new(result)),
-        Err(error) => JweDecryptOutcome::Error(Box::new(jose_error(error))),
-    };
-    canonical_response(Response::JweDecrypt(Box::new(JoseJweDecryptResponse {
-        outcome: Some(outcome),
-        __buffa_unknown_fields: Default::default(),
-    })))
-}
-
 const fn backend_output_error() -> JoseWireError {
     JoseWireError::backend_internal(JoseErrorReason::JOSE_ERROR_REASON_BACKEND_INTERNAL)
 }
+
+use crate::api::contract::__buffa::oneof::{
+    jose_contract_info_response::Outcome as ContractInfoOutcome,
+    jose_jwe_decrypt_with_provider_response::Outcome as JweDecryptWithProviderOutcome,
+    jose_jwe_derive_key_response::Outcome as JweDeriveKeyOutcome,
+    jose_jwe_encrypt_with_provider_response::Outcome as JweEncryptWithProviderOutcome,
+    jose_jwt_sign_with_provider_response::Outcome as JwtSignWithProviderOutcome,
+    jose_signature_sign_response::Outcome as SignatureSignOutcome,
+    jose_signature_suite_info_response::Outcome as SignatureSuiteInfoOutcome,
+    jose_signature_verify_response::Outcome as SignatureVerifyOutcome,
+};
+
+mod build_response;
+use build_response::{
+    contract_info_response, jwe_decrypt_response, jwe_decrypt_with_provider_response,
+    jwe_derive_key_response, jwe_encrypt_response, jwe_encrypt_with_provider_response,
+    jws_sign_response, jws_verify_response, jwt_claims_parse_response,
+    jwt_decode_unsigned_response, jwt_encode_unsigned_response, jwt_sign_response,
+    jwt_sign_with_provider_response, jwt_verify_response, signature_sign_response,
+    signature_suite_info_response, signature_verify_response,
+};

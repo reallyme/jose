@@ -11,11 +11,19 @@ public interface JoseJwtVerifyRequestOrBuilder extends
     com.google.protobuf.MessageLiteOrBuilder {
 
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @return The compact.
    */
   java.lang.String getCompact();
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @return The bytes for compact.
    */
@@ -26,6 +34,7 @@ public interface JoseJwtVerifyRequestOrBuilder extends
    * <pre>
    * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
    * this as sensitive boundary input and avoid logging it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -37,6 +46,7 @@ public interface JoseJwtVerifyRequestOrBuilder extends
    * <pre>
    * Public verification key bytes. Public material is still boundary data and
    * must not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -69,35 +79,20 @@ public interface JoseJwtVerifyRequestOrBuilder extends
 
   /**
    * <pre>
-   * Presence-sensitive temporal policy. If absent/unset, signature-only
-   * verification is performed only when signature_only is true. If present,
-   * every boolean, skew, and timestamp field is interpreted literally.
+   * A mode must be selected explicitly. Contradictory modes cannot be encoded.
    * </pre>
    *
-   * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
-   * @return Whether the temporalPolicy field is set.
+   * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
+   * @return Whether the verification field is set.
    */
-  boolean hasTemporalPolicy();
+  boolean hasVerification();
   /**
    * <pre>
-   * Presence-sensitive temporal policy. If absent/unset, signature-only
-   * verification is performed only when signature_only is true. If present,
-   * every boolean, skew, and timestamp field is interpreted literally.
+   * A mode must be selected explicitly. Contradictory modes cannot be encoded.
    * </pre>
    *
-   * <code>.reallyme.jose.v1.JoseJwtTemporalValidationPolicy temporal_policy = 5 [json_name = "temporalPolicy"];</code>
-   * @return The temporalPolicy.
+   * <code>.reallyme.jose.v1.JoseJwtVerificationPolicy verification = 7 [json_name = "verification"];</code>
+   * @return The verification.
    */
-  me.really.jose.v1.JoseJwtTemporalValidationPolicy getTemporalPolicy();
-
-  /**
-   * <pre>
-   * Required when temporal_policy is absent. This makes signature-only
-   * verification an explicit adapter choice rather than a proto3 default.
-   * </pre>
-   *
-   * <code>bool signature_only = 6 [json_name = "signatureOnly"];</code>
-   * @return The signatureOnly.
-   */
-  boolean getSignatureOnly();
+  me.really.jose.v1.JoseJwtVerificationPolicy getVerification();
 }

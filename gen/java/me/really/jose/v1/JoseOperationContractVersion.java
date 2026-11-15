@@ -21,9 +21,9 @@ public enum JoseOperationContractVersion
    */
   JOSE_OPERATION_CONTRACT_VERSION_UNSPECIFIED(0),
   /**
-   * <code>JOSE_OPERATION_CONTRACT_VERSION_V1 = 1;</code>
+   * <code>JOSE_OPERATION_CONTRACT_VERSION_V2 = 2;</code>
    */
-  JOSE_OPERATION_CONTRACT_VERSION_V1(1),
+  JOSE_OPERATION_CONTRACT_VERSION_V2(2),
   UNRECOGNIZED(-1),
   ;
 
@@ -32,9 +32,9 @@ public enum JoseOperationContractVersion
    */
   public static final int JOSE_OPERATION_CONTRACT_VERSION_UNSPECIFIED_VALUE = 0;
   /**
-   * <code>JOSE_OPERATION_CONTRACT_VERSION_V1 = 1;</code>
+   * <code>JOSE_OPERATION_CONTRACT_VERSION_V2 = 2;</code>
    */
-  public static final int JOSE_OPERATION_CONTRACT_VERSION_V1_VALUE = 1;
+  public static final int JOSE_OPERATION_CONTRACT_VERSION_V2_VALUE = 2;
 
 
   @java.lang.Override
@@ -58,7 +58,7 @@ public enum JoseOperationContractVersion
   public static JoseOperationContractVersion forNumber(int value) {
     switch (value) {
       case 0: return JOSE_OPERATION_CONTRACT_VERSION_UNSPECIFIED;
-      case 1: return JOSE_OPERATION_CONTRACT_VERSION_V1;
+      case 2: return JOSE_OPERATION_CONTRACT_VERSION_V2;
       default: return null;
     }
   }

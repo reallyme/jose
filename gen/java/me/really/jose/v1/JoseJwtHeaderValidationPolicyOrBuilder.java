@@ -23,23 +23,39 @@ public interface JoseJwtHeaderValidationPolicyOrBuilder extends
   boolean getAllowEmbeddedKeyHeader();
 
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @return A list containing the acceptedTypValues.
    */
   java.util.List<java.lang.String>
       getAcceptedTypValuesList();
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @return The count of acceptedTypValues.
    */
   int getAcceptedTypValuesCount();
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @param index The index of the element to return.
    * @return The acceptedTypValues at the given index.
    */
   java.lang.String getAcceptedTypValues(int index);
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @param index The index of the element to return.
    * @return The acceptedTypValues at the given index.

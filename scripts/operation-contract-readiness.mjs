@@ -172,7 +172,7 @@ export function assertOperationContractArchitecture({ readText, listFiles, fail 
     {
       file: "crates/jose/src/operation_contract/protobuf/jwe.rs",
       calls: new Map([
-        ["encrypt_jwe", 1],
+        ["encrypt_jwe", 2],
         ["decrypt_jwe", 1],
       ]),
       forbidden: [
@@ -262,7 +262,7 @@ export function assertOperationContractArchitecture({ readText, listFiles, fail 
         ["sign_jws", 1],
         ["verify_jws", 1],
       ]),
-      required: ["JwsSignAlgorithm::Es256", "JwsVerifyAlgorithm::Es256"],
+      required: ["JwsAlgorithm::Es256", "JwsAlgorithm::Es256"],
       forbidden: [
         "encode_jws_signing_input(",
         "encode_compact_jws(",
@@ -276,7 +276,7 @@ export function assertOperationContractArchitecture({ readText, listFiles, fail 
         ["sign_jws", 1],
         ["verify_jws", 1],
       ]),
-      required: ["JwsSignAlgorithm::Eddsa", "JwsVerifyAlgorithm::Eddsa"],
+      required: ["JwsAlgorithm::Eddsa", "JwsAlgorithm::Eddsa"],
       forbidden: [
         "reallyme_crypto::dispatch",
         "encode_jws_signing_input(",

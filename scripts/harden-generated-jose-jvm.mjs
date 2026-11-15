@@ -6,6 +6,7 @@
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { schemaMessages } from "./read-proto-schema.mjs";
 
 const root = new URL("..", import.meta.url);
 // URL pathnames retain a leading slash before Windows drive letters. Convert
@@ -15,6 +16,9 @@ const javaDirectory = join(rootPath, "gen/java/me/really/jose/v1");
 const kotlinDirectory = join(rootPath, "gen/kotlin/me/really/jose/v1");
 const supportedArguments = new Set(["--check-idempotent"]);
 const argumentsSeen = new Set();
+const schema = schemaMessages(readFileSync(join(rootPath, "crates/proto/proto/reallyme/jose/v1/jose.proto"), "utf8"));
+const schemaByName = new Map(schema.map((message) => [message.name, message]));
+const hardenedMessages = new Set();
 
 function fail(message) {
   console.error(`generated JOSE JVM hardening failed: ${message}`);
@@ -60,6 +64,18 @@ for (const path of generatedPaths()) {
     }
     if (declaration !== null) {
       const messageName = declaration[1];
+      const message = schemaByName.get(messageName);
+      if (message === undefined || hardenedMessages.has(messageName)) fail("generated JVM message differs from schema inventory");
+      hardenedMessages.add(messageName);
+      const title = (value) => value.split("_").map((part) => part[0].toUpperCase() + part.slice(1)).join("");
+      const nested = [...message.body.matchAll(/^\s*(?:(optional|repeated)\s+)?(\w+)\s+(\w+)\s*=/gmu)]
+        .filter(([, , type]) => schemaByName.has(type))
+        .map(([, cardinality, , field]) => cardinality === "repeated"
+          ? `get${title(field)}List().stream().anyMatch(value -> value.reallyMeHasUnknownFieldsForValidation())`
+          : `(has${title(field)}() && get${title(field)}().reallyMeHasUnknownFieldsForValidation())`);
+      const predicate = `  public boolean reallyMeHasUnknownFieldsForValidation() {\n` +
+        `    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance()` +
+        nested.map((check) => `\n        || ${check}`).join("") + `;\n  }`;
       const constructor = `  private ${messageName}()`;
       const constructorIndex = source.indexOf(constructor);
       if (constructorIndex < 0) {
@@ -68,9 +84,7 @@ for (const path of generatedPaths()) {
       if (!source.includes("reallyMeHasUnknownFieldsForValidation")) {
         const hardening = `  // Security post-processing: generated Lite messages otherwise expose\n` +
           `  // neither unknown-field presence nor a safe redacted debug representation.\n` +
-          `  public boolean reallyMeHasUnknownFieldsForValidation() {\n` +
-          `    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance();\n` +
-          `  }\n\n` +
+          `${predicate}\n\n` +
           `  @java.lang.Override\n` +
           `  public java.lang.String toString() {\n` +
           `    return \"${messageName}{<redacted>}\";\n` +
@@ -81,7 +95,8 @@ for (const path of generatedPaths()) {
           `  }\n\n`;
         source = `${source.slice(0, constructorIndex)}${hardening}${source.slice(constructorIndex)}`;
       }
-      const predicateCount = source.split("reallyMeHasUnknownFieldsForValidation").length - 1;
+      source = source.replace(/  public boolean reallyMeHasUnknownFieldsForValidation\(\) \{[\s\S]*?\n  \}/u, predicate);
+      const predicateCount = source.split("public boolean reallyMeHasUnknownFieldsForValidation()").length - 1;
       const redactionCount = source.split(`${messageName}{<redacted>}`).length - 1;
       if (predicateCount !== 1 || redactionCount !== 1) {
         fail(`invalid hardening count for ${messageName}`);
@@ -91,6 +106,7 @@ for (const path of generatedPaths()) {
   source = source.replace(/[ \t]+$/gmu, "").replace(/\n+$/u, "\n");
   writeFileSync(path, source);
 }
+if (hardenedMessages.size !== schemaByName.size) fail("schema JVM message is missing from generation");
 
 if (before !== null) {
   for (const [path, expected] of before) {

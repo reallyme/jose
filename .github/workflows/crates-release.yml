@@ -4,8 +4,20 @@
 
 name: Crates.io Release
 
+run-name: Publish crates ${{ inputs.version }} ${{ inputs.source_sha }}
+
 on:
   workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact lowercase 40-character source commit on main
+        required: true
+        type: string
+      version:
+        description: Release version without leading v
+        required: true
+        type: string
+        default: 0.5.0
 
 permissions:
   contents: read
@@ -14,103 +26,63 @@ concurrency:
   group: crates-release-main
   cancel-in-progress: false
 
+
 jobs:
   verify-release-sha:
-    name: Verify reviewed release SHA
+    name: Verify release source and evidence
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
       actions: read
       contents: read
     outputs:
-      preflight_run_id: ${{ steps.attestation.outputs.preflight_run_id }}
-      release_sha: ${{ steps.resolve-release-sha.outputs.release_sha }}
-      release_version: ${{ steps.resolve-release-sha.outputs.release_version }}
+      release_sha: ${{ inputs.source_sha }}
+      preflight_run_id: ${{ steps.candidate.outputs.preflight_run_id }}
+      package_artifact_ids: ${{ steps.candidate.outputs.package_artifact_ids }}
     steps:
-      - name: Checkout main for release SHA resolution
+      - name: Checkout release source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
-          fetch-depth: 0
+          ref: ${{ inputs.source_sha }}
           persist-credentials: false
 
-      - name: Resolve current release SHA and version
-        id: resolve-release-sha
-        run: |
-          git fetch --no-tags origin main
-          release_sha="$(git rev-parse origin/main)"
-          if [ "${GITHUB_SHA}" != "${release_sha}" ]; then
-            echo "::error::resolved release SHA does not match the workflow run head SHA"
-            exit 1
-          fi
-          git checkout --detach "${release_sha}"
-          release_version="$(sed -n 's/^version = "\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)"$/\1/p' crates/jose/Cargo.toml | head -n 1)"
-          if [ -z "${release_version}" ]; then
-            echo "::error::could not derive release version from crates/jose/Cargo.toml"
-            exit 1
-          fi
-          echo "release_sha=${release_sha}" >> "${GITHUB_OUTPUT}"
-          echo "release_version=${release_version}" >> "${GITHUB_OUTPUT}"
-
-      - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '26'
-
-      - name: Verify coordinated release version
-        run: node scripts/verify_sdk_release_version.mjs "${{ steps.resolve-release-sha.outputs.release_version }}"
-
-      - name: Require current main and successful crates package checks
-        id: attestation
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          RELEASE_SHA: ${{ steps.resolve-release-sha.outputs.release_sha }}
-          RELEASE_VERSION: ${{ steps.resolve-release-sha.outputs.release_version }}
-          RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW: crates-package-preflight.yml
-          RELEASE_ATTESTATION_WAIT_SECONDS: "3600"
-          RELEASE_ATTESTATION_POLL_SECONDS: "20"
-          RELEASE_ATTESTATION_WRITE_GITHUB_OUTPUT: "1"
-        run: node scripts/verify_release_attestation.mjs
-
-  dry-run:
-    name: crates.io publish preflight
-    needs: verify-release-sha
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ needs.verify-release-sha.outputs.release_sha }}
-          persist-credentials: false
-
-      - name: Install Rust toolchain
+      - name: Install release Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.99.1
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+          toolchain: 1.100.0
 
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '26'
 
-      - name: Check crates.io publish order
-        run: node scripts/publish_crates_in_order.mjs order
-        env:
-          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: 7dffa0366a43fe9cc7b98a8040d37dd701d7955e
+          path: .release-readiness
+          persist-credentials: false
 
-      - name: Inspect publishable crate tarballs
-        run: node scripts/publish_crates_in_order.mjs inspect
+      - name: Verify coordinated release version
         env:
-          CARGO_HOME: ${{ runner.temp }}/package-preflight-cargo-home
-          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/verify_sdk_release_version.mjs "$RELEASE_VERSION"
+
+      - name: Verify release candidate
+        id: candidate
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_TAG: v${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: node .release-readiness/scripts/run-consumer-check.mjs --check-release crates publish "$RELEASE_VERSION" "$RELEASE_TAG" "$SOURCE_SHA"
 
   publish:
     name: Publish reallyme-jose crates
-    needs: [verify-release-sha, dry-run]
+    needs: verify-release-sha
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       actions: read
       contents: read
@@ -119,50 +91,32 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.verify-release-sha.outputs.release_sha }}
-          fetch-depth: 0
           persist-credentials: false
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - name: Download verified package
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          toolchain: 1.99.1
+          run-id: ${{ needs.verify-release-sha.outputs.preflight_run_id }}
+          artifact-ids: ${{ needs.verify-release-sha.outputs.package_artifact_ids }}
+          github-token: ${{ github.token }}
+          path: build/crate-release
+          merge-multiple: true
+          digest-mismatch: error
 
       - name: Install Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '26'
 
-      - name: Revalidate exact approved main commit
-        env:
-          RELEASE_SHA: ${{ needs.verify-release-sha.outputs.release_sha }}
-        run: |
-          git fetch --no-tags origin main
-          if [ "$(git rev-parse HEAD)" != "${RELEASE_SHA}" ] || [ "$(git rev-parse origin/main)" != "${RELEASE_SHA}" ]; then
-            echo "::error::approved release SHA changed before publication"
-            exit 1
-          fi
-
-      - name: Verify attestation and publish crates in dependency order
+      - name: Publish verified crate archives in dependency order
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          RELEASE_SHA: ${{ needs.verify-release-sha.outputs.release_sha }}
-          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}
-          RELEASE_ATTESTATION_PREFLIGHT_WORKFLOW: crates-package-preflight.yml
-          RELEASE_ATTESTATION_PREFLIGHT_RUN_ID: ${{ needs.verify-release-sha.outputs.preflight_run_id }}
-        run: |
-          if [ -z "${CARGO_REGISTRY_TOKEN}" ]; then
-            echo "::error::CARGO_REGISTRY_TOKEN is required"
-            exit 1
-          fi
-          node scripts/verify_sdk_release_version.mjs "${RELEASE_VERSION}"
-          node scripts/verify_release_attestation.mjs
-          node scripts/publish_crates_in_order.mjs publish
+          SOURCE_SHA: ${{ needs.verify-release-sha.outputs.release_sha }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/release_crate_archives.mjs publish build/crate-release "$RELEASE_VERSION" "$SOURCE_SHA"
 
       - name: Summarize crates.io publication
         env:
-          RELEASE_VERSION: ${{ needs.verify-release-sha.outputs.release_version }}
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           {
             echo '## crates.io publication completed'

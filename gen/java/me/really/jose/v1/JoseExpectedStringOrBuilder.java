@@ -11,11 +11,19 @@ public interface JoseExpectedStringOrBuilder extends
     com.google.protobuf.MessageLiteOrBuilder {
 
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string value = 1 [json_name = "value"];</code>
    * @return The value.
    */
   java.lang.String getValue();
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string value = 1 [json_name = "value"];</code>
    * @return The bytes for value.
    */

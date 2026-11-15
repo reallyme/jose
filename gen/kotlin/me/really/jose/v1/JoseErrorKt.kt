@@ -16,6 +16,10 @@ public inline fun joseError(block: me.really.jose.v1.JoseErrorKt.Dsl.() -> kotli
  * The oneof keeps caller-owned input/primitive failures, provider availability
  * failures, and backend/internal failures distinct while JoseErrorReason keeps
  * the exact JOSE-specific reason stable end-to-end.
+ * Rust view: wire.rs#JoseWireError
+ * Rust view: wire.rs#JoseWireResult
+ * Rust adapter: wire.rs#jose_error
+ * Rust adapter: wire.rs#jose_error_bytes
  * ```
  *
  * Protobuf type `reallyme.jose.v1.JoseError`

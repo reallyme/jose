@@ -155,14 +155,21 @@ public struct ReallyMeJOSE: Sendable {
     claimsJSON: [UInt8],
     jwkJSON: [UInt8],
     privateKey: [UInt8],
-    type: String = ""
+    headerOptions: ReallyMeJOSEJWTHeaderOptions? = nil
   ) throws(ReallyMeJOSEError) -> String {
-    try requireAggregateInput([claimsJSON.count, jwkJSON.count, privateKey.count, type.utf8.count])
+    try requireAggregateInput([
+      claimsJSON.count, jwkJSON.count, privateKey.count, headerOptions?.type?.utf8.count ?? 0,
+    ])
+    if headerOptions?.type == "" { throw .jose(branch: .primitive, reason: .jwtInvalidHeader) }
     var operation = ReallyMeProtoJoseJwtSignRequest()
     operation.claimsJson = ReallyMeJOSEMemory.ownedData(claimsJSON)
     operation.jwkJson = ReallyMeJOSEMemory.ownedData(jwkJSON)
     operation.privateKey = ReallyMeJOSEMemory.ownedData(privateKey)
-    operation.typ = type
+    if let headerOptions {
+      var options = ReallyMeProtoJoseJwtHeaderEncodeOptions()
+      if let type = headerOptions.type { options.typ = type }
+      operation.headerOptions = options
+    }
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jwtSign(operation)
     let response = try execute(&request)
@@ -187,17 +194,22 @@ public struct ReallyMeJOSE: Sendable {
     jwkJSON: [UInt8],
     publicKey: [UInt8],
     headerPolicy: ReallyMeJOSEJWTHeaderPolicy? = nil,
-    temporalPolicy: ReallyMeJOSEJWTTemporalPolicy? = nil,
-    signatureOnly: Bool = false
+    verification: ReallyMeJOSEJWTVerification
   ) throws(ReallyMeJOSEError) -> [UInt8] {
     try requireAggregateInput([compact.utf8.count, jwkJSON.count, publicKey.count])
+    let verification = try protoJWTVerification(verification)
+    let convertedHeader: ReallyMeProtoJoseJwtHeaderValidationPolicy?
+    if let headerPolicy {
+      convertedHeader = try protoJWTHeaderPolicy(headerPolicy)
+    } else {
+      convertedHeader = nil
+    }
     var operation = ReallyMeProtoJoseJwtVerifyRequest()
     operation.compact = compact
     operation.jwkJson = ReallyMeJOSEMemory.ownedData(jwkJSON)
     operation.publicKey = ReallyMeJOSEMemory.ownedData(publicKey)
-    operation.signatureOnly = signatureOnly
-    if let headerPolicy { operation.headerPolicy = protoJWTHeaderPolicy(headerPolicy) }
-    if let temporalPolicy { operation.temporalPolicy = try protoJWTTemporalPolicy(temporalPolicy) }
+    operation.verification = verification
+    if let convertedHeader { operation.headerPolicy = convertedHeader }
     var request = ReallyMeProtoJoseOperationRequest()
     request.operation = .jwtVerify(operation)
     var response = try execute(&request)
@@ -233,17 +245,17 @@ public struct ReallyMeJOSE: Sendable {
     contentEncryptionAlgorithm: ReallyMeJOSEJWEContentEncryptionAlgorithm,
     key: [UInt8],
     plaintext: [UInt8],
-    keyIdentifier: String = "",
-    agreementPartyUInfo: [UInt8] = [],
-    agreementPartyVInfo: [UInt8] = [],
-    type: String = "",
-    contentType: String = "",
+    keyIdentifier: String? = nil,
+    agreementPartyUInfo: [UInt8]? = nil,
+    agreementPartyVInfo: [UInt8]? = nil,
+    type: String? = nil,
+    contentType: String? = nil,
     compressionAlgorithm: ReallyMeJOSEJWECompressionAlgorithm? = nil
   ) throws(ReallyMeJOSEError) -> String {
     try requireAggregateInput([
-      key.count, plaintext.count, keyIdentifier.utf8.count,
-      agreementPartyUInfo.count, agreementPartyVInfo.count,
-      type.utf8.count, contentType.utf8.count,
+      key.count, plaintext.count, keyIdentifier?.utf8.count ?? 0,
+      agreementPartyUInfo?.count ?? 0, agreementPartyVInfo?.count ?? 0,
+      type?.utf8.count ?? 0, contentType?.utf8.count ?? 0,
     ])
     var operation = ReallyMeProtoJoseJweEncryptRequest()
     operation.keyManagementAlgorithm = protoKeyManagementAlgorithm(keyManagementAlgorithm)
@@ -251,11 +263,11 @@ public struct ReallyMeJOSE: Sendable {
       contentEncryptionAlgorithm)
     operation.key = ReallyMeJOSEMemory.ownedData(key)
     operation.plaintext = ReallyMeJOSEMemory.ownedData(plaintext)
-    operation.kid = keyIdentifier
-    operation.apu = ReallyMeJOSEMemory.ownedData(agreementPartyUInfo)
-    operation.apv = ReallyMeJOSEMemory.ownedData(agreementPartyVInfo)
-    operation.typ = type
-    operation.cty = contentType
+    if let keyIdentifier { operation.kid = keyIdentifier }
+    if let agreementPartyUInfo { operation.apu = ReallyMeJOSEMemory.ownedData(agreementPartyUInfo) }
+    if let agreementPartyVInfo { operation.apv = ReallyMeJOSEMemory.ownedData(agreementPartyVInfo) }
+    if let type { operation.typ = type }
+    if let contentType { operation.cty = contentType }
     if let compressionAlgorithm {
       operation.compressionAlgorithm = protoCompressionAlgorithm(compressionAlgorithm)
     }
@@ -349,7 +361,7 @@ public struct ReallyMeJOSE: Sendable {
     let response: ReallyMeProtoJoseOperationResponse
     do {
       var options = BinaryDecodingOptions()
-      options.messageDepthLimit = 32
+      options.messageDepthLimit = JoseContractValues.protoRecursionDepth
       response = try ReallyMeProtoJoseOperationResponse(
         serializedBytes: responseBytes,
         options: options
@@ -357,7 +369,7 @@ public struct ReallyMeJOSE: Sendable {
     } catch {
       throw ReallyMeJOSEError.malformedProviderResponse
     }
-    guard response.contractVersion == .v1,
+    guard response.contractVersion == .v2,
       response.unknownFields.data.isEmpty
     else {
       throw ReallyMeJOSEError.malformedProviderResponse

@@ -14,10 +14,8 @@ use crate::Algorithm;
 /// Returns [`JwtError::UnsupportedAlgorithm`] for JWT algorithms outside the
 /// ReallyMe JOSE profile.
 pub fn algorithm_from_jwt_alg(alg: &str) -> Result<Algorithm, JwtError> {
-    match alg {
-        "ES256" => Ok(Algorithm::P256),
-        "ES256K" => Ok(Algorithm::Secp256k1),
-        "EdDSA" => Ok(Algorithm::Ed25519),
-        _ => Err(JwtError::UnsupportedAlgorithm),
-    }
+    use crate::resolve_algorithm::JwtAlgorithm;
+    JwtAlgorithm::from_jose_name(alg)
+        .map(JwtAlgorithm::backend)
+        .ok_or(JwtError::UnsupportedAlgorithm)
 }

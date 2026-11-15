@@ -33,6 +33,7 @@ public object JoseJwtClaimsResultKt {
      * ```
      * Original claims JSON bytes preserved by the wire adapter. These bytes can
      * contain PII and must be zeroized after use.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes claims_json = 1 [json_name = "claimsJson"];`
@@ -48,6 +49,7 @@ public object JoseJwtClaimsResultKt {
      * ```
      * Original claims JSON bytes preserved by the wire adapter. These bytes can
      * contain PII and must be zeroized after use.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes claims_json = 1 [json_name = "claimsJson"];`

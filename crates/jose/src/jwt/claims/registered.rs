@@ -58,6 +58,11 @@ impl core::fmt::Debug for RegisteredClaims {
 impl Drop for RegisteredClaims {
     fn drop(&mut self) {
         self.jti.zeroize();
+        self.exp.zeroize();
+        self.nbf.zeroize();
+        self.iat.zeroize();
         // StringOrURI clears issuer, subject, and each audience on drop.
     }
 }
+
+impl zeroize::ZeroizeOnDrop for RegisteredClaims {}

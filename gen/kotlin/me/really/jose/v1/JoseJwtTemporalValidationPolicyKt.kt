@@ -11,6 +11,10 @@ package me.really.jose.v1;
 public inline fun joseJwtTemporalValidationPolicy(block: me.really.jose.v1.JoseJwtTemporalValidationPolicyKt.Dsl.() -> kotlin.Unit): me.really.jose.v1.JoseJwtTemporalValidationPolicy =
   me.really.jose.v1.JoseJwtTemporalValidationPolicyKt.Dsl._create(me.really.jose.v1.JoseJwtTemporalValidationPolicy.newBuilder()).apply { block() }._build()
 /**
+ * ```
+ * Rust view: jwt/validate_registered_claims.rs#JwtClaimsValidationPolicy
+ * ```
+ *
  * Protobuf type `reallyme.jose.v1.JoseJwtTemporalValidationPolicy`
  */
 public object JoseJwtTemporalValidationPolicyKt {
@@ -147,6 +151,7 @@ public object JoseJwtTemporalValidationPolicyKt {
      * ```
      * Required recipient identifier. Temporal verification fails closed when
      * this value is empty or the JWT aud claim does not contain it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `string expected_audience = 7 [json_name = "expectedAudience"];`
@@ -162,64 +167,13 @@ public object JoseJwtTemporalValidationPolicyKt {
      * ```
      * Required recipient identifier. Temporal verification fails closed when
      * this value is empty or the JWT aud claim does not contain it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `string expected_audience = 7 [json_name = "expectedAudience"];`
      */
     public fun clearExpectedAudience() {
       _builder.clearExpectedAudience()
-    }
-
-    /**
-     * ```
-     * Legacy issuer constraint. Empty means absent for older clients that cannot
-     * express presence. New clients use expected_issuer_constraint.
-     * ```
-     *
-     * `string expected_issuer = 8 [json_name = "expectedIssuer"];`
-     */
-    public var expectedIssuer: kotlin.String
-      @kotlin.jvm.JvmName("getExpectedIssuer")
-        get() = _builder.expectedIssuer
-      @kotlin.jvm.JvmName("setExpectedIssuer")
-        set(value) {
-        _builder.expectedIssuer = value
-      }
-    /**
-     * ```
-     * Legacy issuer constraint. Empty means absent for older clients that cannot
-     * express presence. New clients use expected_issuer_constraint.
-     * ```
-     *
-     * `string expected_issuer = 8 [json_name = "expectedIssuer"];`
-     */
-    public fun clearExpectedIssuer() {
-      _builder.clearExpectedIssuer()
-    }
-
-    /**
-     * ```
-     * Legacy subject constraint with the same absence ambiguity.
-     * ```
-     *
-     * `string expected_subject = 9 [json_name = "expectedSubject"];`
-     */
-    public var expectedSubject: kotlin.String
-      @kotlin.jvm.JvmName("getExpectedSubject")
-        get() = _builder.expectedSubject
-      @kotlin.jvm.JvmName("setExpectedSubject")
-        set(value) {
-        _builder.expectedSubject = value
-      }
-    /**
-     * ```
-     * Legacy subject constraint with the same absence ambiguity.
-     * ```
-     *
-     * `string expected_subject = 9 [json_name = "expectedSubject"];`
-     */
-    public fun clearExpectedSubject() {
-      _builder.clearExpectedSubject()
     }
 
     /**

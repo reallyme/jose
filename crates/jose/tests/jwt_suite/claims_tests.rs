@@ -12,7 +12,9 @@ fn claim_debug_output_redacts_identifiers_and_values() {
         sub: Some(StringOrURI("subject-secret".to_owned())),
         aud: Some(vec![StringOrURI("audience-secret".to_owned())]),
         jti: Some("token-secret".to_owned()),
-        ..Default::default()
+        exp: None,
+        nbf: None,
+        iat: None,
     };
     let mut arbitrary = AnyClaims::default();
     arbitrary.insert("private".to_owned(), serde_json::json!("claim-secret"));

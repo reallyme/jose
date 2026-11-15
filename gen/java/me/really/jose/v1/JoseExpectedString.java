@@ -36,6 +36,10 @@ public  final class JoseExpectedString extends
   public static final int VALUE_FIELD_NUMBER = 1;
   private java.lang.String value_;
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string value = 1 [json_name = "value"];</code>
    * @return The value.
    */
@@ -44,6 +48,10 @@ public  final class JoseExpectedString extends
     return value_;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string value = 1 [json_name = "value"];</code>
    * @return The bytes for value.
    */
@@ -53,6 +61,10 @@ public  final class JoseExpectedString extends
     return com.google.protobuf.ByteString.copyFromUtf8(value_);
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string value = 1 [json_name = "value"];</code>
    * @param value The value to set.
    */
@@ -63,6 +75,10 @@ public  final class JoseExpectedString extends
     value_ = value;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string value = 1 [json_name = "value"];</code>
    */
   private void clearValue() {
@@ -70,6 +86,10 @@ public  final class JoseExpectedString extends
     value_ = getDefaultInstance().getValue();
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string value = 1 [json_name = "value"];</code>
    * @param value The bytes for value to set.
    */
@@ -178,6 +198,10 @@ public  final class JoseExpectedString extends
 
 
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string value = 1 [json_name = "value"];</code>
      * @return The value.
      */
@@ -186,6 +210,10 @@ public  final class JoseExpectedString extends
       return instance.getValue();
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string value = 1 [json_name = "value"];</code>
      * @return The bytes for value.
      */
@@ -195,6 +223,10 @@ public  final class JoseExpectedString extends
       return instance.getValueBytes();
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string value = 1 [json_name = "value"];</code>
      * @param value The value to set.
      * @return This builder for chaining.
@@ -206,6 +238,10 @@ public  final class JoseExpectedString extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string value = 1 [json_name = "value"];</code>
      * @return This builder for chaining.
      */
@@ -215,6 +251,10 @@ public  final class JoseExpectedString extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string value = 1 [json_name = "value"];</code>
      * @param value The bytes for value to set.
      * @return This builder for chaining.

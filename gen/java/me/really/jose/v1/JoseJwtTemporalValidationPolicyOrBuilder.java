@@ -56,6 +56,7 @@ public interface JoseJwtTemporalValidationPolicyOrBuilder extends
    * <pre>
    * Required recipient identifier. Temporal verification fails closed when
    * this value is empty or the JWT aud claim does not contain it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -66,6 +67,7 @@ public interface JoseJwtTemporalValidationPolicyOrBuilder extends
    * <pre>
    * Required recipient identifier. Temporal verification fails closed when
    * this value is empty or the JWT aud claim does not contain it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -73,48 +75,6 @@ public interface JoseJwtTemporalValidationPolicyOrBuilder extends
    */
   com.google.protobuf.ByteString
       getExpectedAudienceBytes();
-
-  /**
-   * <pre>
-   * Legacy issuer constraint. Empty means absent for older clients that cannot
-   * express presence. New clients use expected_issuer_constraint.
-   * </pre>
-   *
-   * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-   * @return The expectedIssuer.
-   */
-  java.lang.String getExpectedIssuer();
-  /**
-   * <pre>
-   * Legacy issuer constraint. Empty means absent for older clients that cannot
-   * express presence. New clients use expected_issuer_constraint.
-   * </pre>
-   *
-   * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-   * @return The bytes for expectedIssuer.
-   */
-  com.google.protobuf.ByteString
-      getExpectedIssuerBytes();
-
-  /**
-   * <pre>
-   * Legacy subject constraint with the same absence ambiguity.
-   * </pre>
-   *
-   * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-   * @return The expectedSubject.
-   */
-  java.lang.String getExpectedSubject();
-  /**
-   * <pre>
-   * Legacy subject constraint with the same absence ambiguity.
-   * </pre>
-   *
-   * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-   * @return The bytes for expectedSubject.
-   */
-  com.google.protobuf.ByteString
-      getExpectedSubjectBytes();
 
   /**
    * <pre>

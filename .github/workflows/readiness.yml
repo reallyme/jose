@@ -5,11 +5,10 @@
 name: Release Readiness
 
 on:
-  workflow_dispatch:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_call:
+    outputs:
+      verified_sha:
+        value: ${{ jobs.readiness.outputs.verified_sha }}
 
 permissions:
   contents: read
@@ -22,6 +21,8 @@ jobs:
   readiness:
     name: release readiness contract
     runs-on: macos-26
+    outputs:
+      verified_sha: ${{ steps.verified.outputs.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -31,7 +32,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.99.1
+          toolchain: 1.100.0
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 
@@ -76,9 +77,17 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 18a6d91d99837e80f92e41fe04effb0b043d754e
+          ref: 7dffa0366a43fe9cc7b98a8040d37dd701d7955e
           path: .release-readiness
           persist-credentials: false
 
-      - name: Check release readiness contract
+      - name: Run release readiness checks
         run: node .release-readiness/scripts/run-consumer-check.mjs
+
+      - name: Record verified source
+        id: verified
+        shell: bash
+        run: |
+          sha=$(git rev-parse --verify HEAD)
+          test "$sha" = "$GITHUB_SHA"
+          printf 'sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"

@@ -3,6 +3,10 @@
    <configuration>
       <verify-metadata>true</verify-metadata>
       <verify-signatures>false</verify-signatures>
+      <trusted-artifacts>
+         <!-- The consumer resolves this module exclusively from the tested, sealed local publication. -->
+         <trust group="me.really" name="jose-android" reason="Source-bound Android publication supplied by the runtime gate"/>
+      </trusted-artifacts>
    </configuration>
    <components>
       <component group="androidx.databinding" name="databinding-common" version="9.5.0">

@@ -24,6 +24,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import me.really.jose.v1.JoseJwePlaintextResult
+import me.really.jose.v1.JoseSdkErrorCode
 
 class NativeProviderSecurityTest {
     @Test
@@ -44,12 +45,18 @@ class NativeProviderSecurityTest {
 
     @Test
     fun providerLoadingAndContractValidationFailClosed() {
-        assertFailsWith<ReallyMeJoseException.InvalidInput> {
+        val invalid = assertFailsWith<ReallyMeJoseException.InvalidInput> {
             ReallyMeJoseRustNativeProvider.loadLibrary("")
         }
-        assertFailsWith<ReallyMeJoseException.NativeProviderFailure> {
+        assertEquals(JoseSdkErrorCode.JOSE_SDK_ERROR_CODE_INVALID_INPUT, invalid.code)
+        val unavailable = assertFailsWith<ReallyMeJoseException.NativeProviderFailure> {
             ReallyMeJoseRustNativeProvider.loadLibrary("/tmp/reallyme-jose-missing-library.dylib")
         }
+        assertEquals(JoseSdkErrorCode.JOSE_SDK_ERROR_CODE_PROVIDER_FAILURE, unavailable.code)
+        val malformed = assertFailsWith<ReallyMeJoseException.MalformedProviderResponse> {
+            sdkError(me.really.jose.v1.JoseError.getDefaultInstance())
+        }
+        assertEquals(JoseSdkErrorCode.JOSE_SDK_ERROR_CODE_MALFORMED_PROVIDER_RESPONSE, malformed.code)
         assertTrue(ReallyMeJoseRustNativeProvider.isCompatibleAbiVersion(1))
         assertFalse(ReallyMeJoseRustNativeProvider.isCompatibleAbiVersion(0))
         assertTrue(ReallyMeJoseRustNativeProvider.isValidNativeLimit(1))

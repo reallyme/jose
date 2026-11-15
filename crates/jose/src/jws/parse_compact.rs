@@ -5,7 +5,8 @@
 use zeroize::Zeroizing;
 
 /// Maximum accepted compact JWS size in bytes.
-pub const MAX_COMPACT_JWS_BYTES: usize = 1024 * 1024;
+pub const MAX_COMPACT_JWS_BYTES: usize =
+    reallyme_jose_proto::generated::contract_values::COMPACT_BYTES;
 
 pub(crate) struct CompactJwsParts<'a> {
     pub(crate) protected_header: &'a str,

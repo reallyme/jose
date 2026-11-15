@@ -54,6 +54,11 @@ library creates fresh ECDSA signatures and ephemeral JWE values, so generator
 runs produce different compact tokens with the same verifiable semantics.
 These keys are conformance fixtures, not examples of production key generation.
 
+`schema-operations.json` adds 16 V2 operation vectors with exact binary request,
+ProtoJSON request, and response bytes. Native Rust, Swift, Kotlin/JVM, and WASM
+run the same corpus, covering raw P-256 signatures, suite metadata, claims
+parsing, key derivation, contract inspection, and unavailable capability handles.
+
 ## License
 
 Licensed under either the [MIT License](../LICENSE-MIT) or the

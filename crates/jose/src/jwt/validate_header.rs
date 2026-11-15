@@ -7,14 +7,14 @@ use std::fmt::Formatter;
 
 use serde::de::{IgnoredAny, MapAccess, Visitor};
 use serde::{Deserialize, Serialize};
-use zeroize::Zeroize;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
 use crate::Jwk;
 
 use super::error::JwtError;
 
 #[derive(Debug, Clone, Serialize)]
-pub struct JwtHeader {
+pub(crate) struct JwtHeader {
     /// JOSE `alg` value.
     pub alg: String,
 
@@ -105,10 +105,16 @@ impl JwtHeader {
         &self,
         options: &JwtHeaderValidationOptions<'_>,
     ) -> Result<(), JwtError> {
-        match self.alg.as_str() {
-            "ES256" | "EdDSA" | "ES256K" => {}
-            "none" => return Err(JwtError::InvalidHeader), // unsigned JWTs handled elsewhere
-            _ => return Err(JwtError::UnsupportedAlgorithm),
+        if options.accepted_typ_values.len()
+            > reallyme_jose_proto::generated::contract_values::ACCEPTED_TYPE_VALUES
+        {
+            return Err(JwtError::InputTooLarge);
+        }
+        if self.alg == "none" {
+            return Err(JwtError::InvalidHeader);
+        }
+        if crate::resolve_algorithm::JwtAlgorithm::from_jose_name(&self.alg).is_none() {
+            return Err(JwtError::UnsupportedAlgorithm);
         }
 
         match self.typ.as_deref() {
@@ -142,10 +148,17 @@ fn jwt_typ_matches(actual: &str, accepted: &str) -> bool {
 }
 
 /// JOSE header options used when encoding signed JWTs.
-#[derive(Debug, Clone)]
+/// Cloning creates another metadata owner that is wiped independently on drop.
+#[derive(Clone, Zeroize, ZeroizeOnDrop)]
 pub struct JwtHeaderEncodeOptions {
     /// Optional JOSE `typ` value to emit.
     pub(super) typ: Option<String>,
+}
+
+impl core::fmt::Debug for JwtHeaderEncodeOptions {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> core::fmt::Result {
+        formatter.write_str("JwtHeaderEncodeOptions(<redacted>)")
+    }
 }
 
 impl JwtHeaderEncodeOptions {
@@ -158,7 +171,9 @@ impl JwtHeaderEncodeOptions {
     /// Returns encode options for a conventional `typ = "JWT"` header.
     #[must_use]
     pub fn jwt() -> Self {
-        Self::new(Some("JWT".to_owned()))
+        Self::new(Some(
+            crate::generated_contract::policy_defaults::JWT_TYPE.to_owned(),
+        ))
     }
 
     /// Returns the configured protected-header `typ` value.
@@ -202,7 +217,11 @@ impl<'a> JwtHeaderValidationOptions<'a> {
     /// to missing `typ` through [`Self::new`].
     #[must_use]
     pub const fn standard_jwt() -> Self {
-        Self::new(false, false, &["JWT"])
+        Self::new(
+            crate::generated_contract::policy_defaults::JWT_ALLOW_MISSING_TYPE,
+            crate::generated_contract::policy_defaults::JWT_ALLOW_EMBEDDED_KEY,
+            crate::generated_contract::policy_defaults::JWT_ACCEPTED_TYPES,
+        )
     }
 
     /// Allows signed JWTs that omit `typ`.
@@ -241,14 +260,12 @@ pub(super) fn select_jwk_algorithm(jwk: &Jwk) -> Result<String, JwtError> {
     }
     .ok_or(JwtError::MissingAlgorithm)?;
 
-    match jwk {
-        Jwk::Ec(j) if j.crv == "P-256" && alg == "ES256" => Ok(alg.to_string()),
-        Jwk::Ec(j) if j.crv == "secp256k1" && alg == "ES256K" => Ok(alg.to_string()),
-        Jwk::Okp(j) if j.crv == "Ed25519" && alg == "EdDSA" => Ok(alg.to_string()),
-
-        // No JWT signing algorithm is currently defined for ReallyMe AKP keys.
-        Jwk::Akp(_) | Jwk::Ec(_) | Jwk::Okp(_) => Err(JwtError::UnsupportedAlgorithm),
+    let selected = crate::resolve_algorithm::JwtAlgorithm::from_jose_name(alg)
+        .ok_or(JwtError::UnsupportedAlgorithm)?;
+    if !selected.matches_jwk(jwk) {
+        return Err(JwtError::UnsupportedAlgorithm);
     }
+    Ok(selected.as_str().to_owned())
 }
 
 pub(super) fn select_jwk_key_id(jwk: &Jwk) -> Option<String> {

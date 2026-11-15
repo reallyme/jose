@@ -14,6 +14,7 @@ public interface JoseVerifyResultOrBuilder extends
    * <pre>
    * Exact decoded JWS Protected Header bytes authenticated by the signature.
    * JOSE binds alg but does not interpret application/profile parameters.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes protected_header_json = 1 [json_name = "protectedHeaderJson"];</code>
@@ -24,6 +25,7 @@ public interface JoseVerifyResultOrBuilder extends
   /**
    * <pre>
    * Decoded JWS Payload bytes authenticated by the signature.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes payload = 2 [json_name = "payload"];</code>

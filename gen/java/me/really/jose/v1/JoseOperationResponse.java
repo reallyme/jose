@@ -7,11 +7,12 @@ package me.really.jose.v1;
 
 /**
  * <pre>
- * JoseOperationResponse is the canonical 0.3.0 executable response. The low
+ * JoseOperationResponse is the canonical versioned executable response. The low
  * field-number range remains reserved so future revisions cannot reuse or
  * ambiguously reinterpret it. Boundary errors are limited to failures before
  * a trusted operation variant can be selected; operation failures remain
  * nested under the selected operation.
+ * Rust adapter: wire/operation_response.rs#decode_operation_response_v1
  * </pre>
  *
  * Protobuf type {@code reallyme.jose.v1.JoseOperationResponse}
@@ -25,7 +26,25 @@ public  final class JoseOperationResponse extends
   // Security post-processing: generated Lite messages otherwise expose
   // neither unknown-field presence nor a safe redacted debug representation.
   public boolean reallyMeHasUnknownFieldsForValidation() {
-    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance();
+    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance()
+        || (hasBoundaryError() && getBoundaryError().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwsSign() && getJwsSign().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwsVerify() && getJwsVerify().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtEncodeUnsigned() && getJwtEncodeUnsigned().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtDecodeUnsigned() && getJwtDecodeUnsigned().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtSign() && getJwtSign().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtVerify() && getJwtVerify().reallyMeHasUnknownFieldsForValidation())
+        || (hasJweEncrypt() && getJweEncrypt().reallyMeHasUnknownFieldsForValidation())
+        || (hasJweDecrypt() && getJweDecrypt().reallyMeHasUnknownFieldsForValidation())
+        || (hasSignatureSign() && getSignatureSign().reallyMeHasUnknownFieldsForValidation())
+        || (hasSignatureVerify() && getSignatureVerify().reallyMeHasUnknownFieldsForValidation())
+        || (hasSignatureSuiteInfo() && getSignatureSuiteInfo().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtSignWithProvider() && getJwtSignWithProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwtClaimsParse() && getJwtClaimsParse().reallyMeHasUnknownFieldsForValidation())
+        || (hasJweDeriveKey() && getJweDeriveKey().reallyMeHasUnknownFieldsForValidation())
+        || (hasJweEncryptWithProvider() && getJweEncryptWithProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasJweDecryptWithProvider() && getJweDecryptWithProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasContractInfo() && getContractInfo().reallyMeHasUnknownFieldsForValidation());
   }
 
   @java.lang.Override
@@ -53,6 +72,15 @@ public  final class JoseOperationResponse extends
     JWT_VERIFY(2003),
     JWE_ENCRYPT(3000),
     JWE_DECRYPT(3001),
+    SIGNATURE_SIGN(1010),
+    SIGNATURE_VERIFY(1011),
+    SIGNATURE_SUITE_INFO(1012),
+    JWT_SIGN_WITH_PROVIDER(2010),
+    JWT_CLAIMS_PARSE(2011),
+    JWE_DERIVE_KEY(3010),
+    JWE_ENCRYPT_WITH_PROVIDER(3011),
+    JWE_DECRYPT_WITH_PROVIDER(3012),
+    CONTRACT_INFO(7000),
     RESPONSE_NOT_SET(0);
     private final int value;
     private ResponseCase(int value) {
@@ -77,6 +105,15 @@ public  final class JoseOperationResponse extends
         case 2003: return JWT_VERIFY;
         case 3000: return JWE_ENCRYPT;
         case 3001: return JWE_DECRYPT;
+        case 1010: return SIGNATURE_SIGN;
+        case 1011: return SIGNATURE_VERIFY;
+        case 1012: return SIGNATURE_SUITE_INFO;
+        case 2010: return JWT_SIGN_WITH_PROVIDER;
+        case 2011: return JWT_CLAIMS_PARSE;
+        case 3010: return JWE_DERIVE_KEY;
+        case 3011: return JWE_ENCRYPT_WITH_PROVIDER;
+        case 3012: return JWE_DECRYPT_WITH_PROVIDER;
+        case 7000: return CONTRACT_INFO;
         case 0: return RESPONSE_NOT_SET;
         default: return null;
       }
@@ -651,6 +688,476 @@ public  final class JoseOperationResponse extends
     }
   }
 
+  public static final int SIGNATURE_SIGN_FIELD_NUMBER = 1010;
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+   */
+  @java.lang.Override
+  public boolean hasSignatureSign() {
+    return responseCase_ == 1010;
+  }
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseSignatureSignResponse getSignatureSign() {
+    if (responseCase_ == 1010) {
+       return (me.really.jose.v1.JoseSignatureSignResponse) response_;
+    }
+    return me.really.jose.v1.JoseSignatureSignResponse.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+   */
+  private void setSignatureSign(me.really.jose.v1.JoseSignatureSignResponse value) {
+    java.util.Objects.requireNonNull(value);
+    response_ = value;
+    responseCase_ = 1010;
+  }
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+   */
+  private void mergeSignatureSign(me.really.jose.v1.JoseSignatureSignResponse value) {
+    java.util.Objects.requireNonNull(value);
+    if (responseCase_ == 1010 &&
+        response_ != me.really.jose.v1.JoseSignatureSignResponse.getDefaultInstance()) {
+      response_ = me.really.jose.v1.JoseSignatureSignResponse.newBuilder((me.really.jose.v1.JoseSignatureSignResponse) response_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      response_ = value;
+    }
+    responseCase_ = 1010;
+  }
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+   */
+  private void clearSignatureSign() {
+    if (responseCase_ == 1010) {
+      responseCase_ = 0;
+      response_ = null;
+    }
+  }
+
+  public static final int SIGNATURE_VERIFY_FIELD_NUMBER = 1011;
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   */
+  @java.lang.Override
+  public boolean hasSignatureVerify() {
+    return responseCase_ == 1011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseSignatureVerifyResponse getSignatureVerify() {
+    if (responseCase_ == 1011) {
+       return (me.really.jose.v1.JoseSignatureVerifyResponse) response_;
+    }
+    return me.really.jose.v1.JoseSignatureVerifyResponse.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   */
+  private void setSignatureVerify(me.really.jose.v1.JoseSignatureVerifyResponse value) {
+    java.util.Objects.requireNonNull(value);
+    response_ = value;
+    responseCase_ = 1011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   */
+  private void mergeSignatureVerify(me.really.jose.v1.JoseSignatureVerifyResponse value) {
+    java.util.Objects.requireNonNull(value);
+    if (responseCase_ == 1011 &&
+        response_ != me.really.jose.v1.JoseSignatureVerifyResponse.getDefaultInstance()) {
+      response_ = me.really.jose.v1.JoseSignatureVerifyResponse.newBuilder((me.really.jose.v1.JoseSignatureVerifyResponse) response_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      response_ = value;
+    }
+    responseCase_ = 1011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   */
+  private void clearSignatureVerify() {
+    if (responseCase_ == 1011) {
+      responseCase_ = 0;
+      response_ = null;
+    }
+  }
+
+  public static final int SIGNATURE_SUITE_INFO_FIELD_NUMBER = 1012;
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   */
+  @java.lang.Override
+  public boolean hasSignatureSuiteInfo() {
+    return responseCase_ == 1012;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseSignatureSuiteInfoResponse getSignatureSuiteInfo() {
+    if (responseCase_ == 1012) {
+       return (me.really.jose.v1.JoseSignatureSuiteInfoResponse) response_;
+    }
+    return me.really.jose.v1.JoseSignatureSuiteInfoResponse.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   */
+  private void setSignatureSuiteInfo(me.really.jose.v1.JoseSignatureSuiteInfoResponse value) {
+    java.util.Objects.requireNonNull(value);
+    response_ = value;
+    responseCase_ = 1012;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   */
+  private void mergeSignatureSuiteInfo(me.really.jose.v1.JoseSignatureSuiteInfoResponse value) {
+    java.util.Objects.requireNonNull(value);
+    if (responseCase_ == 1012 &&
+        response_ != me.really.jose.v1.JoseSignatureSuiteInfoResponse.getDefaultInstance()) {
+      response_ = me.really.jose.v1.JoseSignatureSuiteInfoResponse.newBuilder((me.really.jose.v1.JoseSignatureSuiteInfoResponse) response_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      response_ = value;
+    }
+    responseCase_ = 1012;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   */
+  private void clearSignatureSuiteInfo() {
+    if (responseCase_ == 1012) {
+      responseCase_ = 0;
+      response_ = null;
+    }
+  }
+
+  public static final int JWT_SIGN_WITH_PROVIDER_FIELD_NUMBER = 2010;
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwtSignWithProvider() {
+    return responseCase_ == 2010;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwtSignWithProviderResponse getJwtSignWithProvider() {
+    if (responseCase_ == 2010) {
+       return (me.really.jose.v1.JoseJwtSignWithProviderResponse) response_;
+    }
+    return me.really.jose.v1.JoseJwtSignWithProviderResponse.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   */
+  private void setJwtSignWithProvider(me.really.jose.v1.JoseJwtSignWithProviderResponse value) {
+    java.util.Objects.requireNonNull(value);
+    response_ = value;
+    responseCase_ = 2010;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   */
+  private void mergeJwtSignWithProvider(me.really.jose.v1.JoseJwtSignWithProviderResponse value) {
+    java.util.Objects.requireNonNull(value);
+    if (responseCase_ == 2010 &&
+        response_ != me.really.jose.v1.JoseJwtSignWithProviderResponse.getDefaultInstance()) {
+      response_ = me.really.jose.v1.JoseJwtSignWithProviderResponse.newBuilder((me.really.jose.v1.JoseJwtSignWithProviderResponse) response_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      response_ = value;
+    }
+    responseCase_ = 2010;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   */
+  private void clearJwtSignWithProvider() {
+    if (responseCase_ == 2010) {
+      responseCase_ = 0;
+      response_ = null;
+    }
+  }
+
+  public static final int JWT_CLAIMS_PARSE_FIELD_NUMBER = 2011;
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwtClaimsParse() {
+    return responseCase_ == 2011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwtClaimsParseResponse getJwtClaimsParse() {
+    if (responseCase_ == 2011) {
+       return (me.really.jose.v1.JoseJwtClaimsParseResponse) response_;
+    }
+    return me.really.jose.v1.JoseJwtClaimsParseResponse.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   */
+  private void setJwtClaimsParse(me.really.jose.v1.JoseJwtClaimsParseResponse value) {
+    java.util.Objects.requireNonNull(value);
+    response_ = value;
+    responseCase_ = 2011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   */
+  private void mergeJwtClaimsParse(me.really.jose.v1.JoseJwtClaimsParseResponse value) {
+    java.util.Objects.requireNonNull(value);
+    if (responseCase_ == 2011 &&
+        response_ != me.really.jose.v1.JoseJwtClaimsParseResponse.getDefaultInstance()) {
+      response_ = me.really.jose.v1.JoseJwtClaimsParseResponse.newBuilder((me.really.jose.v1.JoseJwtClaimsParseResponse) response_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      response_ = value;
+    }
+    responseCase_ = 2011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   */
+  private void clearJwtClaimsParse() {
+    if (responseCase_ == 2011) {
+      responseCase_ = 0;
+      response_ = null;
+    }
+  }
+
+  public static final int JWE_DERIVE_KEY_FIELD_NUMBER = 3010;
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJweDeriveKey() {
+    return responseCase_ == 3010;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJweDeriveKeyResponse getJweDeriveKey() {
+    if (responseCase_ == 3010) {
+       return (me.really.jose.v1.JoseJweDeriveKeyResponse) response_;
+    }
+    return me.really.jose.v1.JoseJweDeriveKeyResponse.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   */
+  private void setJweDeriveKey(me.really.jose.v1.JoseJweDeriveKeyResponse value) {
+    java.util.Objects.requireNonNull(value);
+    response_ = value;
+    responseCase_ = 3010;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   */
+  private void mergeJweDeriveKey(me.really.jose.v1.JoseJweDeriveKeyResponse value) {
+    java.util.Objects.requireNonNull(value);
+    if (responseCase_ == 3010 &&
+        response_ != me.really.jose.v1.JoseJweDeriveKeyResponse.getDefaultInstance()) {
+      response_ = me.really.jose.v1.JoseJweDeriveKeyResponse.newBuilder((me.really.jose.v1.JoseJweDeriveKeyResponse) response_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      response_ = value;
+    }
+    responseCase_ = 3010;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   */
+  private void clearJweDeriveKey() {
+    if (responseCase_ == 3010) {
+      responseCase_ = 0;
+      response_ = null;
+    }
+  }
+
+  public static final int JWE_ENCRYPT_WITH_PROVIDER_FIELD_NUMBER = 3011;
+  /**
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJweEncryptWithProvider() {
+    return responseCase_ == 3011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJweEncryptWithProviderResponse getJweEncryptWithProvider() {
+    if (responseCase_ == 3011) {
+       return (me.really.jose.v1.JoseJweEncryptWithProviderResponse) response_;
+    }
+    return me.really.jose.v1.JoseJweEncryptWithProviderResponse.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   */
+  private void setJweEncryptWithProvider(me.really.jose.v1.JoseJweEncryptWithProviderResponse value) {
+    java.util.Objects.requireNonNull(value);
+    response_ = value;
+    responseCase_ = 3011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   */
+  private void mergeJweEncryptWithProvider(me.really.jose.v1.JoseJweEncryptWithProviderResponse value) {
+    java.util.Objects.requireNonNull(value);
+    if (responseCase_ == 3011 &&
+        response_ != me.really.jose.v1.JoseJweEncryptWithProviderResponse.getDefaultInstance()) {
+      response_ = me.really.jose.v1.JoseJweEncryptWithProviderResponse.newBuilder((me.really.jose.v1.JoseJweEncryptWithProviderResponse) response_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      response_ = value;
+    }
+    responseCase_ = 3011;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   */
+  private void clearJweEncryptWithProvider() {
+    if (responseCase_ == 3011) {
+      responseCase_ = 0;
+      response_ = null;
+    }
+  }
+
+  public static final int JWE_DECRYPT_WITH_PROVIDER_FIELD_NUMBER = 3012;
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJweDecryptWithProvider() {
+    return responseCase_ == 3012;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJweDecryptWithProviderResponse getJweDecryptWithProvider() {
+    if (responseCase_ == 3012) {
+       return (me.really.jose.v1.JoseJweDecryptWithProviderResponse) response_;
+    }
+    return me.really.jose.v1.JoseJweDecryptWithProviderResponse.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   */
+  private void setJweDecryptWithProvider(me.really.jose.v1.JoseJweDecryptWithProviderResponse value) {
+    java.util.Objects.requireNonNull(value);
+    response_ = value;
+    responseCase_ = 3012;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   */
+  private void mergeJweDecryptWithProvider(me.really.jose.v1.JoseJweDecryptWithProviderResponse value) {
+    java.util.Objects.requireNonNull(value);
+    if (responseCase_ == 3012 &&
+        response_ != me.really.jose.v1.JoseJweDecryptWithProviderResponse.getDefaultInstance()) {
+      response_ = me.really.jose.v1.JoseJweDecryptWithProviderResponse.newBuilder((me.really.jose.v1.JoseJweDecryptWithProviderResponse) response_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      response_ = value;
+    }
+    responseCase_ = 3012;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   */
+  private void clearJweDecryptWithProvider() {
+    if (responseCase_ == 3012) {
+      responseCase_ = 0;
+      response_ = null;
+    }
+  }
+
+  public static final int CONTRACT_INFO_FIELD_NUMBER = 7000;
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+   */
+  @java.lang.Override
+  public boolean hasContractInfo() {
+    return responseCase_ == 7000;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseContractInfoResponse getContractInfo() {
+    if (responseCase_ == 7000) {
+       return (me.really.jose.v1.JoseContractInfoResponse) response_;
+    }
+    return me.really.jose.v1.JoseContractInfoResponse.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+   */
+  private void setContractInfo(me.really.jose.v1.JoseContractInfoResponse value) {
+    java.util.Objects.requireNonNull(value);
+    response_ = value;
+    responseCase_ = 7000;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+   */
+  private void mergeContractInfo(me.really.jose.v1.JoseContractInfoResponse value) {
+    java.util.Objects.requireNonNull(value);
+    if (responseCase_ == 7000 &&
+        response_ != me.really.jose.v1.JoseContractInfoResponse.getDefaultInstance()) {
+      response_ = me.really.jose.v1.JoseContractInfoResponse.newBuilder((me.really.jose.v1.JoseContractInfoResponse) response_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      response_ = value;
+    }
+    responseCase_ = 7000;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+   */
+  private void clearContractInfo() {
+    if (responseCase_ == 7000) {
+      responseCase_ = 0;
+      response_ = null;
+    }
+  }
+
   public static me.really.jose.v1.JoseOperationResponse parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -736,11 +1243,12 @@ public  final class JoseOperationResponse extends
 
   /**
    * <pre>
-   * JoseOperationResponse is the canonical 0.3.0 executable response. The low
+   * JoseOperationResponse is the canonical versioned executable response. The low
    * field-number range remains reserved so future revisions cannot reuse or
    * ambiguously reinterpret it. Boundary errors are limited to failures before
    * a trusted operation variant can be selected; operation failures remain
    * nested under the selected operation.
+   * Rust adapter: wire/operation_response.rs#decode_operation_response_v1
    * </pre>
    *
    * Protobuf type {@code reallyme.jose.v1.JoseOperationResponse}
@@ -1319,6 +1827,462 @@ public  final class JoseOperationResponse extends
       return this;
     }
 
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    @java.lang.Override
+    public boolean hasSignatureSign() {
+      return instance.hasSignatureSign();
+    }
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseSignatureSignResponse getSignatureSign() {
+      return instance.getSignatureSign();
+    }
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    public Builder setSignatureSign(me.really.jose.v1.JoseSignatureSignResponse value) {
+      copyOnWrite();
+      instance.setSignatureSign(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    public Builder setSignatureSign(
+        me.really.jose.v1.JoseSignatureSignResponse.Builder builderForValue) {
+      copyOnWrite();
+      instance.setSignatureSign(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    public Builder mergeSignatureSign(me.really.jose.v1.JoseSignatureSignResponse value) {
+      copyOnWrite();
+      instance.mergeSignatureSign(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Extended native contracts preserve borrowed and provider-backed capabilities.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+     */
+    public Builder clearSignatureSign() {
+      copyOnWrite();
+      instance.clearSignatureSign();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    @java.lang.Override
+    public boolean hasSignatureVerify() {
+      return instance.hasSignatureVerify();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseSignatureVerifyResponse getSignatureVerify() {
+      return instance.getSignatureVerify();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    public Builder setSignatureVerify(me.really.jose.v1.JoseSignatureVerifyResponse value) {
+      copyOnWrite();
+      instance.setSignatureVerify(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    public Builder setSignatureVerify(
+        me.really.jose.v1.JoseSignatureVerifyResponse.Builder builderForValue) {
+      copyOnWrite();
+      instance.setSignatureVerify(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    public Builder mergeSignatureVerify(me.really.jose.v1.JoseSignatureVerifyResponse value) {
+      copyOnWrite();
+      instance.mergeSignatureVerify(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+     */
+    public Builder clearSignatureVerify() {
+      copyOnWrite();
+      instance.clearSignatureVerify();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    @java.lang.Override
+    public boolean hasSignatureSuiteInfo() {
+      return instance.hasSignatureSuiteInfo();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseSignatureSuiteInfoResponse getSignatureSuiteInfo() {
+      return instance.getSignatureSuiteInfo();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    public Builder setSignatureSuiteInfo(me.really.jose.v1.JoseSignatureSuiteInfoResponse value) {
+      copyOnWrite();
+      instance.setSignatureSuiteInfo(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    public Builder setSignatureSuiteInfo(
+        me.really.jose.v1.JoseSignatureSuiteInfoResponse.Builder builderForValue) {
+      copyOnWrite();
+      instance.setSignatureSuiteInfo(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    public Builder mergeSignatureSuiteInfo(me.really.jose.v1.JoseSignatureSuiteInfoResponse value) {
+      copyOnWrite();
+      instance.mergeSignatureSuiteInfo(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+     */
+    public Builder clearSignatureSuiteInfo() {
+      copyOnWrite();
+      instance.clearSignatureSuiteInfo();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwtSignWithProvider() {
+      return instance.hasJwtSignWithProvider();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwtSignWithProviderResponse getJwtSignWithProvider() {
+      return instance.getJwtSignWithProvider();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    public Builder setJwtSignWithProvider(me.really.jose.v1.JoseJwtSignWithProviderResponse value) {
+      copyOnWrite();
+      instance.setJwtSignWithProvider(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    public Builder setJwtSignWithProvider(
+        me.really.jose.v1.JoseJwtSignWithProviderResponse.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwtSignWithProvider(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    public Builder mergeJwtSignWithProvider(me.really.jose.v1.JoseJwtSignWithProviderResponse value) {
+      copyOnWrite();
+      instance.mergeJwtSignWithProvider(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+     */
+    public Builder clearJwtSignWithProvider() {
+      copyOnWrite();
+      instance.clearJwtSignWithProvider();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwtClaimsParse() {
+      return instance.hasJwtClaimsParse();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwtClaimsParseResponse getJwtClaimsParse() {
+      return instance.getJwtClaimsParse();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    public Builder setJwtClaimsParse(me.really.jose.v1.JoseJwtClaimsParseResponse value) {
+      copyOnWrite();
+      instance.setJwtClaimsParse(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    public Builder setJwtClaimsParse(
+        me.really.jose.v1.JoseJwtClaimsParseResponse.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwtClaimsParse(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    public Builder mergeJwtClaimsParse(me.really.jose.v1.JoseJwtClaimsParseResponse value) {
+      copyOnWrite();
+      instance.mergeJwtClaimsParse(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+     */
+    public Builder clearJwtClaimsParse() {
+      copyOnWrite();
+      instance.clearJwtClaimsParse();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJweDeriveKey() {
+      return instance.hasJweDeriveKey();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJweDeriveKeyResponse getJweDeriveKey() {
+      return instance.getJweDeriveKey();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    public Builder setJweDeriveKey(me.really.jose.v1.JoseJweDeriveKeyResponse value) {
+      copyOnWrite();
+      instance.setJweDeriveKey(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    public Builder setJweDeriveKey(
+        me.really.jose.v1.JoseJweDeriveKeyResponse.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJweDeriveKey(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    public Builder mergeJweDeriveKey(me.really.jose.v1.JoseJweDeriveKeyResponse value) {
+      copyOnWrite();
+      instance.mergeJweDeriveKey(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+     */
+    public Builder clearJweDeriveKey() {
+      copyOnWrite();
+      instance.clearJweDeriveKey();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJweEncryptWithProvider() {
+      return instance.hasJweEncryptWithProvider();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJweEncryptWithProviderResponse getJweEncryptWithProvider() {
+      return instance.getJweEncryptWithProvider();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    public Builder setJweEncryptWithProvider(me.really.jose.v1.JoseJweEncryptWithProviderResponse value) {
+      copyOnWrite();
+      instance.setJweEncryptWithProvider(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    public Builder setJweEncryptWithProvider(
+        me.really.jose.v1.JoseJweEncryptWithProviderResponse.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJweEncryptWithProvider(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    public Builder mergeJweEncryptWithProvider(me.really.jose.v1.JoseJweEncryptWithProviderResponse value) {
+      copyOnWrite();
+      instance.mergeJweEncryptWithProvider(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+     */
+    public Builder clearJweEncryptWithProvider() {
+      copyOnWrite();
+      instance.clearJweEncryptWithProvider();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJweDecryptWithProvider() {
+      return instance.hasJweDecryptWithProvider();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJweDecryptWithProviderResponse getJweDecryptWithProvider() {
+      return instance.getJweDecryptWithProvider();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    public Builder setJweDecryptWithProvider(me.really.jose.v1.JoseJweDecryptWithProviderResponse value) {
+      copyOnWrite();
+      instance.setJweDecryptWithProvider(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    public Builder setJweDecryptWithProvider(
+        me.really.jose.v1.JoseJweDecryptWithProviderResponse.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJweDecryptWithProvider(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    public Builder mergeJweDecryptWithProvider(me.really.jose.v1.JoseJweDecryptWithProviderResponse value) {
+      copyOnWrite();
+      instance.mergeJweDecryptWithProvider(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+     */
+    public Builder clearJweDecryptWithProvider() {
+      copyOnWrite();
+      instance.clearJweDecryptWithProvider();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    @java.lang.Override
+    public boolean hasContractInfo() {
+      return instance.hasContractInfo();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseContractInfoResponse getContractInfo() {
+      return instance.getContractInfo();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    public Builder setContractInfo(me.really.jose.v1.JoseContractInfoResponse value) {
+      copyOnWrite();
+      instance.setContractInfo(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    public Builder setContractInfo(
+        me.really.jose.v1.JoseContractInfoResponse.Builder builderForValue) {
+      copyOnWrite();
+      instance.setContractInfo(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    public Builder mergeContractInfo(me.really.jose.v1.JoseContractInfoResponse value) {
+      copyOnWrite();
+      instance.mergeContractInfo(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+     */
+    public Builder clearContractInfo() {
+      copyOnWrite();
+      instance.clearContractInfo();
+      return this;
+    }
+
     // @@protoc_insertion_point(builder_scope:reallyme.jose.v1.JoseOperationResponse)
   }
   @java.lang.Override
@@ -1341,17 +2305,27 @@ public  final class JoseOperationResponse extends
             me.really.jose.v1.JoseError.class,
             me.really.jose.v1.JoseJwsSignResponse.class,
             me.really.jose.v1.JoseJwsVerifyResponse.class,
+            me.really.jose.v1.JoseSignatureSignResponse.class,
+            me.really.jose.v1.JoseSignatureVerifyResponse.class,
+            me.really.jose.v1.JoseSignatureSuiteInfoResponse.class,
             me.really.jose.v1.JoseJwtEncodeUnsignedResponse.class,
             me.really.jose.v1.JoseJwtDecodeUnsignedResponse.class,
             me.really.jose.v1.JoseJwtSignResponse.class,
             me.really.jose.v1.JoseJwtVerifyResponse.class,
+            me.really.jose.v1.JoseJwtSignWithProviderResponse.class,
+            me.really.jose.v1.JoseJwtClaimsParseResponse.class,
             me.really.jose.v1.JoseJweEncryptResponse.class,
             me.really.jose.v1.JoseJweDecryptResponse.class,
+            me.really.jose.v1.JoseJweDeriveKeyResponse.class,
+            me.really.jose.v1.JoseJweEncryptWithProviderResponse.class,
+            me.really.jose.v1.JoseJweDecryptWithProviderResponse.class,
+            me.really.jose.v1.JoseContractInfoResponse.class,
           };
           java.lang.String info =
-              "\u0000\n\u0001\u0000\n\u0bb9\n\u0000\u0000\u0000\n\f\u0384<\u0000\u03e8<\u0000\u03e9" +
-              "<\u0000\u07d0<\u0000\u07d1<\u0000\u07d2<\u0000\u07d3<\u0000\u0bb8<\u0000\u0bb9<\u0000" +
-              "";
+              "\u0000\u0013\u0001\u0000\n\u1b58\u0013\u0000\u0000\u0000\n\f\u0384<\u0000\u03e8<" +
+              "\u0000\u03e9<\u0000\u03f2<\u0000\u03f3<\u0000\u03f4<\u0000\u07d0<\u0000\u07d1<\u0000" +
+              "\u07d2<\u0000\u07d3<\u0000\u07da<\u0000\u07db<\u0000\u0bb8<\u0000\u0bb9<\u0000\u0bc2" +
+              "<\u0000\u0bc3<\u0000\u0bc4<\u0000\u1b58<\u0000";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

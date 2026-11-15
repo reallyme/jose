@@ -1,0 +1,101 @@
+{
+  "description": "V2 operation parity across native Rust, Swift, Kotlin and WebAssembly. Keys and claims are synthetic fixtures.",
+  "cases": [
+    {
+      "name": "raw-p256-sign",
+      "request_json": "{\"signatureSign\":{\"algorithm\":200,\"privateKey\":\"FxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxc=\",\"signingInput\":\"ZXhhY3Qgc2lnbmF0dXJlIGlucHV0\"}}",
+      "request_hex": "923f3c08c801122017171717171717171717171717171717171717171717171717171717171717171a156578616374207369676e617475726520696e707574",
+      "response_hex": "5002923f440a420a407b0c78ddd528b00f69b8b5e57dcf2971f2b41d40c92f419a14b5bbc0d99cade0198ff3438128fe99ac0d684d3ab9f88c70b0d5f0fe1f5dbf0ea7be2d39621dc2"
+    },
+    {
+      "name": "raw-p256-verify",
+      "request_json": "{\"signatureVerify\":{\"algorithm\":200,\"publicKey\":\"BJvs4qCOLNBMu5ulECpRhw9UseRQwv1Bfag+/hZwehkGzaFLXu3a3ljO91J/8Mm5jn/m/dsWSWEChxz2LOppTsQ=\",\"signingInput\":\"ZXhhY3Qgc2lnbmF0dXJlIGlucHV0\",\"signature\":\"ewx43dUosA9puLXlfc8pcfK0HUDJL0GaFLW7wNmcreAZj/NDgSj+mawNaE06ufiMcLDV8P4fXb8Op74tOWIdwg==\"}}",
+      "request_hex": "9a3f9f0108c80112156578616374207369676e617475726520696e7075741a41049bece2a08e2cd04cbb9ba5102a51870f54b1e450c2fd417da83efe16707a1906cda14b5eeddade58cef7527ff0c9b98e7fe6fddb16496102871cf62cea694ec422407b0c78ddd528b00f69b8b5e57dcf2971f2b41d40c92f419a14b5bbc0d99cade0198ff3438128fe99ac0d684d3ab9f88c70b0d5f0fe1f5dbf0ea7be2d39621dc2",
+      "response_hex": "50029a3f020a00"
+    },
+    {
+      "name": "raw-p256-tampered",
+      "request_json": "{\"signatureVerify\":{\"algorithm\":200,\"publicKey\":\"BJvs4qCOLNBMu5ulECpRhw9UseRQwv1Bfag+/hZwehkGzaFLXu3a3ljO91J/8Mm5jn/m/dsWSWEChxz2LOppTsQ=\",\"signingInput\":\"ZXhhY3Qgc2lnbmF0dXJlIGlucHV0\",\"signature\":\"egx43dUosA9puLXlfc8pcfK0HUDJL0GaFLW7wNmcreAZj/NDgSj+mawNaE06ufiMcLDV8P4fXb8Op74tOWIdwg==\"}}",
+      "request_hex": "9a3f9f0108c80112156578616374207369676e617475726520696e7075741a41049bece2a08e2cd04cbb9ba5102a51870f54b1e450c2fd417da83efe16707a1906cda14b5eeddade58cef7527ff0c9b98e7fe6fddb16496102871cf62cea694ec422407a0c78ddd528b00f69b8b5e57dcf2971f2b41d40c92f419a14b5bbc0d99cade0198ff3438128fe99ac0d684d3ab9f88c70b0d5f0fe1f5dbf0ea7be2d39621dc2",
+      "response_hex": "50029a3f0712050a03088e01"
+    },
+    {
+      "name": "raw-p256-invalid-key",
+      "request_json": "{\"signatureSign\":{\"algorithm\":200,\"privateKey\":\"FxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFxcXFw==\",\"signingInput\":\"ZXhhY3Qgc2lnbmF0dXJlIGlucHV0\"}}",
+      "request_hex": "923f3b08c801121f171717171717171717171717171717171717171717171717171717171717171a156578616374207369676e617475726520696e707574",
+      "response_hex": "5002923f0712050a0308a001"
+    },
+    {
+      "name": "suite-info",
+      "request_json": "{\"signatureSuiteInfo\":{\"algorithm\":200}}",
+      "request_hex": "a23f0308c801",
+      "response_hex": "5002a23f0e0a0c08c80110c801186420402801"
+    },
+    {
+      "name": "suite-info-es256k-no-raw-provider",
+      "request_json": "{\"signatureSuiteInfo\":{\"algorithm\":230}}",
+      "request_hex": "a23f0308e601",
+      "response_hex": "5002a23f0c0a0a08e60110e60118642040"
+    },
+    {
+      "name": "raw-profile-rejects-es256k",
+      "request_json": "{\"signatureSign\":{\"algorithm\":230}}",
+      "request_hex": "923f0308e601",
+      "response_hex": "5002923f071205120308a106"
+    },
+    {
+      "name": "jws-profile-rejects-es256k",
+      "request_json": "{\"jwsVerify\":{\"algorithm\":230}}",
+      "request_hex": "ca3e0308e601",
+      "response_hex": "5002ca3e071205120308a106"
+    },
+    {
+      "name": "claims-parse",
+      "request_json": "{\"jwtClaimsParse\":{\"claimsJson\":\"eyJpc3MiOiJmaXh0dXJlIiwiZXhwIjoxMDAwLCJjdXN0b20iOmZhbHNlfQ==\"}}",
+      "request_hex": "da7d2d0a2b7b22697373223a2266697874757265222c22657870223a313030302c22637573746f6d223a66616c73657d",
+      "response_hex": "5002da7d3d0a3b0a0c0a076669787475726520d00f122b7b22697373223a2266697874757265222c22657870223a313030302c22637573746f6d223a66616c73657d"
+    },
+    {
+      "name": "claims-reject-duplicates",
+      "request_json": "{\"jwtClaimsParse\":{\"claimsJson\":\"eyJpc3MiOiJhIiwiaXNzIjoiYiJ9\"}}",
+      "request_hex": "da7d170a157b22697373223a2261222c22697373223a2262227d",
+      "response_hex": "5002da7d0712050a0308e802"
+    },
+    {
+      "name": "derive-key",
+      "request_json": "{\"jweDeriveKey\":{\"sharedSecret\":\"BQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQU=\",\"header\":{\"algorithm\":100,\"contentEncryptionAlgorithm\":120}}}",
+      "request_hex": "92bc01280a200505050505050505050505050505050505050505050505050505050505050505120408641078",
+      "response_hex": "500292bc01240a220a20e256121aa134a8c18675f017b6120b06433f348dd5dab8f60b49e08b34a43332"
+    },
+    {
+      "name": "derive-reject-empty",
+      "request_json": "{\"jweDeriveKey\":{\"sharedSecret\":\"\",\"header\":{\"algorithm\":100,\"contentEncryptionAlgorithm\":120}}}",
+      "request_hex": "92bc0106120408641078",
+      "response_hex": "500292bc010712050a0308f701"
+    },
+    {
+      "name": "unavailable-signer",
+      "request_json": "{\"jwtSignWithProvider\":{\"signerHandle\":\"1\",\"claimsJson\":\"e30=\",\"jwkJson\":\"eyJhbGciOiJFZERTQSIsImNydiI6IkVkMjU1MTkiLCJrdHkiOiJPS1AiLCJ4IjoiX1Jja09GcWd4MXRrLTNqTllDLWgyWkg5Nl9kckU4V08xd0xxeURYcDloZyJ9\"}}",
+      "request_hex": "d27d650a027b7d125d7b22616c67223a224564445341222c22637276223a2245643235353139222c226b7479223a224f4b50222c2278223a225f52636b4f4671677831746b2d336a4e59432d68325a4839365f64724538574f31774c7179445870396867227d1801",
+      "response_hex": "5002d27d071205120308a006"
+    },
+    {
+      "name": "unavailable-encryptor",
+      "request_json": "{\"jweEncryptWithProvider\":{\"parameters\":{\"keyManagementAlgorithm\":100,\"contentEncryptionAlgorithm\":100},\"providerHandle\":\"1\"}}",
+      "request_hex": "9abc01080a04086410641001",
+      "response_hex": "50029abc01071205120308a006"
+    },
+    {
+      "name": "unavailable-resolver",
+      "request_json": "{\"jweDecryptWithProvider\":{\"compact\":\"eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4R0NNIn0..CQkJCQkJCQkJCQkJ.2YwcIQaho8BvD3o66z_GFUpAH1z4XWBOfG-i6vrae5BgaWkVkNU.N1Jr8LXaLHbGJRXp1nl5Nw\",\"policy\":{\"allowedKeyManagementAlgorithms\":[100],\"allowedContentEncryptionAlgorithms\":[100]},\"providerHandle\":\"1\"}}",
+      "request_hex": "a2bc0191010a840165794a68624763694f694a6b615849694c434a6c626d4d694f694a424d54493452304e4e496e302e2e43516b4a43516b4a43516b4a43516b4a2e32597763495161686f38427644336f36367a5f474655704148317a345857424f66472d69367672616535426761576b566b4e552e4e314a72384c58614c4862474a525870316e6c354e7712060a01641201641801",
+      "response_hex": "5002a2bc01071205120308a006"
+    },
+    {
+      "name": "contract-info",
+      "request_json": "{\"contractInfo\":{}}",
+      "request_hex": "c2b50300",
+      "response_hex": "5002c2b503590a570a0b8080408080602040ac023c1209646e78c801d201dc011a0564c801ac022222e807e907f207f307f407d00fd10fd20fd30fda0fdb0fb817b917c217c317c417d8362a0d64c801ac029003f403d804bc0530013a0120"
+    }
+  ]
+}

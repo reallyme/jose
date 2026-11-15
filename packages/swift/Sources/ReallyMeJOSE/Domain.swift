@@ -2,28 +2,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-public enum ReallyMeJOSESignatureAlgorithm: Sendable, Equatable {
-  case edDSA
-  case es256
-}
-
-public enum ReallyMeJOSEJWEKeyManagementAlgorithm: Sendable, Equatable {
-  case direct
-  case ecdhESP256
-  case ecdhESP384
-  case ecdhESP521
-}
-
-public enum ReallyMeJOSEJWEContentEncryptionAlgorithm: Sendable, Equatable {
-  case a128GCM
-  case a192GCM
-  case a256GCM
-}
-
-public enum ReallyMeJOSEJWECompressionAlgorithm: Sendable, Equatable {
-  case deflate
-}
-
 public struct ReallyMeJOSEJWTHeaderPolicy: Sendable, Equatable {
   public let allowMissingTyp: Bool
   public let allowEmbeddedKeyHeader: Bool
@@ -40,7 +18,7 @@ public struct ReallyMeJOSEJWTHeaderPolicy: Sendable, Equatable {
   }
 }
 
-public struct ReallyMeJOSEJWTTemporalPolicy: Sendable, Equatable {
+public struct ReallyMeJOSEJWTClaimsPolicy: Sendable, Equatable {
   public let requireExpiration: Bool
   public let requireNotBefore: Bool
   public let requireIssuedAt: Bool
@@ -108,10 +86,18 @@ extension ReallyMeJOSEJWTHeaderPolicy: CustomReflectable {
   public var customMirror: Mirror { Mirror(self, children: [("value", "<redacted>")]) }
 }
 
-extension ReallyMeJOSEJWTTemporalPolicy: CustomReflectable {
+extension ReallyMeJOSEJWTClaimsPolicy: CustomReflectable {
   public var customMirror: Mirror { Mirror(self, children: [("value", "<redacted>")]) }
 }
 
 extension ReallyMeJOSEJWEHeaderPolicy: CustomReflectable {
+  public var customMirror: Mirror { Mirror(self, children: [("value", "<redacted>")]) }
+}
+
+/// An absent options object selects the standard JWT type. Within an options
+/// object, a nil type explicitly omits the protected-header parameter.
+public struct ReallyMeJOSEJWTHeaderOptions: Sendable, Equatable, CustomReflectable {
+  public let type: String?
+  public init(type: String? = nil) { self.type = type }
   public var customMirror: Mirror { Mirror(self, children: [("value", "<redacted>")]) }
 }

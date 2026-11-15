@@ -5,14 +5,14 @@
 //! Protobuf boundary helpers for JOSE operations.
 //!
 //! The native Rust APIs in `jws`, `jwt`, and `jwe` stay ergonomic and use
-//! Rust-native inputs. This module provides the parallel wire layer for RPC,
+//! Rust-native inputs. This module adapts the authoritative schema contract for
 //! FFI, SDK, and conformance boundaries: protobuf requests in, protobuf result
 //! bytes or structured `JoseError` protobuf bytes out. It intentionally does
 //! not define or run an RPC service.
 
 mod operation_response;
 
-use buffa::{DecodeOptions, EnumValue, Enumeration, Message};
+use buffa::{DecodeOptions, EnumValue, Message};
 use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
     __buffa::oneof::jose_error::Error as JoseErrorBranchProto, JoseBackendError, JoseError,
     JoseErrorReason, JosePrimitiveError, JoseProviderError,
@@ -25,32 +25,24 @@ use crate::reject_duplicate_json_members::reject_duplicate_json_members;
 
 pub use operation_response::{
     decode_operation_response_v1, execute_operation_json_v1, execute_operation_request,
-    execute_operation_v1, JoseOperationKind,
+    execute_operation_request_with_providers, execute_operation_v1, JoseOperationKind,
 };
 
-const MAX_JOSE_WIRE_BYTES: usize = 1024 * 1024;
-const JOSE_PROTO_RECURSION_LIMIT: u32 = 64;
-const JOSE_PROTO_UNKNOWN_FIELD_LIMIT: usize = 0;
+const JOSE_PROTO_RECURSION_LIMIT: u32 =
+    reallyme_jose_proto::generated::contract_values::PROTO_RECURSION_DEPTH;
 /// Maximum protobuf framing overhead above one bounded operation result.
-pub const MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES: usize = 32;
+pub const MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES: usize =
+    reallyme_jose_proto::generated::contract_values::RESPONSE_OVERHEAD_BYTES;
 
 /// Maximum accepted protobuf message size at the JOSE wire boundary.
-pub const MAX_JOSE_PROTO_MESSAGE_BYTES: usize = MAX_JOSE_WIRE_BYTES;
+pub const MAX_JOSE_PROTO_MESSAGE_BYTES: usize =
+    reallyme_jose_proto::generated::contract_values::COMPACT_BYTES;
 
 /// Maximum accepted ProtoJSON message size at the JOSE wire boundary.
-pub const MAX_JOSE_PROTO_JSON_BYTES: usize = 1_572_864;
+pub const MAX_JOSE_PROTO_JSON_BYTES: usize =
+    reallyme_jose_proto::generated::contract_values::PROTO_JSON_BYTES;
 
-/// Typed wire-boundary error branch.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-#[non_exhaustive]
-pub enum JoseWireErrorBranch {
-    /// Caller-owned input, JOSE primitive, or policy failure.
-    Primitive,
-    /// Provider selection or availability failure.
-    Provider,
-    /// Output serialization, cryptographic backend, or internal failure.
-    Backend,
-}
+pub use crate::generated_contract::JoseWireErrorBranch;
 
 /// Typed wire-boundary error preserving both branch and exact reason.
 #[derive(Debug, Clone, Copy, Eq, Error, PartialEq)]
@@ -67,6 +59,14 @@ pub enum JoseWireErrorConstructionError {
     /// The reason belongs to a different branch or is unspecified.
     #[error("JOSE error reason does not belong to the selected branch")]
     BranchReasonMismatch,
+}
+
+impl JoseWireErrorConstructionError {
+    /// Returns the schema reason for an invalid boundary-error construction.
+    #[must_use]
+    pub const fn reason(&self) -> JoseErrorReason {
+        crate::map_failure::construction(self)
+    }
 }
 
 impl JoseWireError {
@@ -155,7 +155,7 @@ fn decode_protobuf_with_limit<M: Message>(bytes: &[u8], max_bytes: usize) -> Jos
     DecodeOptions::new()
         .with_recursion_limit(JOSE_PROTO_RECURSION_LIMIT)
         .with_max_message_size(max_bytes)
-        .with_unknown_field_limit(JOSE_PROTO_UNKNOWN_FIELD_LIMIT)
+        .reject_unknown_fields()
         .decode_from_slice(bytes)
         .map_err(|_| {
             JoseWireError::primitive_internal(
@@ -170,8 +170,9 @@ fn decode_protobuf_with_limit<M: Message>(bytes: &[u8], max_bytes: usize) -> Jos
 ///
 /// Returns [`JoseWireError`] with a backend branch if JSON serialization fails.
 pub fn encode_json<M: serde::Serialize>(message: &M) -> JoseWireResult<Zeroizing<Vec<u8>>> {
-    serde_json::to_vec(message)
-        .map(Zeroizing::new)
+    let mut output = reallyme_jose_proto::SecretBytes::default();
+    serde_json::to_writer(&mut output, message)
+        .map(|()| output.into_zeroizing())
         .map_err(|_| {
             JoseWireError::backend_internal(
                 JoseErrorReason::JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION,
@@ -214,26 +215,18 @@ pub fn jose_error(error: JoseWireError) -> JoseError {
     let reason = EnumValue::from(error.reason());
     let branch = match error.branch() {
         JoseWireErrorBranch::Primitive => {
-            JoseErrorBranchProto::Primitive(Box::new(JosePrimitiveError {
-                reason,
-                __buffa_unknown_fields: Default::default(),
-            }))
+            JoseErrorBranchProto::Primitive(Box::new(JosePrimitiveError { reason }))
         }
         JoseWireErrorBranch::Provider => {
-            JoseErrorBranchProto::Provider(Box::new(JoseProviderError {
-                reason,
-                __buffa_unknown_fields: Default::default(),
-            }))
+            JoseErrorBranchProto::Provider(Box::new(JoseProviderError { reason }))
         }
-        JoseWireErrorBranch::Backend => JoseErrorBranchProto::Backend(Box::new(JoseBackendError {
-            reason,
-            __buffa_unknown_fields: Default::default(),
-        })),
+        JoseWireErrorBranch::Backend => {
+            JoseErrorBranchProto::Backend(Box::new(JoseBackendError { reason }))
+        }
     };
 
     JoseError {
         error: Some(branch),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
@@ -270,12 +263,12 @@ pub(super) fn validate_jose_error(error: &JoseError) -> JoseWireResult<()> {
 }
 
 fn reason_is_valid_for_branch(branch: JoseWireErrorBranch, reason: JoseErrorReason) -> bool {
-    match branch {
-        JoseWireErrorBranch::Primitive => {
-            let value = reason.to_i32();
-            (100..=399).contains(&value) || (700..=703).contains(&value)
-        }
-        JoseWireErrorBranch::Provider => (800..=802).contains(&reason.to_i32()),
-        JoseWireErrorBranch::Backend => (900..=902).contains(&reason.to_i32()),
-    }
+    use reallyme_jose_proto::generated::contract_values::error_branch;
+    use reallyme_jose_proto::generated::proto::reallyme::jose::v1::JoseErrorBranch;
+    let expected = match branch {
+        JoseWireErrorBranch::Primitive => JoseErrorBranch::Primitive,
+        JoseWireErrorBranch::Provider => JoseErrorBranch::Provider,
+        JoseWireErrorBranch::Backend => JoseErrorBranch::Backend,
+    };
+    error_branch(reason) == Some(expected)
 }

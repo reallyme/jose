@@ -8,19 +8,15 @@ import path from "node:path";
 
 const MODE_INSPECT = "inspect";
 const MODE_ORDER = "order";
-const MODE_PUBLISH = "publish";
-const MAX_PUBLISH_ATTEMPTS = 12;
-const CRATES_IO_DEFAULT_RATE_LIMIT_RETRY_MS = 60000;
-const CRATES_IO_INDEX_RETRY_BASE_MS = 15000;
 const REQUIRED_PUBLISH_ORDER_EDGES = [["reallyme-jose-proto", "reallyme-jose"]];
 const args = process.argv.slice(2);
 const mode = args[0] ?? MODE_INSPECT;
 const allowDirty = args.includes("--allow-dirty");
 const unknownArgs = args.slice(1).filter((arg) => arg !== "--allow-dirty");
 
-if (![MODE_INSPECT, MODE_ORDER, MODE_PUBLISH].includes(mode) || unknownArgs.length !== 0) {
+if (![MODE_INSPECT, MODE_ORDER].includes(mode) || unknownArgs.length !== 0) {
   console.error(
-    `usage: node scripts/publish_crates_in_order.mjs ${MODE_INSPECT}|${MODE_ORDER}|${MODE_PUBLISH} [--allow-dirty]`,
+    `usage: node scripts/publish_crates_in_order.mjs ${MODE_INSPECT}|${MODE_ORDER} [--allow-dirty]`,
   );
   process.exit(2);
 }
@@ -40,25 +36,6 @@ function run(command, args, options = {}) {
     throw result.error;
   }
   return result;
-}
-
-function sleepMs(delayMs) {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delayMs);
-}
-
-function retryAfterMs(output) {
-  const match = /try again after ([^\n.]+ GMT)/i.exec(output);
-  if (!match) {
-    return null;
-  }
-
-  const retryAt = Date.parse(match[1]);
-  if (!Number.isFinite(retryAt)) {
-    return null;
-  }
-
-  const delayMs = retryAt - Date.now() + 10000;
-  return Math.max(delayMs, 10000);
 }
 
 const metadataResult = run("cargo", ["metadata", "--locked", "--format-version", "1", "--no-deps"], {
@@ -241,6 +218,7 @@ if (mode === MODE_ORDER) {
   process.exit(0);
 }
 
+const verifiedArchiveDirectory = path.join(packageDirectory, "release-inspected");
 const unpackDirectory = path.join(packageDirectory, "release-preflight");
 const inspectionTargetDirectory = path.join(packageDirectory, "release-preflight-target");
 const inspectionEnvironment = {
@@ -271,10 +249,16 @@ if (mode === MODE_INSPECT) {
     process.exit(packageResult.status ?? 1);
   }
 
+  // A later cargo publish --dry-run can rewrite target/package. Keep the
+  // exact archives inspected below in a separate directory for promotion.
+  fs.rmSync(verifiedArchiveDirectory, { force: true, recursive: true });
+  fs.mkdirSync(verifiedArchiveDirectory, { recursive: true });
   fs.rmSync(unpackDirectory, { force: true, recursive: true });
   fs.mkdirSync(unpackDirectory, { recursive: true });
   for (const pkg of ordered) {
-    const archive = path.join(packageDirectory, `${pkg.name}-${pkg.version}.crate`);
+    const filename = `${pkg.name}-${pkg.version}.crate`;
+    const archive = path.join(verifiedArchiveDirectory, filename);
+    fs.copyFileSync(path.join(packageDirectory, filename), archive, fs.constants.COPYFILE_EXCL);
     const extractResult = run("tar", ["-xzf", archive, "-C", unpackDirectory]);
     if (extractResult.status !== 0) {
       process.exit(extractResult.status ?? 1);
@@ -308,7 +292,7 @@ function isEarlierWorkspaceDependency(pkg, depName) {
 }
 
 function inspectPackage(pkg) {
-  const archive = path.join(packageDirectory, `${pkg.name}-${pkg.version}.crate`);
+  const archive = path.join(verifiedArchiveDirectory, `${pkg.name}-${pkg.version}.crate`);
   // Inspect the archive Cargo already produced instead of asking `cargo
   // package --list` to resolve the package again. The latter consults the
   // registry and fails legitimately when an earlier workspace dependency in
@@ -411,62 +395,6 @@ function inspectPackage(pkg) {
   process.exit(dryRunResult.status ?? 1);
 }
 
-function publishPackage(pkg) {
-  const args = ["publish", "-p", pkg.name, "--locked"];
-
-  for (let attempt = 1; attempt <= MAX_PUBLISH_ATTEMPTS; attempt += 1) {
-    const result = run("cargo", args, { capture: true });
-    process.stdout.write(result.stdout);
-    process.stderr.write(result.stderr);
-
-    if (result.status === 0) {
-      return;
-    }
-
-    const combined = `${result.stdout}\n${result.stderr}`;
-    if (combined.includes("already uploaded") || combined.includes("already exists")) {
-      console.error(
-        `${pkg.name} ${pkg.version} already exists; refusing to combine an unverified registry artifact with this release`,
-      );
-      process.exit(result.status ?? 1);
-    }
-
-    const lowerCombined = combined.toLowerCase();
-    const rateLimitDelayMs = retryAfterMs(combined);
-    if (
-      lowerCombined.includes("too many requests") ||
-      lowerCombined.includes("rate-limited") ||
-      lowerCombined.includes("rate limited")
-    ) {
-      if (attempt === MAX_PUBLISH_ATTEMPTS) {
-        console.error(`${pkg.name} publish retry limit reached`);
-        process.exit(result.status ?? 1);
-      }
-      const delayMs = rateLimitDelayMs ?? CRATES_IO_DEFAULT_RATE_LIMIT_RETRY_MS;
-      console.log(
-        `crates.io rate-limited new crate uploads; retrying ${pkg.name} in ${Math.ceil(delayMs / 1000)}s...`,
-      );
-      sleepMs(delayMs);
-      continue;
-    }
-
-    if (!combined.includes("no matching package named") || attempt === MAX_PUBLISH_ATTEMPTS) {
-      process.exit(result.status ?? 1);
-    }
-
-    const delayMs = attempt * CRATES_IO_INDEX_RETRY_BASE_MS;
-    console.log(
-      `crates.io index has not observed a freshly published dependency yet; retrying ${pkg.name} in ${delayMs / 1000}s...`,
-    );
-    sleepMs(delayMs);
-  }
-}
-
 for (const pkg of ordered) {
-  if (mode === MODE_INSPECT) {
-    inspectPackage(pkg);
-    continue;
-  }
-
-  publishPackage(pkg);
+  inspectPackage(pkg);
 }

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use reallyme_crypto::core::CryptoError;
+use reallyme_crypto::core::{CryptoError, CryptoErrorReason};
 use zeroize::Zeroize;
 
 use crate::jwe::{
@@ -20,8 +20,8 @@ use super::ec_keys::{
 use super::{encode_optional_base64url, CompactJweEncryptRequest};
 
 const fn map_keypair_generation_error(error: CryptoError) -> JweError {
-    match error {
-        CryptoError::Rng { .. } => JweError::Randomness,
+    match error.reason() {
+        CryptoErrorReason::ProviderRandomnessUnavailable => JweError::Randomness,
         _ => JweError::InvalidKeyAgreementKey,
     }
 }
@@ -39,6 +39,17 @@ pub struct PreparedJweEncryptionKey {
 }
 
 impl PreparedJweEncryptionKey {
+    pub(crate) const fn algorithm(&self) -> JweKeyManagementAlgorithm {
+        self.alg
+    }
+
+    pub(crate) fn ephemeral_curve(&self) -> Option<&str> {
+        self.epk
+            .as_ref()
+            .and_then(|value| value.get("crv"))
+            .and_then(JsonValue::as_str)
+    }
+
     /// Builds prepared key-management output for a compact JWE encrypt call.
     ///
     /// Custom key-management implementations can use this constructor to return

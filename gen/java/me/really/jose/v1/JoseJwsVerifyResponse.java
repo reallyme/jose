@@ -17,7 +17,9 @@ public  final class JoseJwsVerifyResponse extends
   // Security post-processing: generated Lite messages otherwise expose
   // neither unknown-field presence nor a safe redacted debug representation.
   public boolean reallyMeHasUnknownFieldsForValidation() {
-    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance();
+    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance()
+        || (hasResult() && getResult().reallyMeHasUnknownFieldsForValidation())
+        || (hasError() && getError().reallyMeHasUnknownFieldsForValidation());
   }
 
   @java.lang.Override

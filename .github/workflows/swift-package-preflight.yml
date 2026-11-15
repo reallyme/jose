@@ -3,21 +3,20 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
 name: Swift Package Preflight
-run-name: Swift package preflight ${{ inputs.version }}
+run-name: Preflight swift ${{ inputs.version }} ${{ inputs.source_sha }}
 
 on:
   workflow_dispatch:
     inputs:
-      release_sha:
-        description: Optional exact main commit SHA to certify. Leave blank to use current origin/main.
-        required: false
+      source_sha:
+        description: Exact lowercase 40-character source commit on main
+        required: true
         type: string
-        default: ""
       version:
         description: Release version without leading v
         required: true
         type: string
-        default: 0.4.6
+        default: 0.5.0
 
 permissions:
   contents: read
@@ -26,43 +25,63 @@ concurrency:
   group: swift-package-preflight-${{ inputs.version }}
   cancel-in-progress: false
 
+
 jobs:
   verify-source-sha:
-    name: verify source SHA
+    name: Verify release source and evidence
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
     outputs:
-      release_sha: ${{ steps.resolve.outputs.release_sha }}
+      release_sha: ${{ inputs.source_sha }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Checkout release source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
-          fetch-depth: 0
+          ref: ${{ inputs.source_sha }}
           persist-credentials: false
-      - id: resolve
-        name: Resolve release SHA
+
+      - name: Install release Rust toolchain
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: 1.100.0
+
+      - name: Install Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '26'
+
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: 7dffa0366a43fe9cc7b98a8040d37dd701d7955e
+          path: .release-readiness
+          persist-credentials: false
+
+      - name: Verify coordinated release version
         env:
-          RELEASE_SHA_INPUT: ${{ inputs.release_sha }}
-        run: |
-          git fetch --no-tags origin main
-          if [ -n "${RELEASE_SHA_INPUT}" ]; then
-            if [[ ! "${RELEASE_SHA_INPUT}" =~ ^[0-9a-f]{40}$ ]]; then
-              echo "::error::release_sha must be blank or a lowercase 40-character commit SHA"
-              exit 1
-            fi
-            release_sha="${RELEASE_SHA_INPUT}"
-          else
-            release_sha="$(git rev-parse origin/main)"
-          fi
-          if [ "$(git rev-parse origin/main)" != "${release_sha}" ]; then
-            echo "::error::resolved release SHA is not the current origin/main tip"
-            exit 1
-          fi
-          if [ "${GITHUB_SHA}" != "${release_sha}" ]; then
-            echo "::error::resolved release SHA does not match the workflow run head SHA"
-            exit 1
-          fi
-          git checkout --detach "${release_sha}"
-          echo "release_sha=${release_sha}" >> "${GITHUB_OUTPUT}"
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/verify_sdk_release_version.mjs "$RELEASE_VERSION"
+
+      - name: Verify release candidate
+        id: candidate
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_TAG: v${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: node .release-readiness/scripts/run-consumer-check.mjs --check-release swift preflight "$RELEASE_VERSION" "$RELEASE_TAG" "$SOURCE_SHA"
+
+      - name: Record verified CI
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: release-readiness-ci-${{ github.run_attempt }}-${{ steps.candidate.outputs.ci_run_id }}
+          path: ${{ runner.temp }}/release-readiness-ci.json
+          if-no-files-found: error
+          retention-days: 30
 
   swift-package:
     name: swift package preflight
@@ -75,7 +94,7 @@ jobs:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
         with:
-          toolchain: 1.99.1
+          toolchain: 1.100.0
           components: llvm-tools-preview
           targets: aarch64-apple-darwin,x86_64-apple-darwin,aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
       - name: Install Node
@@ -87,7 +106,7 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_26.6.app
           swift --version
       - name: Build JOSE FFI dylib
-        run: cargo build --locked -p reallyme-jose-ffi
+        run: cargo +1.100.0 build --locked -p reallyme-jose-ffi
       - name: Enable source-tree Swift runtime FFI
         run: touch .reallyme-jose-runtime-ffi
       - name: Test Swift package through runtime FFI
@@ -100,22 +119,13 @@ jobs:
 
       # Preserve the exact tested candidate before Package.swift is rewritten.
       # The credentialed release job promotes these bytes without rebuilding.
-      - name: Upload Swift release candidate
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: swift-xcframework-${{ inputs.version }}-${{ needs.verify-source-sha.outputs.release_sha }}
-          path: |
-            build/swift/ReallyMeJOSEFFI.xcframework.zip
-            build/swift/ReallyMeJOSEFFI.xcframework.checksum
-          if-no-files-found: error
-          retention-days: 7
       - name: Test Swift release tooling
-        run: node --test scripts/prepare_swift_binary_manifest.test.mjs scripts/verify_swift_release_artifact.test.mjs scripts/verify_release_attestation.test.mjs scripts/verify_sdk_release_version.test.mjs
+        run: node --test scripts/prepare_swift_binary_manifest.test.mjs scripts/verify_swift_release_artifact.test.mjs scripts/verify_sdk_release_version.test.mjs
       - name: Checkout release-readiness runner
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 18a6d91d99837e80f92e41fe04effb0b043d754e
+          ref: 7dffa0366a43fe9cc7b98a8040d37dd701d7955e
           path: .release-readiness
           persist-credentials: false
       - name: Bind manifest to Swift release candidate
@@ -142,3 +152,13 @@ jobs:
           swift package reset
       - name: Test Swift package with linked binary target
         run: swift test
+
+      - name: Upload Swift release candidate
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: swift-xcframework-${{ inputs.version }}-${{ needs.verify-source-sha.outputs.release_sha }}
+          path: |
+            build/swift/ReallyMeJOSEFFI.xcframework.zip
+            build/swift/ReallyMeJOSEFFI.xcframework.checksum
+          if-no-files-found: error
+          retention-days: 30

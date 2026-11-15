@@ -17,7 +17,8 @@ public  final class JoseJwtSignRequest extends
   // Security post-processing: generated Lite messages otherwise expose
   // neither unknown-field presence nor a safe redacted debug representation.
   public boolean reallyMeHasUnknownFieldsForValidation() {
-    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance();
+    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance()
+        || (hasHeaderOptions() && getHeaderOptions().reallyMeHasUnknownFieldsForValidation());
   }
 
   @java.lang.Override
@@ -34,13 +35,14 @@ public  final class JoseJwtSignRequest extends
     claimsJson_ = com.google.protobuf.ByteString.EMPTY;
     jwkJson_ = com.google.protobuf.ByteString.EMPTY;
     privateKey_ = com.google.protobuf.ByteString.EMPTY;
-    typ_ = "";
   }
+  private int bitField0_;
   public static final int CLAIMS_JSON_FIELD_NUMBER = 1;
   private com.google.protobuf.ByteString claimsJson_;
   /**
    * <pre>
    * Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes claims_json = 1 [json_name = "claimsJson"];</code>
@@ -53,6 +55,7 @@ public  final class JoseJwtSignRequest extends
   /**
    * <pre>
    * Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes claims_json = 1 [json_name = "claimsJson"];</code>
@@ -66,6 +69,7 @@ public  final class JoseJwtSignRequest extends
   /**
    * <pre>
    * Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes claims_json = 1 [json_name = "claimsJson"];</code>
@@ -81,6 +85,7 @@ public  final class JoseJwtSignRequest extends
    * <pre>
    * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
    * this as sensitive boundary input and avoid logging it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -94,6 +99,7 @@ public  final class JoseJwtSignRequest extends
    * <pre>
    * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
    * this as sensitive boundary input and avoid logging it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -108,6 +114,7 @@ public  final class JoseJwtSignRequest extends
    * <pre>
    * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
    * this as sensitive boundary input and avoid logging it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -123,6 +130,7 @@ public  final class JoseJwtSignRequest extends
    * <pre>
    * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes private_key = 3 [json_name = "privateKey"];</code>
@@ -136,6 +144,7 @@ public  final class JoseJwtSignRequest extends
    * <pre>
    * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes private_key = 3 [json_name = "privateKey"];</code>
@@ -150,6 +159,7 @@ public  final class JoseJwtSignRequest extends
    * <pre>
    * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
    * not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes private_key = 3 [json_name = "privateKey"];</code>
@@ -159,71 +169,71 @@ public  final class JoseJwtSignRequest extends
     privateKey_ = getDefaultInstance().getPrivateKey();
   }
 
-  public static final int TYP_FIELD_NUMBER = 4;
-  private java.lang.String typ_;
+  public static final int HEADER_OPTIONS_FIELD_NUMBER = 5;
+  private me.really.jose.v1.JoseJwtHeaderEncodeOptions headerOptions_;
   /**
    * <pre>
-   * Optional protected-header typ. Empty means the native SDK default typ.
+   * Absent options use typ JWT. Present options can explicitly omit typ.
    * </pre>
    *
-   * <code>string typ = 4 [json_name = "typ"];</code>
-   * @return The typ.
+   * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
    */
   @java.lang.Override
-  public java.lang.String getTyp() {
-    return typ_;
+  public boolean hasHeaderOptions() {
+    return ((bitField0_ & 0x00000001) != 0);
   }
   /**
    * <pre>
-   * Optional protected-header typ. Empty means the native SDK default typ.
+   * Absent options use typ JWT. Present options can explicitly omit typ.
    * </pre>
    *
-   * <code>string typ = 4 [json_name = "typ"];</code>
-   * @return The bytes for typ.
+   * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
    */
   @java.lang.Override
-  public com.google.protobuf.ByteString
-      getTypBytes() {
-    return com.google.protobuf.ByteString.copyFromUtf8(typ_);
+  public me.really.jose.v1.JoseJwtHeaderEncodeOptions getHeaderOptions() {
+    return headerOptions_ == null ? me.really.jose.v1.JoseJwtHeaderEncodeOptions.getDefaultInstance() : headerOptions_;
   }
   /**
    * <pre>
-   * Optional protected-header typ. Empty means the native SDK default typ.
+   * Absent options use typ JWT. Present options can explicitly omit typ.
    * </pre>
    *
-   * <code>string typ = 4 [json_name = "typ"];</code>
-   * @param value The typ to set.
+   * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
    */
-  private void setTyp(
-      java.lang.String value) {
+  private void setHeaderOptions(me.really.jose.v1.JoseJwtHeaderEncodeOptions value) {
     java.util.Objects.requireNonNull(value);
-
-    typ_ = value;
+    headerOptions_ = value;
+    bitField0_ |= 0x00000001;
   }
   /**
    * <pre>
-   * Optional protected-header typ. Empty means the native SDK default typ.
+   * Absent options use typ JWT. Present options can explicitly omit typ.
    * </pre>
    *
-   * <code>string typ = 4 [json_name = "typ"];</code>
+   * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
    */
-  private void clearTyp() {
-
-    typ_ = getDefaultInstance().getTyp();
+  @java.lang.SuppressWarnings("ReferenceEquality")
+  private void mergeHeaderOptions(me.really.jose.v1.JoseJwtHeaderEncodeOptions value) {
+    java.util.Objects.requireNonNull(value);
+    if (headerOptions_ != null &&
+        headerOptions_ != me.really.jose.v1.JoseJwtHeaderEncodeOptions.getDefaultInstance()) {
+      headerOptions_ =
+        me.really.jose.v1.JoseJwtHeaderEncodeOptions.newBuilder(headerOptions_).mergeFrom(value).buildPartial();
+    } else {
+      headerOptions_ = value;
+    }
+    bitField0_ |= 0x00000001;
   }
   /**
    * <pre>
-   * Optional protected-header typ. Empty means the native SDK default typ.
+   * Absent options use typ JWT. Present options can explicitly omit typ.
    * </pre>
    *
-   * <code>string typ = 4 [json_name = "typ"];</code>
-   * @param value The bytes for typ to set.
+   * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
    */
-  private void setTypBytes(
-      com.google.protobuf.ByteString value) {
-    checkByteStringIsUtf8(value);
-    typ_ = value.toStringUtf8();
-
+  private void clearHeaderOptions() {
+    headerOptions_ = null;
+    bitField0_ = (bitField0_ & ~0x00000001);
   }
 
   public static me.really.jose.v1.JoseJwtSignRequest parseFrom(
@@ -326,6 +336,7 @@ public  final class JoseJwtSignRequest extends
     /**
      * <pre>
      * Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes claims_json = 1 [json_name = "claimsJson"];</code>
@@ -338,6 +349,7 @@ public  final class JoseJwtSignRequest extends
     /**
      * <pre>
      * Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes claims_json = 1 [json_name = "claimsJson"];</code>
@@ -352,6 +364,7 @@ public  final class JoseJwtSignRequest extends
     /**
      * <pre>
      * Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes claims_json = 1 [json_name = "claimsJson"];</code>
@@ -367,6 +380,7 @@ public  final class JoseJwtSignRequest extends
      * <pre>
      * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
      * this as sensitive boundary input and avoid logging it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -380,6 +394,7 @@ public  final class JoseJwtSignRequest extends
      * <pre>
      * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
      * this as sensitive boundary input and avoid logging it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -395,6 +410,7 @@ public  final class JoseJwtSignRequest extends
      * <pre>
      * JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
      * this as sensitive boundary input and avoid logging it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes jwk_json = 2 [json_name = "jwkJson"];</code>
@@ -410,6 +426,7 @@ public  final class JoseJwtSignRequest extends
      * <pre>
      * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes private_key = 3 [json_name = "privateKey"];</code>
@@ -423,6 +440,7 @@ public  final class JoseJwtSignRequest extends
      * <pre>
      * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes private_key = 3 [json_name = "privateKey"];</code>
@@ -438,6 +456,7 @@ public  final class JoseJwtSignRequest extends
      * <pre>
      * Sensitive signing key bytes. Adapters must zeroize after dispatch and must
      * not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes private_key = 3 [json_name = "privateKey"];</code>
@@ -451,70 +470,72 @@ public  final class JoseJwtSignRequest extends
 
     /**
      * <pre>
-     * Optional protected-header typ. Empty means the native SDK default typ.
+     * Absent options use typ JWT. Present options can explicitly omit typ.
      * </pre>
      *
-     * <code>string typ = 4 [json_name = "typ"];</code>
-     * @return The typ.
+     * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
      */
     @java.lang.Override
-    public java.lang.String getTyp() {
-      return instance.getTyp();
+    public boolean hasHeaderOptions() {
+      return instance.hasHeaderOptions();
     }
     /**
      * <pre>
-     * Optional protected-header typ. Empty means the native SDK default typ.
+     * Absent options use typ JWT. Present options can explicitly omit typ.
      * </pre>
      *
-     * <code>string typ = 4 [json_name = "typ"];</code>
-     * @return The bytes for typ.
+     * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
      */
     @java.lang.Override
-    public com.google.protobuf.ByteString
-        getTypBytes() {
-      return instance.getTypBytes();
+    public me.really.jose.v1.JoseJwtHeaderEncodeOptions getHeaderOptions() {
+      return instance.getHeaderOptions();
     }
     /**
      * <pre>
-     * Optional protected-header typ. Empty means the native SDK default typ.
+     * Absent options use typ JWT. Present options can explicitly omit typ.
      * </pre>
      *
-     * <code>string typ = 4 [json_name = "typ"];</code>
-     * @param value The typ to set.
-     * @return This builder for chaining.
+     * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
      */
-    public Builder setTyp(
-        java.lang.String value) {
+    public Builder setHeaderOptions(me.really.jose.v1.JoseJwtHeaderEncodeOptions value) {
       copyOnWrite();
-      instance.setTyp(value);
+      instance.setHeaderOptions(value);
+      return this;
+      }
+    /**
+     * <pre>
+     * Absent options use typ JWT. Present options can explicitly omit typ.
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
+     */
+    public Builder setHeaderOptions(
+        me.really.jose.v1.JoseJwtHeaderEncodeOptions.Builder builderForValue) {
+      copyOnWrite();
+      instance.setHeaderOptions(builderForValue.build());
       return this;
     }
     /**
      * <pre>
-     * Optional protected-header typ. Empty means the native SDK default typ.
+     * Absent options use typ JWT. Present options can explicitly omit typ.
      * </pre>
      *
-     * <code>string typ = 4 [json_name = "typ"];</code>
-     * @return This builder for chaining.
+     * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
      */
-    public Builder clearTyp() {
+    public Builder mergeHeaderOptions(me.really.jose.v1.JoseJwtHeaderEncodeOptions value) {
       copyOnWrite();
-      instance.clearTyp();
+      instance.mergeHeaderOptions(value);
       return this;
     }
     /**
      * <pre>
-     * Optional protected-header typ. Empty means the native SDK default typ.
+     * Absent options use typ JWT. Present options can explicitly omit typ.
      * </pre>
      *
-     * <code>string typ = 4 [json_name = "typ"];</code>
-     * @param value The bytes for typ to set.
-     * @return This builder for chaining.
+     * <code>.reallyme.jose.v1.JoseJwtHeaderEncodeOptions header_options = 5 [json_name = "headerOptions"];</code>
      */
-    public Builder setTypBytes(
-        com.google.protobuf.ByteString value) {
-      copyOnWrite();
-      instance.setTypBytes(value);
+    public Builder clearHeaderOptions() {  copyOnWrite();
+      instance.clearHeaderOptions();
       return this;
     }
 
@@ -534,14 +555,15 @@ public  final class JoseJwtSignRequest extends
       }
       case BUILD_MESSAGE_INFO: {
           java.lang.Object[] objects = new java.lang.Object[] {
+            "bitField0_",
             "claimsJson_",
             "jwkJson_",
             "privateKey_",
-            "typ_",
+            "headerOptions_",
           };
           java.lang.String info =
-              "\u0000\u0004\u0000\u0000\u0001\u0004\u0004\u0000\u0000\u0000\u0001\n\u0002\n\u0003" +
-              "\n\u0004\u0208";
+              "\u0000\u0004\u0000\u0001\u0001\u0005\u0004\u0000\u0000\u0000\u0001\n\u0002\n\u0003" +
+              "\n\u0005\u1009\u0000";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

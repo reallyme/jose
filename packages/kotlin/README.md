@@ -1,6 +1,6 @@
 # ReallyMe JOSE for Kotlin/JVM
 
-`me.really:jose:0.4.6` is the typed Java and Kotlin/JVM facade for the canonical
+`me.really:jose:0.5.0` is the typed Java and Kotlin/JVM facade for the canonical
 ReallyMe Rust JOSE implementation. Generated protobuf classes are packaged as
 implementation detail and are not the normal SDK surface.
 
@@ -54,6 +54,13 @@ sources, Javadoc, POM, Gradle module metadata, source SHA, and complete native
 inventory from the staged repository. Release promotion downloads those exact
 attested bytes, signs them in an isolated keyring, refuses existing remote
 coordinates, and compares every published remote file with its staged digest.
+
+`verifyJwt` requires a `ReallyMeJoseJwtVerification`: `SignatureOnly`,
+`Claims(ReallyMeJoseJwtClaimsPolicy(...))`, or
+`TemporalOnly(ReallyMeJoseJwtTemporalPolicy(...))`. Claims validation binds
+audience and optional issuer/subject; temporal-only validation checks time
+claims without establishing recipient authorization. The sealed mode interface
+is derived from the protobuf oneof.
 
 ## License
 

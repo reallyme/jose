@@ -13,6 +13,8 @@ public interface JoseOperationRequestOrBuilder extends
   /**
    * <pre>
    * Compact JWS operations: 1000-1999.
+   * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+   * Rust adapter: jws/suites/es256.rs#sign_es256_jws
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -22,6 +24,8 @@ public interface JoseOperationRequestOrBuilder extends
   /**
    * <pre>
    * Compact JWS operations: 1000-1999.
+   * Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+   * Rust adapter: jws/suites/es256.rs#sign_es256_jws
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwsSignRequest jws_sign = 1000 [json_name = "jwsSign"];</code>
@@ -30,11 +34,29 @@ public interface JoseOperationRequestOrBuilder extends
   me.really.jose.v1.JoseJwsSignRequest getJwsSign();
 
   /**
+   * <pre>
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
    * @return Whether the jwsVerify field is set.
    */
   boolean hasJwsVerify();
   /**
+   * <pre>
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+   * Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+   * Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwsVerifyRequest jws_verify = 1001 [json_name = "jwsVerify"];</code>
    * @return The jwsVerify.
    */
@@ -43,6 +65,7 @@ public interface JoseOperationRequestOrBuilder extends
   /**
    * <pre>
    * JWT operations: 2000-2999.
+   * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -52,6 +75,7 @@ public interface JoseOperationRequestOrBuilder extends
   /**
    * <pre>
    * JWT operations: 2000-2999.
+   * Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
    * </pre>
    *
    * <code>.reallyme.jose.v1.JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000 [json_name = "jwtEncodeUnsigned"];</code>
@@ -60,33 +84,77 @@ public interface JoseOperationRequestOrBuilder extends
   me.really.jose.v1.JoseJwtEncodeUnsignedRequest getJwtEncodeUnsigned();
 
   /**
+   * <pre>
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
    * @return Whether the jwtDecodeUnsigned field is set.
    */
   boolean hasJwtDecodeUnsigned();
   /**
+   * <pre>
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+   * Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001 [json_name = "jwtDecodeUnsigned"];</code>
    * @return The jwtDecodeUnsigned.
    */
   me.really.jose.v1.JoseJwtDecodeUnsignedRequest getJwtDecodeUnsigned();
 
   /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
    * @return Whether the jwtSign field is set.
    */
   boolean hasJwtSign();
   /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtSignRequest jwt_sign = 2002 [json_name = "jwtSign"];</code>
    * @return The jwtSign.
    */
   me.really.jose.v1.JoseJwtSignRequest getJwtSign();
 
   /**
+   * <pre>
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
    * @return Whether the jwtVerify field is set.
    */
   boolean hasJwtVerify();
   /**
+   * <pre>
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+   * Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
+   * </pre>
+   *
    * <code>.reallyme.jose.v1.JoseJwtVerifyRequest jwt_verify = 2003 [json_name = "jwtVerify"];</code>
    * @return The jwtVerify.
    */
@@ -121,6 +189,169 @@ public interface JoseOperationRequestOrBuilder extends
    * @return The jweDecrypt.
    */
   me.really.jose.v1.JoseJweDecryptRequest getJweDecrypt();
+
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+   * @return Whether the signatureSign field is set.
+   */
+  boolean hasSignatureSign();
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignRequest signature_sign = 1010 [json_name = "signatureSign"];</code>
+   * @return The signatureSign.
+   */
+  me.really.jose.v1.JoseSignatureSignRequest getSignatureSign();
+
+  /**
+   * <pre>
+   * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   * @return Whether the signatureVerify field is set.
+   */
+  boolean hasSignatureVerify();
+  /**
+   * <pre>
+   * Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyRequest signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   * @return The signatureVerify.
+   */
+  me.really.jose.v1.JoseSignatureVerifyRequest getSignatureVerify();
+
+  /**
+   * <pre>
+   * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   * @return Whether the signatureSuiteInfo field is set.
+   */
+  boolean hasSignatureSuiteInfo();
+  /**
+   * <pre>
+   * Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoRequest signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   * @return The signatureSuiteInfo.
+   */
+  me.really.jose.v1.JoseSignatureSuiteInfoRequest getSignatureSuiteInfo();
+
+  /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   * @return Whether the jwtSignWithProvider field is set.
+   */
+  boolean hasJwtSignWithProvider();
+  /**
+   * <pre>
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+   * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   * @return The jwtSignWithProvider.
+   */
+  me.really.jose.v1.JoseJwtSignWithProviderRequest getJwtSignWithProvider();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   * @return Whether the jwtClaimsParse field is set.
+   */
+  boolean hasJwtClaimsParse();
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseRequest jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   * @return The jwtClaimsParse.
+   */
+  me.really.jose.v1.JoseJwtClaimsParseRequest getJwtClaimsParse();
+
+  /**
+   * <pre>
+   * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   * @return Whether the jweDeriveKey field is set.
+   */
+  boolean hasJweDeriveKey();
+  /**
+   * <pre>
+   * Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyRequest jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   * @return The jweDeriveKey.
+   */
+  me.really.jose.v1.JoseJweDeriveKeyRequest getJweDeriveKey();
+
+  /**
+   * <pre>
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   * @return Whether the jweEncryptWithProvider field is set.
+   */
+  boolean hasJweEncryptWithProvider();
+  /**
+   * <pre>
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+   * Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   * @return The jweEncryptWithProvider.
+   */
+  me.really.jose.v1.JoseJweEncryptWithProviderRequest getJweEncryptWithProvider();
+
+  /**
+   * <pre>
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   * @return Whether the jweDecryptWithProvider field is set.
+   */
+  boolean hasJweDecryptWithProvider();
+  /**
+   * <pre>
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+   * Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   * @return The jweDecryptWithProvider.
+   */
+  me.really.jose.v1.JoseJweDecryptWithProviderRequest getJweDecryptWithProvider();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+   * @return Whether the contractInfo field is set.
+   */
+  boolean hasContractInfo();
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
+   * @return The contractInfo.
+   */
+  me.really.jose.v1.JoseContractInfoRequest getContractInfo();
 
   public me.really.jose.v1.JoseOperationRequest.OperationCase getOperationCase();
 }

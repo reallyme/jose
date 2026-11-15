@@ -4,14 +4,6 @@
 
 package me.really.jose
 
-public enum class ReallyMeJoseSignatureAlgorithm { ED_DSA, ES256 }
-
-public enum class ReallyMeJoseJweKeyManagementAlgorithm { DIRECT, ECDH_ES_P256, ECDH_ES_P384, ECDH_ES_P521 }
-
-public enum class ReallyMeJoseJweContentEncryptionAlgorithm { A128_GCM, A192_GCM, A256_GCM }
-
-public enum class ReallyMeJoseJweCompressionAlgorithm { DEFLATE }
-
 public class ReallyMeJoseJwtHeaderPolicy(
     public val allowMissingType: Boolean,
     public val allowEmbeddedKeyHeader: Boolean,
@@ -20,7 +12,7 @@ public class ReallyMeJoseJwtHeaderPolicy(
     public val acceptedTypeValues: List<String> = acceptedTypeValues.toList()
 }
 
-public class ReallyMeJoseJwtTemporalPolicy(
+public class ReallyMeJoseJwtClaimsPolicy(
     public val requireExpiration: Boolean,
     public val requireNotBefore: Boolean,
     public val requireIssuedAt: Boolean,
@@ -74,4 +66,9 @@ public class ReallyMeJoseJweHeaderPolicy(
         ownedAgreementPartyUInfo?.fill(0)
         ownedAgreementPartyVInfo?.fill(0)
     }
+}
+
+/** Absent options use JWT; a present options object with null type omits typ. */
+public class ReallyMeJoseJwtHeaderOptions(public val type: String? = null) {
+    override fun toString(): String = "ReallyMeJoseJwtHeaderOptions{<redacted>}"
 }

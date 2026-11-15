@@ -9,3 +9,4 @@ pub(crate) mod jws;
 pub(crate) mod jwt;
 #[cfg(feature = "wire")]
 pub(crate) mod protobuf;
+pub(crate) mod providers;

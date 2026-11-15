@@ -6,6 +6,10 @@
 package me.really.jose.v1;
 
 /**
+ * <pre>
+ * Rust selector: JweKeyManagementSuite; crate; provider; PROVIDER_UNSUPPORTED
+ * </pre>
+ *
  * Protobuf enum {@code reallyme.jose.v1.JoseJweKeyManagementAlgorithm}
  */
 @com.google.protobuf.Generated
@@ -18,20 +22,33 @@ public enum JoseJweKeyManagementAlgorithm
   /**
    * <pre>
    * Direct key use: 100-199; ECDH-ES: 200-299.
+   * Rust variant: JweKeyManagementSuite.Direct; header=Direct
    * </pre>
    *
    * <code>JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT = 100;</code>
    */
   JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT(100),
   /**
+   * <pre>
+   * Rust variant: JweKeyManagementSuite.P256; curve=P-256; header=EcdhEs
+   * </pre>
+   *
    * <code>JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P256 = 200;</code>
    */
   JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P256(200),
   /**
+   * <pre>
+   * Rust variant: JweKeyManagementSuite.P384; curve=P-384; header=EcdhEs
+   * </pre>
+   *
    * <code>JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P384 = 210;</code>
    */
   JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P384(210),
   /**
+   * <pre>
+   * Rust variant: JweKeyManagementSuite.P521; curve=P-521; header=EcdhEs
+   * </pre>
+   *
    * <code>JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P521 = 220;</code>
    */
   JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P521(220),
@@ -45,20 +62,33 @@ public enum JoseJweKeyManagementAlgorithm
   /**
    * <pre>
    * Direct key use: 100-199; ECDH-ES: 200-299.
+   * Rust variant: JweKeyManagementSuite.Direct; header=Direct
    * </pre>
    *
    * <code>JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT = 100;</code>
    */
   public static final int JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT_VALUE = 100;
   /**
+   * <pre>
+   * Rust variant: JweKeyManagementSuite.P256; curve=P-256; header=EcdhEs
+   * </pre>
+   *
    * <code>JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P256 = 200;</code>
    */
   public static final int JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P256_VALUE = 200;
   /**
+   * <pre>
+   * Rust variant: JweKeyManagementSuite.P384; curve=P-384; header=EcdhEs
+   * </pre>
+   *
    * <code>JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P384 = 210;</code>
    */
   public static final int JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P384_VALUE = 210;
   /**
+   * <pre>
+   * Rust variant: JweKeyManagementSuite.P521; curve=P-521; header=EcdhEs
+   * </pre>
+   *
    * <code>JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P521 = 220;</code>
    */
   public static final int JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P521_VALUE = 220;

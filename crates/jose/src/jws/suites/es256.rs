@@ -15,8 +15,8 @@ use crate::{
         verify_p256::{verify_p256_jose_signature, P256JoseVerifyError, P256JoseVerifyErrorReason},
     },
     operation_contract::jws::{
-        sign_jws, verify_jws, JwsSignAlgorithm, JwsSignError, JwsSignErrorReason, JwsSignInput,
-        JwsVerifyAlgorithm, JwsVerifyError, JwsVerifyErrorReason, JwsVerifyInput,
+        sign_jws, verify_jws, JwsAlgorithm, JwsSignError, JwsSignErrorReason, JwsSignInput,
+        JwsVerifyError, JwsVerifyErrorReason, JwsVerifyInput,
     },
 };
 
@@ -139,7 +139,7 @@ const fn map_p256_verify_error(error: P256JoseVerifyError) -> JwsEs256Error {
 /// signing fails, signature conversion fails, or compact serialization fails.
 pub fn sign_es256_jws(secret_key: &[u8], payload_text: &str) -> Result<String, JwsEs256Error> {
     sign_jws(JwsSignInput::new(
-        JwsSignAlgorithm::Es256,
+        JwsAlgorithm::Es256,
         secret_key,
         payload_text,
     ))
@@ -226,7 +226,7 @@ pub fn verify_es256_jws_and_decode_authenticated_parts(
     public_key_sec1: &[u8],
 ) -> Result<crate::jws::AuthenticatedCompactJws, JwsEs256Error> {
     verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Es256,
+        JwsAlgorithm::Es256,
         jws,
         public_key_sec1,
     ))
@@ -253,5 +253,13 @@ impl From<JwsSigningInputError> for JwsEs256Error {
             JwsSigningInputError::LengthOverflow => JwsEs256Error::LengthOverflow,
             JwsSigningInputError::InputTooLarge => JwsEs256Error::InputTooLarge,
         }
+    }
+}
+
+impl JwsEs256Error {
+    /// Returns the exact generated reason for this native failure.
+    #[must_use]
+    pub const fn reason(&self) -> crate::wire::proto::proto::reallyme::jose::v1::JoseErrorReason {
+        crate::map_failure::es256(self).reason()
     }
 }

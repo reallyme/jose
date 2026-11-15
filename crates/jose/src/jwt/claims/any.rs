@@ -51,3 +51,5 @@ impl AnyClaims {
         self.0.insert(key, value);
     }
 }
+
+impl zeroize::ZeroizeOnDrop for AnyClaims {}

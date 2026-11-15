@@ -10,19 +10,16 @@ import me.really.jose.v1.JoseCompactResult
 import me.really.jose.v1.JoseError
 import me.really.jose.v1.JoseExpectedBytes
 import me.really.jose.v1.JoseExpectedString
-import me.really.jose.v1.JoseJweContentEncryptionAlgorithm
 import me.really.jose.v1.JoseJweCompressionAlgorithm
 import me.really.jose.v1.JoseJweDecryptResponse
 import me.really.jose.v1.JoseJweEncryptResponse
 import me.really.jose.v1.JoseJweHeaderValidationPolicy
-import me.really.jose.v1.JoseJweKeyManagementAlgorithm
 import me.really.jose.v1.JoseJwtDecodeUnsignedResponse
 import me.really.jose.v1.JoseJwtEncodeUnsignedResponse
 import me.really.jose.v1.JoseJwtHeaderValidationPolicy
 import me.really.jose.v1.JoseJwtSignResponse
 import me.really.jose.v1.JoseJwtTemporalValidationPolicy
 import me.really.jose.v1.JoseJwtVerifyResponse
-import me.really.jose.v1.JoseSignatureAlgorithm
 import me.really.jose.v1.JoseJwsSignResponse
 import me.really.jose.v1.JoseJwsVerifyResponse
 
@@ -102,12 +99,7 @@ internal fun sdkError(error: JoseError): ReallyMeJoseException.JoseFailure {
         else -> malformed()
     }
     val reason = ReallyMeJoseErrorReason.fromCode(reasonCode) ?: malformed()
-    val validBranch = when (branch) {
-        ReallyMeJoseErrorBranch.PRIMITIVE -> reasonCode in 100..399 || reasonCode in 700..703
-        ReallyMeJoseErrorBranch.PROVIDER -> reasonCode in 800..802
-        ReallyMeJoseErrorBranch.BACKEND -> reasonCode in 900..902
-    }
-    if (!validBranch) malformed()
+    if (reason.branch != branch) malformed()
     return ReallyMeJoseException.JoseFailure(branch, reason)
 }
 
@@ -141,36 +133,13 @@ internal fun requireClean(message: com.google.protobuf.MessageLite) {
     if (!clean) malformed()
 }
 
-internal fun protoSignatureAlgorithm(value: ReallyMeJoseSignatureAlgorithm): JoseSignatureAlgorithm = when (value) {
-    ReallyMeJoseSignatureAlgorithm.ED_DSA -> JoseSignatureAlgorithm.JOSE_SIGNATURE_ALGORITHM_EDDSA
-    ReallyMeJoseSignatureAlgorithm.ES256 -> JoseSignatureAlgorithm.JOSE_SIGNATURE_ALGORITHM_ES256
-}
-
-internal fun protoKeyManagementAlgorithm(
-    value: ReallyMeJoseJweKeyManagementAlgorithm,
-): JoseJweKeyManagementAlgorithm = when (value) {
-    ReallyMeJoseJweKeyManagementAlgorithm.DIRECT -> JoseJweKeyManagementAlgorithm.JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT
-    ReallyMeJoseJweKeyManagementAlgorithm.ECDH_ES_P256 -> JoseJweKeyManagementAlgorithm.JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P256
-    ReallyMeJoseJweKeyManagementAlgorithm.ECDH_ES_P384 -> JoseJweKeyManagementAlgorithm.JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P384
-    ReallyMeJoseJweKeyManagementAlgorithm.ECDH_ES_P521 -> JoseJweKeyManagementAlgorithm.JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P521
-}
-
-internal fun protoContentEncryptionAlgorithm(
-    value: ReallyMeJoseJweContentEncryptionAlgorithm,
-): JoseJweContentEncryptionAlgorithm = when (value) {
-    ReallyMeJoseJweContentEncryptionAlgorithm.A128_GCM -> JoseJweContentEncryptionAlgorithm.JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM
-    ReallyMeJoseJweContentEncryptionAlgorithm.A192_GCM -> JoseJweContentEncryptionAlgorithm.JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM
-    ReallyMeJoseJweContentEncryptionAlgorithm.A256_GCM -> JoseJweContentEncryptionAlgorithm.JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM
-}
-
-internal fun protoCompressionAlgorithm(
-    value: ReallyMeJoseJweCompressionAlgorithm,
-): JoseJweCompressionAlgorithm = when (value) {
-    ReallyMeJoseJweCompressionAlgorithm.DEFLATE ->
-        JoseJweCompressionAlgorithm.JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE
-}
-
 internal fun protoJwtHeaderPolicy(value: ReallyMeJoseJwtHeaderPolicy): JoseJwtHeaderValidationPolicy {
+    if (value.acceptedTypeValues.size > JoseContractValues.ACCEPTED_TYPE_VALUES) {
+        throw ReallyMeJoseException.JoseFailure(
+            ReallyMeJoseErrorBranch.PRIMITIVE,
+            ReallyMeJoseErrorReason.COMMON_RESOURCE_LIMIT_EXCEEDED,
+        )
+    }
     for (type in value.acceptedTypeValues) utf8Length(type)
     return JoseJwtHeaderValidationPolicy.newBuilder()
         .setAllowMissingTyp(value.allowMissingType)
@@ -179,7 +148,7 @@ internal fun protoJwtHeaderPolicy(value: ReallyMeJoseJwtHeaderPolicy): JoseJwtHe
         .build()
 }
 
-internal fun protoJwtTemporalPolicy(value: ReallyMeJoseJwtTemporalPolicy): JoseJwtTemporalValidationPolicy {
+internal fun protoJwtClaimsPolicy(value: ReallyMeJoseJwtClaimsPolicy): JoseJwtTemporalValidationPolicy {
     // Protobuf uint64 setters accept signed Long bit patterns. Reject negative
     // times before serialization can reinterpret them as far-future dates.
     if (value.nowUnix <= 0) {
@@ -247,6 +216,28 @@ internal fun protoJweHeaderPolicy(
     value.agreementPartyVInfoCopy()?.let { bytes ->
         owned.add(bytes)
         builder.setExpectedApv(JoseExpectedBytes.newBuilder().setValue(wrap(bytes)).build())
+    }
+    return builder.build()
+}
+
+internal fun protoJwtVerification(value: ReallyMeJoseJwtVerification): me.really.jose.v1.JoseJwtVerificationPolicy {
+    val builder = me.really.jose.v1.JoseJwtVerificationPolicy.newBuilder()
+    when (value) {
+        ReallyMeJoseJwtVerification.SignatureOnly -> builder.setSignatureOnly(me.really.jose.v1.JoseJwtSignatureOnlyPolicy.getDefaultInstance())
+        is ReallyMeJoseJwtVerification.Claims -> builder.setClaims(protoJwtClaimsPolicy(value.policy))
+        is ReallyMeJoseJwtVerification.TemporalOnly -> {
+            val policy = value.policy
+            if (policy.nowUnix <= 0) {
+                throw ReallyMeJoseException.JoseFailure(ReallyMeJoseErrorBranch.PRIMITIVE, ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_TIME)
+            }
+            if (policy.clockSkewSeconds < 0 || policy.maximumFutureIssuedAtSkewSeconds < 0) {
+                throw ReallyMeJoseException.JoseFailure(ReallyMeJoseErrorBranch.PRIMITIVE, ReallyMeJoseErrorReason.JWT_INVALID_VERIFICATION_POLICY)
+            }
+            val options = me.really.jose.v1.JoseJwtTemporalOptions.newBuilder()
+                .setRequireExp(policy.requireExpiration).setRequireNbf(policy.requireNotBefore).setRequireIat(policy.requireIssuedAt)
+                .setClockSkewSeconds(policy.clockSkewSeconds).setMaxFutureIatSkewSeconds(policy.maximumFutureIssuedAtSkewSeconds)
+            builder.setTemporalOnly(me.really.jose.v1.JoseJwtTemporalOnlyPolicy.newBuilder().setOptions(options).setNowUnix(policy.nowUnix))
+        }
     }
     return builder.build()
 }

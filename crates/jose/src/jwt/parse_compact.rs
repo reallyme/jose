@@ -5,7 +5,8 @@
 use super::JwtError;
 
 /// Maximum accepted compact JWT size in bytes.
-pub const MAX_COMPACT_JWT_BYTES: usize = 1024 * 1024;
+pub const MAX_COMPACT_JWT_BYTES: usize =
+    reallyme_jose_proto::generated::contract_values::COMPACT_BYTES;
 
 pub(crate) struct CompactJwtParts<'a> {
     pub(crate) protected_header: &'a str,

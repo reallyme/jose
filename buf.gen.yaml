@@ -7,10 +7,21 @@ clean: true
 plugins:
   # Rust Buffa message/view types. Jose checks in generated bindings instead
   # of using build.rs so downstream release builds are deterministic.
-  - local: protoc-gen-buffa
+  - local: protoc-gen-reallyme-buffa
+    strategy: all
     out: crates/proto/src/generated/buffa
-    opt: [views=true, json=true]
-  - local: protoc-gen-buffa-packaging
+    opt:
+      - views=true
+      - borrowed_views_only_in=.reallyme.jose.v1
+      - json=true
+      - zeroize_in=.reallyme.jose.v1
+      - unknown_fields=false
+      - deny_unknown_json_fields=true
+      - bytes_type_custom_in=.reallyme.jose.v1=crate::SecretBytes
+      - string_type_custom_in=.reallyme.jose.v1=crate::SecretString
+      - json_policy_type=crate::SecretBytes
+      - json_policy_type=crate::SecretString
+  - local: protoc-gen-reallyme-buffa-packaging
     out: crates/proto/src/generated/buffa
     strategy: all
 

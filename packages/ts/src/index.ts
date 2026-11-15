@@ -3,18 +3,16 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 export { executeOperation, executeOperationJson } from "./boundary.js";
-export { ReallyMeJoseError } from "./errors.js";
-export type {
-  ReallyMeJoseErrorBranch,
-  ReallyMeJoseSdkErrorCode,
-} from "./errors.js";
+export { ReallyMeJoseError, ReallyMeJoseSdkErrorCode } from "./errors.js";
+export type { ReallyMeJoseErrorBranch } from "./errors.js";
 export { ReallyMeJose } from "./facade.js";
 export type {
   ReallyMeJoseDecryptJweOptions,
   ReallyMeJoseEncryptJweOptions,
   ReallyMeJoseJweHeaderPolicy,
   ReallyMeJoseJwtHeaderPolicy,
-  ReallyMeJoseJwtTemporalPolicy,
+  ReallyMeJoseJwtHeaderOptions,
+  ReallyMeJoseJwtClaimsPolicy,
   ReallyMeJoseSignJwsOptions,
   ReallyMeJoseSignJwtOptions,
   ReallyMeJoseVerifyJwsOptions,
@@ -31,5 +29,8 @@ export {
   JoseJweCompressionAlgorithm,
   JoseJweContentEncryptionAlgorithm,
   JoseJweKeyManagementAlgorithm,
+  JoseSdkErrorCode,
   JoseSignatureAlgorithm,
 } from "./proto/generated/reallyme/jose/v1/jose_pb.js";
+
+export type { ReallyMeJoseJwtVerification, ReallyMeJoseJwtTemporalPolicy } from "./contract-verification.js";

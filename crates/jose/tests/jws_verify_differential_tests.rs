@@ -15,7 +15,7 @@
 
 use buffa::EnumValue;
 use reallyme_codec::base64url::bytes_to_base64url;
-use reallyme_crypto::core::{CryptoError, RngFailureKind, RngOutputKind};
+use reallyme_crypto::core::{CryptoError, RngOutputKind};
 use reallyme_crypto::csprng::SecureRandom;
 use reallyme_crypto::dispatch::generate_keypair;
 use reallyme_jose::jws::suites::es256::sign_p256_jose_prehash;
@@ -204,9 +204,8 @@ fn request(
 ) -> JoseJwsVerifyRequest {
     JoseJwsVerifyRequest {
         algorithm,
-        compact: compact.to_owned(),
-        public_key: public_key.to_vec(),
-        __buffa_unknown_fields: Default::default(),
+        compact: compact.to_owned().into(),
+        public_key: public_key.to_vec().into(),
     }
 }
 
@@ -219,26 +218,25 @@ fn operation(
         operation: Some(JoseOperation::JwsVerify(Box::new(request(
             algorithm, compact, public_key,
         )))),
-        __buffa_unknown_fields: Default::default(),
     }
 }
 
-fn assert_response(mut response: JoseOperationResponse, expected: ExpectedEnvelope) {
-    let Some(Response::JwsVerify(mut response)) = response.response.take() else {
+fn assert_response(response: JoseOperationResponse, expected: ExpectedEnvelope) {
+    let Some(Response::JwsVerify(response)) = response.response.as_ref() else {
         panic!("expected JWS verification response");
     };
-    let Some(outcome) = response.outcome.take() else {
+    let Some(outcome) = response.outcome.as_ref() else {
         panic!("expected JWS verification outcome");
     };
     match (expected, outcome) {
-        (ExpectedEnvelope::Verified, Outcome::Result(result)) => {
-            assert!(result.__buffa_unknown_fields.is_empty());
+        (ExpectedEnvelope::Verified, Outcome::Result(_)) => {}
+        (ExpectedEnvelope::Primitive(reason), Outcome::Error(error)) => {
+            match error.error.as_ref() {
+                Some(JoseErrorBranch::Primitive(error)) => assert_eq!(error.reason, reason),
+                _ => panic!("expected primitive JWS verification error"),
+            }
         }
-        (ExpectedEnvelope::Primitive(reason), Outcome::Error(error)) => match error.error {
-            Some(JoseErrorBranch::Primitive(error)) => assert_eq!(error.reason, reason),
-            _ => panic!("expected primitive JWS verification error"),
-        },
-        (ExpectedEnvelope::Provider(reason), Outcome::Error(error)) => match error.error {
+        (ExpectedEnvelope::Provider(reason), Outcome::Error(error)) => match error.error.as_ref() {
             Some(JoseErrorBranch::Provider(error)) => assert_eq!(error.reason, reason),
             _ => panic!("expected provider JWS verification error"),
         },
@@ -256,7 +254,7 @@ fn algorithm_from_str(algorithm: &str) -> JoseSignatureAlgorithm {
 
 fn wire_reason_from_str(reason: &str) -> JoseErrorReason {
     match reason {
-        "InvalidCompactEncoding" => JoseErrorReason::JOSE_ERROR_REASON_JWS_INVALID_COMPACT,
+        "InvalidCompactEncoding" => JoseErrorReason::JOSE_ERROR_REASON_COMMON_INVALID_COMPACT,
         "BadHeaderBase64" => JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64,
         "BadHeaderUtf8" => JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8,
         "HeaderMismatch" => JoseErrorReason::JOSE_ERROR_REASON_JWS_HEADER_MISMATCH,
@@ -281,11 +279,8 @@ impl SecureRandom for RejectRandom {
     fn fill_secure(
         &mut self,
         _output: &mut [u8],
-        output_kind: RngOutputKind,
+        _output_kind: RngOutputKind,
     ) -> Result<(), CryptoError> {
-        Err(CryptoError::Rng {
-            output: output_kind,
-            kind: RngFailureKind::InvalidOutputLength,
-        })
+        Err(CryptoError::PRIMITIVE_INVALID_LENGTH)
     }
 }

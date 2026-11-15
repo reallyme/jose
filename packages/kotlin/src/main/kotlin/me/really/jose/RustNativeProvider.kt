@@ -29,7 +29,7 @@ import java.util.Locale
 public object ReallyMeJoseRustNativeProvider {
     private const val RESOURCE_ROOT: String = "/me/really/jose/native"
     private const val ANDROID_LIBRARY_NAME: String = "reallyme_jose_ffi"
-    private const val EXPECTED_JOSE_ABI_VERSION: Int = 1
+    private const val EXPECTED_JOSE_ABI_VERSION: Int = JoseContractValues.NATIVE_ABI_VERSION
     private const val MAX_NATIVE_LIBRARY_BYTES: Long = 134_217_728L
     private const val MAX_MANAGED_LIMIT_BYTES: Long = Int.MAX_VALUE.toLong()
     private const val DIGEST_BYTE_LENGTH: Int = 32

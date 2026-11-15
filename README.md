@@ -4,7 +4,7 @@
 
 **JSON Object Signing and Encryption for Identity**
 
-[![Rust CI](https://github.com/reallyme/jose/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/reallyme/jose/actions/workflows/rust-ci.yml)
+[![Rust CI](https://github.com/reallyme/jose/actions/workflows/ci.yml/badge.svg)](https://github.com/reallyme/jose/actions/workflows/ci.yml)
 [![reallyme-jose](https://img.shields.io/crates/v/reallyme-jose?label=reallyme-jose&color=2563eb)](https://crates.io/crates/reallyme-jose)
 [![Maven Central](https://img.shields.io/maven-central/v/me.really/jose?label=maven)](https://central.sonatype.com/artifact/me.really/jose)
 [![npm](https://img.shields.io/npm/v/@reallyme/jose?label=npm&color=2563eb)](https://www.npmjs.com/package/@reallyme/jose)
@@ -29,7 +29,7 @@ This repository publishes two Rust crates:
 
 The workspace also builds the non-publishable `reallyme-jose-ffi` native
 adapter for supported platform packages. Its versioned C ABI accepts the same
-binary protobuf or generated ProtoJSON requests and returns only canonical V1
+binary protobuf or generated ProtoJSON requests and returns only canonical V2
 binary responses. The checked-in C header, Rust-exported limits, panic
 firewall, pointer/alias validation, and cleanup function are part of that ABI.
 
@@ -67,11 +67,16 @@ ECDH-ES cases are retained in its matrix and must return the typed
 `providerUnsupported` result; there is no silent provider fallback.
 
 Package publication is split into unprivileged preflight and credentialed
-promotion workflows. Swift promotes the exact preflight XCFramework, while JVM
-native artifacts are independently hashed by five producer jobs before Maven
-assembly. Every release rechecks the current `main` SHA, the requested package
-version, the latest successful preflight run, package metadata, native
-inventories, and signed-publication configuration immediately before upload.
+promotion workflows. Dispatch each package preflight with the version and full
+`source_sha` while `main` points at the release commit. The preflights require
+successful Required CI for that SHA. Publish the same version and SHA after all
+preflights pass. The publish workflows promote the exact preflight artifacts
+and verify their package-level digests or native inventory before upload.
+
+The Android lane tests a minified consumer against the staged AAR. Maven
+preflight reuses that publication and verifies the hashes of all five JVM
+native producers before assembling both packages. Wait for a qualifying CI run
+that retains the Android publication before dispatching Maven preflight.
 
 Maintainers can build the equivalent signed Central Portal deployment bundle
 locally. The script verifies one successful Kotlin/Android preflight for the
@@ -93,10 +98,11 @@ scripts/maven-central-bundle.local.sh
 The current commit must be available on `main` before the script can dispatch a
 missing preflight. It never uploads the resulting bundle to Maven Central.
 
-The Rust SDK remains the primary application-facing API. The protobuf crate is
+The Rust SDK provides borrowed application interfaces. The protobuf crate is
 published separately because Cargo requires optional normal dependencies to
-exist in the registry, but the `wire` feature is opt-in so native SDK users do
-not compile Buffa or generated protobuf code by default.
+exist in the registry. Both supported runtime lanes include the generated
+contract, which defines public operations, policies, algorithms, errors, and
+limits. Native and generated APIs share semantic implementations.
 
 Release and CI validation use the immutable upstream-pinned readiness core and
 audit the published dependency graph with:
@@ -106,7 +112,16 @@ node .release-readiness/scripts/run-consumer-check.mjs
 ```
 
 The `.release-readiness` checkout is pinned to commit
-`18a6d91d99837e80f92e41fe04effb0b043d754e` (release v0.7.0) before execution.
+`7dffa0366a43fe9cc7b98a8040d37dd701d7955e` (release v0.9.0) before execution.
+With that revision checked out alongside JOSE, check the public CI wiring and
+generated bindings locally:
+
+```sh
+RELEASE_READINESS_PUBLIC_REPO=true node ../release-readiness/scripts/run-consumer-check.mjs --check-workflows
+RELEASE_READINESS_PUBLIC_REPO=true RELEASE_VERSION=0.5.0 \
+  node ../release-readiness/scripts/run-consumer-check.mjs \
+  --generated-freshness --release-packages --policy-only
+```
 
 Release readiness requires the declared crates.io versions and rejects path or
 Git overrides. Local sibling dependency substitutions must be removed before
@@ -123,11 +138,11 @@ service-discovery model. Those concerns belong to the embedding application.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.4.6"
+reallyme-jose = "0.5.0"
 ```
 
 ```sh
-npm install @reallyme/jose@0.4.6
+npm install @reallyme/jose@0.5.0
 ```
 
 ## Supported JOSE Surface
@@ -241,12 +256,12 @@ callers must bind that returned metadata to the supplied verification key.
 
 ## Wire Boundary
 
-With the `wire` feature enabled, the `wire` module provides a transport-neutral,
+The `wire` module provides a transport-neutral,
 Codec-style operation execution lane. Its byte-level flow is:
 
 1. Encode one `JoseOperationRequest`, whose `oneof` selects the operation.
 2. Pass those bytes to the versioned `execute_operation_v1` entrypoint.
-3. Decode `JoseOperationResponse`, require contract version V1, require the
+3. Decode `JoseOperationResponse`, require contract version V2, require the
    response variant to match the submitted operation, and then handle its
    generated `result` or `error` outcome.
 
@@ -258,21 +273,38 @@ the same binary `JoseOperationResponse` as `execute_operation_v1`.
 
 The canonical versioned entrypoints are the only executable wire surface.
 FFI, JNI, Swift, Kotlin, Android, and TypeScript/WASM adapters consume the same
-generated V1 response.
+generated V2 response. The `_v1` function suffix refers to native function ABI;
+the response contract version is checked separately.
 
 Wire errors preserve both the branch (`primitive`, `provider`, or `backend`) and
 the exact `JoseErrorReason`. Malformed protobuf, malformed JSON, unsupported
 algorithms, provider failures, invalid keys, invalid lengths, authentication
 failures, and invalid signatures are kept distinct at this boundary.
 
+The same JOSE operation failure carries the same protobuf branch and
+`JoseErrorReason` through Swift, TypeScript/WASM, and Kotlin/JNI. Each SDK
+surfaces it through its public error type. A distinction belongs in
+`JoseErrorReason` when consumers of the shared operation response need it.
+
+SDK setup and provider-response failures use `JoseSdkErrorCode` locally.
+A distinct code gives callers a specific diagnosis or recovery action.
+TypeScript preserves its string `code` and exposes the protobuf value as
+`schemaCode`. Swift and JVM errors expose the protobuf value as `code`.
+
+| SDK | Provider setup failures |
+| --- | --- |
+| TypeScript/WASM | Explicit installation is required. A missing provider reports `PROVIDER_NOT_INSTALLED`, and setup failures report `PROVIDER_FAILURE`. |
+| Swift | The native loader distinguishes unsupported platform, missing library, load failure, missing symbol, and incompatible ABI. For `nativeSymbolMissing`, check the library's exports. |
+| Kotlin/Java and Android | The native loader reports setup failures through `NativeProviderFailure` with `PROVIDER_FAILURE`. |
+
 JWT wire header policy is presence-sensitive: an omitted policy requires an
 explicit `typ: JWT` header. To accept tokens from a legacy issuer that omits
 `typ`, set `allow_missing_typ` in an explicit policy.
 
-JWT wire temporal validation is explicit: adapters must either set
-`signature_only` or provide `temporal_policy` with a nonzero
-`temporal_policy.now_unix`. This keeps an omitted proto3 timestamp from
-silently disabling expiration checks.
+JWT verification requires one `verification.mode`: `signature_only`, `claims`,
+or `temporal_only`. Time-validating modes require a valid current time and
+bounded skew. JWT signing uses optional `header_options`: absence defaults to
+`typ: JWT`, a present message without `typ` omits it, and an empty `typ` is invalid.
 
 JWE decrypt requests can carry a presence-sensitive protected-header policy.
 Adapters can require `kid` and bind exact `kid`, `typ`, `cty`, `apu`, and `apv`
@@ -298,31 +330,36 @@ The canonical schema is shipped by `reallyme-jose-proto` under
 `crates/proto/src/generated`. Refresh them with:
 
 ```sh
-buf generate
-node scripts/harden-generated-jose-proto.mjs
-node scripts/harden-generated-jose-jvm.mjs
-cargo fmt --package reallyme-jose-proto
+node scripts/generate-jose-proto.mjs
 ```
 
-The opt-in wire lane intentionally exposes generated protobuf types
-and Buffa enum wrappers as part of the public Rust boundary. That coupling is
-the release contract for host-language and process-boundary adapters; normal SDK
-callers should prefer the native `jws`, `jwt`, and `jwe` modules and avoid
-enabling the wire feature unless they are implementing an operation adapter.
+`api::contract` exposes generated protobuf types and Buffa enum wrappers.
+The Rust runtime and generators use the exact ReallyMe Buffa 0.1.1 family.
+The generator configures cleanup, guarded JSON, and borrowed views in
+`buf.gen.yaml`.
+`api::execute` executes generated requests; `api::execute_with_providers` accepts
+caller-scoped signing and JWE capabilities through nonzero handles. The contract
+also represents raw P-256 signatures, standalone ECDH-ES derivation, temporal-only
+JWT verification, claim parsing, suite metadata, and supported contract limits.
 
 The protobuf and Rust crates are released together. While the project remains
 pre-1.0, a new minor release may intentionally change the schema; consumers
-should keep both crates and generated adapters on the same release line. The
-repository enforces schema linting and generated-code freshness, but does not
-promise wire compatibility with earlier pre-1.0 releases.
+should keep both crates and generated adapters on the same release line.
+V2 intentionally removes legacy presence/policy fields and redundant per-area
+error codes. Their numbers and names are reserved. All SDKs and native/WASM
+binaries must be rebuilt together; old response versions fail closed. The
+repository checks compatibility against the frozen V2 descriptor and checks
+schema reachability and generated-code freshness. See the
+[protobuf contract](crates/proto/README.md) for migration details.
 
 ## Release Checks
 
 The release path is Rust-first. CI runs formatting, linting, tests, native and
 wasm feature-lane checks, dependency policy, advisory audit, release-readiness
 checks, protobuf lint and generated-code freshness, package inspection, and fuzz
-target builds. A separate release-readiness workflow runs for documentation-only
-changes because README and policy text are part of the release contract.
+target builds. The policy lane also runs for documentation-only changes.
+GitHub aggregates the applicable lanes in the `Required CI` check and reports
+the contributor agreement separately.
 
 Fuzz harnesses live in [fuzz](fuzz/) and cover compact JWS, JWT, and JWE parser
 boundaries plus the protobuf/JSON process boundary.

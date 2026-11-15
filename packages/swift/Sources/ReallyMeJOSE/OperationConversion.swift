@@ -5,47 +5,12 @@
 import Foundation
 import ReallyMeJOSEProto
 
-func protoSignatureAlgorithm(
-  _ value: ReallyMeJOSESignatureAlgorithm
-) -> ReallyMeProtoJoseSignatureAlgorithm {
-  switch value {
-  case .edDSA: .eddsa
-  case .es256: .es256
-  }
-}
-
-func protoKeyManagementAlgorithm(
-  _ value: ReallyMeJOSEJWEKeyManagementAlgorithm
-) -> ReallyMeProtoJoseJweKeyManagementAlgorithm {
-  switch value {
-  case .direct: .direct
-  case .ecdhESP256: .ecdhEsP256
-  case .ecdhESP384: .ecdhEsP384
-  case .ecdhESP521: .ecdhEsP521
-  }
-}
-
-func protoContentEncryptionAlgorithm(
-  _ value: ReallyMeJOSEJWEContentEncryptionAlgorithm
-) -> ReallyMeProtoJoseJweContentEncryptionAlgorithm {
-  switch value {
-  case .a128GCM: .a128Gcm
-  case .a192GCM: .a192Gcm
-  case .a256GCM: .a256Gcm
-  }
-}
-
-func protoCompressionAlgorithm(
-  _ value: ReallyMeJOSEJWECompressionAlgorithm
-) -> ReallyMeProtoJoseJweCompressionAlgorithm {
-  switch value {
-  case .deflate: .deflate
-  }
-}
-
 func protoJWTHeaderPolicy(
   _ value: ReallyMeJOSEJWTHeaderPolicy
-) -> ReallyMeProtoJoseJwtHeaderValidationPolicy {
+) throws(ReallyMeJOSEError) -> ReallyMeProtoJoseJwtHeaderValidationPolicy {
+  guard value.acceptedTypValues.count <= JoseContractValues.acceptedTypeValues else {
+    throw .jose(branch: .primitive, reason: .commonResourceLimitExceeded)
+  }
   var result = ReallyMeProtoJoseJwtHeaderValidationPolicy()
   result.allowMissingTyp = value.allowMissingTyp
   result.allowEmbeddedKeyHeader = value.allowEmbeddedKeyHeader
@@ -53,8 +18,8 @@ func protoJWTHeaderPolicy(
   return result
 }
 
-func protoJWTTemporalPolicy(
-  _ value: ReallyMeJOSEJWTTemporalPolicy
+func protoJWTClaimsPolicy(
+  _ value: ReallyMeJOSEJWTClaimsPolicy
 ) throws(ReallyMeJOSEError) -> ReallyMeProtoJoseJwtTemporalValidationPolicy {
   if value.expectedIssuer == "" || value.expectedSubject == "" {
     throw .jose(branch: .primitive, reason: .jwtInvalidVerificationPolicy)
@@ -116,32 +81,29 @@ func protoJWEHeaderPolicy(
 }
 
 func wipeRequest(_ request: inout ReallyMeProtoJoseOperationRequest) {
-  switch request.operation {
-  case .jwsSign:
-    ReallyMeJOSEMemory.clearOwned(&request.jwsSign.privateKey)
-    ReallyMeJOSEMemory.clearOwned(&request.jwsSign.payload)
-  case .jwsVerify:
-    ReallyMeJOSEMemory.clearOwned(&request.jwsVerify.publicKey)
-  case .jwtEncodeUnsigned:
-    ReallyMeJOSEMemory.clearOwned(&request.jwtEncodeUnsigned.claimsJson)
-  case .jwtDecodeUnsigned:
-    break
-  case .jwtSign:
-    ReallyMeJOSEMemory.clearOwned(&request.jwtSign.claimsJson)
-    ReallyMeJOSEMemory.clearOwned(&request.jwtSign.jwkJson)
-    ReallyMeJOSEMemory.clearOwned(&request.jwtSign.privateKey)
-  case .jwtVerify:
-    ReallyMeJOSEMemory.clearOwned(&request.jwtVerify.jwkJson)
-    ReallyMeJOSEMemory.clearOwned(&request.jwtVerify.publicKey)
-  case .jweEncrypt:
-    ReallyMeJOSEMemory.clearOwned(&request.jweEncrypt.key)
-    ReallyMeJOSEMemory.clearOwned(&request.jweEncrypt.plaintext)
-    ReallyMeJOSEMemory.clearOwned(&request.jweEncrypt.apu)
-    ReallyMeJOSEMemory.clearOwned(&request.jweEncrypt.apv)
-  case .jweDecrypt:
-    ReallyMeJOSEMemory.clearOwned(&request.jweDecrypt.key)
-  case nil:
-    break
+  clearSensitiveFields(&request)
+}
+
+func protoJWTVerification(
+  _ verification: ReallyMeJOSEJWTVerification
+) throws(ReallyMeJOSEError) -> ReallyMeProtoJoseJwtVerificationPolicy {
+  var result = ReallyMeProtoJoseJwtVerificationPolicy()
+  switch verification {
+  case .signatureOnly:
+    result.mode = .signatureOnly(ReallyMeProtoJoseJwtSignatureOnlyPolicy())
+  case .claims(let policy):
+    result.mode = .claims(try protoJWTClaimsPolicy(policy))
+  case .temporalOnly(let policy):
+    var options = ReallyMeProtoJoseJwtTemporalOptions()
+    options.requireExp = policy.requireExpiration
+    options.requireNbf = policy.requireNotBefore
+    options.requireIat = policy.requireIssuedAt
+    options.clockSkewSeconds = policy.clockSkewSeconds
+    options.maxFutureIatSkewSeconds = policy.maximumFutureIssuedAtSkewSeconds
+    var temporal = ReallyMeProtoJoseJwtTemporalOnlyPolicy()
+    temporal.options = options
+    temporal.nowUnix = policy.nowUnix
+    result.mode = .temporalOnly(temporal)
   }
-  request.operation = nil
+  return result
 }

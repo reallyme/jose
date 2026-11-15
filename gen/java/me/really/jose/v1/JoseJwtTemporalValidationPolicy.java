@@ -6,6 +6,10 @@
 package me.really.jose.v1;
 
 /**
+ * <pre>
+ * Rust view: jwt/validate_registered_claims.rs#JwtClaimsValidationPolicy
+ * </pre>
+ *
  * Protobuf type {@code reallyme.jose.v1.JoseJwtTemporalValidationPolicy}
  */
 @com.google.protobuf.Generated
@@ -17,7 +21,9 @@ public  final class JoseJwtTemporalValidationPolicy extends
   // Security post-processing: generated Lite messages otherwise expose
   // neither unknown-field presence nor a safe redacted debug representation.
   public boolean reallyMeHasUnknownFieldsForValidation() {
-    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance();
+    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance()
+        || (hasExpectedIssuerConstraint() && getExpectedIssuerConstraint().reallyMeHasUnknownFieldsForValidation())
+        || (hasExpectedSubjectConstraint() && getExpectedSubjectConstraint().reallyMeHasUnknownFieldsForValidation());
   }
 
   @java.lang.Override
@@ -32,8 +38,6 @@ public  final class JoseJwtTemporalValidationPolicy extends
 
   private JoseJwtTemporalValidationPolicy() {
     expectedAudience_ = "";
-    expectedIssuer_ = "";
-    expectedSubject_ = "";
   }
   private int bitField0_;
   public static final int REQUIRE_EXP_FIELD_NUMBER = 1;
@@ -216,6 +220,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
    * <pre>
    * Required recipient identifier. Temporal verification fails closed when
    * this value is empty or the JWT aud claim does not contain it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -229,6 +234,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
    * <pre>
    * Required recipient identifier. Temporal verification fails closed when
    * this value is empty or the JWT aud claim does not contain it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -243,6 +249,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
    * <pre>
    * Required recipient identifier. Temporal verification fails closed when
    * this value is empty or the JWT aud claim does not contain it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -258,6 +265,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
    * <pre>
    * Required recipient identifier. Temporal verification fails closed when
    * this value is empty or the JWT aud claim does not contain it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -270,6 +278,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
    * <pre>
    * Required recipient identifier. Temporal verification fails closed when
    * this value is empty or the JWT aud claim does not contain it.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -279,145 +288,6 @@ public  final class JoseJwtTemporalValidationPolicy extends
       com.google.protobuf.ByteString value) {
     checkByteStringIsUtf8(value);
     expectedAudience_ = value.toStringUtf8();
-
-  }
-
-  public static final int EXPECTED_ISSUER_FIELD_NUMBER = 8;
-  private java.lang.String expectedIssuer_;
-  /**
-   * <pre>
-   * Legacy issuer constraint. Empty means absent for older clients that cannot
-   * express presence. New clients use expected_issuer_constraint.
-   * </pre>
-   *
-   * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-   * @return The expectedIssuer.
-   */
-  @java.lang.Override
-  public java.lang.String getExpectedIssuer() {
-    return expectedIssuer_;
-  }
-  /**
-   * <pre>
-   * Legacy issuer constraint. Empty means absent for older clients that cannot
-   * express presence. New clients use expected_issuer_constraint.
-   * </pre>
-   *
-   * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-   * @return The bytes for expectedIssuer.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getExpectedIssuerBytes() {
-    return com.google.protobuf.ByteString.copyFromUtf8(expectedIssuer_);
-  }
-  /**
-   * <pre>
-   * Legacy issuer constraint. Empty means absent for older clients that cannot
-   * express presence. New clients use expected_issuer_constraint.
-   * </pre>
-   *
-   * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-   * @param value The expectedIssuer to set.
-   */
-  private void setExpectedIssuer(
-      java.lang.String value) {
-    java.util.Objects.requireNonNull(value);
-
-    expectedIssuer_ = value;
-  }
-  /**
-   * <pre>
-   * Legacy issuer constraint. Empty means absent for older clients that cannot
-   * express presence. New clients use expected_issuer_constraint.
-   * </pre>
-   *
-   * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-   */
-  private void clearExpectedIssuer() {
-
-    expectedIssuer_ = getDefaultInstance().getExpectedIssuer();
-  }
-  /**
-   * <pre>
-   * Legacy issuer constraint. Empty means absent for older clients that cannot
-   * express presence. New clients use expected_issuer_constraint.
-   * </pre>
-   *
-   * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-   * @param value The bytes for expectedIssuer to set.
-   */
-  private void setExpectedIssuerBytes(
-      com.google.protobuf.ByteString value) {
-    checkByteStringIsUtf8(value);
-    expectedIssuer_ = value.toStringUtf8();
-
-  }
-
-  public static final int EXPECTED_SUBJECT_FIELD_NUMBER = 9;
-  private java.lang.String expectedSubject_;
-  /**
-   * <pre>
-   * Legacy subject constraint with the same absence ambiguity.
-   * </pre>
-   *
-   * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-   * @return The expectedSubject.
-   */
-  @java.lang.Override
-  public java.lang.String getExpectedSubject() {
-    return expectedSubject_;
-  }
-  /**
-   * <pre>
-   * Legacy subject constraint with the same absence ambiguity.
-   * </pre>
-   *
-   * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-   * @return The bytes for expectedSubject.
-   */
-  @java.lang.Override
-  public com.google.protobuf.ByteString
-      getExpectedSubjectBytes() {
-    return com.google.protobuf.ByteString.copyFromUtf8(expectedSubject_);
-  }
-  /**
-   * <pre>
-   * Legacy subject constraint with the same absence ambiguity.
-   * </pre>
-   *
-   * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-   * @param value The expectedSubject to set.
-   */
-  private void setExpectedSubject(
-      java.lang.String value) {
-    java.util.Objects.requireNonNull(value);
-
-    expectedSubject_ = value;
-  }
-  /**
-   * <pre>
-   * Legacy subject constraint with the same absence ambiguity.
-   * </pre>
-   *
-   * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-   */
-  private void clearExpectedSubject() {
-
-    expectedSubject_ = getDefaultInstance().getExpectedSubject();
-  }
-  /**
-   * <pre>
-   * Legacy subject constraint with the same absence ambiguity.
-   * </pre>
-   *
-   * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-   * @param value The bytes for expectedSubject to set.
-   */
-  private void setExpectedSubjectBytes(
-      com.google.protobuf.ByteString value) {
-    checkByteStringIsUtf8(value);
-    expectedSubject_ = value.toStringUtf8();
 
   }
 
@@ -644,6 +514,10 @@ public  final class JoseJwtTemporalValidationPolicy extends
   }
 
   /**
+   * <pre>
+   * Rust view: jwt/validate_registered_claims.rs#JwtClaimsValidationPolicy
+   * </pre>
+   *
    * Protobuf type {@code reallyme.jose.v1.JoseJwtTemporalValidationPolicy}
    */
   public static final class Builder extends
@@ -847,6 +721,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
      * <pre>
      * Required recipient identifier. Temporal verification fails closed when
      * this value is empty or the JWT aud claim does not contain it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -860,6 +735,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
      * <pre>
      * Required recipient identifier. Temporal verification fails closed when
      * this value is empty or the JWT aud claim does not contain it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -874,6 +750,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
      * <pre>
      * Required recipient identifier. Temporal verification fails closed when
      * this value is empty or the JWT aud claim does not contain it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -890,6 +767,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
      * <pre>
      * Required recipient identifier. Temporal verification fails closed when
      * this value is empty or the JWT aud claim does not contain it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -904,6 +782,7 @@ public  final class JoseJwtTemporalValidationPolicy extends
      * <pre>
      * Required recipient identifier. Temporal verification fails closed when
      * this value is empty or the JWT aud claim does not contain it.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>string expected_audience = 7 [json_name = "expectedAudience"];</code>
@@ -914,149 +793,6 @@ public  final class JoseJwtTemporalValidationPolicy extends
         com.google.protobuf.ByteString value) {
       copyOnWrite();
       instance.setExpectedAudienceBytes(value);
-      return this;
-    }
-
-    /**
-     * <pre>
-     * Legacy issuer constraint. Empty means absent for older clients that cannot
-     * express presence. New clients use expected_issuer_constraint.
-     * </pre>
-     *
-     * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-     * @return The expectedIssuer.
-     */
-    @java.lang.Override
-    public java.lang.String getExpectedIssuer() {
-      return instance.getExpectedIssuer();
-    }
-    /**
-     * <pre>
-     * Legacy issuer constraint. Empty means absent for older clients that cannot
-     * express presence. New clients use expected_issuer_constraint.
-     * </pre>
-     *
-     * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-     * @return The bytes for expectedIssuer.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getExpectedIssuerBytes() {
-      return instance.getExpectedIssuerBytes();
-    }
-    /**
-     * <pre>
-     * Legacy issuer constraint. Empty means absent for older clients that cannot
-     * express presence. New clients use expected_issuer_constraint.
-     * </pre>
-     *
-     * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-     * @param value The expectedIssuer to set.
-     * @return This builder for chaining.
-     */
-    public Builder setExpectedIssuer(
-        java.lang.String value) {
-      copyOnWrite();
-      instance.setExpectedIssuer(value);
-      return this;
-    }
-    /**
-     * <pre>
-     * Legacy issuer constraint. Empty means absent for older clients that cannot
-     * express presence. New clients use expected_issuer_constraint.
-     * </pre>
-     *
-     * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearExpectedIssuer() {
-      copyOnWrite();
-      instance.clearExpectedIssuer();
-      return this;
-    }
-    /**
-     * <pre>
-     * Legacy issuer constraint. Empty means absent for older clients that cannot
-     * express presence. New clients use expected_issuer_constraint.
-     * </pre>
-     *
-     * <code>string expected_issuer = 8 [json_name = "expectedIssuer"];</code>
-     * @param value The bytes for expectedIssuer to set.
-     * @return This builder for chaining.
-     */
-    public Builder setExpectedIssuerBytes(
-        com.google.protobuf.ByteString value) {
-      copyOnWrite();
-      instance.setExpectedIssuerBytes(value);
-      return this;
-    }
-
-    /**
-     * <pre>
-     * Legacy subject constraint with the same absence ambiguity.
-     * </pre>
-     *
-     * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-     * @return The expectedSubject.
-     */
-    @java.lang.Override
-    public java.lang.String getExpectedSubject() {
-      return instance.getExpectedSubject();
-    }
-    /**
-     * <pre>
-     * Legacy subject constraint with the same absence ambiguity.
-     * </pre>
-     *
-     * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-     * @return The bytes for expectedSubject.
-     */
-    @java.lang.Override
-    public com.google.protobuf.ByteString
-        getExpectedSubjectBytes() {
-      return instance.getExpectedSubjectBytes();
-    }
-    /**
-     * <pre>
-     * Legacy subject constraint with the same absence ambiguity.
-     * </pre>
-     *
-     * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-     * @param value The expectedSubject to set.
-     * @return This builder for chaining.
-     */
-    public Builder setExpectedSubject(
-        java.lang.String value) {
-      copyOnWrite();
-      instance.setExpectedSubject(value);
-      return this;
-    }
-    /**
-     * <pre>
-     * Legacy subject constraint with the same absence ambiguity.
-     * </pre>
-     *
-     * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearExpectedSubject() {
-      copyOnWrite();
-      instance.clearExpectedSubject();
-      return this;
-    }
-    /**
-     * <pre>
-     * Legacy subject constraint with the same absence ambiguity.
-     * </pre>
-     *
-     * <code>string expected_subject = 9 [json_name = "expectedSubject"];</code>
-     * @param value The bytes for expectedSubject to set.
-     * @return This builder for chaining.
-     */
-    public Builder setExpectedSubjectBytes(
-        com.google.protobuf.ByteString value) {
-      copyOnWrite();
-      instance.setExpectedSubjectBytes(value);
       return this;
     }
 
@@ -1232,15 +968,13 @@ public  final class JoseJwtTemporalValidationPolicy extends
             "maxFutureIatSkewSeconds_",
             "nowUnix_",
             "expectedAudience_",
-            "expectedIssuer_",
-            "expectedSubject_",
             "expectedIssuerConstraint_",
             "expectedSubjectConstraint_",
           };
           java.lang.String info =
-              "\u0000\u000b\u0000\u0001\u0001\u000b\u000b\u0000\u0000\u0000\u0001\u0007\u0002\u0007" +
-              "\u0003\u0007\u0004\u0003\u0005\u0003\u0006\u0003\u0007\u0208\b\u0208\t\u0208\n\u1009" +
-              "\u0000\u000b\u1009\u0001";
+              "\u0000\t\u0000\u0001\u0001\u000b\t\u0000\u0000\u0000\u0001\u0007\u0002\u0007\u0003" +
+              "\u0007\u0004\u0003\u0005\u0003\u0006\u0003\u0007\u0208\n\u1009\u0000\u000b\u1009" +
+              "\u0001";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

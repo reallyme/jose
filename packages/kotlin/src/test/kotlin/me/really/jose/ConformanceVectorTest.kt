@@ -23,6 +23,23 @@ import kotlin.test.assertTrue
 
 class ConformanceVectorTest {
     @Test
+    fun schemaOperationsPreserveExactNativeBinaryAndJsonParity() {
+        for (vector in vectorCases("schema-operations.json")) {
+            val binary = decodeVectorHex(requiredString(vector, "request_hex"))
+            val json = requiredString(vector, "request_json").toByteArray(Charsets.UTF_8)
+            val expected = decodeVectorHex(requiredString(vector, "response_hex"))
+            val binaryResponse = ReallyMeJose.executeWireRequest(binary)
+            val jsonResponse = ReallyMeJose.executeWireJsonRequest(json)
+            try {
+                assertContentEquals(expected, binaryResponse, requiredString(vector, "name"))
+                assertContentEquals(expected, jsonResponse, requiredString(vector, "name"))
+            } finally {
+                listOf(binary, json, expected, binaryResponse, jsonResponse).forEach { it.fill(0) }
+            }
+        }
+    }
+
+    @Test
     fun completeJwsCorpusPreservesTypedResults() {
         vectorCases("jws-compact.json").forEach(::runJwsCase)
     }
@@ -112,8 +129,10 @@ class ConformanceVectorTest {
                 .setCompact(requiredString(vector, "compact"))
                 .setJwkJson(com.google.protobuf.ByteString.copyFrom(jwk))
                 .setPublicKey(com.google.protobuf.ByteString.copyFrom(publicKey))
-                .setTemporalPolicy(
-                    JoseJwtTemporalValidationPolicy.newBuilder().setRequireExp(true),
+                .setVerification(
+                    me.really.jose.v1.JoseJwtVerificationPolicy.newBuilder().setClaims(
+                        JoseJwtTemporalValidationPolicy.newBuilder().setRequireExp(true),
+                    ),
                 ),
         ).build().toByteArray()
         val responseBytes = ReallyMeJose.executeWireRequest(request)
@@ -186,7 +205,7 @@ private fun runSignedJwtCase(vector: JsonObject) {
     try {
         val temporalPolicy = vector.get("now_unix")?.takeUnless(JsonElement::isJsonNull)?.asLong?.let { now ->
             assertEquals("strict", optionalString(vector, "temporal_policy") ?: "strict")
-            ReallyMeJoseJwtTemporalPolicy(
+            ReallyMeJoseJwtClaimsPolicy(
                 true,
                 false,
                 false,
@@ -201,8 +220,7 @@ private fun runSignedJwtCase(vector: JsonObject) {
         if (expected != null && !expected.isJsonNull) {
             val actual = ReallyMeJose.verifyJwt(
                 requiredString(vector, "compact"), jwk, publicKey,
-                temporalPolicy = temporalPolicy,
-                signatureOnly = temporalPolicy == null,
+                verification = temporalPolicy?.let { ReallyMeJoseJwtVerification.Claims(it) } ?: ReallyMeJoseJwtVerification.SignatureOnly,
             )
             try {
                 assertEquals(expected, parseJsonBytes(actual))
@@ -213,8 +231,7 @@ private fun runSignedJwtCase(vector: JsonObject) {
             assertTypedFailure(expectedJwtReason(requireNotNull(expectedError))) {
                 ReallyMeJose.verifyJwt(
                     requiredString(vector, "compact"), jwk, publicKey,
-                    temporalPolicy = temporalPolicy,
-                    signatureOnly = temporalPolicy == null,
+                    verification = temporalPolicy?.let { ReallyMeJoseJwtVerification.Claims(it) } ?: ReallyMeJoseJwtVerification.SignatureOnly,
                 ).fill(0)
             }
         }
@@ -301,7 +318,7 @@ private fun assertTypedFailure(
 }
 
 private fun expectedJwsReason(name: String): ReallyMeJoseErrorReason = when (name) {
-    "InvalidCompactEncoding" -> ReallyMeJoseErrorReason.JWS_INVALID_COMPACT
+    "InvalidCompactEncoding" -> ReallyMeJoseErrorReason.COMMON_INVALID_COMPACT
     "HeaderMismatch" -> ReallyMeJoseErrorReason.JWS_HEADER_MISMATCH
     "BadSignatureBase64" -> ReallyMeJoseErrorReason.JWS_BAD_SIGNATURE_BASE64
     "InvalidSignature" -> ReallyMeJoseErrorReason.JWS_INVALID_SIGNATURE
@@ -309,7 +326,7 @@ private fun expectedJwsReason(name: String): ReallyMeJoseErrorReason = when (nam
 }
 
 private fun expectedJwtReason(name: String): ReallyMeJoseErrorReason = when (name.substringBefore(':')) {
-    "InvalidJwtFormat" -> ReallyMeJoseErrorReason.JWT_INVALID_COMPACT
+    "InvalidJwtFormat" -> ReallyMeJoseErrorReason.COMMON_INVALID_COMPACT
     "InvalidHeader" -> ReallyMeJoseErrorReason.JWT_INVALID_HEADER
     "UnsupportedAlgorithm" -> ReallyMeJoseErrorReason.JWT_UNSUPPORTED_ALGORITHM
     "AlgorithmMismatch" -> ReallyMeJoseErrorReason.JWT_ALGORITHM_MISMATCH
@@ -324,8 +341,8 @@ private fun expectedJwtReason(name: String): ReallyMeJoseErrorReason = when (nam
 }
 
 private fun expectedJweReason(name: String): ReallyMeJoseErrorReason = when (name) {
-    "InvalidCompact" -> ReallyMeJoseErrorReason.JWE_INVALID_COMPACT
-    "InvalidEncoding" -> ReallyMeJoseErrorReason.JWE_INVALID_ENCODING
+    "InvalidCompact" -> ReallyMeJoseErrorReason.COMMON_INVALID_COMPACT
+    "InvalidEncoding" -> ReallyMeJoseErrorReason.COMMON_INVALID_ENCODING
     "InvalidHeader" -> ReallyMeJoseErrorReason.JWE_INVALID_HEADER
     "UnsupportedKeyManagementAlgorithm" -> ReallyMeJoseErrorReason.JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM
     "UnsupportedContentEncryptionAlgorithm" -> ReallyMeJoseErrorReason.JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM

@@ -160,6 +160,21 @@ fn reject_jwt_when_jwk_curve_and_alg_disagree() {
 }
 
 #[test]
+fn reject_jwt_when_jwk_key_type_disagrees_with_curve() {
+    let key = gen_p256();
+    let jwt = encode_signed_jwt(&base_claims_json(), &key.jwk, &key.private).unwrap();
+    let mut jwk = key.jwk;
+    if let Jwk::Ec(ref mut ec) = jwk {
+        ec.kty = "OKP".to_owned();
+    }
+
+    assert!(matches!(
+        decode_verify_jwt_signature_only::<serde_json::Value>(&jwt, &jwk, &key.public),
+        Err(JwtError::UnsupportedAlgorithm)
+    ));
+}
+
+#[test]
 fn reject_jwt_when_jwk_alg_is_missing() {
     let k = gen_p256();
     let claims = base_claims_json();

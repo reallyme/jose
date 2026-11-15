@@ -13,18 +13,9 @@ use crate::jws::parse_header::JwsAlgorithm;
 use crate::jws::sign::{encode_compact_jws, encode_jws_signing_input, JwsSigningInputError};
 use crate::jws::sign_p256::{sign_p256_jose_signature, P256JoseSignErrorReason};
 
-/// Supported algorithms for the compact-JWS signing operation.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum JwsSignAlgorithm {
-    /// ECDSA over P-256 with SHA-256.
-    Es256,
-    /// EdDSA with Ed25519.
-    Eddsa,
-}
-
 /// Borrowed input for one compact-JWS signing operation.
 pub(crate) struct JwsSignInput<'a> {
-    algorithm: JwsSignAlgorithm,
+    algorithm: JwsAlgorithm,
     private_key: &'a [u8],
     payload: &'a str,
 }
@@ -32,7 +23,7 @@ pub(crate) struct JwsSignInput<'a> {
 impl<'a> JwsSignInput<'a> {
     /// Builds a borrowed semantic signing request.
     pub(crate) const fn new(
-        algorithm: JwsSignAlgorithm,
+        algorithm: JwsAlgorithm,
         private_key: &'a [u8],
         payload: &'a str,
     ) -> Self {
@@ -80,21 +71,18 @@ impl JwsSignError {
     }
 
     /// Returns the fixed, non-sensitive failure reason.
-    pub(crate) const fn reason(self) -> JwsSignErrorReason {
+    pub(crate) const fn reason(&self) -> JwsSignErrorReason {
         self.reason
     }
 }
 
 /// Signs one compact JWS with the selected typed algorithm.
 pub(crate) fn sign_jws(input: JwsSignInput<'_>) -> Result<SignedCompactJws, JwsSignError> {
-    let header_algorithm = match input.algorithm {
-        JwsSignAlgorithm::Es256 => JwsAlgorithm::Es256,
-        JwsSignAlgorithm::Eddsa => JwsAlgorithm::Eddsa,
-    };
+    let header_algorithm = input.algorithm;
     let signing_input = encode_jws_signing_input(header_algorithm, input.payload.as_bytes())
         .map_err(map_signing_input_error)?;
     let signature = match input.algorithm {
-        JwsSignAlgorithm::Es256 => Zeroizing::new(
+        JwsAlgorithm::Es256 => Zeroizing::new(
             sign_p256_jose_signature(input.private_key, &signing_input.signing_input)
                 .map_err(|error| match error.reason() {
                     P256JoseSignErrorReason::SignFailed => {
@@ -106,7 +94,7 @@ pub(crate) fn sign_jws(input: JwsSignInput<'_>) -> Result<SignedCompactJws, JwsS
                 })?
                 .to_vec(),
         ),
-        JwsSignAlgorithm::Eddsa => Zeroizing::new(
+        JwsAlgorithm::Eddsa => Zeroizing::new(
             dispatch_sign(
                 CryptoAlgorithm::Ed25519,
                 input.private_key,

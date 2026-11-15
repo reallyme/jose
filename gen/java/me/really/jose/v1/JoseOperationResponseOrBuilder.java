@@ -144,5 +144,112 @@ public interface JoseOperationResponseOrBuilder extends
    */
   me.really.jose.v1.JoseJweDecryptResponse getJweDecrypt();
 
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+   * @return Whether the signatureSign field is set.
+   */
+  boolean hasSignatureSign();
+  /**
+   * <pre>
+   * Extended native contracts preserve borrowed and provider-backed capabilities.
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseSignatureSignResponse signature_sign = 1010 [json_name = "signatureSign"];</code>
+   * @return The signatureSign.
+   */
+  me.really.jose.v1.JoseSignatureSignResponse getSignatureSign();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   * @return Whether the signatureVerify field is set.
+   */
+  boolean hasSignatureVerify();
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureVerifyResponse signature_verify = 1011 [json_name = "signatureVerify"];</code>
+   * @return The signatureVerify.
+   */
+  me.really.jose.v1.JoseSignatureVerifyResponse getSignatureVerify();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   * @return Whether the signatureSuiteInfo field is set.
+   */
+  boolean hasSignatureSuiteInfo();
+  /**
+   * <code>.reallyme.jose.v1.JoseSignatureSuiteInfoResponse signature_suite_info = 1012 [json_name = "signatureSuiteInfo"];</code>
+   * @return The signatureSuiteInfo.
+   */
+  me.really.jose.v1.JoseSignatureSuiteInfoResponse getSignatureSuiteInfo();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   * @return Whether the jwtSignWithProvider field is set.
+   */
+  boolean hasJwtSignWithProvider();
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
+   * @return The jwtSignWithProvider.
+   */
+  me.really.jose.v1.JoseJwtSignWithProviderResponse getJwtSignWithProvider();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   * @return Whether the jwtClaimsParse field is set.
+   */
+  boolean hasJwtClaimsParse();
+  /**
+   * <code>.reallyme.jose.v1.JoseJwtClaimsParseResponse jwt_claims_parse = 2011 [json_name = "jwtClaimsParse"];</code>
+   * @return The jwtClaimsParse.
+   */
+  me.really.jose.v1.JoseJwtClaimsParseResponse getJwtClaimsParse();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   * @return Whether the jweDeriveKey field is set.
+   */
+  boolean hasJweDeriveKey();
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDeriveKeyResponse jwe_derive_key = 3010 [json_name = "jweDeriveKey"];</code>
+   * @return The jweDeriveKey.
+   */
+  me.really.jose.v1.JoseJweDeriveKeyResponse getJweDeriveKey();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   * @return Whether the jweEncryptWithProvider field is set.
+   */
+  boolean hasJweEncryptWithProvider();
+  /**
+   * <code>.reallyme.jose.v1.JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011 [json_name = "jweEncryptWithProvider"];</code>
+   * @return The jweEncryptWithProvider.
+   */
+  me.really.jose.v1.JoseJweEncryptWithProviderResponse getJweEncryptWithProvider();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   * @return Whether the jweDecryptWithProvider field is set.
+   */
+  boolean hasJweDecryptWithProvider();
+  /**
+   * <code>.reallyme.jose.v1.JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012 [json_name = "jweDecryptWithProvider"];</code>
+   * @return The jweDecryptWithProvider.
+   */
+  me.really.jose.v1.JoseJweDecryptWithProviderResponse getJweDecryptWithProvider();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+   * @return Whether the contractInfo field is set.
+   */
+  boolean hasContractInfo();
+  /**
+   * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
+   * @return The contractInfo.
+   */
+  me.really.jose.v1.JoseContractInfoResponse getContractInfo();
+
   public me.really.jose.v1.JoseOperationResponse.ResponseCase getResponseCase();
 }

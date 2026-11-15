@@ -1,0 +1,412 @@
+// SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+//! Native failures retain the exact generated public reason.
+
+use reallyme_jose::jwe::JweError;
+use reallyme_jose::jws::suites::{eddsa::JwsEddsaError, es256::JwsEs256Error};
+use reallyme_jose::jwt::{JwtError, JwtRegisteredClaim, JwtTemporalClaim};
+use reallyme_jose::wire::proto::proto::reallyme::jose::v1::JoseErrorReason;
+
+#[test]
+fn wire_construction_error_is_schema_mapped() {
+    let error = reallyme_jose::wire::JoseWireErrorConstructionError::BranchReasonMismatch;
+    assert_eq!(error.reason(), JoseErrorReason::BackendInternal);
+}
+
+#[test]
+fn jwe_error_maps_every_variant() {
+    let cases = [
+        (
+            JweError::InvalidCompact,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_INVALID_COMPACT,
+        ),
+        (
+            JweError::InputTooLarge,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED,
+        ),
+        (
+            JweError::InvalidEncoding,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_INVALID_ENCODING,
+        ),
+        (
+            JweError::InvalidHeader,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_INVALID_HEADER,
+        ),
+        (
+            JweError::UnsupportedKeyManagementAlgorithm,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM,
+        ),
+        (
+            JweError::UnsupportedContentEncryptionAlgorithm,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM,
+        ),
+        (
+            JweError::UnsupportedCompressionAlgorithm,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM,
+        ),
+        (
+            JweError::MissingRequiredHeaderParameter,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER,
+        ),
+        (
+            JweError::HeaderPolicyMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH,
+        ),
+        (
+            JweError::TypPolicyMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH,
+        ),
+        (
+            JweError::CtyPolicyMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH,
+        ),
+        (
+            JweError::KidPolicyMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH,
+        ),
+        (
+            JweError::ApuPolicyMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH,
+        ),
+        (
+            JweError::ApvPolicyMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH,
+        ),
+        (
+            JweError::InvalidEncryptedKey,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY,
+        ),
+        (
+            JweError::InvalidContentEncryptionKey,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY,
+        ),
+        (
+            JweError::InvalidContentCipherInput,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT,
+        ),
+        (
+            JweError::Decrypt,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_DECRYPT_FAILED,
+        ),
+        (
+            JweError::Encrypt,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED,
+        ),
+        (
+            JweError::Compression,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED,
+        ),
+        (
+            JweError::Decompression,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED,
+        ),
+        (
+            JweError::DecompressedPlaintextTooLarge,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE,
+        ),
+        (
+            JweError::InvalidKeyAgreementKey,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY,
+        ),
+        (
+            JweError::InvalidSharedSecret,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET,
+        ),
+        (
+            JweError::KeyDerivation,
+            JoseErrorReason::JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED,
+        ),
+        (
+            JweError::Randomness,
+            JoseErrorReason::JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE,
+        ),
+        (
+            JweError::InvalidPayloadJson,
+            JoseErrorReason::JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON,
+        ),
+        (
+            JweError::LengthOverflow,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW,
+        ),
+    ];
+    for (native, expected) in cases {
+        assert_eq!(native.reason(), expected);
+    }
+}
+
+#[test]
+fn jwt_error_maps_every_variant() {
+    let cases = [
+        (
+            JwtError::InvalidJwtFormat,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_INVALID_COMPACT,
+        ),
+        (
+            JwtError::InputTooLarge,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED,
+        ),
+        (
+            JwtError::Base64Url,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_INVALID_ENCODING,
+        ),
+        (
+            JwtError::LengthOverflow,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW,
+        ),
+        (
+            JwtError::InvalidHeader,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_HEADER,
+        ),
+        (
+            JwtError::UnsupportedAlgorithm,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM,
+        ),
+        (
+            JwtError::AlgorithmMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH,
+        ),
+        (
+            JwtError::KeyIdMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH,
+        ),
+        (
+            JwtError::PublicKeyMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH,
+        ),
+        (
+            JwtError::SigningKeyMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH,
+        ),
+        (
+            JwtError::MissingAlgorithm,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM,
+        ),
+        (
+            JwtError::MissingPrivateKey,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY,
+        ),
+        (
+            JwtError::MissingPublicKey,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY,
+        ),
+        (
+            JwtError::InvalidPublicKey,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY,
+        ),
+        (
+            JwtError::InvalidSignature,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE,
+        ),
+        (
+            JwtError::Crypto,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_CRYPTO_FAILED,
+        ),
+        (
+            JwtError::InvalidClaims,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_CLAIMS,
+        ),
+        (
+            JwtError::Serialization,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED,
+        ),
+        (
+            JwtError::MissingRequiredTemporalClaim(JwtTemporalClaim::Exp),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM,
+        ),
+        (
+            JwtError::MissingRequiredTemporalClaim(JwtTemporalClaim::Nbf),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM,
+        ),
+        (
+            JwtError::MissingRequiredTemporalClaim(JwtTemporalClaim::Iat),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM,
+        ),
+        (
+            JwtError::InvalidTemporalClaimValue(JwtTemporalClaim::Exp),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE,
+        ),
+        (
+            JwtError::InvalidTemporalClaimValue(JwtTemporalClaim::Nbf),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE,
+        ),
+        (
+            JwtError::InvalidTemporalClaimValue(JwtTemporalClaim::Iat),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE,
+        ),
+        (
+            JwtError::Expired,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_EXPIRED,
+        ),
+        (
+            JwtError::NotYetValid,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_NOT_YET_VALID,
+        ),
+        (
+            JwtError::IssuedAtInFuture,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE,
+        ),
+        (
+            JwtError::InvalidVerificationTime,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME,
+        ),
+        (
+            JwtError::InvalidTemporalPolicy,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY,
+        ),
+        (
+            JwtError::MissingRequiredRegisteredClaim(JwtRegisteredClaim::Issuer),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM,
+        ),
+        (
+            JwtError::MissingRequiredRegisteredClaim(JwtRegisteredClaim::Subject),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM,
+        ),
+        (
+            JwtError::MissingRequiredRegisteredClaim(JwtRegisteredClaim::Audience),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM,
+        ),
+        (
+            JwtError::InvalidRegisteredClaimValue(JwtRegisteredClaim::Issuer),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE,
+        ),
+        (
+            JwtError::InvalidRegisteredClaimValue(JwtRegisteredClaim::Subject),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE,
+        ),
+        (
+            JwtError::InvalidRegisteredClaimValue(JwtRegisteredClaim::Audience),
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE,
+        ),
+        (
+            JwtError::AudienceMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH,
+        ),
+        (
+            JwtError::IssuerMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH,
+        ),
+        (
+            JwtError::SubjectMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH,
+        ),
+        (
+            JwtError::InvalidClaimsPolicy,
+            JoseErrorReason::JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY,
+        ),
+    ];
+    for (native, expected) in cases {
+        assert_eq!(native.reason(), expected);
+    }
+}
+
+#[test]
+fn jws_eddsa_error_maps_every_variant() {
+    let cases = [
+        (
+            JwsEddsaError::SignFailed,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_SIGN_FAILED,
+        ),
+        (
+            JwsEddsaError::BadHeaderBase64,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64,
+        ),
+        (
+            JwsEddsaError::BadHeaderUtf8,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8,
+        ),
+        (
+            JwsEddsaError::BadPayloadBase64,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64,
+        ),
+        (
+            JwsEddsaError::BadSignatureBase64,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64,
+        ),
+        (
+            JwsEddsaError::InvalidCompactEncoding,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_INVALID_COMPACT,
+        ),
+        (
+            JwsEddsaError::LengthOverflow,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW,
+        ),
+        (
+            JwsEddsaError::InputTooLarge,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED,
+        ),
+        (
+            JwsEddsaError::HeaderMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_HEADER_MISMATCH,
+        ),
+        (
+            JwsEddsaError::InvalidSignature,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE,
+        ),
+    ];
+    for (native, expected) in cases {
+        assert_eq!(native.reason(), expected);
+    }
+}
+
+#[test]
+fn jws_es256_error_maps_every_variant() {
+    let cases = [
+        (
+            JwsEs256Error::SignFailed,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_SIGN_FAILED,
+        ),
+        (
+            JwsEs256Error::BadDerSignature,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE,
+        ),
+        (
+            JwsEs256Error::BadHeaderBase64,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64,
+        ),
+        (
+            JwsEs256Error::BadHeaderUtf8,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8,
+        ),
+        (
+            JwsEs256Error::BadPayloadBase64,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64,
+        ),
+        (
+            JwsEs256Error::BadSignatureBase64,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64,
+        ),
+        (
+            JwsEs256Error::BadRawSignature,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE,
+        ),
+        (
+            JwsEs256Error::InvalidCompactEncoding,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_INVALID_COMPACT,
+        ),
+        (
+            JwsEs256Error::LengthOverflow,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW,
+        ),
+        (
+            JwsEs256Error::InputTooLarge,
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED,
+        ),
+        (
+            JwsEs256Error::HeaderMismatch,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_HEADER_MISMATCH,
+        ),
+        (
+            JwsEs256Error::InvalidSignature,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE,
+        ),
+        (
+            JwsEs256Error::VerifyFailed,
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE,
+        ),
+    ];
+    for (native, expected) in cases {
+        assert_eq!(native.reason(), expected);
+    }
+}

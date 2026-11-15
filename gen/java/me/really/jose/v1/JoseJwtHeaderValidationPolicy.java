@@ -6,6 +6,11 @@
 package me.really.jose.v1;
 
 /**
+ * <pre>
+ * Rust view: jwt/validate_header.rs#JwtHeaderValidationOptions
+ * Contract preset: JoseJwtHeaderValidationPolicy standard_jwt_header = {"allowMissingTyp":false,"allowEmbeddedKeyHeader":false,"acceptedTypValues":["JWT"]}
+ * </pre>
+ *
  * Protobuf type {@code reallyme.jose.v1.JoseJwtHeaderValidationPolicy}
  */
 @com.google.protobuf.Generated
@@ -88,6 +93,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
   public static final int ACCEPTED_TYP_VALUES_FIELD_NUMBER = 3;
   private com.google.protobuf.Internal.ProtobufList<java.lang.String> acceptedTypValues_;
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @return A list containing the acceptedTypValues.
    */
@@ -96,6 +105,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
     return acceptedTypValues_;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @return The count of acceptedTypValues.
    */
@@ -104,6 +117,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
     return acceptedTypValues_.size();
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @param index The index of the element to return.
    * @return The acceptedTypValues at the given index.
@@ -113,6 +130,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
     return acceptedTypValues_.get(index);
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @param index The index of the value to return.
    * @return The bytes of the acceptedTypValues at the given index.
@@ -131,6 +152,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
      }
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @param index The index to set the value at.
    * @param value The acceptedTypValues to set.
@@ -142,6 +167,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
     acceptedTypValues_.set(index, value);
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @param value The acceptedTypValues to add.
    */
@@ -152,6 +181,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
     acceptedTypValues_.add(value);
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @param values The acceptedTypValues to add.
    */
@@ -162,12 +195,20 @@ public  final class JoseJwtHeaderValidationPolicy extends
         values, acceptedTypValues_);
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    */
   private void clearAcceptedTypValues() {
     acceptedTypValues_ = emptyProtobufList();
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
    * @param value The bytes of the acceptedTypValues to add.
    */
@@ -262,6 +303,11 @@ public  final class JoseJwtHeaderValidationPolicy extends
   }
 
   /**
+   * <pre>
+   * Rust view: jwt/validate_header.rs#JwtHeaderValidationOptions
+   * Contract preset: JoseJwtHeaderValidationPolicy standard_jwt_header = {"allowMissingTyp":false,"allowEmbeddedKeyHeader":false,"acceptedTypValues":["JWT"]}
+   * </pre>
+   *
    * Protobuf type {@code reallyme.jose.v1.JoseJwtHeaderValidationPolicy}
    */
   public static final class Builder extends
@@ -332,6 +378,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
     }
 
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
      * @return A list containing the acceptedTypValues.
      */
@@ -342,6 +392,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
           instance.getAcceptedTypValuesList());
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
      * @return The count of acceptedTypValues.
      */
@@ -350,6 +404,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
       return instance.getAcceptedTypValuesCount();
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
      * @param index The index of the element to return.
      * @return The acceptedTypValues at the given index.
@@ -359,6 +417,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
       return instance.getAcceptedTypValues(index);
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
      * @param index The index of the value to return.
      * @return The bytes of the acceptedTypValues at the given index.
@@ -369,6 +431,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
       return instance.getAcceptedTypValuesBytes(index);
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
      * @param index The index to set the value at.
      * @param value The acceptedTypValues to set.
@@ -381,6 +447,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
      * @param value The acceptedTypValues to add.
      * @return This builder for chaining.
@@ -392,6 +462,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
      * @param values The acceptedTypValues to add.
      * @return This builder for chaining.
@@ -403,6 +477,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
      * @return This builder for chaining.
      */
@@ -412,6 +490,10 @@ public  final class JoseJwtHeaderValidationPolicy extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];</code>
      * @param value The bytes of the acceptedTypValues to add.
      * @return This builder for chaining.

@@ -36,6 +36,10 @@ public  final class JoseExpectedBytes extends
   public static final int VALUE_FIELD_NUMBER = 1;
   private com.google.protobuf.ByteString value_;
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>bytes value = 1 [json_name = "value"];</code>
    * @return The value.
    */
@@ -44,6 +48,10 @@ public  final class JoseExpectedBytes extends
     return value_;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>bytes value = 1 [json_name = "value"];</code>
    * @param value The value to set.
    */
@@ -53,6 +61,10 @@ public  final class JoseExpectedBytes extends
     value_ = value;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>bytes value = 1 [json_name = "value"];</code>
    */
   private void clearValue() {
@@ -158,6 +170,10 @@ public  final class JoseExpectedBytes extends
 
 
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>bytes value = 1 [json_name = "value"];</code>
      * @return The value.
      */
@@ -166,6 +182,10 @@ public  final class JoseExpectedBytes extends
       return instance.getValue();
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>bytes value = 1 [json_name = "value"];</code>
      * @param value The value to set.
      * @return This builder for chaining.
@@ -176,6 +196,10 @@ public  final class JoseExpectedBytes extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>bytes value = 1 [json_name = "value"];</code>
      * @return This builder for chaining.
      */

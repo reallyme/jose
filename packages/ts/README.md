@@ -38,8 +38,9 @@ into a `Uint8Array`, and call `wasm.initSync({ module: bytes })` before provider
 installation. Node.js integrations require version 20.19 or newer.
 
 Provider installation is explicit. Calls fail closed when no WASM provider is
-installed; applications must select a trusted module. The facade clears the
-request and response byte arrays it owns after dispatch. The protobuf encoder
+installed, with the local `provider-not-installed` SDK code. Applications must
+select a trusted module.
+The facade clears the request and response byte arrays it owns after dispatch. The protobuf encoder
 can make internal copies during buffer growth that JavaScript cannot clear
 through its public API, so this is best-effort cleanup rather than guaranteed
 erasure. Callers remain responsible for clearing their own `Uint8Array` values.
@@ -59,6 +60,16 @@ should use `ReallyMeJose`, whose generated protobuf decoding, response-shape
 validation, typed errors, size limits, and cleanup rules form the supported
 API. Cryptographic operations stay inside WASM; the host supplies secure
 randomness.
+
+Facade options accept plain or null-prototype records. Unknown option and policy
+fields are rejected so misspelled constraints cannot silently disable a check.
+
+JWT verification requires `verification: { mode: "signatureOnly" }`,
+`{ mode: "claims", policy }`, or `{ mode: "temporalOnly", policy }`.
+`ReallyMeJoseJwtClaimsPolicy` binds audience and optional issuer/subject;
+`ReallyMeJoseJwtTemporalPolicy` checks time claims only. Omitted temporal options
+use the schema's strict preset: expiration is required and skew is 60 seconds. Unknown modes, extra
+fields, and the retired `signatureOnly`/`temporalPolicy` options are rejected.
 
 ## License
 

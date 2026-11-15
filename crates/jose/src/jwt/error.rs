@@ -5,31 +5,11 @@
 use thiserror::Error;
 
 use reallyme_codec::base64url::Base64UrlError;
-use reallyme_crypto::dispatch::AlgorithmError;
+use reallyme_crypto::core::CryptoError;
 
-/// Registered temporal claim identifiers used in typed errors.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum JwtTemporalClaim {
-    /// Expiration time (`exp`).
-    Exp,
-    /// Not-before time (`nbf`).
-    Nbf,
-    /// Issued-at time (`iat`).
-    Iat,
-}
+pub use crate::generated_contract::JwtTemporalClaim;
 
-/// Registered identity claim identifiers used in typed validation errors.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum JwtRegisteredClaim {
-    /// Issuer claim (`iss`).
-    Issuer,
-    /// Subject claim (`sub`).
-    Subject,
-    /// Audience claim (`aud`).
-    Audience,
-}
+pub use crate::generated_contract::JwtRegisteredClaim;
 
 /// JWT parsing, signing, verification, and temporal-validation errors.
 #[derive(Debug, Error)]
@@ -170,8 +150,8 @@ impl From<Base64UrlError> for JwtError {
     }
 }
 
-impl From<AlgorithmError> for JwtError {
-    fn from(_: AlgorithmError) -> Self {
+impl From<CryptoError> for JwtError {
+    fn from(_: CryptoError) -> Self {
         JwtError::Crypto
     }
 }
@@ -179,5 +159,13 @@ impl From<AlgorithmError> for JwtError {
 impl From<serde_json::Error> for JwtError {
     fn from(_: serde_json::Error) -> Self {
         JwtError::Serialization
+    }
+}
+
+impl JwtError {
+    /// Returns the exact generated reason for this native failure.
+    #[must_use]
+    pub const fn reason(&self) -> crate::wire::proto::proto::reallyme::jose::v1::JoseErrorReason {
+        crate::map_failure::jwt(self).reason()
     }
 }

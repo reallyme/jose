@@ -120,3 +120,11 @@ pub enum JweError {
     #[error("JWE input too large")]
     InputTooLarge,
 }
+
+impl JweError {
+    /// Returns the exact generated reason for this native failure.
+    #[must_use]
+    pub const fn reason(&self) -> crate::wire::proto::proto::reallyme::jose::v1::JoseErrorReason {
+        crate::map_failure::jwe(self).reason()
+    }
+}

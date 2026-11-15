@@ -14,6 +14,7 @@ public interface JoseJwtClaimsResultOrBuilder extends
    * <pre>
    * Original claims JSON bytes preserved by the wire adapter. These bytes can
    * contain PII and must be zeroized after use.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes claims_json = 1 [json_name = "claimsJson"];</code>

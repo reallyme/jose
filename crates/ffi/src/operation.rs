@@ -20,7 +20,8 @@ use crate::pointer::{
 use crate::status::JoseFfiStatus;
 
 /// Exact C ABI version required by every operational call.
-pub const JOSE_ABI_VERSION: u32 = 1;
+pub const JOSE_ABI_VERSION: u32 =
+    reallyme_jose_proto::generated::contract_values::NATIVE_ABI_VERSION;
 
 const MAX_JOSE_FFI_RESPONSE_BYTES: usize =
     match MAX_JOSE_PROTO_MESSAGE_BYTES.checked_add(MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES) {
@@ -63,7 +64,7 @@ pub const extern "C" fn rm_jose_max_response_bytes() -> usize {
     MAX_JOSE_FFI_RESPONSE_BYTES
 }
 
-/// Executes one binary protobuf request into a canonical V1 response.
+/// Executes one binary protobuf request into a canonical V2 response.
 ///
 /// The caller owns every pointer. `len_out` is initialized to zero after all
 /// pointer and alias checks. On `OutputCapacityMismatch`, it contains the exact

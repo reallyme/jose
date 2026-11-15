@@ -2,28 +2,40 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { ReallyMeJoseError } from "./errors.js";
+import { ReallyMeJoseError, ReallyMeJoseSdkErrorCode } from "./errors.js";
 import { JoseErrorReason } from "./proto/generated/reallyme/jose/v1/jose_pb.js";
 
-export const MAX_JOSE_BINARY_REQUEST_BYTES = 1_048_576;
-export const MAX_JOSE_JSON_REQUEST_BYTES = 1_572_864;
-export const MAX_JOSE_RESPONSE_BYTES = 1_048_608;
+import { COMPACT_BYTES, PROTO_JSON_BYTES, RESPONSE_OVERHEAD_BYTES } from "./proto/contract-values.js";
+
+export const MAX_JOSE_BINARY_REQUEST_BYTES = COMPACT_BYTES;
+export const MAX_JOSE_JSON_REQUEST_BYTES = PROTO_JSON_BYTES;
+export const MAX_JOSE_RESPONSE_BYTES = COMPACT_BYTES + RESPONSE_OVERHEAD_BYTES;
 
 export const invalidInput = (): never => {
-  throw new ReallyMeJoseError("invalid-input");
+  throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.INVALID_INPUT);
 };
 
 export const resourceLimit = (): never => {
   throw new ReallyMeJoseError(
-    "jose-failure",
+    ReallyMeJoseSdkErrorCode.JOSE_FAILURE,
     "primitive",
     JoseErrorReason.COMMON_RESOURCE_LIMIT_EXCEEDED,
   );
 };
 
-export const ensureObject = (value: unknown): void => {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    invalidInput();
+export const ensureObjectFields = (value: unknown, allowed: Readonly<Record<string, true>>): void => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return invalidInput();
+  const prototype: unknown = Object.getPrototypeOf(value);
+  if (prototype !== null && prototype !== Object.prototype) invalidInput();
+  for (const field of Object.keys(allowed)) {
+    // Optional settings must be absent or owned by this record. A polluted
+    // Object.prototype must never supply authorization or verification policy.
+    if (!Object.hasOwn(value, field) && field in value) invalidInput();
+  }
+  for (const field of Reflect.ownKeys(value)) {
+    if (typeof field !== "string" || !Object.hasOwn(allowed, field)) invalidInput();
+    const descriptor = Object.getOwnPropertyDescriptor(value, field);
+    if (descriptor === undefined || !Object.hasOwn(descriptor, "value")) invalidInput();
   }
 };
 
@@ -94,6 +106,6 @@ export const ensureIndependentBytes = (
   inputs: ReadonlyArray<Uint8Array>,
 ): void => {
   if (inputs.some((input) => input.buffer === value.buffer)) {
-    throw new ReallyMeJoseError("provider-failure");
+    throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.PROVIDER_FAILURE);
   }
 };

@@ -39,6 +39,7 @@ public  final class JoseJwePlaintextResult extends
    * <pre>
    * Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
    * must not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes plaintext = 1 [json_name = "plaintext"];</code>
@@ -52,6 +53,7 @@ public  final class JoseJwePlaintextResult extends
    * <pre>
    * Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
    * must not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes plaintext = 1 [json_name = "plaintext"];</code>
@@ -66,6 +68,7 @@ public  final class JoseJwePlaintextResult extends
    * <pre>
    * Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
    * must not log, trace, or include this field in errors.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes plaintext = 1 [json_name = "plaintext"];</code>
@@ -176,6 +179,7 @@ public  final class JoseJwePlaintextResult extends
      * <pre>
      * Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
      * must not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes plaintext = 1 [json_name = "plaintext"];</code>
@@ -189,6 +193,7 @@ public  final class JoseJwePlaintextResult extends
      * <pre>
      * Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
      * must not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes plaintext = 1 [json_name = "plaintext"];</code>
@@ -204,6 +209,7 @@ public  final class JoseJwePlaintextResult extends
      * <pre>
      * Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
      * must not log, trace, or include this field in errors.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes plaintext = 1 [json_name = "plaintext"];</code>

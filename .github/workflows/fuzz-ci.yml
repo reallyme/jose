@@ -1,0 +1,68 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: Fuzz smoke tests
+
+on:
+  workflow_call:
+    outputs:
+      verified_sha:
+        value: ${{ jobs.build.outputs.verified_sha }}
+
+permissions:
+  contents: read
+
+env:
+  CARGO_FUZZ_VERSION: 0.13.2
+  NIGHTLY_TOOLCHAIN: nightly-2026-09-15
+
+jobs:
+  build:
+    name: fuzz target build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      verified_sha: ${{ steps.verified.outputs.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        with:
+          toolchain: ${{ env.NIGHTLY_TOOLCHAIN }}
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz --version "$CARGO_FUZZ_VERSION" --locked
+
+      - name: Verify fuzz lockfile is current
+        run: cargo metadata --manifest-path fuzz/Cargo.toml --locked --no-deps --format-version 1
+
+      - name: Build fuzz targets
+        run: cargo +nightly-2026-09-15 fuzz build
+
+      - name: Exercise the checked-in seed corpora
+        shell: bash
+        run: |
+          targets="$(cargo +nightly-2026-09-15 fuzz list)"
+          test -n "$targets"
+          while IFS= read -r target; do
+            cargo +nightly-2026-09-15 fuzz run "$target" -- -runs=32 -max_total_time=15 -rss_limit_mb=4096
+          done <<< "$targets"
+
+      - name: Verify fuzz build did not rewrite the lockfile
+        run: git diff --exit-code -- fuzz/Cargo.lock
+
+      - name: Record verified source
+        id: verified
+        shell: bash
+        run: |
+          sha=$(git rev-parse --verify HEAD)
+          test "$sha" = "$GITHUB_SHA"
+          printf 'sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"

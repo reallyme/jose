@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-import { ReallyMeJoseError } from "./errors.js";
+import { ReallyMeJoseError, ReallyMeJoseSdkErrorCode } from "./errors.js";
 import { requireReallyMeJoseWasmProvider } from "./provider.js";
 import type { ReallyMeJoseWasmProvider } from "./provider.js";
 import {
@@ -28,12 +28,12 @@ const execute = (
     ? provider.executeOperationJson(request)
     : provider.executeOperation(request);
   if (!(result instanceof Uint8Array)) {
-    throw new ReallyMeJoseError("provider-failure");
+    throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.PROVIDER_FAILURE);
   }
   ensureIndependentBytes(result, [request]);
   if (result.length === 0 || result.length > MAX_JOSE_RESPONSE_BYTES) {
     result.fill(0);
-    throw new ReallyMeJoseError("provider-failure");
+    throw new ReallyMeJoseError(ReallyMeJoseSdkErrorCode.PROVIDER_FAILURE);
   }
   return result;
 };

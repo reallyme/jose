@@ -11,6 +11,11 @@ package me.really.jose.v1;
 public inline fun joseJwtHeaderValidationPolicy(block: me.really.jose.v1.JoseJwtHeaderValidationPolicyKt.Dsl.() -> kotlin.Unit): me.really.jose.v1.JoseJwtHeaderValidationPolicy =
   me.really.jose.v1.JoseJwtHeaderValidationPolicyKt.Dsl._create(me.really.jose.v1.JoseJwtHeaderValidationPolicy.newBuilder()).apply { block() }._build()
 /**
+ * ```
+ * Rust view: jwt/validate_header.rs#JwtHeaderValidationOptions
+ * Contract preset: JoseJwtHeaderValidationPolicy standard_jwt_header = {"allowMissingTyp":false,"allowEmbeddedKeyHeader":false,"acceptedTypValues":["JWT"]}
+ * ```
+ *
  * Protobuf type `reallyme.jose.v1.JoseJwtHeaderValidationPolicy`
  */
 public object JoseJwtHeaderValidationPolicyKt {
@@ -70,6 +75,10 @@ public object JoseJwtHeaderValidationPolicyKt {
     @kotlin.OptIn(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)
     public class AcceptedTypValuesProxy private constructor() : com.google.protobuf.kotlin.DslProxy()
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];`
      * @return A list containing the acceptedTypValues.
      */
@@ -79,6 +88,10 @@ public object JoseJwtHeaderValidationPolicyKt {
         _builder.acceptedTypValuesList
       )
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];`
      * @param value The acceptedTypValues to add.
      */
@@ -88,6 +101,10 @@ public object JoseJwtHeaderValidationPolicyKt {
       _builder.addAcceptedTypValues(value)
     }
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];`
      * @param value The acceptedTypValues to add.
      */
@@ -98,6 +115,10 @@ public object JoseJwtHeaderValidationPolicyKt {
       add(value)
     }
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];`
      * @param values The acceptedTypValues to add.
      */
@@ -107,6 +128,10 @@ public object JoseJwtHeaderValidationPolicyKt {
       _builder.addAllAcceptedTypValues(values)
     }
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];`
      * @param values The acceptedTypValues to add.
      */
@@ -117,6 +142,10 @@ public object JoseJwtHeaderValidationPolicyKt {
       addAll(values)
     }
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];`
      * @param index The index to set the value at.
      * @param value The acceptedTypValues to set.
@@ -126,6 +155,10 @@ public object JoseJwtHeaderValidationPolicyKt {
     public operator fun com.google.protobuf.kotlin.DslList<kotlin.String, AcceptedTypValuesProxy>.set(index: kotlin.Int, value: kotlin.String) {
       _builder.setAcceptedTypValues(index, value)
     }/**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `repeated string accepted_typ_values = 3 [json_name = "acceptedTypValues"];`
      */
     @kotlin.jvm.JvmSynthetic

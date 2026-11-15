@@ -10,8 +10,8 @@ use zeroize::Zeroizing;
 use crate::{
     jws::sign::JwsSigningInputError,
     operation_contract::jws::{
-        sign_jws, verify_jws, JwsSignAlgorithm, JwsSignError, JwsSignErrorReason, JwsSignInput,
-        JwsVerifyAlgorithm, JwsVerifyError, JwsVerifyErrorReason, JwsVerifyInput,
+        sign_jws, verify_jws, JwsAlgorithm, JwsSignError, JwsSignErrorReason, JwsSignInput,
+        JwsVerifyError, JwsVerifyErrorReason, JwsVerifyInput,
     },
 };
 
@@ -59,7 +59,7 @@ pub enum JwsEddsaError {
 /// Ed25519 signing fails, or compact serialization fails.
 pub fn sign_eddsa_jws(secret_key: &[u8], payload_text: &str) -> Result<String, JwsEddsaError> {
     sign_jws(JwsSignInput::new(
-        JwsSignAlgorithm::Eddsa,
+        JwsAlgorithm::Eddsa,
         secret_key,
         payload_text,
     ))
@@ -132,12 +132,8 @@ pub fn verify_eddsa_jws_and_decode_authenticated_parts(
     jws: &str,
     public_key: &[u8],
 ) -> Result<crate::jws::AuthenticatedCompactJws, JwsEddsaError> {
-    verify_jws(JwsVerifyInput::new(
-        JwsVerifyAlgorithm::Eddsa,
-        jws,
-        public_key,
-    ))
-    .map_err(map_jws_verify_error)
+    verify_jws(JwsVerifyInput::new(JwsAlgorithm::Eddsa, jws, public_key))
+        .map_err(map_jws_verify_error)
 }
 
 const fn map_jws_verify_error(error: JwsVerifyError) -> JwsEddsaError {
@@ -161,5 +157,13 @@ impl From<JwsSigningInputError> for JwsEddsaError {
             JwsSigningInputError::LengthOverflow => JwsEddsaError::LengthOverflow,
             JwsSigningInputError::InputTooLarge => JwsEddsaError::InputTooLarge,
         }
+    }
+}
+
+impl JwsEddsaError {
+    /// Returns the exact generated reason for this native failure.
+    #[must_use]
+    pub const fn reason(&self) -> crate::wire::proto::proto::reallyme::jose::v1::JoseErrorReason {
+        crate::map_failure::eddsa(self).reason()
     }
 }

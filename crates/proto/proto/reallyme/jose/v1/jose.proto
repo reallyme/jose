@@ -16,12 +16,47 @@ option swift_prefix = "ReallyMeProto";
 // The oneof keeps caller-owned input/primitive failures, provider availability
 // failures, and backend/internal failures distinct while JoseErrorReason keeps
 // the exact JOSE-specific reason stable end-to-end.
+// Rust view: wire.rs#JoseWireError
+// Rust view: wire.rs#JoseWireResult
+// Rust adapter: wire.rs#jose_error
+// Rust adapter: wire.rs#jose_error_bytes
 message JoseError {
   oneof error {
     JosePrimitiveError primitive = 1;
     JoseProviderError provider = 2;
     JoseBackendError backend = 3;
   }
+}
+
+// Public SDK error discriminators. SDKs can raise these before an operation
+// starts or while validating its response. JOSE_FAILURE carries the branch
+// and JoseErrorReason of an operation failure in the SDK's error type.
+// Each SDK exposes the codes applicable to its public API and runtime.
+enum JoseSdkErrorCode {
+  JOSE_SDK_ERROR_CODE_UNSPECIFIED = 0;
+  // Shared by the TypeScript and JVM facades for invalid managed input.
+  // TypeScript SDK code: invalid-input
+  JOSE_SDK_ERROR_CODE_INVALID_INPUT = 100;
+  // The TypeScript/WASM provider requires explicit installation.
+  // TypeScript SDK code: provider-not-installed
+  JOSE_SDK_ERROR_CODE_PROVIDER_NOT_INSTALLED = 200;
+  // Used by TypeScript for provider failures and by the JVM for native setup.
+  // TypeScript SDK code: provider-failure
+  JOSE_SDK_ERROR_CODE_PROVIDER_FAILURE = 210;
+  // Shared by SDKs that validate a provider's response.
+  // TypeScript SDK code: malformed-provider-response
+  JOSE_SDK_ERROR_CODE_MALFORMED_PROVIDER_RESPONSE = 220;
+
+  // The Swift native loader exposes these setup failures to its callers.
+  JOSE_SDK_ERROR_CODE_UNSUPPORTED_PLATFORM = 300;
+  JOSE_SDK_ERROR_CODE_NATIVE_LIBRARY_NOT_FOUND = 310;
+  JOSE_SDK_ERROR_CODE_NATIVE_LIBRARY_LOAD_FAILED = 320;
+  JOSE_SDK_ERROR_CODE_NATIVE_SYMBOL_MISSING = 330;
+  JOSE_SDK_ERROR_CODE_INCOMPATIBLE_ABI = 340;
+
+  // Shared by all SDKs for failures with a protobuf operation reason.
+  // TypeScript SDK code: jose-failure
+  JOSE_SDK_ERROR_CODE_JOSE_FAILURE = 400;
 }
 
 // JosePrimitiveError describes caller-owned protobuf/JSON input, compact
@@ -51,106 +86,193 @@ message JoseBackendError {
 enum JoseErrorReason {
   JOSE_ERROR_REASON_UNSPECIFIED = 0;
   reserved 1 to 73;
+  reserved 101, 102, 100, 201, 246, 200, 301, 303, 300, 202, 302;
+  reserved "JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE", "JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW", "JOSE_ERROR_REASON_JWS_INVALID_COMPACT", "JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE", "JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW", "JOSE_ERROR_REASON_JWE_INVALID_COMPACT", "JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE", "JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW", "JOSE_ERROR_REASON_JWT_INVALID_COMPACT", "JOSE_ERROR_REASON_JWE_INVALID_ENCODING", "JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED";
 
   // Compact JWS structure and parser policy: 100-119.
-  JOSE_ERROR_REASON_JWS_INVALID_COMPACT = 100;
-  JOSE_ERROR_REASON_JWS_INPUT_TOO_LARGE = 101;
-  JOSE_ERROR_REASON_JWS_LENGTH_OVERFLOW = 102;
   JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8 = 103;
+  // Rust failure: JwsVerifyErrorReason::BadPayloadBase64
+  // Rust failure: JwsEddsaError::BadPayloadBase64
+  // Rust failure: JwsEs256Error::BadPayloadBase64
   JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64 = 104;
 
   // Compact JWS protected-header policy: 120-139.
+  // Rust failure: JwsVerifyErrorReason::BadHeaderBase64
+  // Rust failure: JwsEddsaError::BadHeaderBase64
+  // Rust failure: JwsEs256Error::BadHeaderBase64
   JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64 = 120;
+  // Rust failure: JwsVerifyErrorReason::BadHeaderUtf8
+  // Rust failure: JwsEddsaError::BadHeaderUtf8
+  // Rust failure: JwsEs256Error::BadHeaderUtf8
   JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8 = 121;
+  // Rust failure: JwsVerifyErrorReason::HeaderMismatch
+  // Rust failure: JwsEddsaError::HeaderMismatch
+  // Rust failure: JwsEs256Error::HeaderMismatch
   JOSE_ERROR_REASON_JWS_HEADER_MISMATCH = 122;
 
   // Compact JWS signature encoding and verification: 140-159.
+  // Rust failure: JwsVerifyErrorReason::BadSignatureBase64
+  // Rust failure: JwsEddsaError::BadSignatureBase64
+  // Rust failure: JwsEs256Error::BadSignatureBase64
   JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64 = 140;
+  // Rust failure: JwsVerifyErrorReason::BadRawSignature
+  // Rust failure: JwsEs256Error::BadRawSignature
   JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE = 141;
+  // Rust failure: JwsVerifyErrorReason::InvalidSignature
+  // Rust failure: JwsEddsaError::InvalidSignature
+  // Rust failure: JwsEs256Error::InvalidSignature
+  // Rust failure: JwsEs256Error::VerifyFailed
   JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE = 142;
 
   // Compact JWS signing: 160-179.
+  // Rust failure: JwsSignErrorReason::SignFailed
+  // Rust failure: JwsEddsaError::SignFailed
+  // Rust failure: JwsEs256Error::SignFailed
   JOSE_ERROR_REASON_JWS_SIGN_FAILED = 160;
+  // Rust failure: JwsSignErrorReason::BadDerSignature
+  // Rust failure: JwsEs256Error::BadDerSignature
   JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE = 161;
 
   // Compact JWE structure and segment encoding: 200-219.
-  JOSE_ERROR_REASON_JWE_INVALID_COMPACT = 200;
-  JOSE_ERROR_REASON_JWE_INPUT_TOO_LARGE = 201;
-  JOSE_ERROR_REASON_JWE_INVALID_ENCODING = 202;
 
   // Compact JWE protected-header policy: 220-239.
+  // Rust failure: JweError::InvalidHeader
   JOSE_ERROR_REASON_JWE_INVALID_HEADER = 220;
+  // Rust failure: JweError::UnsupportedKeyManagementAlgorithm
   JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM = 221;
+  // Rust failure: JweError::UnsupportedContentEncryptionAlgorithm
   JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM = 222;
+  // Rust failure: JweError::MissingRequiredHeaderParameter
   JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER = 223;
+  // Rust failure: JweError::HeaderPolicyMismatch
+  // Rust failure: JweError::TypPolicyMismatch
+  // Rust failure: JweError::CtyPolicyMismatch
   JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH = 224;
+  // Rust failure: JweError::KidPolicyMismatch
   JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH = 225;
+  // Rust failure: JweError::ApuPolicyMismatch
   JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH = 226;
+  // Rust failure: JweError::ApvPolicyMismatch
   JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH = 227;
+  // Rust failure: JweError::UnsupportedCompressionAlgorithm
   JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM = 228;
 
   // Compact JWE key-management and content-encryption failures: 240-259.
+  // Rust failure: JweError::InvalidEncryptedKey
   JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY = 240;
+  // Rust failure: JweError::InvalidContentEncryptionKey
   JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY = 241;
+  // Rust failure: JweError::InvalidContentCipherInput
   JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT = 242;
+  // Rust failure: JweError::Decrypt
   JOSE_ERROR_REASON_JWE_DECRYPT_FAILED = 243;
+  // Rust failure: JweError::Encrypt
   JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED = 244;
+  // Rust failure: JweError::InvalidKeyAgreementKey
   JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY = 245;
-  JOSE_ERROR_REASON_JWE_LENGTH_OVERFLOW = 246;
+  // Rust failure: JweError::InvalidSharedSecret
   JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET = 247;
 
   // Compact JWE plaintext handling: 260-279.
+  // Rust failure: JweError::InvalidPayloadJson
   JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON = 260;
+  // Rust failure: JweError::Compression
   JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED = 261;
+  // Rust failure: JweError::Decompression
   JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED = 262;
+  // Rust failure: JweError::DecompressedPlaintextTooLarge
   JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE = 263;
 
   // JWT compact structure and encoding: 300-319.
-  JOSE_ERROR_REASON_JWT_INVALID_COMPACT = 300;
-  JOSE_ERROR_REASON_JWT_INPUT_TOO_LARGE = 301;
-  JOSE_ERROR_REASON_JWT_BASE64URL_DECODE_FAILED = 302;
-  JOSE_ERROR_REASON_JWT_LENGTH_OVERFLOW = 303;
 
   // JWT JOSE-header policy and algorithm/key binding: 320-339.
+  // Rust failure: JwtError::InvalidHeader
   JOSE_ERROR_REASON_JWT_INVALID_HEADER = 320;
+  // Rust failure: JwtError::UnsupportedAlgorithm
   JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM = 321;
+  // Rust failure: JwtError::AlgorithmMismatch
   JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH = 322;
+  // Rust failure: JwtError::MissingAlgorithm
   JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM = 323;
+  // Rust failure: JwtError::MissingPrivateKey
   JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY = 324;
+  // Rust failure: JwtError::MissingPublicKey
   JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY = 325;
+  // Rust failure: JwtError::KeyIdMismatch
   JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH = 326;
+  // Rust failure: JwtError::PublicKeyMismatch
   JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH = 327;
+  // Rust failure: JwtError::InvalidPublicKey
   JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY = 328;
   JOSE_ERROR_REASON_JWT_INVALID_JWK = 329;
 
   // JWT signature and cryptographic failures: 340-359.
+  // Rust failure: JwtError::InvalidSignature
   JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE = 340;
+  // Rust failure: JwtError::Crypto
   JOSE_ERROR_REASON_JWT_CRYPTO_FAILED = 341;
 
   // JWT claims and serialization failures: 360-379.
+  // Rust failure: JwtError::InvalidClaims
   JOSE_ERROR_REASON_JWT_INVALID_CLAIMS = 360;
+  // Rust failure: JwtError::Serialization
   JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED = 361;
 
   // JWT temporal claim policy: 380-399.
+  // Rust failure: JwtError::MissingRequiredTemporalClaim(_)
   JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM = 380;
+  // Rust failure: JwtError::InvalidTemporalClaimValue(_)
   JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE = 381;
+  // Rust failure: JwtError::Expired
   JOSE_ERROR_REASON_JWT_EXPIRED = 382;
+  // Rust failure: JwtError::NotYetValid
   JOSE_ERROR_REASON_JWT_NOT_YET_VALID = 383;
+  // Rust failure: JwtError::IssuedAtInFuture
   JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE = 384;
+  // Rust failure: JwtError::InvalidVerificationTime
   JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME = 385;
+  // Rust failure: JwtError::InvalidTemporalPolicy
+  // Rust failure: JwtError::InvalidClaimsPolicy
   JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY = 386;
+  // Rust failure: JwtError::SigningKeyMismatch
   JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH = 387;
+  // Rust failure: JwtError::MissingRequiredRegisteredClaim(_)
   JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM = 388;
+  // Rust failure: JwtError::InvalidRegisteredClaimValue(_)
   JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE = 389;
+  // Rust failure: JwtError::AudienceMismatch
   JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH = 390;
+  // Rust failure: JwtError::IssuerMismatch
   JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH = 391;
+  // Rust failure: JwtError::SubjectMismatch
   JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH = 392;
 
   // Common operation execution boundary failures: 700-799.
   JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF = 700;
   JOSE_ERROR_REASON_COMMON_MALFORMED_JSON = 701;
   JOSE_ERROR_REASON_COMMON_MISSING_OPERATION = 702;
+  // Rust failure: JwsSignErrorReason::InputTooLarge
+  // Rust failure: JwsEddsaError::InputTooLarge
+  // Rust failure: JwsEs256Error::InputTooLarge
+  // Rust failure: JweError::InputTooLarge
+  // Rust failure: JwtError::InputTooLarge
   JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED = 703;
+  // Rust failure: JwsSignErrorReason::LengthOverflow
+  // Rust failure: JwsVerifyErrorReason::LengthOverflow
+  // Rust failure: JwsEddsaError::LengthOverflow
+  // Rust failure: JwsEs256Error::LengthOverflow
+  // Rust failure: JweError::LengthOverflow
+  // Rust failure: JwtError::LengthOverflow
+  JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW = 704;
+  // Rust failure: JwsVerifyErrorReason::InvalidCompact
+  // Rust failure: JwsEddsaError::InvalidCompactEncoding
+  // Rust failure: JwsEs256Error::InvalidCompactEncoding
+  // Rust failure: JweError::InvalidCompact
+  // Rust failure: JwtError::InvalidJwtFormat
+  JOSE_ERROR_REASON_COMMON_INVALID_COMPACT = 705;
+  // Rust failure: JweError::InvalidEncoding
+  // Rust failure: JwtError::Base64Url
+  JOSE_ERROR_REASON_COMMON_INVALID_ENCODING = 706;
 
   // Provider failures: 800-899.
   // Defined for service wrappers that own runtime provider selection. The
@@ -158,50 +280,80 @@ enum JoseErrorReason {
   // randomness-unavailable provider failures directly.
   JOSE_ERROR_REASON_PROVIDER_UNAVAILABLE = 800;
   JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED = 801;
+  // Rust failure: JweError::Randomness
   JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE = 802;
 
   // Backend failures: 900-999.
+  // Rust failure: JoseWireErrorConstructionError::BranchReasonMismatch
   JOSE_ERROR_REASON_BACKEND_INTERNAL = 900;
   JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION = 901;
+  // Rust failure: JweError::KeyDerivation
   JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED = 902;
 }
 
+// Rust selector: JwsAlgorithm; crate; provider; PROVIDER_UNSUPPORTED
+// Rust selector: JwtAlgorithm; crate; provider; PROVIDER_UNSUPPORTED
 enum JoseSignatureAlgorithm {
   JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED = 0;
   reserved 1 to 3;
   // EdDSA: 100-199; elliptic-curve signatures: 200-299.
+  // Rust variant: JwsAlgorithm.Eddsa; label=EdDSA
+  // Rust variant: JwtAlgorithm.Eddsa; label=EdDSA; backend=Ed25519; curve=Ed25519; key_type=Okp; curve_id=JOSE_NAMED_CURVE_ED25519; signature_bytes=64; encoding_id=JOSE_SIGNATURE_ENCODING_FIXED_WIDTH; raw_provider=false
   JOSE_SIGNATURE_ALGORITHM_EDDSA = 100;
+  // Rust variant: JwsAlgorithm.Es256; label=ES256
+  // Rust variant: JwtAlgorithm.Es256; label=ES256; backend=P256; curve=P-256; key_type=Ec; curve_id=JOSE_NAMED_CURVE_P256; signature_bytes=64; encoding_id=JOSE_SIGNATURE_ENCODING_FIXED_WIDTH; raw_provider=true
   JOSE_SIGNATURE_ALGORITHM_ES256 = 200;
 
-  // ES256K is supported by JWT through JWK algorithm binding, but it is not a
-  // executable JWS operation. Reserve the adjacent slot so that future JWS
-  // wire support is added deliberately rather than by accidental reuse.
-  reserved "JOSE_SIGNATURE_ALGORITHM_ES256K";
+  // Shared identity; compact JWS accepts only EdDSA and ES256.
+  // Rust variant: JwtAlgorithm.Es256k; label=ES256K; backend=Secp256k1; curve=secp256k1; key_type=Ec; curve_id=JOSE_NAMED_CURVE_SECP256K1; signature_bytes=64; encoding_id=JOSE_SIGNATURE_ENCODING_FIXED_WIDTH; raw_provider=false
+  JOSE_SIGNATURE_ALGORITHM_ES256K = 230;
 }
 
+// Rust selector: JweKeyManagementSuite; crate; provider; PROVIDER_UNSUPPORTED
 enum JoseJweKeyManagementAlgorithm {
   JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_UNSPECIFIED = 0;
   reserved 1 to 4;
   // Direct key use: 100-199; ECDH-ES: 200-299.
+  // Rust variant: JweKeyManagementSuite.Direct; header=Direct
   JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_DIRECT = 100;
+  // Rust variant: JweKeyManagementSuite.P256; curve=P-256; header=EcdhEs
   JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P256 = 200;
+  // Rust variant: JweKeyManagementSuite.P384; curve=P-384; header=EcdhEs
   JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P384 = 210;
+  // Rust variant: JweKeyManagementSuite.P521; curve=P-521; header=EcdhEs
   JOSE_JWE_KEY_MANAGEMENT_ALGORITHM_ECDH_ES_P521 = 220;
 }
 
+// Header algorithm identity is separate from the curve-specific execution
+// suites above. ECDH-ES on the JOSE wire does not identify a named curve.
+// Rust selector: JweKeyManagementAlgorithm; public; provider; PROVIDER_UNSUPPORTED
+enum JoseJweHeaderAlgorithm {
+  JOSE_JWE_HEADER_ALGORITHM_UNSPECIFIED = 0;
+  // Rust variant: JweKeyManagementAlgorithm.Direct; label=dir
+  JOSE_JWE_HEADER_ALGORITHM_DIRECT = 100;
+  // Rust variant: JweKeyManagementAlgorithm.EcdhEs; label=ECDH-ES
+  JOSE_JWE_HEADER_ALGORITHM_ECDH_ES = 200;
+}
+
+// Rust selector: JweContentEncryptionAlgorithm; public; provider; PROVIDER_UNSUPPORTED
 enum JoseJweContentEncryptionAlgorithm {
   JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_UNSPECIFIED = 0;
   reserved 1 to 3;
   // AES-GCM content encryption: 100-199.
+  // Rust variant: JweContentEncryptionAlgorithm.A128Gcm; label=A128GCM; key=16; nonce=12; tag=16
   JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM = 100;
+  // Rust variant: JweContentEncryptionAlgorithm.A192Gcm; label=A192GCM; key=24; nonce=12; tag=16
   JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM = 110;
+  // Rust variant: JweContentEncryptionAlgorithm.A256Gcm; label=A256GCM; key=32; nonce=12; tag=16
   JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM = 120;
 }
 
+// Rust selector: JweCompressionAlgorithm; public; primitive; JWE_UNSUPPORTED_COMPRESSION_ALGORITHM
 enum JoseJweCompressionAlgorithm {
   JOSE_JWE_COMPRESSION_ALGORITHM_UNSPECIFIED = 0;
   reserved 1 to 3;
   // RFC 7518 raw DEFLATE compression: 100-199.
+  // Rust variant: JweCompressionAlgorithm.Deflate; label=DEF
   JOSE_JWE_COMPRESSION_ALGORITHM_DEFLATE = 100;
 }
 
@@ -209,14 +361,17 @@ enum JoseJweCompressionAlgorithm {
 // response decoder. Unknown and unspecified versions fail closed.
 enum JoseOperationContractVersion {
   JOSE_OPERATION_CONTRACT_VERSION_UNSPECIFIED = 0;
-  JOSE_OPERATION_CONTRACT_VERSION_V1 = 1;
+  reserved 1;
+  reserved "JOSE_OPERATION_CONTRACT_VERSION_V1";
+  JOSE_OPERATION_CONTRACT_VERSION_V2 = 2;
 }
 
-// JoseOperationResponse is the canonical 0.3.0 executable response. The low
+// JoseOperationResponse is the canonical versioned executable response. The low
 // field-number range remains reserved so future revisions cannot reuse or
 // ambiguously reinterpret it. Boundary errors are limited to failures before
 // a trusted operation variant can be selected; operation failures remain
 // nested under the selected operation.
+// Rust adapter: wire/operation_response.rs#decode_operation_response_v1
 message JoseOperationResponse {
   reserved 1 to 9;
   JoseOperationContractVersion contract_version = 10;
@@ -238,6 +393,16 @@ message JoseOperationResponse {
     // Compact JWE operations: 3000-3999.
     JoseJweEncryptResponse jwe_encrypt = 3000;
     JoseJweDecryptResponse jwe_decrypt = 3001;
+    // Extended native contracts preserve borrowed and provider-backed capabilities.
+    JoseSignatureSignResponse signature_sign = 1010;
+    JoseSignatureVerifyResponse signature_verify = 1011;
+    JoseSignatureSuiteInfoResponse signature_suite_info = 1012;
+    JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010;
+    JoseJwtClaimsParseResponse jwt_claims_parse = 2011;
+    JoseJweDeriveKeyResponse jwe_derive_key = 3010;
+    JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011;
+    JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012;
+    JoseContractInfoResponse contract_info = 7000;
   }
 }
 
@@ -245,23 +410,77 @@ message JoseOperationResponse {
 // FFI, JNI, WASM, and other operation adapters. Native SDKs should keep
 // using typed methods; adapters can use this generated oneof to avoid
 // hand-rolled operation routing and error-envelope plumbing.
+// Rust adapter: api.rs#execute
+// Rust adapter: api.rs#execute_with_providers
+// Rust adapter: wire/operation_response.rs#execute_operation_request
+// Rust adapter: wire/operation_response.rs#execute_operation_request_with_providers
+// Rust adapter: wire/operation_response.rs#execute_operation_v1
+// Rust adapter: wire/operation_response.rs#execute_operation_json_v1
+// Rust adapter: wire.rs#encode_protobuf
+// Rust adapter: wire.rs#decode_protobuf
+// Rust adapter: wire.rs#encode_json
+// Rust adapter: wire.rs#decode_json
+// Rust capability: operation_contract/providers.rs#OperationProviders
+// Rust capability: operation_contract/providers.rs#BuiltinProviders
 message JoseOperationRequest {
   reserved 1 to 8;
 
   oneof operation {
     // Compact JWS operations: 1000-1999.
+    // Rust adapter: jws/suites/eddsa.rs#sign_eddsa_jws
+    // Rust adapter: jws/suites/es256.rs#sign_es256_jws
     JoseJwsSignRequest jws_sign = 1000;
+    // Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws
+    // Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_payload
+    // Rust adapter: jws/suites/eddsa.rs#verify_eddsa_jws_and_decode_authenticated_parts
+    // Rust adapter: jws/suites/es256.rs#verify_es256_jws
+    // Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_payload
+    // Rust adapter: jws/suites/es256.rs#verify_es256_jws_and_decode_authenticated_parts
     JoseJwsVerifyRequest jws_verify = 1001;
 
     // JWT operations: 2000-2999.
+    // Rust adapter: jwt/unsigned.rs#encode_unsigned_jwt
     JoseJwtEncodeUnsignedRequest jwt_encode_unsigned = 2000;
+    // Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt
+    // Rust adapter: jwt/unsigned.rs#decode_unsigned_jwt_claims_json
     JoseJwtDecodeUnsignedRequest jwt_decode_unsigned = 2001;
+    // Rust adapter: jwt/sign.rs#encode_signed_jwt
+    // Rust adapter: jwt/sign.rs#encode_signed_jwt_with_header_options
     JoseJwtSignRequest jwt_sign = 2002;
+    // Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only
+    // Rust adapter: jwt/verify.rs#decode_verify_jwt_signature_only_with_header_validation
+    // Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_signature_only_with_header_validation
+    // Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation
+    // Rust adapter: jwt/verify.rs#decode_verify_jwt_with_temporal_validation_and_header_validation
+    // Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_temporal_validation_and_header_validation
+    // Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation
+    // Rust adapter: jwt/verify.rs#decode_verify_jwt_with_claims_validation_and_header_validation
+    // Rust adapter: jwt/verify.rs#decode_verify_jwt_claims_json_with_claims_validation_and_header_validation
     JoseJwtVerifyRequest jwt_verify = 2003;
 
     // Compact JWE operations: 3000-3999.
     JoseJweEncryptRequest jwe_encrypt = 3000;
     JoseJweDecryptRequest jwe_decrypt = 3001;
+    // Extended native contracts preserve borrowed and provider-backed capabilities.
+    // Rust adapter: jws/suites/es256.rs#sign_p256_jose_prehash
+    JoseSignatureSignRequest signature_sign = 1010;
+    // Rust adapter: jws/suites/es256.rs#verify_p256_jose_prehash
+    JoseSignatureVerifyRequest signature_verify = 1011;
+    // Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
+    JoseSignatureSuiteInfoRequest signature_suite_info = 1012;
+    // Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
+    // Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
+    JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010;
+    JoseJwtClaimsParseRequest jwt_claims_parse = 2011;
+    // Rust adapter: jwe/derive_key.rs#derive_ecdh_es_content_encryption_key
+    JoseJweDeriveKeyRequest jwe_derive_key = 3010;
+    // Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_bytes
+    // Rust adapter: jwe/encrypt.rs#encrypt_compact_jwe_json
+    JoseJweEncryptWithProviderRequest jwe_encrypt_with_provider = 3011;
+    // Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
+    // Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
+    JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012;
+    JoseContractInfoRequest contract_info = 7000;
   }
 }
 
@@ -269,22 +488,27 @@ message JoseJwsSignRequest {
   JoseSignatureAlgorithm algorithm = 1;
   // Sensitive signing key bytes. Adapters must zeroize after dispatch and must
   // not log, trace, or include this field in errors.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes private_key = 2;
   // Payload bytes for compact JWS signing. The current native SDK facade signs
   // UTF-8 payloads; non-UTF-8 wire payloads fail closed with
   // JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes payload = 3;
 }
 
 message JoseCompactResult {
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   string compact = 1;
 }
 
 message JoseJwsVerifyRequest {
   JoseSignatureAlgorithm algorithm = 1;
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   string compact = 2;
   // Public verification key bytes. Public material is still boundary data and
   // must not be copied into errors or telemetry.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes public_key = 3;
 }
 
@@ -293,69 +517,119 @@ message JoseJwsVerifyRequest {
 // compact profile; it does not imply support for JWS JSON Serialization,
 // detached payloads, or RFC 7797 unencoded payloads. Profile-aware callers must
 // parse and authorize these returned bytes instead of the original input.
+// Rust view: jws/authenticated.rs#AuthenticatedCompactJws
 message JoseVerifyResult {
   // Exact decoded JWS Protected Header bytes authenticated by the signature.
   // JOSE binds alg but does not interpret application/profile parameters.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes protected_header_json = 1;
   // Decoded JWS Payload bytes authenticated by the signature.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes payload = 2;
 }
 
 message JoseJwtEncodeUnsignedRequest {
   // Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes claims_json = 1;
 }
 
 message JoseJwtDecodeUnsignedRequest {
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   string compact = 1;
 }
 
 message JoseJwtClaimsResult {
   // Original claims JSON bytes preserved by the wire adapter. These bytes can
   // contain PII and must be zeroized after use.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes claims_json = 1;
 }
 
 message JoseJwtSignRequest {
   // Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes claims_json = 1;
   // JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
   // this as sensitive boundary input and avoid logging it.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes jwk_json = 2;
   // Sensitive signing key bytes. Adapters must zeroize after dispatch and must
   // not log, trace, or include this field in errors.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes private_key = 3;
-  // Optional protected-header typ. Empty means the native SDK default typ.
-  string typ = 4;
+  reserved 4;
+  reserved "typ";
+  // Absent options use typ JWT. Present options can explicitly omit typ.
+  JoseJwtHeaderEncodeOptions header_options = 5;
+}
+
+// Rust view: jwt/validate_header.rs#JwtHeaderEncodeOptions
+// Contract preset: JoseJwtHeaderEncodeOptions standard_jwt_encode = {"typ":"JWT"}
+message JoseJwtHeaderEncodeOptions {
+  // Absent means omit typ. A present empty value is invalid.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+  optional string typ = 1;
 }
 
 message JoseJwtVerifyRequest {
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   string compact = 1;
   // JWK JSON bytes used for algorithm and key-id binding. Adapters must treat
   // this as sensitive boundary input and avoid logging it.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes jwk_json = 2;
   // Public verification key bytes. Public material is still boundary data and
   // must not be copied into errors or telemetry.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes public_key = 3;
   // Presence-sensitive policy. If absent/unset, the standard JWT header policy
   // is used. If present, every field is interpreted literally; in particular,
   // an empty accepted_typ_values list means no present typ value is accepted.
   JoseJwtHeaderValidationPolicy header_policy = 4;
-  // Presence-sensitive temporal policy. If absent/unset, signature-only
-  // verification is performed only when signature_only is true. If present,
-  // every boolean, skew, and timestamp field is interpreted literally.
-  JoseJwtTemporalValidationPolicy temporal_policy = 5;
-  // Required when temporal_policy is absent. This makes signature-only
-  // verification an explicit adapter choice rather than a proto3 default.
-  bool signature_only = 6;
+  reserved 5, 6;
+  reserved "temporal_policy", "signature_only";
+  // A mode must be selected explicitly. Contradictory modes cannot be encoded.
+  JoseJwtVerificationPolicy verification = 7;
 }
 
+message JoseJwtVerificationPolicy {
+  oneof mode {
+    JoseJwtSignatureOnlyPolicy signature_only = 1;
+    JoseJwtTemporalValidationPolicy claims = 2;
+    JoseJwtTemporalOnlyPolicy temporal_only = 3;
+  }
+}
+
+message JoseJwtSignatureOnlyPolicy {}
+
+// Native temporal-only verification remains an explicit weaker mode. It does
+// not establish audience, issuer, or subject authorization.
+message JoseJwtTemporalOnlyPolicy {
+  JoseJwtTemporalOptions options = 1;
+  uint64 now_unix = 2;
+}
+
+// Rust view: jwt/validate_temporal_claims.rs#JwtTemporalValidationPolicy
+// Contract preset: JoseJwtTemporalOptions strict_temporal = {"requireExp":true,"requireNbf":false,"requireIat":false,"clockSkewSeconds":"60","maxFutureIatSkewSeconds":"60"}
+message JoseJwtTemporalOptions {
+  bool require_exp = 1;
+  bool require_nbf = 2;
+  bool require_iat = 3;
+  uint64 clock_skew_seconds = 4;
+  uint64 max_future_iat_skew_seconds = 5;
+}
+
+// Rust view: jwt/validate_header.rs#JwtHeaderValidationOptions
+// Contract preset: JoseJwtHeaderValidationPolicy standard_jwt_header = {"allowMissingTyp":false,"allowEmbeddedKeyHeader":false,"acceptedTypValues":["JWT"]}
 message JoseJwtHeaderValidationPolicy {
   bool allow_missing_typ = 1;
   bool allow_embedded_key_header = 2;
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   repeated string accepted_typ_values = 3;
 }
 
+// Rust view: jwt/validate_registered_claims.rs#JwtClaimsValidationPolicy
 message JoseJwtTemporalValidationPolicy {
   bool require_exp = 1;
   bool require_nbf = 2;
@@ -368,12 +642,10 @@ message JoseJwtTemporalValidationPolicy {
   uint64 now_unix = 6;
   // Required recipient identifier. Temporal verification fails closed when
   // this value is empty or the JWT aud claim does not contain it.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   string expected_audience = 7;
-  // Legacy issuer constraint. Empty means absent for older clients that cannot
-  // express presence. New clients use expected_issuer_constraint.
-  string expected_issuer = 8;
-  // Legacy subject constraint with the same absence ambiguity.
-  string expected_subject = 9;
+  reserved 8, 9;
+  reserved "expected_issuer", "expected_subject";
   // Presence-sensitive exact issuer constraint. A present empty value is
   // invalid, so an empty caller configuration cannot disable verification.
   JoseExpectedString expected_issuer_constraint = 10;
@@ -381,34 +653,44 @@ message JoseJwtTemporalValidationPolicy {
   JoseExpectedString expected_subject_constraint = 11;
 }
 
+// Rust view: jwe/encrypt.rs#CompactJweEncryptRequest
 message JoseJweEncryptRequest {
   JoseJweKeyManagementAlgorithm key_management_algorithm = 1;
   JoseJweContentEncryptionAlgorithm content_encryption_algorithm = 2;
   // Sensitive direct CEK or recipient public/agreement key bytes, depending on
   // key_management_algorithm. Adapters must zeroize after dispatch.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes key = 3;
   // Sensitive plaintext bytes. Adapters must zeroize after dispatch and must
   // not log, trace, or include this field in errors.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes plaintext = 4;
-  string kid = 5;
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+  optional string kid = 5;
   // Agreement PartyUInfo. This can be correlating protocol metadata and must
   // not be copied into errors or telemetry.
-  bytes apu = 6;
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+  optional bytes apu = 6;
   // Agreement PartyVInfo. This can be correlating protocol metadata and must
   // not be copied into errors or telemetry.
-  bytes apv = 7;
-  string typ = 8;
-  string cty = 9;
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+  optional bytes apv = 7;
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+  optional string typ = 8;
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+  optional string cty = 9;
   // Optional plaintext compression performed before content encryption.
   JoseJweCompressionAlgorithm compression_algorithm = 10;
 }
 
 message JoseJweDecryptRequest {
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   string compact = 1;
   JoseJweKeyManagementAlgorithm key_management_algorithm = 2;
   JoseJweContentEncryptionAlgorithm content_encryption_algorithm = 3;
   // Sensitive direct CEK or recipient private/agreement key bytes, depending on
   // key_management_algorithm. Adapters must zeroize after dispatch.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes key = 4;
   // Presence-sensitive protected-header validation policy. Absence means only
   // algorithm binding and structural JOSE validation are enforced.
@@ -416,10 +698,12 @@ message JoseJweDecryptRequest {
 }
 
 message JoseExpectedString {
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   string value = 1;
 }
 
 message JoseExpectedBytes {
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes value = 1;
 }
 
@@ -437,6 +721,7 @@ message JoseJweHeaderValidationPolicy {
 message JoseJwePlaintextResult {
   // Sensitive decrypted plaintext bytes. Adapters must zeroize after use and
   // must not log, trace, or include this field in errors.
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
   bytes plaintext = 1;
 }
 
@@ -492,6 +777,380 @@ message JoseJweEncryptResponse {
 message JoseJweDecryptResponse {
   oneof outcome {
     JoseJwePlaintextResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+
+// Exact named curves exposed through signature and agreement contracts.
+enum JoseNamedCurve {
+  JOSE_NAMED_CURVE_UNSPECIFIED = 0;
+  JOSE_NAMED_CURVE_ED25519 = 100;
+  JOSE_NAMED_CURVE_P256 = 200;
+  JOSE_NAMED_CURVE_P384 = 210;
+  JOSE_NAMED_CURVE_P521 = 220;
+  JOSE_NAMED_CURVE_SECP256K1 = 230;
+}
+
+enum JoseSignatureEncoding {
+  JOSE_SIGNATURE_ENCODING_UNSPECIFIED = 0;
+  JOSE_SIGNATURE_ENCODING_FIXED_WIDTH = 100;
+  JOSE_SIGNATURE_ENCODING_DER = 200;
+}
+
+// Fixed deployment ceilings and safe defaults. Generated consumers derive
+// constants from these values instead of maintaining independent numeric limits.
+enum JoseContractLimit {
+  // Rust constant: jwe/parse_compact.rs#MAX_COMPACT_JWE_BYTES = COMPACT_BYTES
+  // Rust constant: jws/parse_compact.rs#MAX_COMPACT_JWS_BYTES = COMPACT_BYTES
+  // Rust constant: jwt/parse_compact.rs#MAX_COMPACT_JWT_BYTES = COMPACT_BYTES
+  // Rust constant: jwe/compression.rs#MAX_DECOMPRESSED_JWE_BYTES = COMPACT_BYTES
+  // Rust constant: wire.rs#MAX_JOSE_PROTO_MESSAGE_BYTES = COMPACT_BYTES
+  // Rust constant: wire.rs#MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES = RESPONSE_OVERHEAD_BYTES
+  // Rust constant: wire.rs#MAX_JOSE_PROTO_JSON_BYTES = PROTO_JSON_BYTES
+  JOSE_CONTRACT_LIMIT_UNSPECIFIED = 0;
+  JOSE_CONTRACT_LIMIT_COMPACT_BYTES = 1048576;
+  JOSE_CONTRACT_LIMIT_PROTO_JSON_BYTES = 1572864;
+  JOSE_CONTRACT_LIMIT_RESPONSE_OVERHEAD_BYTES = 32;
+  JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH = 64;
+  JOSE_CONTRACT_LIMIT_TEMPORAL_SKEW_SECONDS = 300;
+  JOSE_CONTRACT_LIMIT_DEFAULT_TEMPORAL_SKEW_SECONDS = 60;
+}
+
+// Count limits are separate from byte and time ceilings, which may share the
+// same numeric magnitude without being aliases of one contract identity.
+enum JoseJwtPolicyLimit {
+  JOSE_JWT_POLICY_LIMIT_UNSPECIFIED = 0;
+  JOSE_JWT_POLICY_LIMIT_ACCEPTED_TYPE_VALUES = 32;
+}
+
+// Rust selector: JwtTemporalClaim; public; primitive; JWT_INVALID_VERIFICATION_POLICY
+// Rust selector: JwtRegisteredClaim; public; primitive; JWT_INVALID_VERIFICATION_POLICY
+enum JoseJwtClaim {
+  JOSE_JWT_CLAIM_UNSPECIFIED = 0;
+  // Rust variant: JwtTemporalClaim.Exp; claim=exp
+  JOSE_JWT_CLAIM_EXP = 100;
+  // Rust variant: JwtTemporalClaim.Nbf; claim=nbf
+  JOSE_JWT_CLAIM_NBF = 110;
+  // Rust variant: JwtTemporalClaim.Iat; claim=iat
+  JOSE_JWT_CLAIM_IAT = 120;
+  // Rust variant: JwtRegisteredClaim.Issuer; claim=iss
+  JOSE_JWT_CLAIM_ISSUER = 200;
+  // Rust variant: JwtRegisteredClaim.Subject; claim=sub
+  JOSE_JWT_CLAIM_SUBJECT = 210;
+  // Rust variant: JwtRegisteredClaim.Audience; claim=aud
+  JOSE_JWT_CLAIM_AUDIENCE = 220;
+}
+
+// Rust selector: JoseWireErrorBranch; public; backend; BACKEND_INTERNAL
+enum JoseErrorBranch {
+  JOSE_ERROR_BRANCH_UNSPECIFIED = 0;
+  // Rust variant: JoseWireErrorBranch.Primitive
+  JOSE_ERROR_BRANCH_PRIMITIVE = 100;
+  // Rust variant: JoseWireErrorBranch.Provider
+  JOSE_ERROR_BRANCH_PROVIDER = 200;
+  // Rust variant: JoseWireErrorBranch.Backend
+  JOSE_ERROR_BRANCH_BACKEND = 300;
+}
+
+message JoseSignatureSignRequest {
+  JoseSignatureAlgorithm algorithm = 1;
+  // SENSITIVE: raw private key; only the fixed-width P-256 profile is supported.
+  bytes private_key = 2;
+  // SENSITIVE: exact caller bytes passed to the signature primitive.
+  bytes signing_input = 3;
+}
+
+message JoseSignatureVerifyRequest {
+  JoseSignatureAlgorithm algorithm = 1;
+  // SENSITIVE: exact caller bytes passed to the verification primitive.
+  bytes signing_input = 2;
+  // SENSITIVE: public key metadata must not enter diagnostics.
+  bytes public_key = 3;
+  // SENSITIVE: fixed-width signature bytes.
+  bytes signature = 4;
+}
+
+message JoseSignatureResult {
+  // SENSITIVE: fixed-width signature bytes.
+  bytes signature = 1;
+}
+
+message JoseValidationResult {}
+message JoseSignatureSuiteInfoRequest { JoseSignatureAlgorithm algorithm = 1; }
+message JoseSignatureSuiteInfoResult {
+  JoseSignatureAlgorithm algorithm = 1;
+  JoseNamedCurve curve = 2;
+  JoseSignatureEncoding encoding = 3;
+  uint32 signature_bytes = 4;
+  // Whether standalone signature_sign/signature_verify have a built-in provider.
+  // Other operations such as JWT may support additional algorithms.
+  bool builtin_provider = 5;
+}
+
+// Rust capability: lib.rs#Algorithm
+// Rust capability: lib.rs#Jwk
+// Rust capability: lib.rs#SecureRandom
+// Rust capability: lib.rs#OsSecureRandom
+// Rust capability: lib.rs#JsonValue
+// Rust capability: lib.rs#Zeroizing
+// Rust capability: lib.rs#Signer
+message JoseJwtSignWithProviderRequest {
+  // SENSITIVE: exact claims document; JSON can contain identifying information.
+  bytes claims_json = 1;
+  // SENSITIVE: JWK public metadata bound to the selected signer.
+  bytes jwk_json = 2;
+  // SENSITIVE: nonzero handle scoped to the caller's injected provider context.
+  optional uint64 signer_handle = 3;
+  JoseJwtHeaderEncodeOptions header_options = 4;
+}
+
+// Native CompactJweProtectedHeader is a borrowed/owned view of these fields.
+// Party information is decoded bytes here and Base64URL in JOSE JSON.
+// Rust view: jwe/validate_header.rs#CompactJweProtectedHeader
+message JoseJweProtectedHeader {
+  // Rust field: jwe/validate_header.rs#CompactJweProtectedHeader.alg = algorithm
+  // Rust field: jwe/validate_header.rs#CompactJweProtectedHeader.enc = content_encryption_algorithm
+  // Rust field: jwe/validate_header.rs#CompactJweProtectedHeader.zip = compression_algorithm
+  // Rust field: jwe/validate_header.rs#CompactJweProtectedHeader.epk = epk_json
+  JoseJweHeaderAlgorithm algorithm = 1;
+  JoseJweContentEncryptionAlgorithm content_encryption_algorithm = 2;
+  optional JoseJweCompressionAlgorithm compression_algorithm = 3;
+  // SENSITIVE: correlating key identifier.
+  optional string kid = 4;
+  // SENSITIVE: Agreement PartyUInfo.
+  optional bytes apu = 5;
+  // SENSITIVE: Agreement PartyVInfo.
+  optional bytes apv = 6;
+  // SENSITIVE: encoded ephemeral public-only JWK.
+  optional bytes epk_json = 7;
+  // SENSITIVE: application context metadata.
+  optional string typ = 8;
+  // SENSITIVE: application context metadata.
+  optional string cty = 9;
+}
+
+message JoseJweDeriveKeyRequest {
+  // SENSITIVE: caller-computed ECDH shared secret.
+  bytes shared_secret = 1;
+  JoseJweProtectedHeader header = 2;
+}
+
+message JoseSecretBytes {
+  // SENSITIVE: derived key material; every owner must wipe on drop.
+  bytes value = 1;
+}
+
+// Rust capability: jwe/encrypt/key_management.rs#JweContentEncryptionKeyEncryptor
+// Rust capability: jwe/encrypt/key_management.rs#PreparedJweEncryptionKey
+// Rust capability: jwe/encrypt/key_management.rs#DirectJweKeyEncryptor
+// Rust capability: jwe/encrypt/key_management.rs#P256EcdhEsJweKeyEncryptor
+// Rust capability: jwe/encrypt/key_management.rs#P384EcdhEsJweKeyEncryptor
+// Rust capability: jwe/encrypt/key_management.rs#P521EcdhEsJweKeyEncryptor
+message JoseJweEncryptWithProviderRequest {
+  // Inline key must be empty; the injected encryptor owns key selection.
+  JoseJweEncryptRequest parameters = 1;
+  // SENSITIVE: application-local, nonzero capability handle.
+  optional uint64 provider_handle = 2;
+}
+
+// Rust view: jwe/validate_header.rs#CompactJwePolicy
+// Contract preset: JoseJwePolicy openid4vp = {"allowedKeyManagementAlgorithms":["JOSE_JWE_HEADER_ALGORITHM_ECDH_ES","JOSE_JWE_HEADER_ALGORITHM_DIRECT"],"allowedContentEncryptionAlgorithms":["JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM","JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM","JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM"],"headerPolicy":{}}
+message JoseJwePolicy {
+  repeated JoseJweHeaderAlgorithm allowed_key_management_algorithms = 1;
+  repeated JoseJweContentEncryptionAlgorithm allowed_content_encryption_algorithms = 2;
+  JoseJweHeaderValidationPolicy header_policy = 3;
+}
+
+// Rust capability: jwe/decrypt.rs#JweContentEncryptionKeyResolver
+// Rust capability: jwe/decrypt.rs#DirectJweKeyResolver
+// Rust capability: jwe/encrypt/key_management.rs#P256EcdhEsJweKeyResolver
+// Rust capability: jwe/encrypt/key_management.rs#P384EcdhEsJweKeyResolver
+// Rust capability: jwe/encrypt/key_management.rs#P521EcdhEsJweKeyResolver
+message JoseJweDecryptWithProviderRequest {
+  // SENSITIVE: exact compact JWE bytes represented as UTF-8.
+  string compact = 1;
+  JoseJwePolicy policy = 2;
+  // SENSITIVE: application-local, nonzero capability handle.
+  optional uint64 provider_handle = 3;
+}
+
+message JoseContractInfoRequest {}
+message JoseContractInfoResult {
+  repeated JoseContractLimit limits = 1;
+  repeated JoseJwtClaim claim_identifiers = 2;
+  repeated JoseErrorBranch error_branches = 3;
+  repeated JoseOperationKind operation_kinds = 4;
+  repeated JoseTransportStatus transport_statuses = 5;
+  JoseNativeAbiVersion native_abi_version = 6;
+  repeated JoseJwtPolicyLimit jwt_policy_limits = 7;
+}
+
+message JoseSignatureSignResponse {
+  oneof outcome {
+    JoseSignatureResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseSignatureVerifyResponse {
+  oneof outcome {
+    JoseValidationResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseSignatureSuiteInfoResponse {
+  oneof outcome {
+    JoseSignatureSuiteInfoResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJwtSignWithProviderResponse {
+  oneof outcome {
+    JoseCompactResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJweDeriveKeyResponse {
+  oneof outcome {
+    JoseSecretBytes result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJweEncryptWithProviderResponse {
+  oneof outcome {
+    JoseCompactResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseJweDecryptWithProviderResponse {
+  oneof outcome {
+    JoseJwePlaintextResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+message JoseContractInfoResponse {
+  oneof outcome {
+    JoseContractInfoResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+// Native response expectation identities match the executable routing fields.
+// Rust selector: JoseOperationKind; public; backend; BACKEND_INTERNAL
+enum JoseOperationKind {
+  JOSE_OPERATION_KIND_UNSPECIFIED = 0;
+  // Rust variant: JoseOperationKind.JwsSign
+  JOSE_OPERATION_KIND_JWS_SIGN = 1000;
+  // Rust variant: JoseOperationKind.JwsVerify
+  JOSE_OPERATION_KIND_JWS_VERIFY = 1001;
+  // Rust variant: JoseOperationKind.SignatureSign
+  JOSE_OPERATION_KIND_SIGNATURE_SIGN = 1010;
+  // Rust variant: JoseOperationKind.SignatureVerify
+  JOSE_OPERATION_KIND_SIGNATURE_VERIFY = 1011;
+  // Rust variant: JoseOperationKind.SignatureSuiteInfo
+  JOSE_OPERATION_KIND_SIGNATURE_SUITE_INFO = 1012;
+  // Rust variant: JoseOperationKind.JwtEncodeUnsigned
+  JOSE_OPERATION_KIND_JWT_ENCODE_UNSIGNED = 2000;
+  // Rust variant: JoseOperationKind.JwtDecodeUnsigned
+  JOSE_OPERATION_KIND_JWT_DECODE_UNSIGNED = 2001;
+  // Rust variant: JoseOperationKind.JwtSign
+  JOSE_OPERATION_KIND_JWT_SIGN = 2002;
+  // Rust variant: JoseOperationKind.JwtVerify
+  JOSE_OPERATION_KIND_JWT_VERIFY = 2003;
+  // Rust variant: JoseOperationKind.JwtSignWithProvider
+  JOSE_OPERATION_KIND_JWT_SIGN_WITH_PROVIDER = 2010;
+  // Rust variant: JoseOperationKind.JwtClaimsParse
+  JOSE_OPERATION_KIND_JWT_CLAIMS_PARSE = 2011;
+  // Rust variant: JoseOperationKind.JweEncrypt
+  JOSE_OPERATION_KIND_JWE_ENCRYPT = 3000;
+  // Rust variant: JoseOperationKind.JweDecrypt
+  JOSE_OPERATION_KIND_JWE_DECRYPT = 3001;
+  // Rust variant: JoseOperationKind.JweDeriveKey
+  JOSE_OPERATION_KIND_JWE_DERIVE_KEY = 3010;
+  // Rust variant: JoseOperationKind.JweEncryptWithProvider
+  JOSE_OPERATION_KIND_JWE_ENCRYPT_WITH_PROVIDER = 3011;
+  // Rust variant: JoseOperationKind.JweDecryptWithProvider
+  JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER = 3012;
+  // Rust variant: JoseOperationKind.ContractInfo
+  JOSE_OPERATION_KIND_CONTRACT_INFO = 7000;
+}
+
+// Semantic native transport classes; C ABI numeric representations remain an
+// adapter concern, separate from operation failures in JoseError.
+// Rust selector: JoseFfiStatus; ffi; self; CallerError
+enum JoseTransportStatus {
+  JOSE_TRANSPORT_STATUS_UNSPECIFIED = 0;
+  // Rust variant: JoseFfiStatus.Success; code=0
+  JOSE_TRANSPORT_STATUS_SUCCESS = 100;
+  // Rust variant: JoseFfiStatus.CallerError; code=-1
+  JOSE_TRANSPORT_STATUS_CALLER_ERROR = 200;
+  // Rust variant: JoseFfiStatus.ProviderError; code=-2
+  JOSE_TRANSPORT_STATUS_PROVIDER_ERROR = 300;
+  // Rust variant: JoseFfiStatus.BackendError; code=-3
+  JOSE_TRANSPORT_STATUS_BACKEND_ERROR = 400;
+  // Rust variant: JoseFfiStatus.PanicCaught; code=-4
+  JOSE_TRANSPORT_STATUS_PANIC_CAUGHT = 500;
+  // Rust variant: JoseFfiStatus.OutputCapacityMismatch; code=-5
+  JOSE_TRANSPORT_STATUS_OUTPUT_CAPACITY_MISMATCH = 600;
+  // Rust variant: JoseFfiStatus.UnsupportedAbi; code=-6
+  JOSE_TRANSPORT_STATUS_UNSUPPORTED_ABI = 700;
+}
+
+// Native function signatures retain ABI V1. The operation response contract
+// version is independent and must also be checked by consumers.
+enum JoseNativeAbiVersion {
+  JOSE_NATIVE_ABI_VERSION_UNSPECIFIED = 0;
+  JOSE_NATIVE_ABI_VERSION_V1 = 1;
+}
+
+// Native NumericDate and StringOrURI are scalar views of these optional signed
+// seconds and string fields. Parsing this document never authenticates it.
+// Rust view: jwt/claims/registered.rs#RegisteredClaims
+// Rust view: jwt/datatype/numeric_date.rs#NumericDate
+// Rust view: jwt/datatype/string_or_uri.rs#StringOrURI
+message JoseJwtRegisteredClaims {
+  // SENSITIVE: registered issuer identifier.
+  optional string iss = 1;
+  // SENSITIVE: registered subject identifier.
+  optional string sub = 2;
+  JoseJwtAudience aud = 3;
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+  optional sint64 exp = 4;
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+  optional sint64 nbf = 5;
+  // SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+  optional sint64 iat = 6;
+  // SENSITIVE: registered token identifier.
+  optional string jti = 7;
+}
+
+message JoseJwtAudience {
+  // SENSITIVE: registered recipient identifiers, including an explicitly empty list.
+  repeated string values = 1;
+}
+
+message JoseJwtClaimsParseRequest {
+  // SENSITIVE: JSON object represented by native RegisteredClaims and AnyClaims.
+  bytes claims_json = 1;
+}
+
+// Rust view: jwt/claims/any.rs#AnyClaims
+message JoseJwtClaimsParseResult {
+  JoseJwtRegisteredClaims registered = 1;
+  // SENSITIVE: original complete claims document; arbitrary claim values remain exact.
+  bytes claims_json = 2;
+}
+
+message JoseJwtClaimsParseResponse {
+  oneof outcome {
+    JoseJwtClaimsParseResult result = 1;
     JoseError error = 2;
   }
 }

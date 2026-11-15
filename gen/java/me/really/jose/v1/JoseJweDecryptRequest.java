@@ -17,7 +17,8 @@ public  final class JoseJweDecryptRequest extends
   // Security post-processing: generated Lite messages otherwise expose
   // neither unknown-field presence nor a safe redacted debug representation.
   public boolean reallyMeHasUnknownFieldsForValidation() {
-    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance();
+    return unknownFields != com.google.protobuf.UnknownFieldSetLite.getDefaultInstance()
+        || (hasHeaderPolicy() && getHeaderPolicy().reallyMeHasUnknownFieldsForValidation());
   }
 
   @java.lang.Override
@@ -38,6 +39,10 @@ public  final class JoseJweDecryptRequest extends
   public static final int COMPACT_FIELD_NUMBER = 1;
   private java.lang.String compact_;
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @return The compact.
    */
@@ -46,6 +51,10 @@ public  final class JoseJweDecryptRequest extends
     return compact_;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @return The bytes for compact.
    */
@@ -55,6 +64,10 @@ public  final class JoseJweDecryptRequest extends
     return com.google.protobuf.ByteString.copyFromUtf8(compact_);
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @param value The compact to set.
    */
@@ -65,6 +78,10 @@ public  final class JoseJweDecryptRequest extends
     compact_ = value;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    */
   private void clearCompact() {
@@ -72,6 +89,10 @@ public  final class JoseJweDecryptRequest extends
     compact_ = getDefaultInstance().getCompact();
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 1 [json_name = "compact"];</code>
    * @param value The bytes for compact to set.
    */
@@ -174,6 +195,7 @@ public  final class JoseJweDecryptRequest extends
    * <pre>
    * Sensitive direct CEK or recipient private/agreement key bytes, depending on
    * key_management_algorithm. Adapters must zeroize after dispatch.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes key = 4 [json_name = "key"];</code>
@@ -187,6 +209,7 @@ public  final class JoseJweDecryptRequest extends
    * <pre>
    * Sensitive direct CEK or recipient private/agreement key bytes, depending on
    * key_management_algorithm. Adapters must zeroize after dispatch.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes key = 4 [json_name = "key"];</code>
@@ -201,6 +224,7 @@ public  final class JoseJweDecryptRequest extends
    * <pre>
    * Sensitive direct CEK or recipient private/agreement key bytes, depending on
    * key_management_algorithm. Adapters must zeroize after dispatch.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes key = 4 [json_name = "key"];</code>
@@ -380,6 +404,10 @@ public  final class JoseJweDecryptRequest extends
 
 
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 1 [json_name = "compact"];</code>
      * @return The compact.
      */
@@ -388,6 +416,10 @@ public  final class JoseJweDecryptRequest extends
       return instance.getCompact();
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 1 [json_name = "compact"];</code>
      * @return The bytes for compact.
      */
@@ -397,6 +429,10 @@ public  final class JoseJweDecryptRequest extends
       return instance.getCompactBytes();
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 1 [json_name = "compact"];</code>
      * @param value The compact to set.
      * @return This builder for chaining.
@@ -408,6 +444,10 @@ public  final class JoseJweDecryptRequest extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 1 [json_name = "compact"];</code>
      * @return This builder for chaining.
      */
@@ -417,6 +457,10 @@ public  final class JoseJweDecryptRequest extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 1 [json_name = "compact"];</code>
      * @param value The bytes for compact to set.
      * @return This builder for chaining.
@@ -526,6 +570,7 @@ public  final class JoseJweDecryptRequest extends
      * <pre>
      * Sensitive direct CEK or recipient private/agreement key bytes, depending on
      * key_management_algorithm. Adapters must zeroize after dispatch.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes key = 4 [json_name = "key"];</code>
@@ -539,6 +584,7 @@ public  final class JoseJweDecryptRequest extends
      * <pre>
      * Sensitive direct CEK or recipient private/agreement key bytes, depending on
      * key_management_algorithm. Adapters must zeroize after dispatch.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes key = 4 [json_name = "key"];</code>
@@ -554,6 +600,7 @@ public  final class JoseJweDecryptRequest extends
      * <pre>
      * Sensitive direct CEK or recipient private/agreement key bytes, depending on
      * key_management_algorithm. Adapters must zeroize after dispatch.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes key = 4 [json_name = "key"];</code>

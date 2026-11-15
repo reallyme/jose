@@ -6,6 +6,10 @@
 package me.really.jose.v1;
 
 /**
+ * <pre>
+ * Rust selector: JweContentEncryptionAlgorithm; public; provider; PROVIDER_UNSUPPORTED
+ * </pre>
+ *
  * Protobuf enum {@code reallyme.jose.v1.JoseJweContentEncryptionAlgorithm}
  */
 @com.google.protobuf.Generated
@@ -18,16 +22,25 @@ public enum JoseJweContentEncryptionAlgorithm
   /**
    * <pre>
    * AES-GCM content encryption: 100-199.
+   * Rust variant: JweContentEncryptionAlgorithm.A128Gcm; label=A128GCM; key=16; nonce=12; tag=16
    * </pre>
    *
    * <code>JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM = 100;</code>
    */
   JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM(100),
   /**
+   * <pre>
+   * Rust variant: JweContentEncryptionAlgorithm.A192Gcm; label=A192GCM; key=24; nonce=12; tag=16
+   * </pre>
+   *
    * <code>JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM = 110;</code>
    */
   JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM(110),
   /**
+   * <pre>
+   * Rust variant: JweContentEncryptionAlgorithm.A256Gcm; label=A256GCM; key=32; nonce=12; tag=16
+   * </pre>
+   *
    * <code>JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM = 120;</code>
    */
   JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM(120),
@@ -41,16 +54,25 @@ public enum JoseJweContentEncryptionAlgorithm
   /**
    * <pre>
    * AES-GCM content encryption: 100-199.
+   * Rust variant: JweContentEncryptionAlgorithm.A128Gcm; label=A128GCM; key=16; nonce=12; tag=16
    * </pre>
    *
    * <code>JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM = 100;</code>
    */
   public static final int JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM_VALUE = 100;
   /**
+   * <pre>
+   * Rust variant: JweContentEncryptionAlgorithm.A192Gcm; label=A192GCM; key=24; nonce=12; tag=16
+   * </pre>
+   *
    * <code>JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM = 110;</code>
    */
   public static final int JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A192GCM_VALUE = 110;
   /**
+   * <pre>
+   * Rust variant: JweContentEncryptionAlgorithm.A256Gcm; label=A256GCM; key=32; nonce=12; tag=16
+   * </pre>
+   *
    * <code>JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM = 120;</code>
    */
   public static final int JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A256GCM_VALUE = 120;

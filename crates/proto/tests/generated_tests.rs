@@ -7,7 +7,9 @@
 #![cfg(feature = "generated")]
 #![allow(missing_docs)]
 
-use buffa::{EnumValue, Enumeration, Message};
+use buffa::json::{with_json_parse_options, JsonParseOptions};
+use buffa::sensitive::{GuardedOwnedView, GuardedViewError};
+use buffa::{DecodeOptions, EnumValue, Enumeration, Message};
 use reallyme_jose_proto::generated::{
     proto::reallyme::jose::v1::{
         __buffa::oneof::{
@@ -16,10 +18,10 @@ use reallyme_jose_proto::generated::{
         },
         JoseBackendError, JoseCompactResult, JoseError, JoseErrorReason, JoseExpectedString,
         JoseJweContentEncryptionAlgorithm, JoseJweEncryptRequest, JoseJweKeyManagementAlgorithm,
-        JoseJwePlaintextResult, JoseJwePlaintextResultOwnedView, JoseJwsSignRequest,
-        JoseJwsSignRequestOwnedView, JoseJwtTemporalValidationPolicy, JoseOperationRequest,
-        JosePrimitiveError, JoseProviderError, JoseSignatureAlgorithm, JoseVerifyResult,
-        JoseVerifyResultOwnedView,
+        JoseJwePlaintextResult, JoseJwePlaintextResultView, JoseJwsSignRequest,
+        JoseJwsSignRequestView, JoseJwtTemporalValidationPolicy, JoseOperationRequest,
+        JoseOperationRequestView, JosePrimitiveError, JoseProviderError, JoseSdkErrorCode,
+        JoseSignatureAlgorithm, JoseVerifyResult, JoseVerifyResultView,
     },
     JOSE_PROTO_PACKAGE,
 };
@@ -39,7 +41,7 @@ where
 
 fn assert_debug_redacts_bytes(debug: String, field_name: &str) {
     assert!(debug.contains(field_name), "{debug}");
-    assert!(debug.contains("<redacted>"), "{debug}");
+    assert!(debug.contains("[REDACTED]"), "{debug}");
     assert!(!debug.contains("130"), "{debug}");
     assert!(!debug.contains("[48"), "{debug}");
 }
@@ -50,63 +52,97 @@ fn proto_package_name_is_stable() {
 }
 
 #[test]
-fn generated_private_key_and_payload_debug_output_is_redacted() -> Result<(), buffa::DecodeError> {
+fn sdk_error_codes_have_stable_schema_numbers() {
+    use JoseSdkErrorCode::{
+        JOSE_SDK_ERROR_CODE_INCOMPATIBLE_ABI, JOSE_SDK_ERROR_CODE_INVALID_INPUT,
+        JOSE_SDK_ERROR_CODE_JOSE_FAILURE, JOSE_SDK_ERROR_CODE_MALFORMED_PROVIDER_RESPONSE,
+        JOSE_SDK_ERROR_CODE_NATIVE_LIBRARY_LOAD_FAILED,
+        JOSE_SDK_ERROR_CODE_NATIVE_LIBRARY_NOT_FOUND, JOSE_SDK_ERROR_CODE_NATIVE_SYMBOL_MISSING,
+        JOSE_SDK_ERROR_CODE_PROVIDER_FAILURE, JOSE_SDK_ERROR_CODE_PROVIDER_NOT_INSTALLED,
+        JOSE_SDK_ERROR_CODE_UNSUPPORTED_PLATFORM,
+    };
+    for (code, number) in [
+        (JOSE_SDK_ERROR_CODE_INVALID_INPUT, 100),
+        (JOSE_SDK_ERROR_CODE_PROVIDER_NOT_INSTALLED, 200),
+        (JOSE_SDK_ERROR_CODE_PROVIDER_FAILURE, 210),
+        (JOSE_SDK_ERROR_CODE_MALFORMED_PROVIDER_RESPONSE, 220),
+        (JOSE_SDK_ERROR_CODE_UNSUPPORTED_PLATFORM, 300),
+        (JOSE_SDK_ERROR_CODE_NATIVE_LIBRARY_NOT_FOUND, 310),
+        (JOSE_SDK_ERROR_CODE_NATIVE_LIBRARY_LOAD_FAILED, 320),
+        (JOSE_SDK_ERROR_CODE_NATIVE_SYMBOL_MISSING, 330),
+        (JOSE_SDK_ERROR_CODE_INCOMPATIBLE_ABI, 340),
+        (JOSE_SDK_ERROR_CODE_JOSE_FAILURE, 400),
+    ] {
+        assert_eq!(code.to_i32(), number);
+        assert_eq!(JoseSdkErrorCode::from_i32(number), Some(code));
+    }
+    assert_eq!(JoseSdkErrorCode::from_i32(401), None);
+}
+
+#[test]
+fn generated_private_key_and_payload_debug_output_is_redacted() -> Result<(), GuardedViewError> {
     let request = JoseJwsSignRequest {
         algorithm: EnumValue::from(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_ES256),
-        private_key: vec![0x30, 0x82, 0x01, 0x0a],
-        payload: vec![0x30, 0x82, 0x02, 0x0b],
-        __buffa_unknown_fields: Default::default(),
+        private_key: vec![0x30, 0x82, 0x01, 0x0a].into(),
+        payload: vec![0x30, 0x82, 0x02, 0x0b].into(),
     };
 
     let debug = format!("{request:?}");
     assert_debug_redacts_bytes(debug.clone(), "private_key");
     assert_debug_redacts_bytes(debug, "payload");
 
-    let view = JoseJwsSignRequestOwnedView::from_owned(&request)?;
+    let view = GuardedOwnedView::<JoseJwsSignRequestView<'static>>::from_owned(
+        &request,
+        &DecodeOptions::new().reject_unknown_fields(),
+    )?;
     let view_debug = format!("{:?}", view.view());
     assert_debug_redacts_bytes(view_debug.clone(), "private_key");
     assert_debug_redacts_bytes(view_debug, "payload");
     let owned_view_debug = format!("{view:?}");
-    assert!(owned_view_debug.contains("<redacted>"));
+    assert!(owned_view_debug.contains("[REDACTED]"));
     assert!(!owned_view_debug.contains("48"));
     assert!(!owned_view_debug.contains("130"));
     Ok(())
 }
 
 #[test]
-fn generated_plaintext_debug_output_is_redacted() -> Result<(), buffa::DecodeError> {
+fn generated_plaintext_debug_output_is_redacted() -> Result<(), GuardedViewError> {
     let plaintext = JoseJwePlaintextResult {
-        plaintext: vec![0x30, 0x82, 0x04, 0x0d],
-        __buffa_unknown_fields: Default::default(),
+        plaintext: vec![0x30, 0x82, 0x04, 0x0d].into(),
     };
 
     let plaintext_debug = format!("{plaintext:?}");
     assert_debug_redacts_bytes(plaintext_debug, "plaintext");
 
-    let plaintext_view = JoseJwePlaintextResultOwnedView::from_owned(&plaintext)?;
+    let plaintext_view = GuardedOwnedView::<JoseJwePlaintextResultView<'static>>::from_owned(
+        &plaintext,
+        &DecodeOptions::new().reject_unknown_fields(),
+    )?;
     let plaintext_view_debug = format!("{:?}", plaintext_view.view());
     assert_debug_redacts_bytes(plaintext_view_debug, "plaintext");
-    assert!(format!("{plaintext_view:?}").contains("<redacted>"));
+    assert!(format!("{plaintext_view:?}").contains("[REDACTED]"));
     Ok(())
 }
 
 #[test]
-fn generated_verified_parts_are_redacted_and_cleared() -> Result<(), buffa::DecodeError> {
+fn generated_verified_parts_are_redacted_and_cleared() -> Result<(), GuardedViewError> {
     let mut result = JoseVerifyResult {
-        protected_header_json: vec![0x30, 0x82, 0x01, 0x0a],
-        payload: vec![0x30, 0x82, 0x02, 0x0b],
-        __buffa_unknown_fields: Default::default(),
+        protected_header_json: vec![0x30, 0x82, 0x01, 0x0a].into(),
+        payload: vec![0x30, 0x82, 0x02, 0x0b].into(),
     };
 
     let debug = format!("{result:?}");
     assert_debug_redacts_bytes(debug.clone(), "protected_header_json");
     assert_debug_redacts_bytes(debug, "payload");
 
-    let view = JoseVerifyResultOwnedView::from_owned(&result)?;
+    let view = GuardedOwnedView::<JoseVerifyResultView<'static>>::from_owned(
+        &result,
+        &DecodeOptions::new().reject_unknown_fields(),
+    )?;
     let view_debug = format!("{:?}", view.view());
     assert_debug_redacts_bytes(view_debug.clone(), "protected_header_json");
     assert_debug_redacts_bytes(view_debug, "payload");
-    assert!(format!("{view:?}").contains("<redacted>"));
+    assert!(format!("{view:?}").contains("[REDACTED]"));
 
     result.clear();
     assert!(result.protected_header_json.is_empty());
@@ -118,23 +154,29 @@ fn generated_verified_parts_are_redacted_and_cleared() -> Result<(), buffa::Deco
 #[allow(clippy::field_reassign_with_default)]
 fn generated_jwt_claim_policy_identifiers_are_redacted_and_cleared() {
     // Drop hardening intentionally prevents struct-update syntax from moving
-    // retained unknown fields out of the default owner.
+    // guarded fields out of the default owner.
     let mut policy = JoseJwtTemporalValidationPolicy::default();
-    policy.expected_audience = "redact-audience-491".to_owned();
-    policy.expected_issuer = "redact-issuer-492".to_owned();
-    policy.expected_subject = "redact-subject-493".to_owned();
+    policy.expected_audience = "redact-audience-491".to_owned().into();
+    policy.expected_issuer_constraint = JoseExpectedString {
+        value: "redact-issuer-492".to_owned().into(),
+    }
+    .into();
+    policy.expected_subject_constraint = JoseExpectedString {
+        value: "redact-subject-493".to_owned().into(),
+    }
+    .into();
 
     let debug = format!("{policy:?}");
     assert!(debug.contains("expected_audience"));
-    assert!(debug.contains("<redacted>"));
+    assert!(debug.contains("[REDACTED]"));
     assert!(!debug.contains("redact-audience-491"));
     assert!(!debug.contains("redact-issuer-492"));
     assert!(!debug.contains("redact-subject-493"));
 
     policy.clear();
     assert!(policy.expected_audience.is_empty());
-    assert!(policy.expected_issuer.is_empty());
-    assert!(policy.expected_subject.is_empty());
+    assert!(!policy.expected_issuer_constraint.is_set());
+    assert!(!policy.expected_subject_constraint.is_set());
 }
 
 #[test]
@@ -147,17 +189,13 @@ fn jwt_temporal_policy_proto_json_round_trips_and_accepts_null_defaults(
     policy.clock_skew_seconds = 30;
     policy.max_future_iat_skew_seconds = 60;
     policy.now_unix = 1_720_000_000;
-    policy.expected_audience = "recipient".to_owned();
-    policy.expected_issuer = "issuer".to_owned();
-    policy.expected_subject = "subject".to_owned();
+    policy.expected_audience = "recipient".to_owned().into();
     policy.expected_issuer_constraint = JoseExpectedString {
-        value: "issuer".to_owned(),
-        __buffa_unknown_fields: Default::default(),
+        value: "issuer".to_owned().into(),
     }
     .into();
     policy.expected_subject_constraint = JoseExpectedString {
-        value: "subject".to_owned(),
-        __buffa_unknown_fields: Default::default(),
+        value: "subject".to_owned().into(),
     }
     .into();
 
@@ -171,12 +209,12 @@ fn jwt_temporal_policy_proto_json_round_trips_and_accepts_null_defaults(
     assert_eq!(numeric.now_unix, policy.now_unix);
 
     let nulls: JoseJwtTemporalValidationPolicy = serde_json::from_str(
-        r#"{"requireExp":null,"nowUnix":null,"expectedIssuer":null,"expectedSubject":null}"#,
+        r#"{"requireExp":null,"nowUnix":null,"expectedIssuerConstraint":null,"expectedSubjectConstraint":null}"#,
     )?;
     assert!(!nulls.require_exp);
     assert_eq!(nulls.now_unix, 0);
-    assert!(nulls.expected_issuer.is_empty());
-    assert!(nulls.expected_subject.is_empty());
+    assert!(!nulls.expected_issuer_constraint.is_set());
+    assert!(!nulls.expected_subject_constraint.is_set());
     Ok(())
 }
 
@@ -255,15 +293,18 @@ fn jose_error_reason_values_have_no_stale_placeholders() {
 }
 
 #[test]
-fn jws_es256k_signature_algorithm_slot_is_reserved() {
-    for value in [0, 100, 200] {
+fn signature_identity_is_shared_and_legacy_values_remain_reserved() {
+    for value in [0, 100, 200, 230] {
         assert!(JoseSignatureAlgorithm::from_i32(value).is_some());
     }
 
     for value in 1..=3 {
         assert!(JoseSignatureAlgorithm::from_i32(value).is_none());
     }
-    assert!(JoseSignatureAlgorithm::from_i32(230).is_none());
+    assert_eq!(
+        JoseSignatureAlgorithm::from_i32(230),
+        Some(JoseSignatureAlgorithm::Es256k)
+    );
 }
 
 #[test]
@@ -288,27 +329,21 @@ fn jose_error_oneof_wire_contract_is_stable() -> Result<(), buffa::DecodeError> 
     let primitive = JoseError {
         error: Some(JoseErrorBranch::Primitive(Box::new(JosePrimitiveError {
             reason: EnumValue::from(JoseErrorReason::JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_golden_wire(&primitive, &[0x0a, 0x03, 0x08, 0x8e, 0x01])?;
 
     let provider = JoseError {
         error: Some(JoseErrorBranch::Provider(Box::new(JoseProviderError {
             reason: EnumValue::from(JoseErrorReason::JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_golden_wire(&provider, &[0x12, 0x03, 0x08, 0xa1, 0x06])?;
 
     let backend = JoseError {
         error: Some(JoseErrorBranch::Backend(Box::new(JoseBackendError {
             reason: EnumValue::from(JoseErrorReason::JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF),
-            __buffa_unknown_fields: Default::default(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
     assert_golden_wire(&backend, &[0x1a, 0x03, 0x08, 0xbc, 0x05])?;
 
@@ -318,8 +353,7 @@ fn jose_error_oneof_wire_contract_is_stable() -> Result<(), buffa::DecodeError> 
 #[test]
 fn jose_compact_result_wire_contract_is_stable() -> Result<(), buffa::DecodeError> {
     let result = JoseCompactResult {
-        compact: "a.b.c".to_owned(),
-        __buffa_unknown_fields: Default::default(),
+        compact: "a.b.c".to_owned().into(),
     };
     assert_golden_wire(&result, &[0x0a, 0x05, b'a', b'.', b'b', b'.', b'c'])?;
 
@@ -329,9 +363,8 @@ fn jose_compact_result_wire_contract_is_stable() -> Result<(), buffa::DecodeErro
 #[test]
 fn jose_verify_result_wire_contract_is_stable() -> Result<(), buffa::DecodeError> {
     let result = JoseVerifyResult {
-        protected_header_json: vec![1, 2],
-        payload: vec![3, 4],
-        __buffa_unknown_fields: Default::default(),
+        protected_header_json: vec![1, 2].into(),
+        payload: vec![3, 4].into(),
     };
     assert_golden_wire(&result, &[0x0a, 0x02, 0x01, 0x02, 0x12, 0x02, 0x03, 0x04])?;
 
@@ -343,11 +376,9 @@ fn jose_operation_request_wire_contract_is_stable() -> Result<(), buffa::DecodeE
     let request = JoseOperationRequest {
         operation: Some(JoseOperation::JwsSign(Box::new(JoseJwsSignRequest {
             algorithm: EnumValue::from(JoseSignatureAlgorithm::JOSE_SIGNATURE_ALGORITHM_ES256),
-            private_key: vec![1, 2],
-            payload: vec![3],
-            __buffa_unknown_fields: Default::default(),
+            private_key: vec![1, 2].into(),
+            payload: vec![3].into(),
         }))),
-        __buffa_unknown_fields: Default::default(),
     };
 
     assert_golden_wire(
@@ -369,15 +400,14 @@ fn jwe_encrypt_request_json_round_trips() -> Result<(), Box<dyn std::error::Erro
         content_encryption_algorithm: EnumValue::from(
             JoseJweContentEncryptionAlgorithm::JOSE_JWE_CONTENT_ENCRYPTION_ALGORITHM_A128GCM,
         ),
-        key: vec![7u8; 16],
-        plaintext: br#"{"ok":true}"#.to_vec(),
-        kid: "kid-1".to_owned(),
-        apu: b"wallet".to_vec(),
-        apv: b"issuer".to_vec(),
-        typ: "JWT".to_owned(),
-        cty: "json".to_owned(),
+        key: vec![7u8; 16].into(),
+        plaintext: br#"{"ok":true}"#.to_vec().into(),
+        kid: Some("kid-1".to_owned().into()),
+        apu: Some(b"wallet".to_vec().into()),
+        apv: Some(b"issuer".to_vec().into()),
+        typ: Some("JWT".to_owned().into()),
+        cty: Some("json".to_owned().into()),
         compression_algorithm: Default::default(),
-        __buffa_unknown_fields: Default::default(),
     };
 
     let json = serde_json::to_vec(&request)?;
@@ -385,4 +415,139 @@ fn jwe_encrypt_request_json_round_trips() -> Result<(), Box<dyn std::error::Erro
     assert_eq!(decoded, request);
 
     Ok(())
+}
+
+#[test]
+fn guarded_view_json_and_owned_conversion_preserve_the_contract(
+) -> Result<(), Box<dyn std::error::Error>> {
+    let request = JoseJwsSignRequest::default()
+        .with_private_key(vec![7; 257])
+        .with_payload(vec![9; 129]);
+    let input = zeroize::Zeroizing::new(request.encode_to_vec());
+    let view = GuardedOwnedView::<JoseJwsSignRequestView<'static>>::decode(
+        &input,
+        &DecodeOptions::new().reject_unknown_fields(),
+    )?;
+    drop(input);
+    assert_eq!(
+        serde_json::to_value(view.view())?,
+        serde_json::to_value(&request)?
+    );
+    let owned = view.to_owned_message()?;
+    assert_ne!(owned.private_key.as_ptr(), request.private_key.as_ptr());
+    drop(view);
+    assert_eq!(owned, request);
+    Ok(())
+}
+
+#[test]
+fn nested_operation_views_redact_and_reject_unknown_fields() -> Result<(), GuardedViewError> {
+    let marker = "private-marker";
+    let request = JoseOperationRequest::default().with_operation(JoseOperation::JwsSign(Box::new(
+        JoseJwsSignRequest::default().with_private_key(marker.as_bytes().to_vec()),
+    )));
+    let options = DecodeOptions::new()
+        .reject_unknown_fields()
+        .with_max_message_size(1024);
+    let wire = zeroize::Zeroizing::new(request.encode_to_vec());
+    let eager = options.decode_view::<JoseOperationRequestView<'_>>(&wire)?;
+    let guarded =
+        GuardedOwnedView::<JoseOperationRequestView<'static>>::from_owned(&request, &options)?;
+    for debug in [
+        format!("{eager:?}"),
+        format!("{:?}", eager.operation),
+        format!("{guarded:?}"),
+    ] {
+        assert!(debug.contains("[REDACTED]"));
+        assert!(!debug.contains(marker));
+        assert!(!debug.contains("[112, 114, 105"));
+    }
+
+    // The outer jws_sign field carries a child whose field 4 is unknown.
+    let unknown_child = b"\xc2\x3e\x10\x22\x0eprivate-marker";
+    assert!(matches!(
+        options.decode_view::<JoseOperationRequestView<'_>>(unknown_child),
+        Err(buffa::DecodeError::UnknownFieldLimitExceeded)
+    ));
+    assert!(matches!(
+        GuardedOwnedView::<JoseOperationRequestView<'static>>::decode(unknown_child, &options),
+        Err(GuardedViewError::Decode(
+            buffa::DecodeError::UnknownFieldLimitExceeded
+        ))
+    ));
+    Ok(())
+}
+
+#[test]
+fn enum_json_errors_omit_rejected_input() {
+    let rejected_name = r#""private-rejected-label""#;
+    let out_of_range = ["-2147483649", "18446744073709551615"];
+    // Standalone enum values are closed. Proto3 fields retain unknown i32s.
+    for rejected in [rejected_name, "1234567"].into_iter().chain(out_of_range) {
+        assert_redacted_enum_error(
+            serde_json::from_str::<JoseSignatureAlgorithm>(rejected),
+            rejected,
+        );
+    }
+    for rejected in [rejected_name].into_iter().chain(out_of_range) {
+        let request = format!(r#"{{"algorithm":{rejected}}}"#);
+        assert_redacted_enum_error(
+            serde_json::from_str::<JoseJwsSignRequest>(&request),
+            rejected,
+        );
+    }
+}
+
+fn assert_redacted_enum_error<T>(result: serde_json::Result<T>, rejected: &str) {
+    assert!(result.err().is_some_and(|error| {
+        error.is_data() && !error.to_string().contains(rejected.trim_matches('"'))
+    }));
+}
+
+#[test]
+fn enum_json_preserves_known_open_null_and_lenient_values() -> serde_json::Result<()> {
+    use JoseSignatureAlgorithm::{
+        JOSE_SIGNATURE_ALGORITHM_ES256, JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED,
+    };
+    for (token, expected) in [
+        (
+            r#""JOSE_SIGNATURE_ALGORITHM_ES256""#,
+            JOSE_SIGNATURE_ALGORITHM_ES256,
+        ),
+        ("200", JOSE_SIGNATURE_ALGORITHM_ES256),
+        ("null", JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED),
+    ] {
+        assert_eq!(
+            serde_json::from_str::<JoseSignatureAlgorithm>(token)?,
+            expected
+        );
+        let request: JoseJwsSignRequest =
+            serde_json::from_str(&format!(r#"{{"algorithm":{token}}}"#))?;
+        assert_eq!(request.algorithm, EnumValue::Known(expected));
+    }
+
+    let lenient = JsonParseOptions::new().ignore_unknown_enum_values(true);
+    for options in [JsonParseOptions::new(), lenient] {
+        let request: JoseJwsSignRequest = with_json_parse_options(&options, || {
+            serde_json::from_str(r#"{"algorithm":1234567}"#)
+        })?;
+        assert_eq!(request.algorithm, EnumValue::Unknown(1234567));
+    }
+    with_json_parse_options(&lenient, || {
+        let request: JoseJwsSignRequest =
+            serde_json::from_str(r#"{"algorithm":"FUTURE_ALGORITHM"}"#)?;
+        assert_eq!(
+            request.algorithm,
+            EnumValue::Known(JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED)
+        );
+        assert_redacted_enum_error(
+            serde_json::from_str::<JoseSignatureAlgorithm>(r#""FUTURE_ALGORITHM""#),
+            "FUTURE_ALGORITHM",
+        );
+        assert_redacted_enum_error(
+            serde_json::from_str::<JoseJwsSignRequest>(r#"{"algorithm":18446744073709551615}"#),
+            "18446744073709551615",
+        );
+        Ok(())
+    })
 }

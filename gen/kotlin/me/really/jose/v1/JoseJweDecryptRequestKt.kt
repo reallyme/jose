@@ -30,6 +30,10 @@ public object JoseJweDecryptRequestKt {
     internal fun _build(): me.really.jose.v1.JoseJweDecryptRequest = _builder.build()
 
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `string compact = 1 [json_name = "compact"];`
      */
     public var compact: kotlin.String
@@ -40,6 +44,10 @@ public object JoseJweDecryptRequestKt {
         _builder.compact = value
       }
     /**
+     * ```
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * ```
+     *
      * `string compact = 1 [json_name = "compact"];`
      */
     public fun clearCompact() {
@@ -98,6 +106,7 @@ public object JoseJweDecryptRequestKt {
      * ```
      * Sensitive direct CEK or recipient private/agreement key bytes, depending on
      * key_management_algorithm. Adapters must zeroize after dispatch.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes key = 4 [json_name = "key"];`
@@ -113,6 +122,7 @@ public object JoseJweDecryptRequestKt {
      * ```
      * Sensitive direct CEK or recipient private/agreement key bytes, depending on
      * key_management_algorithm. Adapters must zeroize after dispatch.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * ```
      *
      * `bytes key = 4 [json_name = "key"];`

@@ -80,6 +80,10 @@ public  final class JoseJwsVerifyRequest extends
   public static final int COMPACT_FIELD_NUMBER = 2;
   private java.lang.String compact_;
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 2 [json_name = "compact"];</code>
    * @return The compact.
    */
@@ -88,6 +92,10 @@ public  final class JoseJwsVerifyRequest extends
     return compact_;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 2 [json_name = "compact"];</code>
    * @return The bytes for compact.
    */
@@ -97,6 +105,10 @@ public  final class JoseJwsVerifyRequest extends
     return com.google.protobuf.ByteString.copyFromUtf8(compact_);
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 2 [json_name = "compact"];</code>
    * @param value The compact to set.
    */
@@ -107,6 +119,10 @@ public  final class JoseJwsVerifyRequest extends
     compact_ = value;
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 2 [json_name = "compact"];</code>
    */
   private void clearCompact() {
@@ -114,6 +130,10 @@ public  final class JoseJwsVerifyRequest extends
     compact_ = getDefaultInstance().getCompact();
   }
   /**
+   * <pre>
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+   * </pre>
+   *
    * <code>string compact = 2 [json_name = "compact"];</code>
    * @param value The bytes for compact to set.
    */
@@ -130,6 +150,7 @@ public  final class JoseJwsVerifyRequest extends
    * <pre>
    * Public verification key bytes. Public material is still boundary data and
    * must not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -143,6 +164,7 @@ public  final class JoseJwsVerifyRequest extends
    * <pre>
    * Public verification key bytes. Public material is still boundary data and
    * must not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -157,6 +179,7 @@ public  final class JoseJwsVerifyRequest extends
    * <pre>
    * Public verification key bytes. Public material is still boundary data and
    * must not be copied into errors or telemetry.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -311,6 +334,10 @@ public  final class JoseJwsVerifyRequest extends
     }
 
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 2 [json_name = "compact"];</code>
      * @return The compact.
      */
@@ -319,6 +346,10 @@ public  final class JoseJwsVerifyRequest extends
       return instance.getCompact();
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 2 [json_name = "compact"];</code>
      * @return The bytes for compact.
      */
@@ -328,6 +359,10 @@ public  final class JoseJwsVerifyRequest extends
       return instance.getCompactBytes();
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 2 [json_name = "compact"];</code>
      * @param value The compact to set.
      * @return This builder for chaining.
@@ -339,6 +374,10 @@ public  final class JoseJwsVerifyRequest extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 2 [json_name = "compact"];</code>
      * @return This builder for chaining.
      */
@@ -348,6 +387,10 @@ public  final class JoseJwsVerifyRequest extends
       return this;
     }
     /**
+     * <pre>
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
+     * </pre>
+     *
      * <code>string compact = 2 [json_name = "compact"];</code>
      * @param value The bytes for compact to set.
      * @return This builder for chaining.
@@ -363,6 +406,7 @@ public  final class JoseJwsVerifyRequest extends
      * <pre>
      * Public verification key bytes. Public material is still boundary data and
      * must not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -376,6 +420,7 @@ public  final class JoseJwsVerifyRequest extends
      * <pre>
      * Public verification key bytes. Public material is still boundary data and
      * must not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes public_key = 3 [json_name = "publicKey"];</code>
@@ -391,6 +436,7 @@ public  final class JoseJwsVerifyRequest extends
      * <pre>
      * Public verification key bytes. Public material is still boundary data and
      * must not be copied into errors or telemetry.
+     * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
      * </pre>
      *
      * <code>bytes public_key = 3 [json_name = "publicKey"];</code>

@@ -1,6 +1,6 @@
 [package]
 name = "reallyme-jose"
-version = "0.4.6"
+version = "0.5.0"
 description = "JOSE, JWT, JWS, and JWE helpers for ReallyMe identity."
 edition.workspace = true
 rust-version.workspace = true
@@ -17,14 +17,15 @@ include = ["/src/**/*.rs", "/Cargo.toml", "/README.md", "/LICENSE", "/NOTICE"]
 # traits, JSON value model, zeroizing owners, and generated wire contract in
 # the supported public API.
 allowed_external_types = [
+    "buffa::enumeration::EnumValue",
     "buffa::message::Message",
     "codec_base64url::error::Base64UrlError",
     "crypto_core::algorithm::Algorithm",
     "crypto_csprng::rng::SecureRandom",
     "crypto_csprng::rng::OsSecureRandom",
-    "crypto_dispatch::error::AlgorithmError",
     "crypto_signer::signer::Signer",
     "envelopes_jwk::jwk::Jwk",
+    "reallyme_crypto_proto::error_types::CryptoError",
     "reallyme_jose_proto::*",
     "serde_core::de::Deserialize",
     "serde_core::de::DeserializeOwned",
@@ -32,12 +33,14 @@ allowed_external_types = [
     "serde_json::error::Error",
     "serde_json::value::Value",
     "zeroize::Zeroizing",
+    "zeroize::Zeroize",
+    "zeroize::ZeroizeOnDrop",
 ]
 
 [features]
 default = ["native"]
-native = ["jose-crypto", "reallyme-crypto/native"]
-wasm = ["jose-crypto", "reallyme-crypto/wasm"]
+native = ["jose-crypto", "wire", "reallyme-crypto/native"]
+wasm = ["jose-crypto", "wire", "reallyme-crypto/wasm"]
 wire = ["dep:buffa", "dep:reallyme-jose-proto"]
 jose-crypto = [
     "reallyme-crypto/dispatch",

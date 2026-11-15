@@ -19,8 +19,6 @@ readonly ANDROID_R8_PLATFORM="platforms;android-37.0"
 readonly ANDROID_R8_SYSTEM_IMAGE="system-images;android-37.0;google_apis;x86_64"
 readonly ANDROID_R8_DATA_PARTITION_MIB="4096"
 readonly APP_ID="me.really.jose.consumer.r8"
-readonly ACTIVITY="me.really.jose.consumer.r8.ConsumerR8RuntimeActivity"
-readonly LOG_TAG="ReallyMeJoseR8Gate"
 readonly JNILIBS_DIR="$REPO_ROOT/build/android-jniLibs"
 readonly NATIVE_ASSETS_DIR="$REPO_ROOT/build/android-native-assets"
 readonly APK_PATH="$REPO_ROOT/packages/kotlin-android/consumer-r8-runtime/build/outputs/apk/release/consumer-r8-runtime-release.apk"
@@ -168,22 +166,5 @@ done
 "$ADB" install -r "$APK_PATH" >/dev/null
 app_installed="true"
 "$ADB" logcat -c
-"$ADB" shell am force-stop "$APP_ID" >/dev/null 2>&1 || true
-"$ADB" shell am start -W -n "$APP_ID/$ACTIVITY" >/dev/null
-
-log_deadline=$((SECONDS + 60))
-while (( SECONDS <= log_deadline )); do
-    logs="$("$ADB" logcat -d -v brief -s "$LOG_TAG:I" 2>/dev/null || true)"
-    if [[ "$logs" == *"$LOG_TAG"*"FAIL"* ]]; then
-        printf '%s\n' "$logs" >&2
-        fail "Android consumer R8 runtime gate failed"
-    fi
-    if [[ "$logs" == *"$LOG_TAG"*"PASS"* ]]; then
-        printf '%s\n' "Android consumer R8 runtime gate passed"
-        exit 0
-    fi
-    sleep 1
-done
-
-"$ADB" logcat -d -v brief -s "$LOG_TAG:I" >&2 || true
-fail "Android consumer R8 runtime gate timed out"
+device_serial="$("$ADB" get-serialno)"
+ADB="$ADB" "$REPO_ROOT/scripts/test-android-runtime.sh" "$device_serial"

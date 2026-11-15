@@ -6,6 +6,11 @@
 package me.really.jose.v1;
 
 /**
+ * <pre>
+ * Rust selector: JwsAlgorithm; crate; provider; PROVIDER_UNSUPPORTED
+ * Rust selector: JwtAlgorithm; crate; provider; PROVIDER_UNSUPPORTED
+ * </pre>
+ *
  * Protobuf enum {@code reallyme.jose.v1.JoseSignatureAlgorithm}
  */
 @com.google.protobuf.Generated
@@ -18,15 +23,31 @@ public enum JoseSignatureAlgorithm
   /**
    * <pre>
    * EdDSA: 100-199; elliptic-curve signatures: 200-299.
+   * Rust variant: JwsAlgorithm.Eddsa; label=EdDSA
+   * Rust variant: JwtAlgorithm.Eddsa; label=EdDSA; backend=Ed25519; curve=Ed25519; key_type=Okp; curve_id=JOSE_NAMED_CURVE_ED25519; signature_bytes=64; encoding_id=JOSE_SIGNATURE_ENCODING_FIXED_WIDTH; raw_provider=false
    * </pre>
    *
    * <code>JOSE_SIGNATURE_ALGORITHM_EDDSA = 100;</code>
    */
   JOSE_SIGNATURE_ALGORITHM_EDDSA(100),
   /**
+   * <pre>
+   * Rust variant: JwsAlgorithm.Es256; label=ES256
+   * Rust variant: JwtAlgorithm.Es256; label=ES256; backend=P256; curve=P-256; key_type=Ec; curve_id=JOSE_NAMED_CURVE_P256; signature_bytes=64; encoding_id=JOSE_SIGNATURE_ENCODING_FIXED_WIDTH; raw_provider=true
+   * </pre>
+   *
    * <code>JOSE_SIGNATURE_ALGORITHM_ES256 = 200;</code>
    */
   JOSE_SIGNATURE_ALGORITHM_ES256(200),
+  /**
+   * <pre>
+   * Shared identity; compact JWS accepts only EdDSA and ES256.
+   * Rust variant: JwtAlgorithm.Es256k; label=ES256K; backend=Secp256k1; curve=secp256k1; key_type=Ec; curve_id=JOSE_NAMED_CURVE_SECP256K1; signature_bytes=64; encoding_id=JOSE_SIGNATURE_ENCODING_FIXED_WIDTH; raw_provider=false
+   * </pre>
+   *
+   * <code>JOSE_SIGNATURE_ALGORITHM_ES256K = 230;</code>
+   */
+  JOSE_SIGNATURE_ALGORITHM_ES256K(230),
   UNRECOGNIZED(-1),
   ;
 
@@ -37,15 +58,31 @@ public enum JoseSignatureAlgorithm
   /**
    * <pre>
    * EdDSA: 100-199; elliptic-curve signatures: 200-299.
+   * Rust variant: JwsAlgorithm.Eddsa; label=EdDSA
+   * Rust variant: JwtAlgorithm.Eddsa; label=EdDSA; backend=Ed25519; curve=Ed25519; key_type=Okp; curve_id=JOSE_NAMED_CURVE_ED25519; signature_bytes=64; encoding_id=JOSE_SIGNATURE_ENCODING_FIXED_WIDTH; raw_provider=false
    * </pre>
    *
    * <code>JOSE_SIGNATURE_ALGORITHM_EDDSA = 100;</code>
    */
   public static final int JOSE_SIGNATURE_ALGORITHM_EDDSA_VALUE = 100;
   /**
+   * <pre>
+   * Rust variant: JwsAlgorithm.Es256; label=ES256
+   * Rust variant: JwtAlgorithm.Es256; label=ES256; backend=P256; curve=P-256; key_type=Ec; curve_id=JOSE_NAMED_CURVE_P256; signature_bytes=64; encoding_id=JOSE_SIGNATURE_ENCODING_FIXED_WIDTH; raw_provider=true
+   * </pre>
+   *
    * <code>JOSE_SIGNATURE_ALGORITHM_ES256 = 200;</code>
    */
   public static final int JOSE_SIGNATURE_ALGORITHM_ES256_VALUE = 200;
+  /**
+   * <pre>
+   * Shared identity; compact JWS accepts only EdDSA and ES256.
+   * Rust variant: JwtAlgorithm.Es256k; label=ES256K; backend=Secp256k1; curve=secp256k1; key_type=Ec; curve_id=JOSE_NAMED_CURVE_SECP256K1; signature_bytes=64; encoding_id=JOSE_SIGNATURE_ENCODING_FIXED_WIDTH; raw_provider=false
+   * </pre>
+   *
+   * <code>JOSE_SIGNATURE_ALGORITHM_ES256K = 230;</code>
+   */
+  public static final int JOSE_SIGNATURE_ALGORITHM_ES256K_VALUE = 230;
 
 
   @java.lang.Override
@@ -71,6 +108,7 @@ public enum JoseSignatureAlgorithm
       case 0: return JOSE_SIGNATURE_ALGORITHM_UNSPECIFIED;
       case 100: return JOSE_SIGNATURE_ALGORITHM_EDDSA;
       case 200: return JOSE_SIGNATURE_ALGORITHM_ES256;
+      case 230: return JOSE_SIGNATURE_ALGORITHM_ES256K;
       default: return null;
     }
   }

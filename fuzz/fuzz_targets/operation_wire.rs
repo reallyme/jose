@@ -39,7 +39,7 @@ impl SecureRandom for FuzzRandom {
         for (index, byte) in output.iter_mut().enumerate() {
             let offset = match u8::try_from(index % 251) {
                 Ok(value) => value,
-                Err(_) => return Err(CryptoError::InvalidKey),
+                Err(_) => return Err(CryptoError::PRIMITIVE_INVALID_LENGTH),
             };
             *byte = self.seed.wrapping_add(offset);
         }

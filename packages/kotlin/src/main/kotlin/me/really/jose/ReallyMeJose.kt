@@ -14,6 +14,7 @@ import me.really.jose.v1.JoseJwtDecodeUnsignedRequest
 import me.really.jose.v1.JoseJwtDecodeUnsignedResponse
 import me.really.jose.v1.JoseJwtEncodeUnsignedRequest
 import me.really.jose.v1.JoseJwtEncodeUnsignedResponse
+import me.really.jose.v1.JoseJwtHeaderEncodeOptions
 import me.really.jose.v1.JoseJwtSignRequest
 import me.really.jose.v1.JoseJwtSignResponse
 import me.really.jose.v1.JoseJwtVerifyRequest
@@ -27,7 +28,7 @@ import me.really.jose.v1.JoseJwsVerifyRequest
 import me.really.jose.v1.JoseJwsVerifyResponse
 
 
-private const val MAX_PROTOBUF_RECURSION_DEPTH: Int = 32
+private const val MAX_PROTOBUF_RECURSION_DEPTH: Int = JoseContractValues.PROTO_RECURSION_DEPTH
 
 /** Typed Kotlin/JVM facade over the canonical Rust JOSE operation contract. */
 public object ReallyMeJose {
@@ -122,16 +123,20 @@ public object ReallyMeJose {
         claimsJson: ByteArray,
         jwkJson: ByteArray,
         privateKey: ByteArray,
-        type: String = "",
+        headerOptions: ReallyMeJoseJwtHeaderOptions? = null,
     ): String = withOwned(claimsJson, jwkJson, privateKey) { owned ->
-        requireAggregate(owned[0].size, owned[1].size, owned[2].size, utf8Length(type))
+        requireAggregate(owned[0].size, owned[1].size, owned[2].size, utf8Length(headerOptions?.type ?: ""))
         val operation = JoseJwtSignRequest.newBuilder()
             .setClaimsJson(wrap(owned[0]))
             .setJwkJson(wrap(owned[1]))
             .setPrivateKey(wrap(owned[2]))
-            .setTyp(type)
-            .build()
-        execute(JoseOperationRequest.newBuilder().setJwtSign(operation).build()) { response ->
+        if (headerOptions != null) {
+            if (headerOptions.type == "") throw ReallyMeJoseException.JoseFailure(ReallyMeJoseErrorBranch.PRIMITIVE, ReallyMeJoseErrorReason.JWT_INVALID_HEADER)
+            val options = JoseJwtHeaderEncodeOptions.newBuilder()
+            headerOptions.type?.let { options.setTyp(it) }
+            operation.setHeaderOptions(options)
+        }
+        execute(JoseOperationRequest.newBuilder().setJwtSign(operation.build()).build()) { response ->
             if (response.responseCase != JoseOperationResponse.ResponseCase.JWT_SIGN) malformed()
             val selected = response.jwtSign
             requireClean(selected)
@@ -150,17 +155,16 @@ public object ReallyMeJose {
         jwkJson: ByteArray,
         publicKey: ByteArray,
         headerPolicy: ReallyMeJoseJwtHeaderPolicy? = null,
-        temporalPolicy: ReallyMeJoseJwtTemporalPolicy? = null,
-        signatureOnly: Boolean = false,
+        verification: ReallyMeJoseJwtVerification,
     ): ByteArray = withOwned(jwkJson, publicKey) { owned ->
         requireAggregate(utf8Length(compact), owned[0].size, owned[1].size)
         val builder = JoseJwtVerifyRequest.newBuilder()
             .setCompact(compact)
             .setJwkJson(wrap(owned[0]))
             .setPublicKey(wrap(owned[1]))
-            .setSignatureOnly(signatureOnly)
+
         if (headerPolicy != null) builder.setHeaderPolicy(protoJwtHeaderPolicy(headerPolicy))
-        if (temporalPolicy != null) builder.setTemporalPolicy(protoJwtTemporalPolicy(temporalPolicy))
+        builder.setVerification(protoJwtVerification(verification))
         execute(JoseOperationRequest.newBuilder().setJwtVerify(builder.build()).build()) { response ->
             if (response.responseCase != JoseOperationResponse.ResponseCase.JWT_VERIFY) malformed()
             val selected = response.jwtVerify
@@ -183,27 +187,27 @@ public object ReallyMeJose {
         contentEncryptionAlgorithm: ReallyMeJoseJweContentEncryptionAlgorithm,
         key: ByteArray,
         plaintext: ByteArray,
-        keyIdentifier: String = "",
-        agreementPartyUInfo: ByteArray = ByteArray(0),
-        agreementPartyVInfo: ByteArray = ByteArray(0),
-        type: String = "",
-        contentType: String = "",
+        keyIdentifier: String? = null,
+        agreementPartyUInfo: ByteArray? = null,
+        agreementPartyVInfo: ByteArray? = null,
+        type: String? = null,
+        contentType: String? = null,
         compressionAlgorithm: ReallyMeJoseJweCompressionAlgorithm? = null,
-    ): String = withOwned(key, plaintext, agreementPartyUInfo, agreementPartyVInfo) { owned ->
+    ): String = withOwned(key, plaintext, agreementPartyUInfo ?: ByteArray(0), agreementPartyVInfo ?: ByteArray(0)) { owned ->
         requireAggregate(
-            owned[0].size, owned[1].size, utf8Length(keyIdentifier), owned[2].size,
-            owned[3].size, utf8Length(type), utf8Length(contentType),
+            owned[0].size, owned[1].size, utf8Length(keyIdentifier ?: ""), owned[2].size,
+            owned[3].size, utf8Length(type ?: ""), utf8Length(contentType ?: ""),
         )
         val operationBuilder = JoseJweEncryptRequest.newBuilder()
             .setKeyManagementAlgorithm(protoKeyManagementAlgorithm(keyManagementAlgorithm))
             .setContentEncryptionAlgorithm(protoContentEncryptionAlgorithm(contentEncryptionAlgorithm))
             .setKey(wrap(owned[0]))
             .setPlaintext(wrap(owned[1]))
-            .setKid(keyIdentifier)
-            .setApu(wrap(owned[2]))
-            .setApv(wrap(owned[3]))
-            .setTyp(type)
-            .setCty(contentType)
+        keyIdentifier?.let { operationBuilder.setKid(it) }
+        if (agreementPartyUInfo != null) operationBuilder.setApu(wrap(owned[2]))
+        if (agreementPartyVInfo != null) operationBuilder.setApv(wrap(owned[3]))
+        type?.let { operationBuilder.setTyp(it) }
+        contentType?.let { operationBuilder.setCty(it) }
         if (compressionAlgorithm != null) {
             operationBuilder.setCompressionAlgorithm(protoCompressionAlgorithm(compressionAlgorithm))
         }
@@ -284,7 +288,7 @@ public object ReallyMeJose {
             input.setSizeLimit(ReallyMeJoseRustNativeProvider.responseLimit())
             val response = JoseOperationResponse.parseFrom(input)
             if (
-                response.contractVersion != JoseOperationContractVersion.JOSE_OPERATION_CONTRACT_VERSION_V1 ||
+                response.contractVersion != JoseOperationContractVersion.JOSE_OPERATION_CONTRACT_VERSION_V2 ||
                 response.reallyMeHasUnknownFieldsForValidation()
             ) malformed()
             if (response.responseCase == JoseOperationResponse.ResponseCase.BOUNDARY_ERROR) {

@@ -4,8 +4,14 @@
 
 //! Generated Buffa code boundary.
 
-/// Canonical protobuf package for ReallyMe JOSE boundary messages.
-pub const JOSE_PROTO_PACKAGE: &str = "reallyme.jose.v1";
+#[path = "generated/package.rs"]
+mod package;
+pub use package::JOSE_PROTO_PACKAGE;
+
+/// Limits and reason classifications derived from the protobuf schema.
+#[cfg(feature = "generated")]
+#[path = "generated/contract_values.rs"]
+pub mod contract_values;
 
 /// Generated Buffa protobuf message and view types.
 #[allow(

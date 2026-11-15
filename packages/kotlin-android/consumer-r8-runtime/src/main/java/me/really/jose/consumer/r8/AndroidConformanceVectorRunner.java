@@ -21,13 +21,15 @@ import me.really.jose.ReallyMeJoseJweContentEncryptionAlgorithm;
 import me.really.jose.ReallyMeJoseJweCompressionAlgorithm;
 import me.really.jose.ReallyMeJoseJweHeaderPolicy;
 import me.really.jose.ReallyMeJoseJweKeyManagementAlgorithm;
-import me.really.jose.ReallyMeJoseJwtTemporalPolicy;
+import me.really.jose.ReallyMeJoseJwtClaimsPolicy;
+import me.really.jose.ReallyMeJoseJwtVerification;
 import me.really.jose.ReallyMeJoseSignatureAlgorithm;
 import me.really.jose.v1.JoseError;
 import me.really.jose.v1.JoseJwsVerifyRequest;
 import me.really.jose.v1.JoseJwtDecodeUnsignedRequest;
 import me.really.jose.v1.JoseJwtTemporalValidationPolicy;
 import me.really.jose.v1.JoseJwtVerifyRequest;
+import me.really.jose.v1.JoseJwtVerificationPolicy;
 import me.really.jose.v1.JoseOperationRequest;
 import me.really.jose.v1.JoseOperationResponse;
 import org.json.JSONArray;
@@ -47,7 +49,24 @@ final class AndroidConformanceVectorRunner {
     runSuite(assets, "unsigned-jwt.json", AndroidConformanceVectorRunner::runUnsignedJwtCase);
     runSuite(assets, "jwe-compact.json", AndroidConformanceVectorRunner::runJweCase);
     runSuite(assets, "panva-jose.json", AndroidConformanceVectorRunner::runPanvaCase);
+    runSuite(assets, "schema-operations.json", AndroidConformanceVectorRunner::runSchemaOperation);
     runWireCases(assets);
+  }
+
+  private static void runSchemaOperation(JSONObject vector) throws JSONException {
+    byte[] binary = decodeHex(requiredString(vector, "request_hex"));
+    byte[] json = requiredString(vector, "request_json").getBytes(StandardCharsets.UTF_8);
+    byte[] expected = decodeHex(requiredString(vector, "response_hex"));
+    byte[] binaryResponse = ReallyMeJose.executeWireRequest(binary);
+    byte[] jsonResponse = ReallyMeJose.executeWireJsonRequest(json);
+    try {
+      require(Arrays.equals(expected, binaryResponse));
+      require(Arrays.equals(expected, jsonResponse));
+    } finally {
+      for (byte[] buffer : new byte[][] {binary, json, expected, binaryResponse, jsonResponse}) {
+        Arrays.fill(buffer, (byte) 0);
+      }
+    }
   }
 
   private static void runWireCases(AssetManager assets) {
@@ -101,8 +120,8 @@ final class AndroidConformanceVectorRunner {
               .setCompact(requiredString(signed, "compact"))
               .setJwkJson(ByteString.copyFrom(jwk))
               .setPublicKey(ByteString.copyFrom(publicKey))
-              .setTemporalPolicy(
-                  JoseJwtTemporalValidationPolicy.newBuilder().setRequireExp(true)))
+              .setVerification(JoseJwtVerificationPolicy.newBuilder().setClaims(
+                  JoseJwtTemporalValidationPolicy.newBuilder().setRequireExp(true))))
           .build().toByteArray();
       byte[] temporalResponse = ReallyMeJose.executeWireRequest(temporalRequest);
       try {
@@ -237,19 +256,21 @@ final class AndroidConformanceVectorRunner {
     byte[] jwk = vector.getJSONObject("verification_jwk").toString()
         .getBytes(StandardCharsets.UTF_8);
     try {
-      ReallyMeJoseJwtTemporalPolicy temporalPolicy = null;
+      ReallyMeJoseJwtClaimsPolicy temporalPolicy = null;
       if (vector.has("now_unix")) {
         require("strict".equals(vector.optString("temporal_policy", "strict")));
-        temporalPolicy = new ReallyMeJoseJwtTemporalPolicy(
+        temporalPolicy = new ReallyMeJoseJwtClaimsPolicy(
             true, false, false, 60L, 60L, vector.getLong("now_unix"),
             "did:me:verifier", null, null);
       }
-      ReallyMeJoseJwtTemporalPolicy selectedPolicy = temporalPolicy;
-      boolean signatureOnly = selectedPolicy == null;
+      ReallyMeJoseJwtClaimsPolicy selectedPolicy = temporalPolicy;
+      ReallyMeJoseJwtVerification verification = selectedPolicy == null
+          ? ReallyMeJoseJwtVerification.SignatureOnly.INSTANCE
+          : new ReallyMeJoseJwtVerification.Claims(selectedPolicy);
       if (vector.has("expected_claims_json")) {
         byte[] actual = ReallyMeJose.verifyJwt(
             requiredString(vector, "compact"), jwk, publicKey, null,
-            selectedPolicy, signatureOnly);
+            verification);
         try {
           requireJsonEquals(vector.getJSONObject("expected_claims_json"), actual);
         } finally {
@@ -259,7 +280,7 @@ final class AndroidConformanceVectorRunner {
         expectFailure(expectedJwtReason(requiredString(vector, "expected_error")), () -> {
           byte[] unexpected = ReallyMeJose.verifyJwt(
               requiredString(vector, "compact"), jwk, publicKey, null,
-              selectedPolicy, signatureOnly);
+              verification);
           Arrays.fill(unexpected, (byte) 0);
         });
       }
@@ -347,7 +368,7 @@ final class AndroidConformanceVectorRunner {
 
   private static ReallyMeJoseErrorReason expectedJwsReason(String name) {
     return switch (name) {
-      case "InvalidCompactEncoding" -> ReallyMeJoseErrorReason.JWS_INVALID_COMPACT;
+      case "InvalidCompactEncoding" -> ReallyMeJoseErrorReason.COMMON_INVALID_COMPACT;
       case "HeaderMismatch" -> ReallyMeJoseErrorReason.JWS_HEADER_MISMATCH;
       case "BadSignatureBase64" -> ReallyMeJoseErrorReason.JWS_BAD_SIGNATURE_BASE64;
       case "InvalidSignature" -> ReallyMeJoseErrorReason.JWS_INVALID_SIGNATURE;
@@ -358,7 +379,7 @@ final class AndroidConformanceVectorRunner {
   private static ReallyMeJoseErrorReason expectedJwtReason(String name) {
     String baseName = name.contains(":") ? name.substring(0, name.indexOf(':')) : name;
     return switch (baseName) {
-      case "InvalidJwtFormat" -> ReallyMeJoseErrorReason.JWT_INVALID_COMPACT;
+      case "InvalidJwtFormat" -> ReallyMeJoseErrorReason.COMMON_INVALID_COMPACT;
       case "InvalidHeader" -> ReallyMeJoseErrorReason.JWT_INVALID_HEADER;
       case "UnsupportedAlgorithm" -> ReallyMeJoseErrorReason.JWT_UNSUPPORTED_ALGORITHM;
       case "AlgorithmMismatch" -> ReallyMeJoseErrorReason.JWT_ALGORITHM_MISMATCH;
@@ -377,8 +398,8 @@ final class AndroidConformanceVectorRunner {
 
   private static ReallyMeJoseErrorReason expectedJweReason(String name) {
     return switch (name) {
-      case "InvalidCompact" -> ReallyMeJoseErrorReason.JWE_INVALID_COMPACT;
-      case "InvalidEncoding" -> ReallyMeJoseErrorReason.JWE_INVALID_ENCODING;
+      case "InvalidCompact" -> ReallyMeJoseErrorReason.COMMON_INVALID_COMPACT;
+      case "InvalidEncoding" -> ReallyMeJoseErrorReason.COMMON_INVALID_ENCODING;
       case "InvalidHeader" -> ReallyMeJoseErrorReason.JWE_INVALID_HEADER;
       case "UnsupportedKeyManagementAlgorithm" ->
           ReallyMeJoseErrorReason.JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM;

@@ -3,7 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+import { checkProtobufContract } from "./check-protobuf-contract.mjs";
+import { checkProtobufHardening } from "./check-protobuf-hardening.mjs";
 import { assertOperationContractArchitecture } from "./operation-contract-readiness.mjs";
+import { schemaMessages } from "./read-proto-schema.mjs";
 
 const coreUrl = process.env.RELEASE_READINESS_CORE_URL;
 if (typeof coreUrl !== "string" || coreUrl.length === 0) {
@@ -25,8 +28,11 @@ const {
   run,
   assertNodeWorkflowJobsPinNode,
   assertProtoContract,
-  assertReallyMeProtobufReleasePolicy,
+  assertWorkflowRunStep,
+  extractWorkflowSteps,
   assertReallyMeReleasePackagePolicy,
+  assertReallyMeProtobufReleasePolicy,
+  assertRustReleasePolicy,
   assertWorkflowActionsPinned,
   assertCargoFuzzWorkflowPolicy,
   assertWorkflowPermissionsPolicy,
@@ -46,22 +52,66 @@ const assertRawContains = (path, needle, description) => {
   }
 };
 
-assertReallyMeReleasePackagePolicy({ version: "0.7.0" });
+assertReallyMeReleasePackagePolicy({ version: "0.9.0" });
 assertWorkflowActionsPinned();
-assertCargoFuzzWorkflowPolicy({ version: "0.13.2" });
+for (const [workflow, job] of [
+  [".github/workflows/fuzz-ci.yml", "build"],
+  [".github/workflows/fuzz.yml", "scheduled"],
+]) {
+  assertCargoFuzzWorkflowPolicy({
+    workflow,
+    versionFromWorkflowEnv: true,
+    minimumInstallations: 1,
+    requiredInstallSteps: [{ name: "Install cargo-fuzz", job }],
+  });
+}
 assertOperationContractArchitecture({ readText, listFiles, fail });
+checkProtobufContract();
+checkProtobufHardening();
 runNodeCheck("scripts/prepare_semver_baseline.test.mjs");
+runNodeCheck("scripts/check-protobuf-contract.test.mjs");
+runNodeCheck("scripts/check-protobuf-hardening.test.mjs");
+runNodeCheck("scripts/generate-jose-proto.test.mjs");
 runNodeCheck("scripts/maven_central_bundle.test.mjs");
+runNodeCheck("scripts/release_crate_archives.test.mjs");
 
-const crateVersion = "0.4.6";
-const protoCrateVersion = "0.4.6";
-const buffaVersion = "0.9.2";
-const cryptoVersion = "0.3.17";
-const codecVersion = "0.3.2";
-const npmPackageVersion = "0.4.6";
+const crateVersion = "0.5.0";
+const protoCrateVersion = "0.5.0";
+const buffaVersion = "0.1.1";
+const cryptoVersion = "0.4.0";
+const codecVersion = "0.4.0";
+const npmPackageVersion = "0.5.0";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
-const releaseReadinessCommit = "18a6d91d99837e80f92e41fe04effb0b043d754e";
+const releaseReadinessCommit = "7dffa0366a43fe9cc7b98a8040d37dd701d7955e";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
+const releaseRust = "1.100.0";
+const minimumRust = "1.99.0";
+const rustWorkflow = ".github/workflows/rust-ci.yml";
+const cargoDenyInstall = `cargo +${releaseRust} install cargo-deny --version '=0.20.2' --locked --force`;
+const releaseRustTest = `cargo +${releaseRust} test --locked --workspace --all-features`;
+const rustReleasePolicy = {
+  release: { workflow: rustWorkflow, job: "rust", step: "Test on the release toolchain" },
+  artifacts: [
+    {
+      workflow: ".github/workflows/swift-ci.yml",
+      job: "swift",
+      step: "Build runtime-loaded native library",
+      run: `cargo +${releaseRust} build --locked -p reallyme-jose-ffi`,
+    },
+    {
+      workflow: ".github/workflows/swift-package-preflight.yml",
+      job: "swift-package",
+      step: "Build JOSE FFI dylib",
+      run: `cargo +${releaseRust} build --locked -p reallyme-jose-ffi`,
+    },
+  ],
+  msrv: [
+    { package: "reallyme-jose", workflow: rustWorkflow, job: "msrv", step: "Test JOSE at its declared MSRV" },
+    { package: "reallyme-jose-proto", workflow: rustWorkflow, job: "msrv", step: "Test JOSE protobuf at its declared MSRV" },
+  ],
+  dependencyReview: { workflow: rustWorkflow, job: "rust", step: "Check locked dependencies" },
+};
+assertRustReleasePolicy(rustReleasePolicy);
 const releaseReadinessCheckoutRequired = [
   "repository: reallyme/release-readiness",
   `ref: ${releaseReadinessCommit}`,
@@ -84,44 +134,10 @@ const sourceVerification = (commands) => {
 };
 
 if (releasePackagesMode && process.env.RELEASE_VERSION !== crateVersion) {
-  fail("RELEASE_VERSION must match every 0.4.6 release package");
+  fail(`RELEASE_VERSION must match every ${crateVersion} release package`);
 }
 
 assertNodeWorkflowJobsPinNode({ nodeVersion: "26" });
-
-// Package workflows own their ecosystem's expensive runtime tests. Requiring
-// policy-only mode here prevents an Ubuntu npm, crates, or Android runner from
-// accidentally executing Darwin-only Swift tests or rebuilding other packages.
-for (const workflow of listFiles(".github/workflows").filter(
-  (path) => path.endsWith(".yml") || path.endsWith(".yaml"),
-)) {
-  const source = readText(workflow);
-  const jobsOffset = source.indexOf("\njobs:\n");
-  if (jobsOffset === -1) {
-    continue;
-  }
-  const jobs = source.slice(jobsOffset + 1);
-  const jobHeaders = [...jobs.matchAll(/^  ([a-zA-Z0-9_-]+):\s*$/gmu)];
-  for (const [index, header] of jobHeaders.entries()) {
-    const nextHeader = jobHeaders[index + 1];
-    const job = jobs.slice(header.index, nextHeader?.index ?? jobs.length);
-    const readinessLines = job
-      .split("\n")
-      .filter((line) => line.includes(releaseReadinessCommand));
-    if (readinessLines.length === 0) {
-      continue;
-    }
-    for (const line of readinessLines) {
-      if (workflow === ".github/workflows/readiness.yml"
-          && line.trim() !== `run: ${releaseReadinessCommand}`) {
-        fail("readiness workflow must run the full consumer check");
-      }
-      if (workflow !== ".github/workflows/readiness.yml" && !line.includes("--policy-only")) {
-        fail(`${workflow} job ${header[1]} must keep local release readiness policy-only`);
-      }
-    }
-  }
-}
 
 const rootCargo = readText("Cargo.toml");
 const projectLicense = "MIT OR Apache-2.0";
@@ -152,7 +168,7 @@ assertContains("crates/wasm/Cargo.toml", "wasm-opt = false");
 assertContains("Cargo.toml", "[profile.release-ffi]");
 assertContains("Cargo.toml", 'inherits = "release"');
 assertContains("Cargo.toml", 'panic = "unwind"');
-assertContains("Cargo.toml", `buffa = { version = "${buffaVersion}", features = ["json"] }`);
+assertContains("Cargo.toml", `buffa = { package = "reallyme-buffa", version = "=${buffaVersion}", features = ["json", "zeroize"] }`);
 assertContains("Cargo.toml", 'missing_docs = "deny"');
 for (const lint of [
   'arithmetic_side_effects = "deny"',
@@ -165,7 +181,7 @@ for (const lint of [
 }
 assertContains(
   "Cargo.toml",
-  `reallyme-codec = { version = "${codecVersion}", default-features = false }`,
+  `reallyme-codec = { version = "=${codecVersion}", default-features = false }`,
 );
 assertContains(
   "Cargo.toml",
@@ -186,10 +202,11 @@ assertNotContains("Cargo.toml", 'time = "');
 
 const ffiCargo = readText("crates/ffi/Cargo.toml");
 assertContains("crates/ffi/Cargo.toml", 'name = "reallyme-jose-ffi"');
-assertContains("crates/ffi/Cargo.toml", 'version = "0.4.6"');
+assertContains("crates/ffi/Cargo.toml", `version = "${crateVersion}"`);
 assertContains("crates/ffi/Cargo.toml", "publish = false");
 assertContains("crates/ffi/Cargo.toml", 'crate-type = ["rlib", "staticlib", "cdylib"]');
 assertContains("crates/ffi/Cargo.toml", 'default = ["native"]');
+assertContains("crates/ffi/Cargo.toml", `[target.'cfg(not(target_arch = "wasm32"))'.dependencies]`);
 assertContains(
   "crates/ffi/Cargo.toml",
   'native = ["reallyme-crypto/native", "reallyme-jose/native"]',
@@ -197,7 +214,7 @@ assertContains(
 assertContains("crates/ffi/Cargo.toml", 'features = ["csprng"]');
 assertContains(
   "crates/ffi/Cargo.toml",
-  'reallyme-jose = { version = "0.4.6", path = "../jose", default-features = false, features = ["wire"] }',
+  `reallyme-jose = { version = "${crateVersion}", path = "../jose", default-features = false, features = ["wire"] }`,
 );
 assertContains("crates/ffi/Cargo.toml", "workspace = true");
 assertNotContains("crates/ffi/Cargo.toml", "publish = true");
@@ -218,6 +235,7 @@ for (const externalType of [
   '"crypto_core::algorithm::Algorithm"',
   '"crypto_csprng::rng::SecureRandom"',
   '"envelopes_jwk::jwk::Jwk"',
+  '"reallyme_crypto_proto::error_types::CryptoError"',
   '"reallyme_jose_proto::*"',
   '"serde_core::de::DeserializeOwned"',
   '"zeroize::Zeroizing"',
@@ -260,7 +278,7 @@ assertContains(
 );
 assertContains("crates/proto/Cargo.toml", 'keywords = ["jose", "jwt", "jws", "jwe", "reallyme"]');
 assertContains("crates/proto/Cargo.toml", "publish = true");
-assertContains("crates/proto/Cargo.toml", 'generated = ["dep:buffa", "buffa/json", "dep:serde", "dep:zeroize"]');
+assertContains("crates/proto/Cargo.toml", 'generated = ["dep:base64", "dep:buffa", "buffa/json", "dep:serde", "dep:zeroize", "dep:secrecy", "dep:subtle"]');
 assertContains("crates/proto/Cargo.toml", 'default = ["generated"]');
 assertContains(
   "crates/proto/Cargo.toml",
@@ -272,7 +290,7 @@ assertContains("crates/proto/Cargo.toml", '"/tests/**/*.rs"');
 assertContains("crates/proto/Cargo.toml", '"/proto/**/*.proto"');
 assertContains(
   "crates/proto/README.md",
-  'reallyme-jose-proto = { version = "0.4.6", features = ["generated"] }',
+  `reallyme-jose-proto = { version = "${protoCrateVersion}", features = ["generated"] }`,
 );
 assertContains("crates/proto/README.md", "JoseOperationRequest");
 assertContains("crates/proto/README.md", "JoseOperationResponse");
@@ -280,7 +298,7 @@ assertContains("crates/proto/README.md", "operation-discriminated response");
 assertContains("crates/proto/README.md", "Copyright © 2026 by ReallyMe Technologies Limited.");
 assertContains("crates/proto/NOTICE", "ReallyMe JOSE Proto");
 assertContains(
-  "crates/proto/src/generated.rs",
+  "crates/proto/src/generated/package.rs",
   'pub const JOSE_PROTO_PACKAGE: &str = "reallyme.jose.v1";',
 );
 
@@ -311,7 +329,7 @@ if (npmPackage.publishConfig?.registry !== "https://registry.npmjs.org/") {
 }
 assertContains("packages/ts/package.json", '"@bufbuild/protobuf": "2.17.0"');
 assertContains("packages/ts/package-lock.json", '"name": "@reallyme/jose"');
-assertContains("packages/ts/package-lock.json", '"version": "0.4.6"');
+assertContains("packages/ts/package-lock.json", `"version": "${npmPackageVersion}"`);
 assertContains("packages/ts/tsconfig.json", '"strict": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedLocals": true');
 assertContains("packages/ts/tsconfig.json", '"noUnusedParameters": true');
@@ -354,7 +372,9 @@ assertContains("crates/jose/src/lib.rs", "pub mod wire;");
 assertContains("crates/jose/src/lib.rs", '#[cfg(all(any(feature = "native", feature = "wasm"), feature = "wire"))]');
 for (const file of [
   "crates/jose/src/jwe/error.rs",
-  "crates/jose/src/jwe/validate_header/algorithms.rs",
+  "crates/jose/src/generated_contract/jwe_key_management_algorithm.rs",
+  "crates/jose/src/generated_contract/jwe_content_encryption_algorithm.rs",
+  "crates/jose/src/generated_contract/jwe_compression_algorithm.rs",
   "crates/jose/src/jwt/error.rs",
   "crates/jose/src/jws/suites/es256.rs",
   "crates/jose/src/jws/suites/eddsa.rs",
@@ -373,7 +393,7 @@ assertContains(
   "crates/jose/src/jwt/mod.rs",
   "decode_verify_jwt_claims_json_signature_only_with_header_validation",
 );
-assertContains("crates/jose/src/jwt/verify.rs", "const ED25519_SIGNATURE_LEN: usize = 64;");
+assertContains("crates/jose/src/jwt/verify.rs", "const ED25519_SIGNATURE_LEN: usize = crate::resolve_algorithm::JwtAlgorithm::Eddsa.signature_len();");
 assertContains(
   "crates/jose/src/jws/parse_compact.rs",
   "Result<Zeroizing<Vec<u8>>, E>",
@@ -394,11 +414,11 @@ assertContains(
   "validate_jwe_header_structure(",
 );
 assertContains(
-  "crates/jose/src/jwe/validate_header/algorithms.rs",
+  "crates/jose/src/generated_contract/jwe_compression_algorithm.rs",
   "pub enum JweCompressionAlgorithm",
 );
-assertContains("crates/jose/src/jwe/validate_header/algorithms.rs", 'Self::Deflate => "DEF"');
-assertContains("crates/jose/src/jwe/compression.rs", "pub const MAX_DECOMPRESSED_JWE_BYTES: usize = 1024 * 1024;");
+assertContains("crates/jose/src/generated_contract/jwe_compression_algorithm.rs", 'Self::Deflate => "DEF"');
+assertContains("crates/jose/src/jwe/compression.rs", "reallyme_jose_proto::generated::contract_values::COMPACT_BYTES;");
 assertContains("crates/jose/src/jwe/compression.rs", "DeflateEncoder::new");
 assertContains("crates/jose/src/jwe/compression.rs", "DeflateDecoder::new");
 assertContains("crates/jose/src/jwe/compression.rs", "Zeroizing<Vec<u8>>");
@@ -460,21 +480,27 @@ assertContains(
 );
 assertRawContains(
   "crates/proto/proto/reallyme/jose/v1/jose.proto",
-  "ES256K is supported by JWT through JWK algorithm binding",
-  "the ES256K reservation rationale",
+  "Shared identity; compact JWS accepts only EdDSA and ES256.",
+  "the shared signature identity and profile restriction",
 );
 assertContains("crates/proto/proto/reallyme/jose/v1/jose.proto", "reserved 1 to 3;");
-assertContains("crates/proto/proto/reallyme/jose/v1/jose.proto", 'reserved "JOSE_SIGNATURE_ALGORITHM_ES256K";');
+assertContains("crates/proto/proto/reallyme/jose/v1/jose.proto", "JOSE_SIGNATURE_ALGORITHM_ES256K = 230;");
 assertNotContains("crates/jose/src/wire.rs", "JOSE_SIGNATURE_ALGORITHM_ES256K");
 assertNotContains("crates/jose/src/lib.rs", "#![allow(missing_docs)]");
 
 const lock = readText("Cargo.lock");
 const cratesIo = "registry+https://github.com/rust-lang/crates.io-index";
-assertLockPackageVersion(lock, "reallyme-codec", codecVersion, cratesIo);
-assertLockPackageVersion(lock, "reallyme-crypto", cryptoVersion, cratesIo);
+const fuzzLock = readText("fuzz/Cargo.lock");
+for (const dependencyLock of [lock, fuzzLock]) {
+  for (const name of ["reallyme-codec", "reallyme-codec-base64", "reallyme-codec-base64url"]) {
+    assertLockPackageVersion(dependencyLock, name, codecVersion, cratesIo);
+  }
+  assertLockPackageVersion(dependencyLock, "reallyme-crypto", cryptoVersion, cratesIo);
+  assertLockPackageVersion(dependencyLock, "reallyme-crypto-proto", cryptoVersion, cratesIo);
+}
 assertLockPackageVersion(lock, "reallyme-jose-proto", protoCrateVersion);
 
-assertContains("README.md", "actions/workflows/rust-ci.yml/badge.svg");
+assertContains("README.md", "actions/workflows/ci.yml/badge.svg");
 assertContains("README.md", "crates.io/crates/reallyme-jose");
 assertContains("README.md", "central.sonatype.com/artifact/me.really/jose");
 assertContains("README.md", "img.shields.io/npm/v/@reallyme/jose");
@@ -487,21 +513,21 @@ assertContains("README.md", "## Crates");
 assertContains("README.md", "publishes two Rust crates");
 assertContains("README.md", "## Wire Boundary");
 assertContains("README.md", "reallyme-jose-proto");
-assertContains("README.md", "wire` feature is opt-in");
+assertContains("README.md", "Both supported runtime lanes include the generated");
 assertContains("README.md", "Owned wire output buffers use `Zeroizing<Vec<u8>>`");
 assertContains("README.md", "Decode `JoseOperationResponse`");
 assertContains("README.md", "only executable wire surface");
-assertContains("README.md", "With the `wire` feature enabled");
-assertContains("README.md", "prefer the native `jws`, `jwt`, and `jwe` modules");
+assertContains("README.md", "`api::execute` executes generated requests");
+assertContains("README.md", "Native and generated APIs share semantic implementations");
 assertContains("README.md", "does not define an RPC service, transport, endpoint");
 assertContains("README.md", "a new minor release may intentionally change the schema");
 assertContains("README.md", "Unsigned JWT decoding is parsing only");
 assertContains("README.md", "JWT wire header policy is presence-sensitive");
-assertContains("README.md", "JWT wire temporal validation is explicit");
+assertContains("README.md", "JWT verification requires one `verification.mode`");
 assertContains("README.md", "JWE decrypt requests can carry a presence-sensitive protected-header policy");
-assertContains("README.md", "`temporal_policy.now_unix`");
+assertContains("README.md", "Time-validating modes require a valid current time");
 assertContains("README.md", "also rejects any message whose protobuf encoding");
-assertContains("README.md", "release-readiness workflow runs for documentation-only");
+assertContains("README.md", "The policy lane also runs for documentation-only changes");
 assertContains("README.md", "Independent Vector Audit");
 assertContains("README.md", "ES256 verification accepts both low-S and high-S ECDSA signatures");
 assertContains("README.md", "Face ID and Secure");
@@ -517,9 +543,9 @@ assertContains("crates/jose/README.md", "## Operation Execution Boundary");
 assertContains("crates/jose/README.md", "Owned wire outputs use zeroizing buffers");
 assertContains("crates/jose/README.md", "Treat that dependency as the adapter ABI");
 assertContains("crates/jose/README.md", "does not authenticate the sender");
-assertContains("crates/jose/README.md", "optional `wire` feature");
-assertContains("crates/jose/README.md", "native SDK users do not compile Buffa");
-assertContains("crates/jose/README.md", "With the `wire` feature enabled");
+assertContains("crates/jose/README.md", "types included by both runtime lanes");
+assertContains("crates/jose/README.md", "`api::contract` re-exports the generated types");
+assertContains("crates/jose/README.md", "response contract V2");
 assertContains("crates/jose/README.md", "execute_operation_json_v1");
 assertContains("crates/jose/README.md", "only executable wire contract");
 assertContains("crates/jose/README.md", "verified claims JSON also reject duplicate object");
@@ -539,7 +565,7 @@ assertContains("crates/proto/README.md", "The intended adapter flow is");
 assertContains("crates/proto/README.md", "`JoseOperationResponse` as the canonical versioned response");
 assertContains("crates/proto/README.md", "canonical results remain binary protobuf");
 assertContains("crates/proto/README.md", "JWE decrypt requests include a presence-sensitive");
-assertContains("crates/proto/README.md", "Pre-1.0");
+assertContains("crates/proto/README.md", "V2 deliberately breaks the pre-1.0 contract");
 for (const readme of ["README.md", "crates/jose/README.md", "vectors/README.md", "fuzz/README.md"]) {
   assertContains(readme, "Copyright © 2026 by ReallyMe Technologies Limited.");
   assertContains(readme, "ReallyMe<sup>®</sup> is a registered trademark of ReallyMe LLC.");
@@ -614,20 +640,9 @@ assertContains(
   ".github/workflows/crates-package-preflight.yml",
   "run: node scripts/publish_crates_in_order.mjs order",
 );
-assertNotContains(".github/workflows/crates-release.yml", "environment:");
-assertNotContains(".github/workflows/crates-release.yml", "if: inputs.publish");
-assertNotContains(
-  ".github/workflows/crates-release.yml",
-  "Publish reallyme-jose crates after verified preflight and dry run",
-);
-assertContains(".github/workflows/crates-release.yml", "approved release SHA changed before publication");
-assertContains(".github/workflows/crates-release.yml", "node scripts/verify_sdk_release_version.mjs");
-assertContains(".github/workflows/crates-release.yml", "crates-package-preflight.yml");
-assertContains(
-  ".github/workflows/crates-release.yml",
-  "run: node scripts/publish_crates_in_order.mjs order",
-);
-assertContains(".github/workflows/crates-release.yml", "RELEASE_ATTESTATION_PREFLIGHT_RUN_ID");
+assertContains(".github/workflows/crates-release.yml", "scripts/release_crate_archives.mjs publish");
+assertContains(".github/workflows/crates-package-preflight.yml", "scripts/release_crate_archives.mjs seal");
+assertNotContains(".github/workflows/crates-release.yml", "cargo publish");
 assertNotContains(".github/workflows/crates-release.yml", "git tag");
 assertNotContains(".github/workflows/crates-release.yml", "gh release create");
 assertNotContains(".github/workflows/crates-release.yml", "contents: write");
@@ -650,19 +665,12 @@ assertWorkflowPermissionsPolicy({
 });
 assertContains("scripts/publish_crates_in_order.mjs", "cargo\", [\"metadata\"");
 assertContains("scripts/publish_crates_in_order.mjs", "\"--locked\", \"--format-version\"");
-assertContains(
-  "scripts/publish_crates_in_order.mjs",
-  "refusing to combine an unverified registry artifact with this release",
-);
-assertNotContains("scripts/publish_crates_in_order.mjs", "is already published; continuing");
 assertContains("scripts/publish_crates_in_order.mjs", "checkPathDependencyVersions");
 assertContains(
   "scripts/publish_crates_in_order.mjs",
   'const REQUIRED_PUBLISH_ORDER_EDGES = [["reallyme-jose-proto", "reallyme-jose"]];',
 );
 assertContains("scripts/publish_crates_in_order.mjs", "checkRequiredPublishOrderEdges");
-assertContains("scripts/publish_crates_in_order.mjs", "CRATES_IO_DEFAULT_RATE_LIMIT_RETRY_MS");
-assertContains("scripts/publish_crates_in_order.mjs", "rate-limited");
 assertNotContains("scripts/publish_crates_in_order.mjs", 'const PACKAGE = "reallyme-jose"');
 assertContains("SECURITY.md", "security@really.me");
 assertNotContains("SECURITY.md", "Report a vulnerability");
@@ -673,7 +681,7 @@ assertNotContains("NOTICE", "BouncyCastle");
 assertContains("buf.yaml", "modules:");
 assertContains("buf.yaml", "- path: crates/proto/proto");
 assertContains("buf.gen.yaml", "out: crates/proto/src/generated/buffa");
-assertContains("buf.gen.yaml", "protoc-gen-buffa-packaging");
+assertContains("buf.gen.yaml", "protoc-gen-reallyme-buffa-packaging");
 assertContains("buf.gen.yaml", "buf.build/apple/swift:v1.39.0");
 assertContains("buf.gen.yaml", "out: gen/swift");
 assertContains("buf.gen.yaml", "Visibility=Public");
@@ -688,17 +696,16 @@ assertContains(".gitignore", "!crates/proto/src/generated/**");
 assertContains(".github/workflows/protobuf-ci.yml", `BUFFA_VERSION: ${buffaVersion}`);
 assertContains(".github/workflows/protobuf-ci.yml", "buf breaking --against");
 assertContains("buf.gen.yaml", "clean: true");
-assertContains(".github/workflows/crates-package-preflight.yml", "buf generate");
+assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/generate-jose-proto.mjs");
 for (const needle of releaseReadinessCheckoutRequired) {
   assertContains(".github/workflows/protobuf-ci.yml", needle);
-  assertContains(".github/workflows/rust-ci.yml", needle);
+  assertContains(".github/workflows/android-ci.yml", needle);
   assertContains(".github/workflows/readiness.yml", needle);
 }
 assertContains(
   ".github/workflows/protobuf-ci.yml",
   `${releaseReadinessCommand} --generated-freshness --policy-only`,
 );
-assertContains(".github/workflows/rust-ci.yml", releaseReadinessCommand);
 assertContains(".github/workflows/readiness.yml", releaseReadinessCommand);
 assertContains(".github/workflows/readiness.yml", "runs-on: macos-26");
 assertContains(".github/workflows/readiness.yml", "WASM_BINDGEN_CLI_VERSION: 0.2.130");
@@ -715,50 +722,94 @@ assertContains(
   "README.md",
   releaseReadinessCommand,
 );
-for (const [workflow, argumentsSuffix] of [
-  [".github/workflows/crates-package-preflight.yml", "--policy-only"],
-  [".github/workflows/kotlin-android-package-preflight.yml", "--policy-only"],
-  [".github/workflows/npm-package-preflight.yml", "--release-packages --policy-only"],
-  [".github/workflows/npm-package-release.yml", "--release-packages --policy-only"],
-  [".github/workflows/swift-package-preflight.yml", "--release-packages --policy-only"],
-  [".github/workflows/swift-package-release.yml", "--release-packages --policy-only"],
-]) {
-  for (const needle of releaseReadinessCheckoutRequired) {
-    assertContains(workflow, needle);
+for (const workflow of listFiles(".github/workflows").filter((path) => /\.ya?ml$/u.test(path))) {
+  const source = readText(workflow);
+  for (const [, ref] of source.matchAll(/^\s+repository: reallyme\/release-readiness\s*\n\s+ref: (\S+)/gmu)) {
+    if (ref !== releaseReadinessCommit) fail(`${workflow} uses a different release-readiness commit`);
   }
-  assertContains(workflow, `${releaseReadinessCommand} ${argumentsSuffix}`);
 }
 for (const retiredPath of [
   ".github/workflows/release-readiness-drift.yml",
   "scripts/release-readiness/core.mjs",
   "scripts/run_pinned_release_readiness.mjs",
+  "scripts/verify_release_attestation.mjs",
+  "scripts/verify_release_attestation.test.mjs",
 ]) {
   if (loadTrackedFiles().has(retiredPath)) {
     fail(`${retiredPath} must remain retired after adopting the published runner`);
   }
 }
-assertContains(".github/workflows/crates-package-preflight.yml", "harden-generated-jose-proto.mjs");
+assertContains(".github/workflows/crates-package-preflight.yml", "node scripts/generate-jose-proto.mjs");
 assertContains(".github/workflows/protobuf-ci.yml", "node-version: '26'");
-assertContains("scripts/harden-generated-jose-proto.mjs", "byteFieldNames");
-assertContains("scripts/harden-generated-jose-proto.mjs", "Zeroize::zeroize");
-assertContains("scripts/harden-generated-jose-proto.mjs", "deserialize_zeroizing_bytes");
-assertContains("scripts/harden-generated-jose-proto.mjs", "__reallyme_zeroize_unknown_fields");
-assertContains("scripts/harden-generated-jose-proto.mjs", "deny_unknown_fields");
-assertContains("scripts/harden-generated-jose-proto.mjs", '"--check-idempotent"');
-assertContains("scripts/harden-generated-jose-proto.mjs", '"JoseOperationRequest"');
-assertContains("scripts/harden-generated-jose-proto.mjs", '"JoseOperationResponse"');
-assertContains("scripts/harden-generated-jose-proto.mjs", "sensitiveOneofOwnerNames");
-assertContains("scripts/harden-generated-jose-proto.mjs", "generatedModulePath");
-assertContains("scripts/harden-generated-jose-proto.mjs", "expectedAllowAttributeCount = 4");
+for (const option of ["zeroize_in=.reallyme.jose.v1", "unknown_fields=false", "deny_unknown_json_fields=true",
+  "json_policy_type=crate::SecretBytes", "json_policy_type=crate::SecretString"]) assertContains("buf.gen.yaml", option);
+for (const file of ["secret_bytes", "secret_string"]) {
+  assertContains(`crates/proto/src/${file}.rs`, "crate::guarded_decode::read(payload)");
+  assertContains(`crates/proto/src/${file}.rs`, "SecretBox");
+}
+assertContains("scripts/generate-jose-proto.mjs", "requireGeneratorVersions");
 assertContains("crates/proto/Cargo.toml", 'zeroize = { workspace = true, optional = true }');
-assertReallyMeProtobufReleasePolicy({
-  bufVersion: "1.73.0",
-  buffaVersion,
-  generatedFreshnessMode,
-  workflowMode: "delegated",
-  generatedFreshnessStepRun:
-    `${releaseReadinessCommand} --generated-freshness --policy-only`,
-  installBufRun: `set -euo pipefail
+const protobufWorkflow = ".github/workflows/protobuf-ci.yml";
+const protobufWorkflowSource = readText(protobufWorkflow);
+const protobufFirstPolicy = {
+  contractPath: "crates/proto/README.md",
+  schemaPaths: ["crates/proto/proto/reallyme/jose/v1/jose.proto"],
+  verification: {
+    workflow: protobufWorkflow,
+    job: "protobuf",
+    step: "Check release readiness generated freshness",
+    run: `${releaseReadinessCommand} --generated-freshness --policy-only`,
+  },
+  sdkConformance: {
+    sharedFixtures: [
+      "vectors/jws-compact.json",
+      "vectors/jwe-compact.json",
+      "vectors/signed-jwt.json",
+      "vectors/unsigned-jwt.json",
+      "vectors/panva-jose.json",
+      "vectors/schema-operations.json",
+    ],
+    lanes: [
+      {
+        sdk: "swift",
+        workflow: ".github/workflows/swift-ci.yml",
+        job: "swift",
+        step: "Test linked Swift XCFramework",
+        run: "swift test",
+      },
+      {
+        sdk: "typescript-wasm",
+        workflow: rustWorkflow,
+        job: "rust",
+        step: "Test TypeScript package and WASM provider",
+        run: "npm --prefix packages/ts test",
+      },
+      {
+        sdk: "kotlin-jni",
+        workflow: ".github/workflows/kotlin-ci.yml",
+        job: "kotlin-jvm",
+        step: "Test typed JVM facade and native JAR",
+        run: "packages/kotlin/gradlew -p packages/kotlin --no-daemon test verifyJarContainsNativeResources",
+      },
+      {
+        sdk: "android",
+        workflow: ".github/workflows/android-ci.yml",
+        job: "runtime",
+        step: "Test minified Android consumer runtime",
+        run: "bash -e -o pipefail scripts/run-android-emulator.sh",
+      },
+    ],
+  },
+};
+assertContains(protobufFirstPolicy.contractPath,
+  "https://github.com/reallyme/.github/blob/a31da22424f205449a21306b6a1eddeefc5e1472/ARCHITECTURE.md");
+for (const [name, version] of [["BUF_VERSION", "1.73.0"], ["BUFFA_VERSION", buffaVersion]]) {
+  const declarations = [...protobufWorkflowSource.matchAll(new RegExp(`^([ \\t]+)${name}: (.+)$`, "gmu"))];
+  if (declarations.length !== 1 || declarations[0][1] !== "  " || declarations[0][2] !== version) {
+    fail("protobuf tools must be pinned exactly once at workflow scope");
+  }
+}
+assertWorkflowRunStep(protobufWorkflow, "Install buf", `set -euo pipefail
 install_dir="$RUNNER_TEMP/buf/bin"
 mkdir -p "$install_dir"
 curl --fail-with-body --location --proto '=https' --tlsv1.2 \\
@@ -769,94 +820,64 @@ printf '%s  %s\\n' "$BUF_LINUX_X86_64_SHA256" "$install_dir/buf" \\
   | sha256sum --check --strict
 chmod 0755 "$install_dir/buf"
 printf '%s\\n' "$install_dir" >> "$GITHUB_PATH"
-"$install_dir/buf" --version`,
+"$install_dir/buf" --version`);
+assertWorkflowRunStep(protobufWorkflow, "Install pinned Buffa generators",
+  `cargo install reallyme-protoc-gen-buffa --version "=$BUFFA_VERSION" --locked
+cargo install reallyme-protoc-gen-buffa-packaging --version "=$BUFFA_VERSION" --locked`);
+assertWorkflowRunStep(protobufWorkflow, "Check protobuf compatibility with the V2 contract",
+  'buf breaking --against "$PROTOBUF_BASELINE_FILE"', "protobuf");
+assertContains(protobufWorkflow, "PROTOBUF_BASELINE_FILE: crates/proto/compatibility/v2.binpb");
+assertWorkflowRunStep(protobufWorkflow, "Check release readiness generated freshness",
+  protobufFirstPolicy.verification.run, "protobuf");
+for (const step of extractWorkflowSteps(protobufWorkflow)) {
+  if (step.name !== "Check release readiness generated freshness" &&
+      typeof step.run === "string" && /(?:^|\n)\s*buf\s+(?:lint|generate)\b/u.test(step.run)) {
+    fail("protobuf workflow must delegate lint and generation to the freshness gate");
+  }
+}
+const [protoSchema] = protobufFirstPolicy.schemaPaths;
+const scalarFieldClassifications = [];
+for (const { name, body, rawBody } of schemaMessages(readText(protoSchema))) {
+  for (const field of body.matchAll(/^[ \t]*(?:(?:optional|repeated)\s+)?(bytes|string)\s+(\w+)\s*=\s*\d+/gmu)) {
+    const precedingComment = /(?:^[ \t]*\/\/[^\n]*\n)+$/mu.exec(rawBody.slice(0, field.index))?.[0];
+    if (!precedingComment?.includes("SENSITIVE:")) {
+      fail(`${protoSchema} must classify ${name}.${field[2]} as sensitive`);
+    }
+    scalarFieldClassifications.push({ message: name, field: field[2], kind: field[1], sensitivity: "sensitive" });
+  }
+}
+assertReallyMeProtobufReleasePolicy({
+  workflow: protobufWorkflow,
+  workflowMode: "delegated",
+  generatedFreshnessStepRun: protobufFirstPolicy.verification.run,
+  bufVersion: "1.73.0",
+  buffaVersion,
+  protobufFirst: protobufFirstPolicy,
   hardeningPolicy: {
-    hardeningScript: "scripts/harden-generated-jose-proto.mjs",
-    protoSchema: "crates/proto/proto/reallyme/jose/v1/jose.proto",
+    protoSchema,
     generatedRust: "crates/proto/src/generated/buffa/reallyme.jose.v1.jose.rs",
-    generatedView: "crates/proto/src/generated/buffa/reallyme.jose.v1.jose.__view.rs",
-    protoCargo: "crates/proto/Cargo.toml",
-    requiredScriptNeedles: [
-      "byteFieldNames",
-      "sensitiveOneofOwnerNames",
-      "Zeroize::zeroize",
-      "deserialize_zeroizing_bytes",
-      "__reallyme_zeroize_unknown_fields",
-      "deny_unknown_fields",
-    ],
-    requiredCargoNeedles: ['zeroize = { workspace = true, optional = true }'],
-    // Every bytes/string field is deliberately classified. "Sensitive" here
-    // means the generated owner must redact and wipe the value; compact JOSE
-    // strings, key IDs, claims, keys, and public keys can all become persistent
-    // account or identity correlators at SDK and telemetry boundaries.
-    scalarFieldClassifications: [
-      { message: "JoseJwsSignRequest", field: "private_key", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJwsSignRequest", field: "payload", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseCompactResult", field: "compact", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJwsVerifyRequest", field: "compact", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJwsVerifyRequest", field: "public_key", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseVerifyResult", field: "protected_header_json", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseVerifyResult", field: "payload", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJwtEncodeUnsignedRequest", field: "claims_json", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJwtDecodeUnsignedRequest", field: "compact", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJwtClaimsResult", field: "claims_json", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJwtSignRequest", field: "claims_json", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJwtSignRequest", field: "jwk_json", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJwtSignRequest", field: "private_key", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJwtSignRequest", field: "typ", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJwtVerifyRequest", field: "compact", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJwtVerifyRequest", field: "jwk_json", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJwtVerifyRequest", field: "public_key", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJwtTemporalValidationPolicy", field: "expected_audience", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJwtTemporalValidationPolicy", field: "expected_issuer", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJwtTemporalValidationPolicy", field: "expected_subject", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJwtHeaderValidationPolicy", field: "accepted_typ_values", kind: "string", sensitivity: "public" },
-      { message: "JoseJweEncryptRequest", field: "key", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJweEncryptRequest", field: "plaintext", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJweEncryptRequest", field: "kid", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJweEncryptRequest", field: "apu", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJweEncryptRequest", field: "apv", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJweEncryptRequest", field: "typ", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJweEncryptRequest", field: "cty", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJweDecryptRequest", field: "compact", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseJweDecryptRequest", field: "key", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseExpectedString", field: "value", kind: "string", sensitivity: "sensitive" },
-      { message: "JoseExpectedBytes", field: "value", kind: "bytes", sensitivity: "sensitive" },
-      { message: "JoseJwePlaintextResult", field: "plaintext", kind: "bytes", sensitivity: "sensitive" },
-    ],
-    requiredGeneratedNeedles: [
-      "fn __reallyme_zeroize_unknown_fields(",
-      "#[serde(default, deny_unknown_fields)]",
-      "impl ::core::ops::Drop for JoseOperationResponse",
-      "impl ::core::ops::Drop for JoseJweDecryptResponse",
-      '.field("private_key", &"<redacted>")',
-      '.field("plaintext", &"<redacted>")',
-      '.field("expected_audience", &"<redacted>")',
-      "::zeroize::Zeroize::zeroize(&mut self.private_key);",
-      "::zeroize::Zeroize::zeroize(&mut self.expected_audience);",
-    ],
-    forbiddenGeneratedNeedles: [
-      "::buffa::alloc::format!(",
-      '.field("private_key", &self.private_key)',
-      '.field("plaintext", &self.plaintext)',
-    ],
-    requiredViewNeedles: ['f.write_str("JoseJwsSignRequestOwnedView(<redacted>)")'],
+    scalarFieldClassifications,
   },
+  generatedFreshnessMode,
   generatedFreshness: {
-    generatedPaths: ["crates/proto/src/generated", "gen/swift", "gen/java", "gen/kotlin"],
+    generatedPaths: [
+      "crates/proto/src/generated", "crates/jose/src", "crates/ffi/src/generated_contract", "gen/swift", "gen/java", "gen/kotlin",
+      "packages/ts/src", "packages/swift/Sources/ReallyMeJOSE", "packages/kotlin/src/main/kotlin/me/really/jose",
+    ],
     commands: [
       ["buf", ["lint"]],
       ["buf", ["generate"]],
-      ["node", ["scripts/harden-generated-jose-proto.mjs"]],
-      ["node", ["scripts/harden-generated-jose-proto.mjs", "--check-idempotent"]],
+      ["node", ["scripts/generate-contract-values.mjs"]],
       ["node", ["scripts/harden-generated-jose-jvm.mjs"]],
-      ["node", ["scripts/harden-generated-jose-jvm.mjs", "--check-idempotent"]],
       ["node", ["scripts/harden-generated-jose-swift.mjs"]],
-      ["node", ["scripts/harden-generated-jose-swift.mjs", "--check-idempotent"]],
       ["cargo", ["fmt", "--package", "reallyme-jose-proto"]],
+      ["node", ["scripts/generate-contract-values.mjs", "--check"]],
+      ["node", ["scripts/harden-generated-jose-jvm.mjs", "--check-idempotent"]],
+      ["node", ["scripts/harden-generated-jose-swift.mjs", "--check-idempotent"]],
     ],
   },
 });
+
 assertContains(".github/workflows/crates-package-preflight.yml", `BUFFA_VERSION: ${buffaVersion}`);
 assertContains(
   ".github/workflows/crates-package-preflight.yml",
@@ -891,11 +912,11 @@ assertNotContains("crates/proto/proto/reallyme/jose/v1/jose.proto", "JwtError jw
 assertContains("crates/proto/proto/reallyme/jose/v1/jose.proto", "enum JoseErrorReason");
 assertContains(
   "crates/proto/proto/reallyme/jose/v1/jose.proto",
-  "JOSE_ERROR_REASON_JWS_INVALID_COMPACT = 100;",
+  '"JOSE_ERROR_REASON_JWS_INVALID_COMPACT"',
 );
 assertContains(
   "crates/proto/proto/reallyme/jose/v1/jose.proto",
-  "JOSE_ERROR_REASON_JWE_INVALID_COMPACT = 200;",
+  '"JOSE_ERROR_REASON_JWE_INVALID_COMPACT"',
 );
 for (const errorReason of [
   "JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM = 228;",
@@ -907,7 +928,7 @@ for (const errorReason of [
 }
 assertContains(
   "crates/proto/proto/reallyme/jose/v1/jose.proto",
-  "JOSE_ERROR_REASON_JWT_INVALID_COMPACT = 300;",
+  '"JOSE_ERROR_REASON_JWT_INVALID_COMPACT"',
 );
 assertContains(
   "crates/proto/proto/reallyme/jose/v1/jose.proto",
@@ -1002,19 +1023,17 @@ assertContains("crates/proto/proto/reallyme/jose/v1/jose.proto", "message JoseJw
 assertContains("crates/proto/proto/reallyme/jose/v1/jose.proto", "message JoseJweEncryptRequest");
 assertContains(
   "crates/proto/src/generated/buffa/reallyme.jose.v1.jose.rs",
-  '.field("private_key", &"<redacted>")',
+  '.field("private_key", &::core::format_args!("[REDACTED]"))',
 );
 assertContains(
   "crates/proto/src/generated/buffa/reallyme.jose.v1.jose.rs",
-  '.field("plaintext", &"<redacted>")',
+  '.field("plaintext", &::core::format_args!("[REDACTED]"))',
 );
-assertContains(
-  "crates/proto/src/generated/buffa/reallyme.jose.v1.jose.__view.rs",
-  'f.write_str("JoseJwsSignRequestOwnedView(<redacted>)")',
-);
+assertContains("buf.gen.yaml", "borrowed_views_only_in=.reallyme.jose.v1");
+assertNotContains("crates/proto/src/generated/buffa/reallyme.jose.v1.jose.__view.rs", "JoseJwsSignRequestOwnedView");
 assertContains(
   "crates/proto/src/generated/buffa/reallyme.jose.v1.jose.rs",
-  "::zeroize::Zeroize::zeroize(&mut self.private_key);",
+  "::buffa::sensitive::Zeroize::zeroize(&mut self.private_key);",
 );
 assertNotContains(
   "crates/proto/src/generated/buffa/reallyme.jose.v1.jose.rs",
@@ -1066,7 +1085,7 @@ assertNotContains("crates/jose/src/jwe/encrypt.rs", "new_with_ephemeral_private_
 assertContains("crates/jose/src/wire/operation_response.rs", "pub fn execute_operation_v1<");
 assertContains("crates/jose/src/wire/operation_response.rs", "pub fn execute_operation_json_v1<");
 assertContains("crates/jose/src/wire/operation_response.rs", "pub fn decode_operation_response_v1(");
-assertContains("crates/jose/src/wire/operation_response.rs", "JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V1");
+assertContains("crates/jose/src/wire/operation_response.rs", "JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V2");
 assertContains(
   "crates/jose/tests/operation_response_tests.rs",
   "all_operations_match_binary_and_proto_json_routes",
@@ -1115,17 +1134,13 @@ assertNotContains("crates/jose/src/lib.rs", "crates/envelopes");
 assertContains("crates/jose/src/lib.rs", "requires a supported runtime lane");
 assertContains(".github/workflows/rust-ci.yml", "Check no-feature guidance");
 assertContains(".github/workflows/rust-ci.yml", "cargo check --locked --workspace --all-features");
-assertContains(".github/workflows/rust-ci.yml", "cargo nextest run --locked --workspace --all-features");
+assertContains(rustWorkflow, releaseRustTest);
 assertContains(".github/workflows/rust-ci.yml", "Test publishable crates in the release profile");
 assertContains(".github/workflows/rust-ci.yml", "cargo nextest run --release --locked -p reallyme-jose");
 assertContains(".github/workflows/rust-ci.yml", "Format vector audit tool");
 assertContains(".github/workflows/rust-ci.yml", "Independent vector audit");
 assertContains(".github/workflows/rust-ci.yml", "--bin reallyme-jose-vector-audit -- .");
 assertContains(".github/workflows/rust-ci.yml", "scripts/audit_committed_lockfiles.sh");
-assertContains(
-  ".github/workflows/rust-ci.yml",
-  `${releaseReadinessCommand} --policy-only`,
-);
 assertContains(".github/workflows/rust-ci.yml", "CARGO_CHECK_EXTERNAL_TYPES_VERSION: 0.5.0");
 assertContains(".github/workflows/rust-ci.yml", "EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20");
 assertContains(
@@ -1146,7 +1161,7 @@ assertContains(
   "CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER",
 );
 assertContains(".github/workflows/crates-package-preflight.yml", "--test panva_vectors");
-assertContains(".github/workflows/rust-ci.yml", "cargo-deny@${{ env.CARGO_DENY_VERSION }}");
+assertContains(rustWorkflow, cargoDenyInstall);
 assertContains(".github/workflows/rust-ci.yml", "cargo-audit@${{ env.CARGO_AUDIT_VERSION }}");
 assertContains(".github/workflows/crates-package-preflight.yml", "cargo fmt --check");
 assertNotContains(".github/workflows/crates-package-preflight.yml", "Check warnings as errors");
@@ -1259,9 +1274,9 @@ for (const testName of [
 ]) {
   assertContains("crates/ffi/tests/abi.rs", testName);
 }
-assertContains("crates/ffi/tests/panic_guard.rs", "panic_payload_is_caught_and_mapped_without_escape");
+assertContains("crates/ffi/src/guard_tests.rs", "panic_payload_is_caught_and_mapped_without_escape");
 assertContains(
-  "crates/ffi/tests/panic_guard.rs",
+  "crates/ffi/src/guard_tests.rs",
   "extern_boundary_maps_deliberate_panic_to_stable_status",
 );
 assertContains("scripts/test_ffi_abi_release_artifact.sh", "header_smoke.c");
@@ -1283,7 +1298,7 @@ assertContains("Package.swift", '.iOS(.v16)');
 assertContains("Package.swift", 'name: "ReallyMeJOSE"');
 assertContains("Package.swift", 'exact: "1.39.0"');
 assertContains("Package.swift", 'path: "gen/swift"');
-assertContains("Package.swift", 'ffiArtifactVersion = "0.4.6"');
+assertContains("Package.swift", `ffiArtifactVersion = "${crateVersion}"`);
 assertContains("Package.swift", 'ffiArtifactLocalPathOverride = ""');
 assertNotContains("Package.swift", "0000000000000000000000000000000000000000000000000000000000000000");
 assertContains("Package.swift", "REALLYME_JOSE_SWIFTPM_RUNTIME_FFI");
@@ -1313,12 +1328,12 @@ for (const method of [
   assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", method);
 }
 assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "addingReportingOverflow");
-assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "messageDepthLimit = 32");
+assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "messageDepthLimit = JoseContractValues.protoRecursionDepth");
 assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "provider.clearOwned(&requestBytes)");
 assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "provider.clearOwned(&responseBytes)");
 assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "clearOwned(&result.protectedHeaderJson)");
 assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "clearOwned(&result.payload)");
-assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "response.contractVersion == .v1");
+assertContains("packages/swift/Sources/ReallyMeJOSE/ReallyMeJOSE.swift", "response.contractVersion == .v2");
 assertContains("packages/swift/Sources/ReallyMeJOSE/OperationContract.swift", "ReallyMeJOSEErrorReason(rawValue: protoReason.rawValue)");
 assertContains("packages/swift/Sources/ReallyMeJOSE/MemoryHygiene.swift", "memset_s");
 assertContains("packages/swift/Sources/ReallyMeJOSE/MemoryHygiene.swift", "canImport(Glibc)");
@@ -1331,7 +1346,7 @@ assertRawContains(
   "the ABI-resolution ordering rationale",
 );
 assertContains("packages/swift/Sources/ReallyMeJOSE/NativeProvider.swift", "rm_jose_zeroize_buffer");
-assertContains("packages/swift/Sources/ReallyMeJOSE/Errors.swift", "public enum ReallyMeJOSEErrorReason: Int");
+assertContains("packages/swift/Sources/ReallyMeJOSE/ContractValues.swift", "public enum ReallyMeJOSEErrorReason: Int");
 assertContains("packages/swift/Sources/ReallyMeJOSE/Errors.swift", "case jose(branch:");
 assertNotContains("packages/swift/Sources/ReallyMeJOSE/Errors.swift", "String");
 for (const file of listFiles("packages/swift/Sources/ReallyMeJOSE").filter((path) => path.endsWith(".swift"))) {
@@ -1371,12 +1386,12 @@ assertContains("scripts/verify_swift_release_artifact.mjs", "Rust LLVM symbol in
 assertContains("Cargo.toml", 'rust-version = "1.99"');
 assertContains("fuzz/Cargo.toml", 'rust-version = "1.99"');
 assertContains("tools/vector-audit/Cargo.toml", 'rust-version = "1.99"');
-assertContains("rust-toolchain.toml", 'channel = "1.99.1"');
+assertContains("rust-toolchain.toml", `channel = "${releaseRust}"`);
 assertContains("rust-toolchain.toml", 'components = ["clippy", "llvm-tools-preview", "rustfmt"]');
 for (const workflow of listFiles(".github/workflows").filter((path) => path.endsWith(".yml"))) {
   for (const [, version] of readText(workflow).matchAll(/^[ \t]+toolchain:[ \t]+(1\.\d+\.\d+)[ \t]*$/gmu)) {
-    if (version !== "1.99.1") {
-      fail(`${workflow} pins Rust ${version} instead of the supported 1.99.1 release`);
+    if (version !== releaseRust && !(workflow === rustWorkflow && version === minimumRust)) {
+      fail(`${workflow} pins Rust ${version} instead of the supported ${releaseRust} release`);
     }
   }
 }
@@ -1398,29 +1413,22 @@ assertContains(
 );
 assertContains(".github/workflows/rust-ci.yml", "--profile release-ffi");
 assertContains(".github/workflows/rust-ci.yml", "name: MSRV 1.99");
-assertContains(
-  ".github/workflows/rust-ci.yml",
-  "cargo +1.99.1 check --locked --workspace --all-features",
-);
+assertContains(rustWorkflow, `toolchain: ${minimumRust}`);
 const swiftPreflightSource = readText(".github/workflows/swift-package-preflight.yml");
-if (
-  swiftPreflightSource.indexOf("Upload Swift release candidate") >=
-  swiftPreflightSource.indexOf("Bind manifest to Swift release candidate")
-) {
-  fail("Swift package preflight must upload immutable candidate bytes before rewriting Package.swift");
+if (swiftPreflightSource.indexOf("Upload Swift release candidate") <=
+    swiftPreflightSource.indexOf("Test Swift package with linked binary target")) {
+  fail("Swift package preflight must verify the linked artifact before uploading it");
 }
 const swiftReleaseWorkflow = ".github/workflows/swift-package-release.yml";
 assertContains(swiftReleaseWorkflow, "SwiftPM artifact verification");
 assertContains(swiftReleaseWorkflow, "components: llvm-tools-preview");
-assertContains(swiftReleaseWorkflow, "Download attested Swift artifact");
+assertContains(swiftReleaseWorkflow, "Download verified package");
 assertContains(swiftReleaseWorkflow, "Bind manifest to attested Swift artifact");
 assertContains(swiftReleaseWorkflow, "Verify SwiftPM manifest and downloaded artifact");
-assertContains(swiftReleaseWorkflow, "Download verified Swift artifact");
 assertContains(swiftReleaseWorkflow, "Bind release manifest to verified Swift artifact");
 assertContains(swiftReleaseWorkflow, "Create immutable GitHub release with Swift artifact");
 assertContains(swiftReleaseWorkflow, "runs-on: macos-26");
 assertContains(swiftReleaseWorkflow, "Select Xcode 26.6");
-assertContains(swiftReleaseWorkflow, "RELEASE_ATTESTATION_PREFLIGHT_RUN_ID");
 assertContains(swiftReleaseWorkflow, "environment: github-release");
 assertContains(swiftReleaseWorkflow, 'GitHub release v${RELEASE_VERSION} already exists');
 assertContains(
@@ -1431,21 +1439,21 @@ assertContains(swiftReleaseWorkflow, "gh release create");
 assertContains(swiftReleaseWorkflow, "--notes-file -");
 assertContains(
   swiftReleaseWorkflow,
-  '- add opt-in typed compact-JWE raw DEFLATE compression with protected `zip = "DEF"`',
+  "- introduce the V2 protobuf operation contract with explicit field presence and schema-defined operation reasons",
 );
 assertContains(
   swiftReleaseWorkflow,
-  "- authenticate AES-GCM before bounded inflate and zeroize intermediate plaintext buffers",
+  "- preserve platform-specific SDK setup errors and expose their schema-defined codes",
 );
 assertContains(
   swiftReleaseWorkflow,
-  "- expose explicit compression negotiation across Rust, Swift, Kotlin, TypeScript, and the protobuf boundary",
+  `- generate Rust protobuf memory cleanup and redaction with ReallyMe Buffa ${buffaVersion}`,
 );
 assertContains(
   swiftReleaseWorkflow,
-  "- add positive, tamper, unsupported-algorithm, and decompression-limit vectors across every supported ECDH-ES curve and AES-GCM size",
+  `- use ReallyMe Codec ${codecVersion} for the shared native and WASM runtime`,
 );
-assertContains(swiftReleaseWorkflow, "- update the pinned shared release-readiness policy to v0.7.0");
+assertContains(swiftReleaseWorkflow, "- regenerate SDK bindings and rebuild native binaries together for V2");
 assertContains(swiftReleaseWorkflow, 'git tag "v${RELEASE_VERSION}" "${tag_target}"');
 assertContains(swiftReleaseWorkflow, "--verify-tag");
 assertContains(
@@ -1468,10 +1476,10 @@ if (swiftArtifactVerificationCount !== 2) {
 }
 let previousSwiftReleaseBoundary = -1;
 for (const boundary of [
-  "Download attested Swift artifact",
+  "swift-verify:",
   "Bind manifest to attested Swift artifact",
   "Verify SwiftPM manifest and downloaded artifact",
-  "Download verified Swift artifact",
+  "swift-release:",
   "Bind release manifest to verified Swift artifact",
   "Create immutable GitHub release with Swift artifact",
 ]) {
@@ -1493,46 +1501,15 @@ assertWorkflowPermissionsPolicy({
 
 const npmPreflightWorkflow = ".github/workflows/npm-package-preflight.yml";
 const npmReleaseWorkflow = ".github/workflows/npm-package-release.yml";
-assertContains(npmPreflightWorkflow, "npm package preflight");
-assertContains(npmPreflightWorkflow, "run-name: npm package preflight ${{ inputs.version }}");
 assertContains(npmPreflightWorkflow, "npm --prefix packages/ts test");
 assertContains(npmPreflightWorkflow, "npm --prefix packages/ts run pack:check");
-assertContains(
-  npmPreflightWorkflow,
-  `${releaseReadinessCommand} --release-packages --policy-only`,
-);
-assertContains(
-  npmReleaseWorkflow,
-  `${releaseReadinessCommand} --release-packages --policy-only`,
-);
-assertContains(npmReleaseWorkflow, "Require current main and successful npm package checks");
-assertContains(npmReleaseWorkflow, "build and verify immutable npm package");
-assertContains(npmReleaseWorkflow, "Upload immutable npm tarball");
-assertContains(npmReleaseWorkflow, "Download verified npm tarball");
-assertContains(npmReleaseWorkflow, "Promote exact verified npm tarball");
-assertContains(npmReleaseWorkflow, "RELEASE_ATTESTATION_PREFLIGHT_RUN_ID");
-assertContains(npmReleaseWorkflow, "EXPECTED_TARBALL_SHA256");
+assertContains(npmPreflightWorkflow, "Build immutable npm tarball");
+assertContains(npmPreflightWorkflow, "Upload immutable npm tarball");
+assertContains(npmReleaseWorkflow, "Download verified package");
 assertContains(npmReleaseWorkflow, "sha256sum --check");
 assertContains(npmReleaseWorkflow, 'npm publish "reallyme-jose-${RELEASE_VERSION}.tgz" --provenance --access public');
+assertNotMatches(npmReleaseWorkflow, /(?:^|\n)\s*(?:run:\s*)?npm pack(?:\s|$)/u, "npm repackaging");
 assertNotContains(npmReleaseWorkflow, "npm publish .");
-const npmReleaseSource = readText(npmReleaseWorkflow);
-let previousNpmReleaseBoundary = -1;
-for (const boundary of [
-  "Build immutable npm tarball",
-  "Upload immutable npm tarball",
-  "Download verified npm tarball",
-  "Promote exact verified npm tarball",
-]) {
-  const boundaryIndex = npmReleaseSource.indexOf(boundary);
-  if (boundaryIndex <= previousNpmReleaseBoundary) {
-    fail(`npm release workflow boundary is missing or out of order: ${boundary}`);
-  }
-  previousNpmReleaseBoundary = boundaryIndex;
-}
-const npmPublishJob = npmReleaseSource.slice(npmReleaseSource.indexOf("  publish:"));
-if (npmPublishJob.includes("wasm-pack@") || npmPublishJob.includes("npm --prefix packages/ts test")) {
-  fail("npm publish job must promote the verified tarball without rebuilding it");
-}
 assertWorkflowPermissionsPolicy({
   path: npmReleaseWorkflow,
   workflow: { contents: "read" },
@@ -1541,47 +1518,10 @@ assertWorkflowPermissionsPolicy({
     publish: { actions: "read", contents: "read", "id-token": "write" },
   },
 });
-for (const workflow of [
-  ".github/workflows/crates-package-preflight.yml",
-  ".github/workflows/swift-package-preflight.yml",
-  ".github/workflows/kotlin-android-package-preflight.yml",
-  npmPreflightWorkflow,
-]) {
-  assertContains(
-    workflow,
-    'release_sha:\n        description: Optional exact main commit SHA to certify. Leave blank to use current origin/main.\n        required: false\n        type: string\n        default: ""',
-  );
-  assertContains(workflow, 'if [ -n "${RELEASE_SHA_INPUT}" ]; then');
-  assertContains(workflow, 'release_sha="$(git rev-parse origin/main)"');
-  assertContains(workflow, "resolved release SHA is not the current origin/main tip");
-  assertContains(workflow, "resolved release SHA does not match the workflow run head SHA");
-}
-for (const workflow of [
-  ".github/workflows/crates-release.yml",
-  ".github/workflows/swift-package-release.yml",
-  ".github/workflows/kotlin-android-package-release.yml",
-  npmReleaseWorkflow,
-]) {
-  assertNotContains(workflow, "inputs.release_sha");
-  assertNotContains(workflow, "RELEASE_SHA_INPUT");
-  assertNotContains(
-    workflow,
-    "description: Exact approved lowercase 40-character main commit SHA",
-  );
-  assertContains(workflow, 'release_sha="$(git rev-parse origin/main)"');
-  assertContains(workflow, "resolved release SHA does not match the workflow run head SHA");
-}
-for (const workflow of [
-  ".github/workflows/swift-package-release.yml",
-  ".github/workflows/kotlin-android-package-release.yml",
-  npmReleaseWorkflow,
-]) {
-  assertContains(workflow, "node scripts/verify_sdk_release_version.mjs");
-}
-
 assertContains("Cargo.toml", 'jni = "0.22.4"');
 assertContains("crates/ffi/Cargo.toml", "jni = { workspace = true }");
-assertContains("crates/ffi/src/lib.rs", "pub mod kotlin;");
+assertContains("crates/ffi/src/lib.rs", "mod kotlin;");
+assertNotContains("crates/ffi/src/lib.rs", "pub mod kotlin;");
 assertContains("crates/ffi/src/kotlin.rs", "Java_me_really_jose_ReallyMeJoseNative_executeOperationNative");
 assertContains("crates/ffi/src/kotlin.rs", "rm_jose_execute_operation_v1");
 assertContains("crates/ffi/src/kotlin.rs", "Zeroizing<Vec<u8>>");
@@ -1714,7 +1654,7 @@ assertNotContains("scripts/build_android_native_resources.sh", "-C panic=unwind"
 assertContains("scripts/build_android_native_resources.sh", "llvm-strip");
 assertContains("scripts/write_native_manifest.mjs", 'package: "reallyme-jose-native"');
 assertContains("scripts/write_native_manifest.mjs", "GITHUB_SHA does not match the checked-out source SHA");
-assertContains("scripts/test_android_consumer_r8_runtime.sh", "Android consumer R8 runtime gate passed");
+assertContains("scripts/test-android-runtime.sh", "Android consumer R8 runtime gate passed");
 assertContains("scripts/test_android_consumer_r8_runtime.sh", "app_installed");
 assertContains("scripts/test_android_consumer_r8_runtime.sh", 'platforms;android-37.0');
 assertContains("scripts/test_android_consumer_r8_runtime.sh", 'system-images;android-37.0;google_apis;x86_64');
@@ -1771,7 +1711,10 @@ for (const vectorId of [
   assertContains("vectors/jwe-compact.json", vectorId);
 }
 assertContains(".github/workflows/android-ci.yml", "ndk;29.0.14206865");
-assertContains(".github/workflows/android-ci.yml", "test_android_consumer_r8_runtime.sh");
+assertContains(".github/workflows/android-ci.yml", "scripts/run-android-emulator.sh");
+assertContains("scripts/run-android-emulator.sh", "scripts/test-android-runtime.sh");
+assertContains(".github/workflows/android-ci.yml", "scripts/stage-android-publication.sh");
+assertContains(".github/workflows/android-ci.yml", "scripts/prepare-android-runtime.sh");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "linux-aarch64");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "verify_maven_release_repository.mjs");
 assertContains(
@@ -1781,7 +1724,9 @@ assertContains(
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "kotlin-digest-${{ matrix.platform }}");
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "build/kotlin-native-digests");
 assertNotContains(".github/workflows/kotlin-android-package-preflight.yml", "needs.jvm-native.outputs");
-assertContains(".github/workflows/kotlin-android-package-preflight.yml", "test_android_consumer_r8_runtime.sh");
+assertContains(".github/workflows/kotlin-android-package-preflight.yml", "Download tested Android publication");
+assertContains(".github/workflows/kotlin-android-package-preflight.yml", "verify-publication");
+assertNotContains(".github/workflows/kotlin-android-package-preflight.yml", "scripts/build_android_native_resources.sh");
 for (const boundary of [
   "MAVEN_SIGNING_KEY_ID",
   "MAVEN_SIGNING_PASSWORD",
@@ -1798,8 +1743,7 @@ for (const boundary of [
   assertContains("scripts/maven-central-bundle.local.sh", boundary);
 }
 assertContains("README.md", "scripts/maven-central-bundle.local.sh");
-assertContains(".github/workflows/kotlin-android-package-release.yml", "RELEASE_ATTESTATION_PREFLIGHT_RUN_ID");
-assertContains(".github/workflows/kotlin-android-package-release.yml", "Download attested Maven publication repository");
+assertContains(".github/workflows/kotlin-android-package-release.yml", "Download verified package");
 assertContains(".github/workflows/kotlin-android-package-release.yml", "sign_maven_release_repository.mjs");
 assertContains(".github/workflows/kotlin-android-package-release.yml", "promote_maven_release_repository.mjs");
 assertNotContains(".github/workflows/kotlin-android-package-release.yml", "publish-jvm:");
@@ -1819,7 +1763,6 @@ assertWorkflowPermissionsPolicy({
     "publish-maven": { actions: "read", contents: "read" },
   },
 });
-assertContains("scripts/verify_release_attestation.mjs", "preflight-run-id-changed");
 assertContains("scripts/verify_sdk_release_version.mjs", "Rust, Swift, JVM, Android, and TypeScript package versions");
 assertContains(".github/workflows/crates-package-preflight.yml", "scripts/verify_sdk_release_version.test.mjs");
 assertContains(".github/workflows/crates-package-preflight.yml", "scripts/publish_crates_in_order.test.mjs");
@@ -1827,6 +1770,14 @@ assertContains(".github/workflows/swift-package-preflight.yml", "scripts/verify_
 assertContains(".github/workflows/kotlin-android-package-preflight.yml", "scripts/verify_sdk_release_version.test.mjs");
 
 for (const file of listFiles("crates/ffi/src").filter((path) => path.endsWith(".rs"))) {
+  if (file === "crates/ffi/src/generated_contract/jose_ffi_status_tests.rs") {
+    assertContains("crates/ffi/src/generated_contract/jose_ffi_status.rs", '#[cfg(test)]\n#[path = "jose_ffi_status_tests.rs"]\nmod tests;');
+    continue;
+  }
+  if (file === "crates/ffi/src/guard_tests.rs") {
+    assertContains("crates/ffi/src/lib.rs", "#[cfg(test)]\nmod guard_tests;");
+    continue;
+  }
   const source = readText(file);
   if (source.split("\n").length > 500) {
     fail(`${file} exceeds the production source line limit`);
@@ -1853,7 +1804,17 @@ for (const file of listFiles("crates/ffi/src").filter((path) => path.endsWith(".
   }
 }
 
+const schemaSelectorTestModules = [
+  "jose_operation_kind", "jose_wire_error_branch", "jwe_compression_algorithm",
+  "jwe_content_encryption_algorithm", "jwe_key_management_algorithm", "jwe_key_management_suite",
+  "jws_algorithm", "jwt_algorithm", "jwt_registered_claim", "jwt_temporal_claim", "policy_defaults",
+];
+for (const module of schemaSelectorTestModules) {
+  assertContains(`crates/jose/src/generated_contract/${module}.rs`,
+    `#[cfg(test)]\n#[path = "${module}_tests.rs"]\nmod tests;`);
+}
 const explicitlyTestOnlyRustFiles = new Set([
+  ...schemaSelectorTestModules.map((module) => `crates/jose/src/generated_contract/${module}_tests.rs`),
   "crates/jose/src/measure_encoding_tests.rs",
   "crates/jose/src/operation_contract/jws/verify_tests.rs",
 ]);
@@ -1916,7 +1877,10 @@ for (const stale of [
 }
 
 const requiredWorkflows = [
+  ".github/workflows/ci.yml",
+  ".github/workflows/cla.yaml",
   ".github/workflows/rust-ci.yml",
+  ".github/workflows/fuzz-ci.yml",
   ".github/workflows/fuzz.yml",
   ".github/workflows/readiness.yml",
   ".github/workflows/crates-package-preflight.yml",
@@ -1939,7 +1903,7 @@ for (const workflow of requiredWorkflows) {
   assertRawContains(workflow, spdxLicense, "the SPDX license identifier");
 }
 
-const immutableVendoredSpdxPaths = new Set();
+const immutableVendoredSpdxPaths = new Set([".github/workflows/cla.yaml"]);
 const spdxTextPath = /\.(?:c|dict|h|java|js|kt|kts|mjs|modulemap|plist|pro|properties|proto|rs|sh|swift|ts|xml|ya?ml)$/u;
 const spdxTextNames = new Set([".gitignore", "NOTICE", "Package.swift", "gradlew", "gradlew.bat"]);
 
@@ -1985,7 +1949,7 @@ for (const target of [
   assertContains("fuzz/Cargo.toml", `name = "${target}"`);
   assertContains(".github/workflows/fuzz.yml", `- ${target}`);
 }
-assertContains(".github/workflows/fuzz.yml", "pull_request:");
+assertContains(".github/workflows/fuzz-ci.yml", "workflow_call:");
 assertContains(".github/workflows/fuzz.yml", "schedule:");
 assertContains(".github/workflows/fuzz.yml", "github.event_name == 'schedule'");
 assertContains(".github/workflows/fuzz.yml", "nightly-2026-09-15");
@@ -1995,10 +1959,10 @@ assertNotContains(".github/workflows/fuzz.yml", "toolchain: nightly\n");
 assertContains(".github/workflows/fuzz.yml", "CARGO_FUZZ_VERSION: 0.13.2");
 assertContains(".github/workflows/fuzz.yml", "FUZZ_MAX_TOTAL_TIME_SECONDS: 900");
 assertContains(
-  ".github/workflows/fuzz.yml",
+  ".github/workflows/fuzz-ci.yml",
   "cargo metadata --manifest-path fuzz/Cargo.toml --locked --no-deps",
 );
-assertContains(".github/workflows/fuzz.yml", "git diff --exit-code -- fuzz/Cargo.lock");
+assertContains(".github/workflows/fuzz-ci.yml", "git diff --exit-code -- fuzz/Cargo.lock");
 assertContains(".github/workflows/fuzz.yml", "Restore and persist fuzz corpus");
 assertContains(".github/workflows/fuzz.yml", "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9");
 assertContains(
@@ -2087,24 +2051,6 @@ for (const workflow of [
 ]) {
   assertContains(workflow, "persist-credentials: false");
 }
-assertNotContains(".github/workflows/crates-release.yml", "release_ref:");
-assertNotContains(".github/workflows/crates-release.yml", "inputs:");
-assertContains(
-  ".github/workflows/crates-release.yml",
-  "release_sha: ${{ steps.resolve-release-sha.outputs.release_sha }}",
-);
-assertContains(
-  ".github/workflows/crates-release.yml",
-  "release_version: ${{ steps.resolve-release-sha.outputs.release_version }}",
-);
-assertContains(
-  ".github/workflows/crates-release.yml",
-  'release_version="$(sed -n',
-);
-assertContains(
-  ".github/workflows/crates-release.yml",
-  "ref: ${{ needs.verify-release-sha.outputs.release_sha }}",
-);
 assertContains("scripts/publish_crates_in_order.mjs", "const fetchArgs =");
 assertContains(
   "scripts/publish_crates_in_order.mjs",
@@ -2120,7 +2066,6 @@ assertContains(
 );
 for (const workflow of [
   ".github/workflows/crates-package-preflight.yml",
-  ".github/workflows/crates-release.yml",
   ".github/workflows/rust-ci.yml",
 ]) {
   assertContains(workflow, "CARGO_HOME: ${{ runner.temp }}/package-preflight-cargo-home");
@@ -2142,8 +2087,8 @@ for (const workflow of [
 const setupNodeAction =
   "actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0";
 const expectedNodeSetupCounts = new Map([
-  [".github/workflows/crates-package-preflight.yml", 1],
-  [".github/workflows/crates-release.yml", 3],
+  [".github/workflows/crates-package-preflight.yml", 2],
+  [".github/workflows/crates-release.yml", 2],
   [".github/workflows/protobuf-ci.yml", 1],
   [".github/workflows/readiness.yml", 1],
   [".github/workflows/rust-ci.yml", 1],

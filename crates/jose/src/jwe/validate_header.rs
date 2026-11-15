@@ -338,15 +338,10 @@ impl<'a> CompactJwePolicy<'a> {
     #[must_use]
     pub const fn openid4vp_direct_post_jwt() -> Self {
         Self {
-            allowed_key_management_algorithms: &[
-                JweKeyManagementAlgorithm::EcdhEs,
-                JweKeyManagementAlgorithm::Direct,
-            ],
-            allowed_content_encryption_algorithms: &[
-                JweContentEncryptionAlgorithm::A128Gcm,
-                JweContentEncryptionAlgorithm::A192Gcm,
-                JweContentEncryptionAlgorithm::A256Gcm,
-            ],
+            allowed_key_management_algorithms:
+                crate::generated_contract::policy_defaults::OPENID_KEY_MANAGEMENT,
+            allowed_content_encryption_algorithms:
+                crate::generated_contract::policy_defaults::OPENID_CONTENT_ENCRYPTION,
             allowed_compression_algorithms: &[],
             require_kid: false,
             expected_kid: None,

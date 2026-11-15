@@ -13,6 +13,7 @@ public interface JoseJwtEncodeUnsignedRequestOrBuilder extends
   /**
    * <pre>
    * Claims JSON bytes. Claims can contain PII and must be zeroized after use.
+   * SENSITIVE: caller-owned data; redact diagnostics and wipe owned storage.
    * </pre>
    *
    * <code>bytes claims_json = 1 [json_name = "claimsJson"];</code>

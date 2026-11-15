@@ -164,3 +164,42 @@ fn empty_accepted_typ_values_rejects_present_typ() {
 
     assert!(matches!(decoded, Err(JwtError::InvalidHeader)));
 }
+
+#[test]
+fn accepted_type_policy_respects_the_schema_limit() -> Result<(), Box<dyn std::error::Error>> {
+    use buffa::Enumeration;
+    use reallyme_jose::api::contract::JoseJwtPolicyLimit;
+    let key = gen_ed25519();
+    let compact = encode_signed_jwt_with_header_options(
+        &base_claims_json(),
+        &key.jwk,
+        &key.private,
+        &JwtHeaderEncodeOptions::jwt(),
+    )?;
+    let limit = usize::try_from(JoseJwtPolicyLimit::AcceptedTypeValues.to_i32())?;
+    for count in [limit, limit.checked_add(1).ok_or(JwtError::LengthOverflow)?] {
+        let accepted = vec!["JWT"; count];
+        let result = decode_verify_jwt_signature_only_with_header_validation::<serde_json::Value>(
+            &compact,
+            &key.jwk,
+            &key.public,
+            &JwtHeaderValidationOptions::new(false, false, &accepted),
+        );
+        if count == limit {
+            assert!(result.is_ok());
+        } else {
+            assert!(matches!(result, Err(JwtError::InputTooLarge)));
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn owned_header_options_redact_and_wipe_schema_sensitive_metadata() {
+    fn assert_wipe_owner<T: zeroize::ZeroizeOnDrop>(_: &T) {}
+    let mut options = JwtHeaderEncodeOptions::new(Some("private-profile".to_owned()));
+    assert_wipe_owner(&options);
+    assert_eq!(format!("{options:?}"), "JwtHeaderEncodeOptions(<redacted>)");
+    zeroize::Zeroize::zeroize(&mut options);
+    assert!(options.typ().is_none());
+}
