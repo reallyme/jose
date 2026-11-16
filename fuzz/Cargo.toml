@@ -16,6 +16,7 @@ publish = false
 cargo-fuzz = true
 
 [dependencies]
+buffa = { package = "reallyme-buffa", version = "=0.1.2" }
 libfuzzer-sys = "0.4"
 reallyme-jose = { path = "../crates/jose", features = ["native", "wire"] }
 reallyme-jose-ffi = { path = "../crates/ffi" }

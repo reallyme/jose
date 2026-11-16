@@ -6,25 +6,18 @@
 
 #![no_main]
 
+mod operation_kinds;
+
 use libfuzzer_sys::fuzz_target;
+use operation_kinds::operation_kinds;
 use reallyme_crypto::core::{CryptoError, RngOutputKind};
 use reallyme_crypto::csprng::SecureRandom;
 use reallyme_jose::wire::{
     decode_operation_response_v1, execute_operation_json_v1, execute_operation_v1,
-    JoseOperationKind, MAX_JOSE_PROTO_MESSAGE_BYTES, MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES,
+    MAX_JOSE_PROTO_MESSAGE_BYTES, MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES,
 };
 
 const FORMAT_JSON_MASK: u8 = 0x01;
-const OPERATION_KINDS: [JoseOperationKind; 8] = [
-    JoseOperationKind::JwsSign,
-    JoseOperationKind::JwsVerify,
-    JoseOperationKind::JwtEncodeUnsigned,
-    JoseOperationKind::JwtDecodeUnsigned,
-    JoseOperationKind::JwtSign,
-    JoseOperationKind::JwtVerify,
-    JoseOperationKind::JweEncrypt,
-    JoseOperationKind::JweDecrypt,
-];
 
 struct FuzzRandom {
     seed: u8,
@@ -61,11 +54,12 @@ fn validate_trusted_canonical_response(response: &[u8]) {
     // decoding selected an operation, exactly that operation must accept the
     // response. A response produced by the trusted processor must never be
     // rejected by every canonical decoder path.
-    let accepted_operations = OPERATION_KINDS
+    let operations = operation_kinds();
+    let accepted_operations = operations
         .iter()
         .filter(|operation| decode_operation_response_v1(response, **operation).is_ok())
         .count();
-    if accepted_operations != 1 && accepted_operations != OPERATION_KINDS.len() {
+    if accepted_operations != 1 && accepted_operations != operations.len() {
         std::process::abort();
     }
 }

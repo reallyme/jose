@@ -883,6 +883,7 @@ name = "jose-fuzz"
 version = "0.0.0"
 dependencies = [
  "libfuzzer-sys",
+ "reallyme-buffa",
  "reallyme-crypto",
  "reallyme-jose",
  "reallyme-jose-ffi",
