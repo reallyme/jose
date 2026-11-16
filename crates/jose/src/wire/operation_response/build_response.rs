@@ -12,6 +12,7 @@ use crate::api::contract::__buffa::oneof::{
     jose_jwe_derive_key_response::Outcome as JweDeriveKeyOutcome,
     jose_jwe_encrypt_response::Outcome as JweEncryptOutcome,
     jose_jwe_encrypt_with_provider_response::Outcome as JweEncryptWithProviderOutcome,
+    jose_jws_inspect_response::Outcome as JwsInspectOutcome,
     jose_jws_sign_response::Outcome as JwsSignOutcome,
     jose_jws_verify_response::Outcome as JwsVerifyOutcome,
     jose_jwt_decode_unsigned_response::Outcome as JwtDecodeUnsignedOutcome,
@@ -24,14 +25,15 @@ use crate::api::contract::__buffa::oneof::{
     jose_signature_verify_response::Outcome as SignatureVerifyOutcome,
 };
 use crate::api::contract::{
-    JoseCompactResult, JoseContractInfoResponse, JoseContractInfoResult, JoseJweDecryptResponse,
-    JoseJweDecryptWithProviderResponse, JoseJweDeriveKeyResponse, JoseJweEncryptResponse,
-    JoseJweEncryptWithProviderResponse, JoseJwePlaintextResult, JoseJwsSignResponse,
-    JoseJwsVerifyResponse, JoseJwtClaimsResult, JoseJwtDecodeUnsignedResponse,
-    JoseJwtEncodeUnsignedResponse, JoseJwtSignResponse, JoseJwtSignWithProviderResponse,
-    JoseJwtVerifyResponse, JoseOperationResponse, JoseSecretBytes, JoseSignatureResult,
-    JoseSignatureSignResponse, JoseSignatureSuiteInfoResponse, JoseSignatureSuiteInfoResult,
-    JoseSignatureVerifyResponse, JoseValidationResult, JoseVerifyResult,
+    JoseCompactResult, JoseContractInfoResponse, JoseContractInfoResult, JoseInspectedCompactJws,
+    JoseJweDecryptResponse, JoseJweDecryptWithProviderResponse, JoseJweDeriveKeyResponse,
+    JoseJweEncryptResponse, JoseJweEncryptWithProviderResponse, JoseJwePlaintextResult,
+    JoseJwsInspectResponse, JoseJwsSignResponse, JoseJwsVerifyResponse, JoseJwtClaimsResult,
+    JoseJwtDecodeUnsignedResponse, JoseJwtEncodeUnsignedResponse, JoseJwtSignResponse,
+    JoseJwtSignWithProviderResponse, JoseJwtVerifyResponse, JoseOperationResponse, JoseSecretBytes,
+    JoseSignatureResult, JoseSignatureSignResponse, JoseSignatureSuiteInfoResponse,
+    JoseSignatureSuiteInfoResult, JoseSignatureVerifyResponse, JoseValidationResult,
+    JoseVerifyResult,
 };
 
 pub(super) fn jws_sign_response(
@@ -54,6 +56,46 @@ pub(super) fn jws_verify_response(
         Err(error) => JwsVerifyOutcome::Error(Box::new(jose_error(error))),
     };
     canonical_response(Response::JwsVerify(Box::new(JoseJwsVerifyResponse {
+        outcome: Some(outcome),
+    })))
+}
+
+pub(super) fn jws_sign_with_provider_response(
+    result: JoseWireResult<JoseCompactResult>,
+) -> JoseOperationResponse {
+    let outcome = match result {
+        Ok(result) => JwsSignOutcome::Result(Box::new(result)),
+        Err(error) => JwsSignOutcome::Error(Box::new(jose_error(error))),
+    };
+    canonical_response(Response::JwsSignWithProvider(Box::new(
+        JoseJwsSignResponse {
+            outcome: Some(outcome),
+        },
+    )))
+}
+
+pub(super) fn jws_verify_with_provider_response(
+    result: JoseWireResult<JoseVerifyResult>,
+) -> JoseOperationResponse {
+    let outcome = match result {
+        Ok(result) => JwsVerifyOutcome::Result(Box::new(result)),
+        Err(error) => JwsVerifyOutcome::Error(Box::new(jose_error(error))),
+    };
+    canonical_response(Response::JwsVerifyWithProvider(Box::new(
+        JoseJwsVerifyResponse {
+            outcome: Some(outcome),
+        },
+    )))
+}
+
+pub(super) fn jws_inspect_response(
+    result: JoseWireResult<JoseInspectedCompactJws>,
+) -> JoseOperationResponse {
+    let outcome = match result {
+        Ok(result) => JwsInspectOutcome::Result(Box::new(result)),
+        Err(error) => JwsInspectOutcome::Error(Box::new(jose_error(error))),
+    };
+    canonical_response(Response::JwsInspect(Box::new(JoseJwsInspectResponse {
         outcome: Some(outcome),
     })))
 }

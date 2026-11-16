@@ -42,6 +42,9 @@ func clearSensitiveFields(_ message: inout ReallyMeProtoJoseOperationResponse) {
   case .signatureSign: clearSensitiveFields(&message.signatureSign)
   case .signatureVerify: clearSensitiveFields(&message.signatureVerify)
   case .signatureSuiteInfo: clearSensitiveFields(&message.signatureSuiteInfo)
+  case .jwsSignWithProvider: clearSensitiveFields(&message.jwsSignWithProvider)
+  case .jwsVerifyWithProvider: clearSensitiveFields(&message.jwsVerifyWithProvider)
+  case .jwsInspect: clearSensitiveFields(&message.jwsInspect)
   case .jwtSignWithProvider: clearSensitiveFields(&message.jwtSignWithProvider)
   case .jwtClaimsParse: clearSensitiveFields(&message.jwtClaimsParse)
   case .jweDeriveKey: clearSensitiveFields(&message.jweDeriveKey)
@@ -66,6 +69,9 @@ func clearSensitiveFields(_ message: inout ReallyMeProtoJoseOperationRequest) {
   case .signatureSign: clearSensitiveFields(&message.signatureSign)
   case .signatureVerify: clearSensitiveFields(&message.signatureVerify)
   case .signatureSuiteInfo: clearSensitiveFields(&message.signatureSuiteInfo)
+  case .jwsSignWithProvider: clearSensitiveFields(&message.jwsSignWithProvider)
+  case .jwsVerifyWithProvider: clearSensitiveFields(&message.jwsVerifyWithProvider)
+  case .jwsInspect: clearSensitiveFields(&message.jwsInspect)
   case .jwtSignWithProvider: clearSensitiveFields(&message.jwtSignWithProvider)
   case .jwtClaimsParse: clearSensitiveFields(&message.jwtClaimsParse)
   case .jweDeriveKey: clearSensitiveFields(&message.jweDeriveKey)
@@ -75,6 +81,37 @@ func clearSensitiveFields(_ message: inout ReallyMeProtoJoseOperationRequest) {
   case nil: break
   }
   message = ReallyMeProtoJoseOperationRequest()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsSignWithProviderRequest) {
+  ReallyMeJOSEMemory.clearOwned(&message.protectedHeaderJson)
+  ReallyMeJOSEMemory.clearOwned(&message.payload)
+  message = ReallyMeProtoJoseJwsSignWithProviderRequest()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsInspectRequest) {
+  message = ReallyMeProtoJoseJwsInspectRequest()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseInspectedCompactJws) {
+  ReallyMeJOSEMemory.clearOwned(&message.protectedHeaderJson)
+  ReallyMeJOSEMemory.clearOwned(&message.payload)
+  ReallyMeJOSEMemory.clearOwned(&message.signature)
+  message = ReallyMeProtoJoseInspectedCompactJws()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsInspectResponse) {
+  switch message.outcome {
+  case .result: clearSensitiveFields(&message.result)
+  case .error: clearSensitiveFields(&message.error)
+  case nil: break
+  }
+  message = ReallyMeProtoJoseJwsInspectResponse()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsVerifyWithProviderRequest) {
+  if message.hasInput { clearSensitiveFields(&message.input) }
+  message = ReallyMeProtoJoseJwsVerifyWithProviderRequest()
 }
 
 func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsSignRequest) {

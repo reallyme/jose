@@ -24,7 +24,7 @@ as the borrowed native APIs. Injected provider handles are scoped to the caller.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.5.0"
+reallyme-jose = "0.5.1"
 ```
 
 ## Security Model
@@ -176,3 +176,18 @@ option. See [LICENSE](LICENSE) and
 Copyright © 2026 by ReallyMe Technologies Limited.
 
 ReallyMe<sup>®</sup> is a registered trademark of ReallyMe LLC.
+
+## Caller-owned compact JWS providers
+
+Use `jws::sign_compact_jws_with_provider` when the caller supplies the exact
+protected-header JSON and controls the signing key. The generated
+`JoseJwsSignWithProviderRequest` binds the chosen asymmetric registration and
+can tighten the compact size limit. The callback returns the JOSE wire
+signature bytes for that registration.
+
+`jws::verify_compact_jws_with_provider` passes the selected registration, exact
+received signing input and decoded parts to the verifier. The caller must
+authorize the algorithm and verification key. An explicitly permitted public
+`jwk` header is profile data and does not establish trust. The API produces an
+authenticated result only when the callback succeeds. For parsing alone,
+`jws::inspect_compact_jws` returns unauthenticated parts.

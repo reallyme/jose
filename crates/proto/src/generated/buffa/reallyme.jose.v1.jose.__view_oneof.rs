@@ -92,6 +92,15 @@ pub mod jose_operation_response {
                 Self::SignatureSuiteInfo(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
+                Self::JwsSignWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsVerifyWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsInspect(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
                 Self::JwtSignWithProvider(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
@@ -191,6 +200,21 @@ pub mod jose_operation_response {
                 >,
             >,
         ),
+        JwsSignWithProvider(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsSignResponseView<'a>,
+            >,
+        ),
+        JwsVerifyWithProvider(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsVerifyResponseView<'a>,
+            >,
+        ),
+        JwsInspect(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsInspectResponseView<'a>,
+            >,
+        ),
         JwtSignWithProvider(
             ::buffa::alloc::boxed::Box<
                 super::super::super::super::__buffa::view::JoseJwtSignWithProviderResponseView<
@@ -277,6 +301,15 @@ pub mod jose_operation_request {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::SignatureSuiteInfo(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsSignWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsVerifyWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsInspect(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JwtSignWithProvider(value) => {
@@ -373,6 +406,25 @@ pub mod jose_operation_request {
                 >,
             >,
         ),
+        JwsSignWithProvider(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsSignWithProviderRequestView<
+                    'a,
+                >,
+            >,
+        ),
+        JwsVerifyWithProvider(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsVerifyWithProviderRequestView<
+                    'a,
+                >,
+            >,
+        ),
+        JwsInspect(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsInspectRequestView<'a>,
+            >,
+        ),
         JwtSignWithProvider(
             ::buffa::alloc::boxed::Box<
                 super::super::super::super::__buffa::view::JoseJwtSignWithProviderRequestView<
@@ -419,6 +471,44 @@ pub mod jose_operation_request {
     impl<'a> ::core::fmt::Debug for Operation<'a> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             f.write_str("Operation([REDACTED])")
+        }
+    }
+}
+pub mod jose_jws_inspect_response {
+    #[allow(unused_imports)]
+    use super::*;
+    impl<'a> ::buffa::sensitive::Zeroize for Outcome<'a> {
+        fn zeroize(&mut self) {
+            match self {
+                Self::Result(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Error(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+            }
+        }
+    }
+    impl<'a> ::buffa::sensitive::ZeroizeOnDrop for Outcome<'a> {}
+    impl<'a> ::core::ops::Drop for Outcome<'a> {
+        fn drop(&mut self) {
+            ::buffa::sensitive::Zeroize::zeroize(self);
+        }
+    }
+    #[derive(Clone)]
+    pub enum Outcome<'a> {
+        Result(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseInspectedCompactJwsView<
+                    'a,
+                >,
+            >,
+        ),
+        Error(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseErrorView<'a>,
+            >,
+        ),
+    }
+    impl<'a> ::core::fmt::Debug for Outcome<'a> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.write_str("Outcome([REDACTED])")
         }
     }
 }

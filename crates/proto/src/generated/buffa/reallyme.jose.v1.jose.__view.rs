@@ -888,6 +888,15 @@ impl<'a> ::buffa::sensitive::Zeroize for JoseOperationResponseView<'a> {
             super::super::__buffa::view::JoseSignatureSuiteInfoResponseView<'a>,
         >();
         __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsSignResponseView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsVerifyResponseView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsInspectResponseView<'a>,
+        >();
+        __requires_view_wipe_owner::<
             super::super::__buffa::view::JoseJwtSignWithProviderResponseView<'a>,
         >();
         __requires_view_wipe_owner::<
@@ -1326,6 +1335,99 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationResponseView<'a> {
                     );
                 }
             }
+            1013u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_operation_response::Response::JwsSignWithProvider(
+                        ref mut existing,
+                    ),
+                ) = view.response
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.response = Some(
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwsSignWithProvider(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsSignResponseView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            1014u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_operation_response::Response::JwsVerifyWithProvider(
+                        ref mut existing,
+                    ),
+                ) = view.response
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.response = Some(
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwsVerifyWithProvider(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsVerifyResponseView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            1015u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_operation_response::Response::JwsInspect(
+                        ref mut existing,
+                    ),
+                ) = view.response
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.response = Some(
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwsInspect(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsInspectResponseView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
             2010u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
@@ -1655,6 +1757,33 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationResponseView<'a> {
                                 ),
                             )
                         }
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwsSignWithProvider(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_response::Response::JwsSignWithProvider(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwsVerifyWithProvider(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_response::Response::JwsVerifyWithProvider(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwsInspect(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_response::Response::JwsInspect(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
                         super::super::__buffa::view::oneof::jose_operation_response::Response::JwtSignWithProvider(
                             v,
                         ) => {
@@ -1842,6 +1971,36 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationResponseView<'a> {
                             + inner as u64;
                 }
                 super::super::__buffa::view::oneof::jose_operation_response::Response::SignatureSuiteInfo(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsSignWithProvider(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsVerifyWithProvider(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsInspect(
                     x,
                 ) => {
                     let __slot = __cache.reserve();
@@ -2051,6 +2210,36 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationResponseView<'a> {
                     );
                     x.write_to(__cache, buf);
                 }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsSignWithProvider(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1013u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsVerifyWithProvider(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1014u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsInspect(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1015u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
                 super::super::__buffa::view::oneof::jose_operation_response::Response::JwtSignWithProvider(
                     x,
                 ) => {
@@ -2200,6 +2389,21 @@ impl<'__a> ::serde::Serialize for JoseOperationResponseView<'__a> {
                 ) => {
                     __map.serialize_entry("signatureSuiteInfo", v)?;
                 }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsSignWithProvider(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwsSignWithProvider", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsVerifyWithProvider(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwsVerifyWithProvider", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsInspect(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwsInspect", v)?;
+                }
                 super::super::__buffa::view::oneof::jose_operation_response::Response::JwtSignWithProvider(
                     v,
                 ) => {
@@ -2312,6 +2516,15 @@ impl<'a> ::buffa::sensitive::Zeroize for JoseOperationRequestView<'a> {
         >();
         __requires_view_wipe_owner::<
             super::super::__buffa::view::JoseSignatureSuiteInfoRequestView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsSignWithProviderRequestView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsVerifyWithProviderRequestView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsInspectRequestView<'a>,
         >();
         __requires_view_wipe_owner::<
             super::super::__buffa::view::JoseJwtSignWithProviderRequestView<'a>,
@@ -2711,6 +2924,99 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationRequestView<'a> {
                     );
                 }
             }
+            1013u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsSignWithProvider(
+                        ref mut existing,
+                    ),
+                ) = view.operation
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.operation = Some(
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsSignWithProvider(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsSignWithProviderRequestView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            1014u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsVerifyWithProvider(
+                        ref mut existing,
+                    ),
+                ) = view.operation
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.operation = Some(
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsVerifyWithProvider(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsVerifyWithProviderRequestView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            1015u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsInspect(
+                        ref mut existing,
+                    ),
+                ) = view.operation
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.operation = Some(
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsInspect(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsInspectRequestView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
             2010u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
@@ -3030,6 +3336,33 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationRequestView<'a> {
                                 ),
                             )
                         }
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsSignWithProvider(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_request::Operation::JwsSignWithProvider(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsVerifyWithProvider(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_request::Operation::JwsVerifyWithProvider(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsInspect(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_request::Operation::JwsInspect(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
                         super::super::__buffa::view::oneof::jose_operation_request::Operation::JwtSignWithProvider(
                             v,
                         ) => {
@@ -3201,6 +3534,36 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationRequestView<'a> {
                             + inner as u64;
                 }
                 super::super::__buffa::view::oneof::jose_operation_request::Operation::SignatureSuiteInfo(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsSignWithProvider(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsVerifyWithProvider(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsInspect(
                     x,
                 ) => {
                     let __slot = __cache.reserve();
@@ -3394,6 +3757,36 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationRequestView<'a> {
                     );
                     x.write_to(__cache, buf);
                 }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsSignWithProvider(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1013u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsVerifyWithProvider(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1014u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsInspect(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1015u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
                 super::super::__buffa::view::oneof::jose_operation_request::Operation::JwtSignWithProvider(
                     x,
                 ) => {
@@ -3533,6 +3926,21 @@ impl<'__a> ::serde::Serialize for JoseOperationRequestView<'__a> {
                 ) => {
                     __map.serialize_entry("signatureSuiteInfo", v)?;
                 }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsSignWithProvider(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwsSignWithProvider", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsVerifyWithProvider(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwsVerifyWithProvider", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsInspect(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwsInspect", v)?;
+                }
                 super::super::__buffa::view::oneof::jose_operation_request::Operation::JwtSignWithProvider(
                     v,
                 ) => {
@@ -3577,6 +3985,1287 @@ impl<'a> ::buffa::MessageName for JoseOperationRequestView<'a> {
 ::buffa::impl_default_view_instance!(JoseOperationRequestView);
 ::buffa::impl_view_reborrow!(JoseOperationRequestView);
 ::buffa::unsafe_impl_view_lifetime_parametric!(JoseOperationRequestView);
+/// Sign attached compact JWS with exact caller-supplied protected-header bytes.
+/// The provider must return the JOSE wire signature encoding for the algorithm.
+/// Rust adapter: jws/provider.rs#external_jws_algorithm
+/// Rust adapter: jws/provider.rs#sign_compact_jws_with_provider
+#[derive(Clone, Default)]
+pub struct JoseJwsSignWithProviderRequestView<'a> {
+    /// SENSITIVE: exact protected-header JSON, including caller metadata.
+    ///
+    /// Field 1: `protected_header_json`
+    pub protected_header_json: &'a [u8],
+    /// SENSITIVE: attached content.
+    ///
+    /// Field 2: `payload`
+    pub payload: &'a [u8],
+    /// Field 3: `algorithm`
+    pub algorithm: ::buffa::EnumValue<super::super::JoseExternalJwsAlgorithm>,
+    /// SENSITIVE: caller-local capability, required for operation dispatch.
+    ///
+    /// Field 4: `signer_handle`
+    pub signer_handle: ::core::option::Option<u64>,
+    /// Field 5: `max_compact_bytes`
+    pub max_compact_bytes: ::core::option::Option<u32>,
+    /// Field 6: `allow_embedded_jwk`
+    pub allow_embedded_jwk: bool,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsSignWithProviderRequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsSignWithProviderRequestView")
+            .field("protected_header_json", &::core::format_args!("[REDACTED]"))
+            .field("payload", &::core::format_args!("[REDACTED]"))
+            .field("algorithm", &::core::format_args!("[REDACTED]"))
+            .field("signer_handle", &::core::format_args!("[REDACTED]"))
+            .field("max_compact_bytes", &::core::format_args!("[REDACTED]"))
+            .field("allow_embedded_jwk", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsSignWithProviderRequestView<'a> {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.algorithm);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.signer_handle);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_compact_bytes);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.allow_embedded_jwk);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsSignWithProviderRequestView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsSignWithProviderRequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsSignWithProviderRequestView<'a> {
+    type Owned = super::super::JoseJwsSignWithProviderRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.protected_header_json = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.payload = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.algorithm = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.signer_handle = Some(::buffa::types::decode_uint64(&mut cur)?);
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.max_compact_bytes = Some(::buffa::types::decode_uint32(&mut cur)?);
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.allow_embedded_jwk = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsSignWithProviderRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsSignWithProviderRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsSignWithProviderRequest as ::core::default::Default>::default();
+        __owned.protected_header_json = ::core::convert::Into::into(
+            (self.protected_header_json).to_vec(),
+        );
+        __owned.payload = ::core::convert::Into::into((self.payload).to_vec());
+        __owned.algorithm = self.algorithm;
+        __owned.signer_handle = self.signer_handle;
+        __owned.max_compact_bytes = self.max_compact_bytes;
+        __owned.allow_embedded_jwk = self.allow_embedded_jwk;
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsSignWithProviderRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.protected_header_json.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.protected_header_json)
+                        as u64;
+        }
+        if !self.payload.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.payload) as u64;
+        }
+        {
+            let val = self.algorithm.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if let Some(v) = self.signer_handle {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(v) as u64;
+        }
+        if let Some(v) = self.max_compact_bytes {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(v) as u64;
+        }
+        if self.allow_embedded_jwk {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.protected_header_json.is_empty() {
+            ::buffa::types::put_shared_bytes_field(
+                1u32,
+                &self.protected_header_json,
+                buf,
+            );
+        }
+        if !self.payload.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.payload, buf);
+        }
+        {
+            let val = self.algorithm.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(3u32, val, buf);
+            }
+        }
+        if let Some(v) = self.signer_handle {
+            ::buffa::types::put_uint64_field(4u32, v, buf);
+        }
+        if let Some(v) = self.max_compact_bytes {
+            ::buffa::types::put_uint32_field(5u32, v, buf);
+        }
+        if self.allow_embedded_jwk {
+            ::buffa::types::put_bool_field(6u32, self.allow_embedded_jwk, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsSignWithProviderRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_bytes(self.protected_header_json) {
+            __map
+                .serialize_entry(
+                    "protectedHeaderJson",
+                    &::buffa::json_helpers::BytesPolicyJson::<
+                        crate::SecretBytes,
+                    >::new(self.protected_header_json),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_empty_bytes(self.payload) {
+            __map
+                .serialize_entry(
+                    "payload",
+                    &::buffa::json_helpers::BytesPolicyJson::<
+                        crate::SecretBytes,
+                    >::new(self.payload),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_default_enum_value(&self.algorithm) {
+            __map.serialize_entry("algorithm", &self.algorithm)?;
+        }
+        if let ::core::option::Option::Some(__v) = self.signer_handle {
+            __map
+                .serialize_entry(
+                    "signerHandle",
+                    &::buffa::json_helpers::ProtoJson(&__v),
+                )?;
+        }
+        if let ::core::option::Option::Some(__v) = self.max_compact_bytes {
+            __map
+                .serialize_entry(
+                    "maxCompactBytes",
+                    &::buffa::json_helpers::ProtoJson(&__v),
+                )?;
+        }
+        if self.allow_embedded_jwk {
+            __map.serialize_entry("allowEmbeddedJwk", &self.allow_embedded_jwk)?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsSignWithProviderRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsSignWithProviderRequest";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsSignWithProviderRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsSignWithProviderRequest";
+}
+::buffa::impl_default_view_instance!(JoseJwsSignWithProviderRequestView);
+::buffa::impl_view_reborrow!(JoseJwsSignWithProviderRequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsSignWithProviderRequestView);
+/// Inspect compact framing and canonical base64url without authenticating it.
+/// Rust adapter: jws/provider.rs#inspect_compact_jws
+/// Rust adapter: jws/provider.rs#compact_jws_signing_parts
+#[derive(Clone, Default)]
+pub struct JoseJwsInspectRequestView<'a> {
+    /// SENSITIVE: complete compact input.
+    ///
+    /// Field 1: `compact`
+    pub compact: &'a str,
+    /// Field 2: `max_compact_bytes`
+    pub max_compact_bytes: ::core::option::Option<u32>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsInspectRequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsInspectRequestView")
+            .field("compact", &::core::format_args!("[REDACTED]"))
+            .field("max_compact_bytes", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsInspectRequestView<'a> {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_compact_bytes);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsInspectRequestView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsInspectRequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsInspectRequestView<'a> {
+    type Owned = super::super::JoseJwsInspectRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.compact = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.max_compact_bytes = Some(::buffa::types::decode_uint32(&mut cur)?);
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsInspectRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsInspectRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsInspectRequest as ::core::default::Default>::default();
+        __owned.compact = ::buffa::ProtoString::copy_from_str(self.compact);
+        __owned.max_compact_bytes = self.max_compact_bytes;
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsInspectRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.compact.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.compact) as u64;
+        }
+        if let Some(v) = self.max_compact_bytes {
+            size += 1u64 + ::buffa::types::uint32_encoded_len(v) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.compact.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.compact, buf);
+        }
+        if let Some(v) = self.max_compact_bytes {
+            ::buffa::types::put_uint32_field(2u32, v, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsInspectRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.compact) {
+            __map
+                .serialize_entry(
+                    "compact",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.compact),
+                )?;
+        }
+        if let ::core::option::Option::Some(__v) = self.max_compact_bytes {
+            __map
+                .serialize_entry(
+                    "maxCompactBytes",
+                    &::buffa::json_helpers::ProtoJson(&__v),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsInspectRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsInspectRequest";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsInspectRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsInspectRequest";
+}
+::buffa::impl_default_view_instance!(JoseJwsInspectRequestView);
+::buffa::impl_view_reborrow!(JoseJwsInspectRequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsInspectRequestView);
+/// Unauthenticated observations for caller-owned verification.
+#[derive(Clone, Default)]
+pub struct JoseInspectedCompactJwsView<'a> {
+    /// SENSITIVE: decoded protected-header JSON.
+    ///
+    /// Field 1: `protected_header_json`
+    pub protected_header_json: &'a [u8],
+    /// SENSITIVE: decoded attached payload.
+    ///
+    /// Field 2: `payload`
+    pub payload: &'a [u8],
+    /// Number of leading compact bytes covered by the signature.
+    ///
+    /// Field 3: `signing_input_len`
+    pub signing_input_len: u32,
+    /// SENSITIVE: received JOSE signature bytes.
+    ///
+    /// Field 4: `signature`
+    pub signature: &'a [u8],
+}
+impl<'a> ::core::fmt::Debug for JoseInspectedCompactJwsView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseInspectedCompactJwsView")
+            .field("protected_header_json", &::core::format_args!("[REDACTED]"))
+            .field("payload", &::core::format_args!("[REDACTED]"))
+            .field("signing_input_len", &::core::format_args!("[REDACTED]"))
+            .field("signature", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseInspectedCompactJwsView<'a> {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.signing_input_len);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseInspectedCompactJwsView<'a> {}
+impl<'a> ::core::ops::Drop for JoseInspectedCompactJwsView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseInspectedCompactJwsView<'a> {
+    type Owned = super::super::JoseInspectedCompactJws;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.protected_header_json = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.payload = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.signing_input_len = ::buffa::types::decode_uint32(&mut cur)?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.signature = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseInspectedCompactJws,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseInspectedCompactJws,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseInspectedCompactJws as ::core::default::Default>::default();
+        __owned.protected_header_json = ::core::convert::Into::into(
+            (self.protected_header_json).to_vec(),
+        );
+        __owned.payload = ::core::convert::Into::into((self.payload).to_vec());
+        __owned.signing_input_len = self.signing_input_len;
+        __owned.signature = ::core::convert::Into::into((self.signature).to_vec());
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseInspectedCompactJwsView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.protected_header_json.is_empty() {
+            size
+                += 1u64
+                    + ::buffa::types::bytes_encoded_len(&self.protected_header_json)
+                        as u64;
+        }
+        if !self.payload.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.payload) as u64;
+        }
+        if self.signing_input_len != 0u32 {
+            size
+                += 1u64
+                    + ::buffa::types::uint32_encoded_len(self.signing_input_len) as u64;
+        }
+        if !self.signature.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.signature) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.protected_header_json.is_empty() {
+            ::buffa::types::put_shared_bytes_field(
+                1u32,
+                &self.protected_header_json,
+                buf,
+            );
+        }
+        if !self.payload.is_empty() {
+            ::buffa::types::put_shared_bytes_field(2u32, &self.payload, buf);
+        }
+        if self.signing_input_len != 0u32 {
+            ::buffa::types::put_uint32_field(3u32, self.signing_input_len, buf);
+        }
+        if !self.signature.is_empty() {
+            ::buffa::types::put_shared_bytes_field(4u32, &self.signature, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseInspectedCompactJwsView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_bytes(self.protected_header_json) {
+            __map
+                .serialize_entry(
+                    "protectedHeaderJson",
+                    &::buffa::json_helpers::BytesPolicyJson::<
+                        crate::SecretBytes,
+                    >::new(self.protected_header_json),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_empty_bytes(self.payload) {
+            __map
+                .serialize_entry(
+                    "payload",
+                    &::buffa::json_helpers::BytesPolicyJson::<
+                        crate::SecretBytes,
+                    >::new(self.payload),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_zero_u32(&self.signing_input_len) {
+            __map
+                .serialize_entry(
+                    "signingInputLen",
+                    &::buffa::json_helpers::ProtoJson(&self.signing_input_len),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_empty_bytes(self.signature) {
+            __map
+                .serialize_entry(
+                    "signature",
+                    &::buffa::json_helpers::BytesPolicyJson::<
+                        crate::SecretBytes,
+                    >::new(self.signature),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseInspectedCompactJwsView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseInspectedCompactJws";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseInspectedCompactJws";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseInspectedCompactJws";
+}
+::buffa::impl_default_view_instance!(JoseInspectedCompactJwsView);
+::buffa::impl_view_reborrow!(JoseInspectedCompactJwsView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseInspectedCompactJwsView);
+#[derive(Clone, Default)]
+pub struct JoseJwsInspectResponseView<'a> {
+    pub outcome: ::core::option::Option<
+        super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome<'a>,
+    >,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsInspectResponseView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsInspectResponseView")
+            .field("outcome", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsInspectResponseView<'a> {
+    fn zeroize(&mut self) {
+        fn __requires_view_wipe_owner<
+            T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+        >() {}
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseInspectedCompactJwsView<'a>,
+        >();
+        __requires_view_wipe_owner::<super::super::__buffa::view::JoseErrorView<'a>>();
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.outcome);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsInspectResponseView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsInspectResponseView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsInspectResponseView<'a> {
+    type Owned = super::super::JoseJwsInspectResponse;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Result(
+                        ref mut existing,
+                    ),
+                ) = view.outcome
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.outcome = Some(
+                        super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Result(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseInspectedCompactJwsView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Error(
+                        ref mut existing,
+                    ),
+                ) = view.outcome
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.outcome = Some(
+                        super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Error(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseErrorView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsInspectResponse,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsInspectResponse,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsInspectResponse as ::core::default::Default>::default();
+        __owned.outcome = match self.outcome.as_ref() {
+            ::core::option::Option::Some(v) => {
+                ::core::option::Option::Some(
+                    match v {
+                        super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Result(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jws_inspect_response::Outcome::Result(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Error(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jws_inspect_response::Outcome::Error(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                    },
+                )
+            }
+            ::core::option::Option::None => ::core::option::Option::None,
+        };
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsInspectResponseView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Result(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Error(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Result(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Error(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsInspectResponseView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if let ::core::option::Option::Some(ref __ov) = self.outcome {
+            match __ov {
+                super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Result(
+                    v,
+                ) => {
+                    __map.serialize_entry("result", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_jws_inspect_response::Outcome::Error(
+                    v,
+                ) => {
+                    __map.serialize_entry("error", v)?;
+                }
+            }
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsInspectResponseView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsInspectResponse";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsInspectResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsInspectResponse";
+}
+::buffa::impl_default_view_instance!(JoseJwsInspectResponseView);
+::buffa::impl_view_reborrow!(JoseJwsInspectResponseView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsInspectResponseView);
+/// Authenticate compact JWS with a caller-local signature verifier. An allowed
+/// embedded JWK is profile data. The verifier selects and binds the trusted key.
+/// Rust adapter: jws/provider.rs#verify_compact_jws_with_provider
+#[derive(Clone, Default)]
+pub struct JoseJwsVerifyWithProviderRequestView<'a> {
+    /// Field 1: `input`
+    pub input: ::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseJwsInspectRequestView<'a>,
+    >,
+    /// SENSITIVE: caller-local capability, required for operation dispatch.
+    ///
+    /// Field 2: `verifier_handle`
+    pub verifier_handle: ::core::option::Option<u64>,
+    /// Field 3: `allow_embedded_jwk`
+    pub allow_embedded_jwk: bool,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsVerifyWithProviderRequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsVerifyWithProviderRequestView")
+            .field("input", &::core::format_args!("[REDACTED]"))
+            .field("verifier_handle", &::core::format_args!("[REDACTED]"))
+            .field("allow_embedded_jwk", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsVerifyWithProviderRequestView<'a> {
+    fn zeroize(&mut self) {
+        fn __requires_view_wipe_owner<
+            T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+        >() {}
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsInspectRequestView<'a>,
+        >();
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.input);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.verifier_handle);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.allow_embedded_jwk);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsVerifyWithProviderRequestView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsVerifyWithProviderRequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsVerifyWithProviderRequestView<'a> {
+    type Owned = super::super::JoseJwsVerifyWithProviderRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.input.as_mut() {
+                    Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.input = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::JoseJwsInspectRequestView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.verifier_handle = Some(::buffa::types::decode_uint64(&mut cur)?);
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.allow_embedded_jwk = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsVerifyWithProviderRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsVerifyWithProviderRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsVerifyWithProviderRequest as ::core::default::Default>::default();
+        __owned.input = match self.input.as_option() {
+            Some(v) => {
+                ::buffa::MessageField::<
+                    super::super::JoseJwsInspectRequest,
+                    ::buffa::Inline<super::super::JoseJwsInspectRequest>,
+                >::some(v.to_owned_from_source(__buffa_src)?)
+            }
+            None => ::buffa::MessageField::none(),
+        };
+        __owned.verifier_handle = self.verifier_handle;
+        __owned.allow_embedded_jwk = self.allow_embedded_jwk;
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsVerifyWithProviderRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(__v) = self.input.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let Some(v) = self.verifier_handle {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(v) as u64;
+        }
+        if self.allow_embedded_jwk {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(__v) = self.input.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+        if let Some(v) = self.verifier_handle {
+            ::buffa::types::put_uint64_field(2u32, v, buf);
+        }
+        if self.allow_embedded_jwk {
+            ::buffa::types::put_bool_field(3u32, self.allow_embedded_jwk, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsVerifyWithProviderRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        {
+            if let ::core::option::Option::Some(__v) = self.input.as_option() {
+                __map.serialize_entry("input", __v)?;
+            }
+        }
+        if let ::core::option::Option::Some(__v) = self.verifier_handle {
+            __map
+                .serialize_entry(
+                    "verifierHandle",
+                    &::buffa::json_helpers::ProtoJson(&__v),
+                )?;
+        }
+        if self.allow_embedded_jwk {
+            __map.serialize_entry("allowEmbeddedJwk", &self.allow_embedded_jwk)?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsVerifyWithProviderRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsVerifyWithProviderRequest";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsVerifyWithProviderRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsVerifyWithProviderRequest";
+}
+::buffa::impl_default_view_instance!(JoseJwsVerifyWithProviderRequestView);
+::buffa::impl_view_reborrow!(JoseJwsVerifyWithProviderRequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsVerifyWithProviderRequestView);
 #[derive(Clone, Default)]
 pub struct JoseJwsSignRequestView<'a> {
     /// Field 1: `algorithm`

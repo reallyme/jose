@@ -166,7 +166,7 @@ node scripts/generate-jose-proto.mjs
 
 ```toml
 [dependencies]
-reallyme-jose-proto = { version = "0.5.0", features = ["generated"] }
+reallyme-jose-proto = { version = "0.5.1", features = ["generated"] }
 ```
 
 ## License

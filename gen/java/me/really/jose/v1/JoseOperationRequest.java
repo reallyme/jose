@@ -48,6 +48,9 @@ public  final class JoseOperationRequest extends
         || (hasSignatureSign() && getSignatureSign().reallyMeHasUnknownFieldsForValidation())
         || (hasSignatureVerify() && getSignatureVerify().reallyMeHasUnknownFieldsForValidation())
         || (hasSignatureSuiteInfo() && getSignatureSuiteInfo().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwsSignWithProvider() && getJwsSignWithProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwsVerifyWithProvider() && getJwsVerifyWithProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwsInspect() && getJwsInspect().reallyMeHasUnknownFieldsForValidation())
         || (hasJwtSignWithProvider() && getJwtSignWithProvider().reallyMeHasUnknownFieldsForValidation())
         || (hasJwtClaimsParse() && getJwtClaimsParse().reallyMeHasUnknownFieldsForValidation())
         || (hasJweDeriveKey() && getJweDeriveKey().reallyMeHasUnknownFieldsForValidation())
@@ -83,6 +86,9 @@ public  final class JoseOperationRequest extends
     SIGNATURE_SIGN(1010),
     SIGNATURE_VERIFY(1011),
     SIGNATURE_SUITE_INFO(1012),
+    JWS_SIGN_WITH_PROVIDER(1013),
+    JWS_VERIFY_WITH_PROVIDER(1014),
+    JWS_INSPECT(1015),
     JWT_SIGN_WITH_PROVIDER(2010),
     JWT_CLAIMS_PARSE(2011),
     JWE_DERIVE_KEY(3010),
@@ -115,6 +121,9 @@ public  final class JoseOperationRequest extends
         case 1010: return SIGNATURE_SIGN;
         case 1011: return SIGNATURE_VERIFY;
         case 1012: return SIGNATURE_SUITE_INFO;
+        case 1013: return JWS_SIGN_WITH_PROVIDER;
+        case 1014: return JWS_VERIFY_WITH_PROVIDER;
+        case 1015: return JWS_INSPECT;
         case 2010: return JWT_SIGN_WITH_PROVIDER;
         case 2011: return JWT_CLAIMS_PARSE;
         case 3010: return JWE_DERIVE_KEY;
@@ -982,6 +991,156 @@ public  final class JoseOperationRequest extends
    */
   private void clearSignatureSuiteInfo() {
     if (operationCase_ == 1012) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWS_SIGN_WITH_PROVIDER_FIELD_NUMBER = 1013;
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwsSignWithProvider() {
+    return operationCase_ == 1013;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwsSignWithProviderRequest getJwsSignWithProvider() {
+    if (operationCase_ == 1013) {
+       return (me.really.jose.v1.JoseJwsSignWithProviderRequest) operation_;
+    }
+    return me.really.jose.v1.JoseJwsSignWithProviderRequest.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+   */
+  private void setJwsSignWithProvider(me.really.jose.v1.JoseJwsSignWithProviderRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 1013;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+   */
+  private void mergeJwsSignWithProvider(me.really.jose.v1.JoseJwsSignWithProviderRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 1013 &&
+        operation_ != me.really.jose.v1.JoseJwsSignWithProviderRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJwsSignWithProviderRequest.newBuilder((me.really.jose.v1.JoseJwsSignWithProviderRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 1013;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+   */
+  private void clearJwsSignWithProvider() {
+    if (operationCase_ == 1013) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWS_VERIFY_WITH_PROVIDER_FIELD_NUMBER = 1014;
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwsVerifyWithProvider() {
+    return operationCase_ == 1014;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwsVerifyWithProviderRequest getJwsVerifyWithProvider() {
+    if (operationCase_ == 1014) {
+       return (me.really.jose.v1.JoseJwsVerifyWithProviderRequest) operation_;
+    }
+    return me.really.jose.v1.JoseJwsVerifyWithProviderRequest.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+   */
+  private void setJwsVerifyWithProvider(me.really.jose.v1.JoseJwsVerifyWithProviderRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 1014;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+   */
+  private void mergeJwsVerifyWithProvider(me.really.jose.v1.JoseJwsVerifyWithProviderRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 1014 &&
+        operation_ != me.really.jose.v1.JoseJwsVerifyWithProviderRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJwsVerifyWithProviderRequest.newBuilder((me.really.jose.v1.JoseJwsVerifyWithProviderRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 1014;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+   */
+  private void clearJwsVerifyWithProvider() {
+    if (operationCase_ == 1014) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWS_INSPECT_FIELD_NUMBER = 1015;
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwsInspect() {
+    return operationCase_ == 1015;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwsInspectRequest getJwsInspect() {
+    if (operationCase_ == 1015) {
+       return (me.really.jose.v1.JoseJwsInspectRequest) operation_;
+    }
+    return me.really.jose.v1.JoseJwsInspectRequest.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+   */
+  private void setJwsInspect(me.really.jose.v1.JoseJwsInspectRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 1015;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+   */
+  private void mergeJwsInspect(me.really.jose.v1.JoseJwsInspectRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 1015 &&
+        operation_ != me.really.jose.v1.JoseJwsInspectRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJwsInspectRequest.newBuilder((me.really.jose.v1.JoseJwsInspectRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 1015;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+   */
+  private void clearJwsInspect() {
+    if (operationCase_ == 1015) {
       operationCase_ = 0;
       operation_ = null;
     }
@@ -2393,6 +2552,150 @@ public  final class JoseOperationRequest extends
     }
 
     /**
+     * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwsSignWithProvider() {
+      return instance.hasJwsSignWithProvider();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwsSignWithProviderRequest getJwsSignWithProvider() {
+      return instance.getJwsSignWithProvider();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+     */
+    public Builder setJwsSignWithProvider(me.really.jose.v1.JoseJwsSignWithProviderRequest value) {
+      copyOnWrite();
+      instance.setJwsSignWithProvider(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+     */
+    public Builder setJwsSignWithProvider(
+        me.really.jose.v1.JoseJwsSignWithProviderRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwsSignWithProvider(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+     */
+    public Builder mergeJwsSignWithProvider(me.really.jose.v1.JoseJwsSignWithProviderRequest value) {
+      copyOnWrite();
+      instance.mergeJwsSignWithProvider(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+     */
+    public Builder clearJwsSignWithProvider() {
+      copyOnWrite();
+      instance.clearJwsSignWithProvider();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwsVerifyWithProvider() {
+      return instance.hasJwsVerifyWithProvider();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwsVerifyWithProviderRequest getJwsVerifyWithProvider() {
+      return instance.getJwsVerifyWithProvider();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+     */
+    public Builder setJwsVerifyWithProvider(me.really.jose.v1.JoseJwsVerifyWithProviderRequest value) {
+      copyOnWrite();
+      instance.setJwsVerifyWithProvider(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+     */
+    public Builder setJwsVerifyWithProvider(
+        me.really.jose.v1.JoseJwsVerifyWithProviderRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwsVerifyWithProvider(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+     */
+    public Builder mergeJwsVerifyWithProvider(me.really.jose.v1.JoseJwsVerifyWithProviderRequest value) {
+      copyOnWrite();
+      instance.mergeJwsVerifyWithProvider(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+     */
+    public Builder clearJwsVerifyWithProvider() {
+      copyOnWrite();
+      instance.clearJwsVerifyWithProvider();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwsInspect() {
+      return instance.hasJwsInspect();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwsInspectRequest getJwsInspect() {
+      return instance.getJwsInspect();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+     */
+    public Builder setJwsInspect(me.really.jose.v1.JoseJwsInspectRequest value) {
+      copyOnWrite();
+      instance.setJwsInspect(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+     */
+    public Builder setJwsInspect(
+        me.really.jose.v1.JoseJwsInspectRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwsInspect(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+     */
+    public Builder mergeJwsInspect(me.really.jose.v1.JoseJwsInspectRequest value) {
+      copyOnWrite();
+      instance.mergeJwsInspect(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsInspectRequest jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+     */
+    public Builder clearJwsInspect() {
+      copyOnWrite();
+      instance.clearJwsInspect();
+      return this;
+    }
+
+    /**
      * <pre>
      * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
      * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
@@ -2817,6 +3120,9 @@ public  final class JoseOperationRequest extends
             me.really.jose.v1.JoseSignatureSignRequest.class,
             me.really.jose.v1.JoseSignatureVerifyRequest.class,
             me.really.jose.v1.JoseSignatureSuiteInfoRequest.class,
+            me.really.jose.v1.JoseJwsSignWithProviderRequest.class,
+            me.really.jose.v1.JoseJwsVerifyWithProviderRequest.class,
+            me.really.jose.v1.JoseJwsInspectRequest.class,
             me.really.jose.v1.JoseJwtEncodeUnsignedRequest.class,
             me.really.jose.v1.JoseJwtDecodeUnsignedRequest.class,
             me.really.jose.v1.JoseJwtSignRequest.class,
@@ -2831,10 +3137,10 @@ public  final class JoseOperationRequest extends
             me.really.jose.v1.JoseContractInfoRequest.class,
           };
           java.lang.String info =
-              "\u0000\u0011\u0001\u0000\u03e8\u1b58\u0011\u0000\u0000\u0000\u03e8<\u0000\u03e9<" +
-              "\u0000\u03f2<\u0000\u03f3<\u0000\u03f4<\u0000\u07d0<\u0000\u07d1<\u0000\u07d2<\u0000" +
-              "\u07d3<\u0000\u07da<\u0000\u07db<\u0000\u0bb8<\u0000\u0bb9<\u0000\u0bc2<\u0000\u0bc3" +
-              "<\u0000\u0bc4<\u0000\u1b58<\u0000";
+              "\u0000\u0014\u0001\u0000\u03e8\u1b58\u0014\u0000\u0000\u0000\u03e8<\u0000\u03e9<" +
+              "\u0000\u03f2<\u0000\u03f3<\u0000\u03f4<\u0000\u03f5<\u0000\u03f6<\u0000\u03f7<\u0000" +
+              "\u07d0<\u0000\u07d1<\u0000\u07d2<\u0000\u07d3<\u0000\u07da<\u0000\u07db<\u0000\u0bb8" +
+              "<\u0000\u0bb9<\u0000\u0bc2<\u0000\u0bc3<\u0000\u0bc4<\u0000\u1b58<\u0000";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

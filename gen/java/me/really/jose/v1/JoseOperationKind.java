@@ -62,6 +62,30 @@ public enum JoseOperationKind
   JOSE_OPERATION_KIND_SIGNATURE_SUITE_INFO(1012),
   /**
    * <pre>
+   * Rust variant: JoseOperationKind.JwsSignWithProvider
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER = 1013;</code>
+   */
+  JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER(1013),
+  /**
+   * <pre>
+   * Rust variant: JoseOperationKind.JwsVerifyWithProvider
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER = 1014;</code>
+   */
+  JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER(1014),
+  /**
+   * <pre>
+   * Rust variant: JoseOperationKind.JwsInspect
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWS_INSPECT = 1015;</code>
+   */
+  JOSE_OPERATION_KIND_JWS_INSPECT(1015),
+  /**
+   * <pre>
    * Rust variant: JoseOperationKind.JwtEncodeUnsigned
    * </pre>
    *
@@ -205,6 +229,30 @@ public enum JoseOperationKind
   public static final int JOSE_OPERATION_KIND_SIGNATURE_SUITE_INFO_VALUE = 1012;
   /**
    * <pre>
+   * Rust variant: JoseOperationKind.JwsSignWithProvider
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER = 1013;</code>
+   */
+  public static final int JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER_VALUE = 1013;
+  /**
+   * <pre>
+   * Rust variant: JoseOperationKind.JwsVerifyWithProvider
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER = 1014;</code>
+   */
+  public static final int JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER_VALUE = 1014;
+  /**
+   * <pre>
+   * Rust variant: JoseOperationKind.JwsInspect
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWS_INSPECT = 1015;</code>
+   */
+  public static final int JOSE_OPERATION_KIND_JWS_INSPECT_VALUE = 1015;
+  /**
+   * <pre>
    * Rust variant: JoseOperationKind.JwtEncodeUnsigned
    * </pre>
    *
@@ -327,6 +375,9 @@ public enum JoseOperationKind
       case 1010: return JOSE_OPERATION_KIND_SIGNATURE_SIGN;
       case 1011: return JOSE_OPERATION_KIND_SIGNATURE_VERIFY;
       case 1012: return JOSE_OPERATION_KIND_SIGNATURE_SUITE_INFO;
+      case 1013: return JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER;
+      case 1014: return JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER;
+      case 1015: return JOSE_OPERATION_KIND_JWS_INSPECT;
       case 2000: return JOSE_OPERATION_KIND_JWT_ENCODE_UNSIGNED;
       case 2001: return JOSE_OPERATION_KIND_JWT_DECODE_UNSIGNED;
       case 2002: return JOSE_OPERATION_KIND_JWT_SIGN;

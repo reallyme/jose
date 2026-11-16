@@ -134,6 +134,15 @@ pub mod jose_operation_response {
                 super::super::super::JoseSignatureSuiteInfoResponse,
             >,
         ),
+        JwsSignWithProvider(
+            ::buffa::alloc::boxed::Box<super::super::super::JoseJwsSignResponse>,
+        ),
+        JwsVerifyWithProvider(
+            ::buffa::alloc::boxed::Box<super::super::super::JoseJwsVerifyResponse>,
+        ),
+        JwsInspect(
+            ::buffa::alloc::boxed::Box<super::super::super::JoseJwsInspectResponse>,
+        ),
         JwtSignWithProvider(
             ::buffa::alloc::boxed::Box<
                 super::super::super::JoseJwtSignWithProviderResponse,
@@ -203,6 +212,15 @@ pub mod jose_operation_response {
                 Self::SignatureSuiteInfo(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
+                Self::JwsSignWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsVerifyWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsInspect(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
                 Self::JwtSignWithProvider(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
@@ -239,28 +257,6 @@ pub mod jose_operation_response {
     impl ::core::convert::From<super::super::super::JoseError>
     for ::core::option::Option<Response> {
         fn from(v: super::super::super::JoseError) -> Self {
-            Self::Some(Response::from(v))
-        }
-    }
-    impl ::core::convert::From<super::super::super::JoseJwsSignResponse> for Response {
-        fn from(v: super::super::super::JoseJwsSignResponse) -> Self {
-            Self::JwsSign(::buffa::alloc::boxed::Box::new(v))
-        }
-    }
-    impl ::core::convert::From<super::super::super::JoseJwsSignResponse>
-    for ::core::option::Option<Response> {
-        fn from(v: super::super::super::JoseJwsSignResponse) -> Self {
-            Self::Some(Response::from(v))
-        }
-    }
-    impl ::core::convert::From<super::super::super::JoseJwsVerifyResponse> for Response {
-        fn from(v: super::super::super::JoseJwsVerifyResponse) -> Self {
-            Self::JwsVerify(::buffa::alloc::boxed::Box::new(v))
-        }
-    }
-    impl ::core::convert::From<super::super::super::JoseJwsVerifyResponse>
-    for ::core::option::Option<Response> {
-        fn from(v: super::super::super::JoseJwsVerifyResponse) -> Self {
             Self::Some(Response::from(v))
         }
     }
@@ -367,6 +363,18 @@ pub mod jose_operation_response {
     impl ::core::convert::From<super::super::super::JoseSignatureSuiteInfoResponse>
     for ::core::option::Option<Response> {
         fn from(v: super::super::super::JoseSignatureSuiteInfoResponse) -> Self {
+            Self::Some(Response::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsInspectResponse>
+    for Response {
+        fn from(v: super::super::super::JoseJwsInspectResponse) -> Self {
+            Self::JwsInspect(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsInspectResponse>
+    for ::core::option::Option<Response> {
+        fn from(v: super::super::super::JoseJwsInspectResponse) -> Self {
             Self::Some(Response::from(v))
         }
     }
@@ -486,6 +494,15 @@ pub mod jose_operation_response {
                 Self::SignatureSuiteInfo(v) => {
                     map.serialize_entry("signatureSuiteInfo", &**v)?;
                 }
+                Self::JwsSignWithProvider(v) => {
+                    map.serialize_entry("jwsSignWithProvider", &**v)?;
+                }
+                Self::JwsVerifyWithProvider(v) => {
+                    map.serialize_entry("jwsVerifyWithProvider", &**v)?;
+                }
+                Self::JwsInspect(v) => {
+                    map.serialize_entry("jwsInspect", &**v)?;
+                }
                 Self::JwtSignWithProvider(v) => {
                     map.serialize_entry("jwtSignWithProvider", &**v)?;
                 }
@@ -540,6 +557,19 @@ pub mod jose_operation_request {
             ::buffa::alloc::boxed::Box<
                 super::super::super::JoseSignatureSuiteInfoRequest,
             >,
+        ),
+        JwsSignWithProvider(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::JoseJwsSignWithProviderRequest,
+            >,
+        ),
+        JwsVerifyWithProvider(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::JoseJwsVerifyWithProviderRequest,
+            >,
+        ),
+        JwsInspect(
+            ::buffa::alloc::boxed::Box<super::super::super::JoseJwsInspectRequest>,
         ),
         JwtSignWithProvider(
             ::buffa::alloc::boxed::Box<
@@ -605,6 +635,15 @@ pub mod jose_operation_request {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::SignatureSuiteInfo(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsSignWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsVerifyWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsInspect(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JwtSignWithProvider(value) => {
@@ -763,6 +802,42 @@ pub mod jose_operation_request {
             Self::Some(Operation::from(v))
         }
     }
+    impl ::core::convert::From<super::super::super::JoseJwsSignWithProviderRequest>
+    for Operation {
+        fn from(v: super::super::super::JoseJwsSignWithProviderRequest) -> Self {
+            Self::JwsSignWithProvider(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsSignWithProviderRequest>
+    for ::core::option::Option<Operation> {
+        fn from(v: super::super::super::JoseJwsSignWithProviderRequest) -> Self {
+            Self::Some(Operation::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsVerifyWithProviderRequest>
+    for Operation {
+        fn from(v: super::super::super::JoseJwsVerifyWithProviderRequest) -> Self {
+            Self::JwsVerifyWithProvider(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsVerifyWithProviderRequest>
+    for ::core::option::Option<Operation> {
+        fn from(v: super::super::super::JoseJwsVerifyWithProviderRequest) -> Self {
+            Self::Some(Operation::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsInspectRequest>
+    for Operation {
+        fn from(v: super::super::super::JoseJwsInspectRequest) -> Self {
+            Self::JwsInspect(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsInspectRequest>
+    for ::core::option::Option<Operation> {
+        fn from(v: super::super::super::JoseJwsInspectRequest) -> Self {
+            Self::Some(Operation::from(v))
+        }
+    }
     impl ::core::convert::From<super::super::super::JoseJwtSignWithProviderRequest>
     for Operation {
         fn from(v: super::super::super::JoseJwtSignWithProviderRequest) -> Self {
@@ -876,6 +951,15 @@ pub mod jose_operation_request {
                 Self::SignatureSuiteInfo(v) => {
                     map.serialize_entry("signatureSuiteInfo", &**v)?;
                 }
+                Self::JwsSignWithProvider(v) => {
+                    map.serialize_entry("jwsSignWithProvider", &**v)?;
+                }
+                Self::JwsVerifyWithProvider(v) => {
+                    map.serialize_entry("jwsVerifyWithProvider", &**v)?;
+                }
+                Self::JwsInspect(v) => {
+                    map.serialize_entry("jwsInspect", &**v)?;
+                }
                 Self::JwtSignWithProvider(v) => {
                     map.serialize_entry("jwtSignWithProvider", &**v)?;
                 }
@@ -893,6 +977,76 @@ pub mod jose_operation_request {
                 }
                 Self::ContractInfo(v) => {
                     map.serialize_entry("contractInfo", &**v)?;
+                }
+            }
+            map.end()
+        }
+    }
+}
+pub mod jose_jws_inspect_response {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, PartialEq)]
+    pub enum Outcome {
+        Result(::buffa::alloc::boxed::Box<super::super::super::JoseInspectedCompactJws>),
+        Error(::buffa::alloc::boxed::Box<super::super::super::JoseError>),
+    }
+    impl ::core::fmt::Debug for Outcome {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.write_str("Outcome([REDACTED])")
+        }
+    }
+    impl ::buffa::sensitive::Zeroize for Outcome {
+        fn zeroize(&mut self) {
+            match self {
+                Self::Result(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Error(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+            }
+        }
+    }
+    impl ::buffa::sensitive::ZeroizeOnDrop for Outcome {}
+    impl ::core::ops::Drop for Outcome {
+        fn drop(&mut self) {
+            ::buffa::sensitive::Zeroize::zeroize(self);
+        }
+    }
+    impl ::buffa::Oneof for Outcome {}
+    impl ::core::convert::From<super::super::super::JoseInspectedCompactJws>
+    for Outcome {
+        fn from(v: super::super::super::JoseInspectedCompactJws) -> Self {
+            Self::Result(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseInspectedCompactJws>
+    for ::core::option::Option<Outcome> {
+        fn from(v: super::super::super::JoseInspectedCompactJws) -> Self {
+            Self::Some(Outcome::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseError> for Outcome {
+        fn from(v: super::super::super::JoseError) -> Self {
+            Self::Error(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseError>
+    for ::core::option::Option<Outcome> {
+        fn from(v: super::super::super::JoseError) -> Self {
+            Self::Some(Outcome::from(v))
+        }
+    }
+    impl ::serde::Serialize for Outcome {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            s: __S,
+        ) -> ::core::result::Result<__S::Ok, __S::Error> {
+            use ::serde::ser::SerializeMap;
+            let mut map = s.serialize_map(Some(1))?;
+            match self {
+                Self::Result(v) => {
+                    map.serialize_entry("result", &**v)?;
+                }
+                Self::Error(v) => {
+                    map.serialize_entry("error", &**v)?;
                 }
             }
             map.end()

@@ -20,6 +20,12 @@ pub enum JoseOperationKind {
     SignatureVerify,
     /// Schema-defined SignatureSuiteInfo identity.
     SignatureSuiteInfo,
+    /// Schema-defined JwsSignWithProvider identity.
+    JwsSignWithProvider,
+    /// Schema-defined JwsVerifyWithProvider identity.
+    JwsVerifyWithProvider,
+    /// Schema-defined JwsInspect identity.
+    JwsInspect,
     /// Schema-defined JwtEncodeUnsigned identity.
     JwtEncodeUnsigned,
     /// Schema-defined JwtDecodeUnsigned identity.
@@ -57,6 +63,13 @@ impl TryFrom<buffa::EnumValue<crate::api::contract::JoseOperationKind>> for Jose
             Some(Contract::JOSE_OPERATION_KIND_SIGNATURE_SUITE_INFO) => {
                 Ok(Self::SignatureSuiteInfo)
             }
+            Some(Contract::JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER) => {
+                Ok(Self::JwsSignWithProvider)
+            }
+            Some(Contract::JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER) => {
+                Ok(Self::JwsVerifyWithProvider)
+            }
+            Some(Contract::JOSE_OPERATION_KIND_JWS_INSPECT) => Ok(Self::JwsInspect),
             Some(Contract::JOSE_OPERATION_KIND_JWT_ENCODE_UNSIGNED) => Ok(Self::JwtEncodeUnsigned),
             Some(Contract::JOSE_OPERATION_KIND_JWT_DECODE_UNSIGNED) => Ok(Self::JwtDecodeUnsigned),
             Some(Contract::JOSE_OPERATION_KIND_JWT_SIGN) => Ok(Self::JwtSign),
@@ -90,6 +103,13 @@ impl From<JoseOperationKind> for Contract {
             JoseOperationKind::SignatureSign => Self::JOSE_OPERATION_KIND_SIGNATURE_SIGN,
             JoseOperationKind::SignatureVerify => Self::JOSE_OPERATION_KIND_SIGNATURE_VERIFY,
             JoseOperationKind::SignatureSuiteInfo => Self::JOSE_OPERATION_KIND_SIGNATURE_SUITE_INFO,
+            JoseOperationKind::JwsSignWithProvider => {
+                Self::JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER
+            }
+            JoseOperationKind::JwsVerifyWithProvider => {
+                Self::JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER
+            }
+            JoseOperationKind::JwsInspect => Self::JOSE_OPERATION_KIND_JWS_INSPECT,
             JoseOperationKind::JwtEncodeUnsigned => Self::JOSE_OPERATION_KIND_JWT_ENCODE_UNSIGNED,
             JoseOperationKind::JwtDecodeUnsigned => Self::JOSE_OPERATION_KIND_JWT_DECODE_UNSIGNED,
             JoseOperationKind::JwtSign => Self::JOSE_OPERATION_KIND_JWT_SIGN,

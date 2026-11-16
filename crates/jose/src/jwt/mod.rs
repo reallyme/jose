@@ -28,7 +28,7 @@ pub use alg::algorithm_from_jwt_alg;
 mod parse_compact;
 mod select_algorithm;
 pub(crate) mod sign;
-mod strict_json;
+pub(crate) mod strict_json;
 pub(crate) mod unsigned;
 mod validate_header;
 mod validate_registered_claims;

@@ -7,6 +7,7 @@ use reallyme_jose::api::contract::__buffa::oneof::{
     jose_jwe_decrypt_with_provider_response::Outcome as JweDecryptWithProviderOutcome,
     jose_jwe_derive_key_response::Outcome as JweDeriveKeyOutcome,
     jose_jwe_encrypt_with_provider_response::Outcome as JweEncryptWithProviderOutcome,
+    jose_jws_inspect_response::Outcome as JwsInspectOutcome,
     jose_jwt_claims_parse_response::Outcome as JwtClaimsParseOutcome,
     jose_jwt_sign_with_provider_response::Outcome as JwtSignWithProviderOutcome,
     jose_signature_sign_response::Outcome as SignatureSignOutcome,
@@ -58,15 +59,20 @@ fn normalize_response(response: JoseOperationResponse) -> Vec<u8> {
     };
     match response {
         Response::BoundaryError(error) => normalized_error(error),
-        Response::JwsSign(response) => match response.outcome.as_ref() {
+        Response::JwsSign(response) | Response::JwsSignWithProvider(response) => match response.outcome.as_ref() {
             Some(JwsSignOutcome::Result(result)) => normalized_result(result.as_ref()),
             Some(JwsSignOutcome::Error(error)) => normalized_error(error),
             None => panic!("JWS sign response omitted its outcome"),
         },
-        Response::JwsVerify(response) => match response.outcome.as_ref() {
+        Response::JwsVerify(response) | Response::JwsVerifyWithProvider(response) => match response.outcome.as_ref() {
             Some(JwsVerifyOutcome::Result(result)) => normalized_result(result.as_ref()),
             Some(JwsVerifyOutcome::Error(error)) => normalized_error(error),
             None => panic!("JWS verify response omitted its outcome"),
+        },
+        Response::JwsInspect(response) => match response.outcome.as_ref() {
+            Some(JwsInspectOutcome::Result(result)) => normalized_result(result.as_ref()),
+            Some(JwsInspectOutcome::Error(error)) => normalized_error(error),
+            None => panic!("JWS inspect response omitted its outcome"),
         },
         Response::JwtEncodeUnsigned(response) => match response.outcome.as_ref() {
             Some(JwtEncodeUnsignedOutcome::Result(result)) => normalized_result(result.as_ref()),

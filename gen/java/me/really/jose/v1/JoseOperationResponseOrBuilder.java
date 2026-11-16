@@ -186,6 +186,39 @@ public interface JoseOperationResponseOrBuilder extends
   me.really.jose.v1.JoseSignatureSuiteInfoResponse getSignatureSuiteInfo();
 
   /**
+   * <code>.reallyme.jose.v1.JoseJwsSignResponse jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+   * @return Whether the jwsSignWithProvider field is set.
+   */
+  boolean hasJwsSignWithProvider();
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsSignResponse jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];</code>
+   * @return The jwsSignWithProvider.
+   */
+  me.really.jose.v1.JoseJwsSignResponse getJwsSignWithProvider();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsVerifyResponse jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+   * @return Whether the jwsVerifyWithProvider field is set.
+   */
+  boolean hasJwsVerifyWithProvider();
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsVerifyResponse jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];</code>
+   * @return The jwsVerifyWithProvider.
+   */
+  me.really.jose.v1.JoseJwsVerifyResponse getJwsVerifyWithProvider();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsInspectResponse jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+   * @return Whether the jwsInspect field is set.
+   */
+  boolean hasJwsInspect();
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsInspectResponse jws_inspect = 1015 [json_name = "jwsInspect"];</code>
+   * @return The jwsInspect.
+   */
+  me.really.jose.v1.JoseJwsInspectResponse getJwsInspect();
+
+  /**
    * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
    * @return Whether the jwtSignWithProvider field is set.
    */

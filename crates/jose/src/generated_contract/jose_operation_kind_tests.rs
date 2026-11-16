@@ -31,6 +31,18 @@ fn schema_parity_and_invalid_values() {
             JoseOperationKind::SignatureSuiteInfo,
         ),
         (
+            Contract::JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER,
+            JoseOperationKind::JwsSignWithProvider,
+        ),
+        (
+            Contract::JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER,
+            JoseOperationKind::JwsVerifyWithProvider,
+        ),
+        (
+            Contract::JOSE_OPERATION_KIND_JWS_INSPECT,
+            JoseOperationKind::JwsInspect,
+        ),
+        (
             Contract::JOSE_OPERATION_KIND_JWT_ENCODE_UNSIGNED,
             JoseOperationKind::JwtEncodeUnsigned,
         ),

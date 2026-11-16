@@ -4,6 +4,7 @@
 
 // Derived from the protobuf contract. Change the schema and regenerate.
 
+mod external_jws_algorithm;
 mod jose_operation_kind;
 mod jose_wire_error_branch;
 mod jwe_compression_algorithm;
@@ -16,6 +17,7 @@ mod jwt_registered_claim;
 mod jwt_temporal_claim;
 pub(crate) mod policy_defaults;
 
+pub use external_jws_algorithm::ExternalJwsAlgorithm;
 pub use jose_operation_kind::JoseOperationKind;
 pub use jose_wire_error_branch::JoseWireErrorBranch;
 pub use jwe_compression_algorithm::JweCompressionAlgorithm;

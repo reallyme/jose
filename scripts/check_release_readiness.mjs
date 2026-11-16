@@ -75,12 +75,14 @@ runNodeCheck("scripts/generate-jose-proto.test.mjs");
 runNodeCheck("scripts/maven_central_bundle.test.mjs");
 runNodeCheck("scripts/release_crate_archives.test.mjs");
 
-const crateVersion = "0.5.0";
-const protoCrateVersion = "0.5.0";
+const crateVersion = "0.5.1";
+const protoCrateVersion = "0.5.1";
 const buffaVersion = "0.1.2";
 const cryptoVersion = "0.4.2";
 const codecVersion = "0.4.3";
 const npmPackageVersion = "0.5.0";
+// Swift's binary pin tracks its independently published XCFramework.
+const linkedSwiftFfiVersion = "0.5.0";
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
 const releaseReadinessCommit = "55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f";
 // The existing 0.5.0 evidence qualifies a source tree with the 0.9.4 CI layout.
@@ -1326,7 +1328,7 @@ assertContains("Package.swift", '.iOS(.v16)');
 assertContains("Package.swift", 'name: "ReallyMeJOSE"');
 assertContains("Package.swift", 'exact: "1.39.0"');
 assertContains("Package.swift", 'path: "gen/swift"');
-assertContains("Package.swift", `ffiArtifactVersion = "${crateVersion}"`);
+assertContains("Package.swift", `ffiArtifactVersion = "${linkedSwiftFfiVersion}"`);
 assertContains("Package.swift", 'ffiArtifactLocalPathOverride = ""');
 assertNotContains("Package.swift", "0000000000000000000000000000000000000000000000000000000000000000");
 assertContains("Package.swift", "REALLYME_JOSE_SWIFTPM_RUNTIME_FFI");

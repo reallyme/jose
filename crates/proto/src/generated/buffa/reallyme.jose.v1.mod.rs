@@ -39,6 +39,11 @@ pub mod __buffa {
         reg.register_json_any(super::__JOSE_BACKEND_ERROR_JSON_ANY);
         reg.register_json_any(super::__JOSE_OPERATION_RESPONSE_JSON_ANY);
         reg.register_json_any(super::__JOSE_OPERATION_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_SIGN_WITH_PROVIDER_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_INSPECT_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__JOSE_INSPECTED_COMPACT_JWS_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_INSPECT_RESPONSE_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_VERIFY_WITH_PROVIDER_REQUEST_JSON_ANY);
         reg.register_json_any(super::__JOSE_JWS_SIGN_REQUEST_JSON_ANY);
         reg.register_json_any(super::__JOSE_COMPACT_RESULT_JSON_ANY);
         reg.register_json_any(super::__JOSE_JWS_VERIFY_REQUEST_JSON_ANY);
@@ -127,6 +132,16 @@ pub use self::__buffa::view::JoseBackendErrorView;
 pub use self::__buffa::view::JoseOperationResponseView;
 #[doc(inline)]
 pub use self::__buffa::view::JoseOperationRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsSignWithProviderRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsInspectRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseInspectedCompactJwsView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsInspectResponseView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsVerifyWithProviderRequestView;
 #[doc(inline)]
 pub use self::__buffa::view::JoseJwsSignRequestView;
 #[doc(inline)]

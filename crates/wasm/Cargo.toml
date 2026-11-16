@@ -16,7 +16,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 js-sys = { workspace = true }
-reallyme-jose = { version = "=0.5.0", path = "../jose", default-features = false, features = ["wasm", "wire"] }
+reallyme-jose = { version = "=0.5.1", path = "../jose", default-features = false, features = ["wasm", "wire"] }
 reallyme-crypto = { workspace = true, features = ["csprng", "wasm"] }
 wasm-bindgen = { workspace = true }
 zeroize = { workspace = true }

@@ -31,7 +31,7 @@ use super::{
 };
 use crate::operation_contract::protobuf::{
     decode_unsigned_jwt_request, decrypt_jwe_request, encode_unsigned_jwt_request,
-    encrypt_jwe_request, sign_jws_request, sign_jwt_request, verify_jws_request,
+    encrypt_jwe_request, jws_provider, sign_jws_request, sign_jwt_request, verify_jws_request,
     verify_jwt_request,
 };
 use crate::SecureRandom;
@@ -84,6 +84,15 @@ pub fn execute_operation_request_with_providers<R: SecureRandom + ?Sized>(
             jws_sign_response(sign_jws_request(core::mem::take(request.as_mut())))
         }
         RequestOperation::JwsVerify(request) => jws_verify_response(verify_jws_request(request)),
+        RequestOperation::JwsSignWithProvider(request) => {
+            jws_sign_with_provider_response(jws_provider::sign(request, providers))
+        }
+        RequestOperation::JwsVerifyWithProvider(request) => {
+            jws_verify_with_provider_response(jws_provider::verify(request, providers))
+        }
+        RequestOperation::JwsInspect(request) => {
+            jws_inspect_response(crate::jws::inspect_compact_jws(request))
+        }
         RequestOperation::JwtEncodeUnsigned(request) => jwt_encode_unsigned_response(
             encode_unsigned_jwt_request(core::mem::take(request.as_mut())),
         ),
@@ -206,6 +215,30 @@ fn validate_response(
             match &response.outcome {
                 Some(JwsVerifyOutcome::Result(_)) => Ok(()),
                 Some(JwsVerifyOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+        Response::JwsSignWithProvider(response) => {
+            require_operation(expected_operation, JoseOperationKind::JwsSignWithProvider)?;
+            match response.outcome.as_ref() {
+                Some(JwsSignOutcome::Result(_)) => Ok(()),
+                Some(JwsSignOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+        Response::JwsVerifyWithProvider(response) => {
+            require_operation(expected_operation, JoseOperationKind::JwsVerifyWithProvider)?;
+            match response.outcome.as_ref() {
+                Some(JwsVerifyOutcome::Result(_)) => Ok(()),
+                Some(JwsVerifyOutcome::Error(error)) => validate_response_error(error),
+                None => Err(backend_output_error()),
+            }
+        }
+        Response::JwsInspect(response) => {
+            require_operation(expected_operation, JoseOperationKind::JwsInspect)?;
+            match response.outcome.as_ref() {
+                Some(JwsInspectOutcome::Result(_)) => Ok(()),
+                Some(JwsInspectOutcome::Error(error)) => validate_response_error(error),
                 None => Err(backend_output_error()),
             }
         }
@@ -396,6 +429,9 @@ fn operation_scoped_backend_error(mut response: JoseOperationResponse) -> JoseOp
     match response.response.take() {
         Some(Response::JwsSign(_)) => jws_sign_response(Err(error)),
         Some(Response::JwsVerify(_)) => jws_verify_response(Err(error)),
+        Some(Response::JwsSignWithProvider(_)) => jws_sign_with_provider_response(Err(error)),
+        Some(Response::JwsVerifyWithProvider(_)) => jws_verify_with_provider_response(Err(error)),
+        Some(Response::JwsInspect(_)) => jws_inspect_response(Err(error)),
         Some(Response::JwtEncodeUnsigned(_)) => jwt_encode_unsigned_response(Err(error)),
         Some(Response::JwtDecodeUnsigned(_)) => jwt_decode_unsigned_response(Err(error)),
         Some(Response::JwtSign(_)) => jwt_sign_response(Err(error)),
@@ -437,6 +473,7 @@ use crate::api::contract::__buffa::oneof::{
     jose_jwe_decrypt_with_provider_response::Outcome as JweDecryptWithProviderOutcome,
     jose_jwe_derive_key_response::Outcome as JweDeriveKeyOutcome,
     jose_jwe_encrypt_with_provider_response::Outcome as JweEncryptWithProviderOutcome,
+    jose_jws_inspect_response::Outcome as JwsInspectOutcome,
     jose_jwt_claims_parse_response::Outcome as JwtClaimsParseOutcome,
     jose_jwt_sign_with_provider_response::Outcome as JwtSignWithProviderOutcome,
     jose_signature_sign_response::Outcome as SignatureSignOutcome,
@@ -448,10 +485,11 @@ mod build_response;
 use build_response::{
     contract_info_response, jwe_decrypt_response, jwe_decrypt_with_provider_response,
     jwe_derive_key_response, jwe_encrypt_response, jwe_encrypt_with_provider_response,
-    jws_sign_response, jws_verify_response, jwt_claims_parse_response,
-    jwt_decode_unsigned_response, jwt_encode_unsigned_response, jwt_sign_response,
-    jwt_sign_with_provider_response, jwt_verify_response, signature_sign_response,
-    signature_suite_info_response, signature_verify_response,
+    jws_inspect_response, jws_sign_response, jws_sign_with_provider_response, jws_verify_response,
+    jws_verify_with_provider_response, jwt_claims_parse_response, jwt_decode_unsigned_response,
+    jwt_encode_unsigned_response, jwt_sign_response, jwt_sign_with_provider_response,
+    jwt_verify_response, signature_sign_response, signature_suite_info_response,
+    signature_verify_response,
 };
 
 #[cfg(kani)]

@@ -6,10 +6,12 @@
 
 use core::num::NonZeroU64;
 
+use crate::api::contract::{JoseExternalJwsAlgorithm, JoseInspectedCompactJws};
 use crate::jwe::{JweContentEncryptionKeyEncryptor, JweContentEncryptionKeyResolver};
 use crate::wire::proto::proto::reallyme::jose::v1::JoseErrorReason;
 use crate::wire::{JoseWireError, JoseWireResult};
 use crate::Signer;
+use zeroize::Zeroizing;
 
 const fn unavailable() -> JoseWireError {
     JoseWireError::provider_internal(JoseErrorReason::ProviderUnavailable)
@@ -25,6 +27,32 @@ pub trait OperationProviders {
     /// # Errors
     /// Returns a fixed provider failure when the capability is unavailable.
     fn signer(&self, _handle: NonZeroU64) -> JoseWireResult<&dyn Signer> {
+        Err(unavailable())
+    }
+
+    /// Signs exact compact JWS input and returns JOSE wire signature bytes.
+    /// The provider must bind the handle to the selected algorithm.
+    /// # Errors
+    /// Returns a fixed failure when the capability cannot sign for the algorithm.
+    fn sign_compact_jws(
+        &self,
+        _handle: NonZeroU64,
+        _algorithm: JoseExternalJwsAlgorithm,
+        _signing_input: &[u8],
+    ) -> JoseWireResult<Zeroizing<Vec<u8>>> {
+        Err(unavailable())
+    }
+
+    /// Verifies compact JWS against the key authorized for this handle and algorithm.
+    /// # Errors
+    /// Returns a fixed error if the capability is unavailable or authentication fails.
+    fn verify_compact_jws(
+        &self,
+        _handle: NonZeroU64,
+        _algorithm: JoseExternalJwsAlgorithm,
+        _signing_input: &[u8],
+        _input: &JoseInspectedCompactJws,
+    ) -> JoseWireResult<()> {
         Err(unavailable())
     }
 

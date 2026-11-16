@@ -399,6 +399,78 @@ public object JoseOperationResponseKt {
     }
 
     /**
+     * `.reallyme.jose.v1.JoseJwsSignResponse jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];`
+     */
+    public var jwsSignWithProvider: me.really.jose.v1.JoseJwsSignResponse
+      @kotlin.jvm.JvmName("getJwsSignWithProvider")
+        get() = _builder.jwsSignWithProvider
+      @kotlin.jvm.JvmName("setJwsSignWithProvider")
+        set(value) {
+        _builder.jwsSignWithProvider = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseJwsSignResponse jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];`
+     */
+    public fun clearJwsSignWithProvider() {
+      _builder.clearJwsSignWithProvider()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseJwsSignResponse jws_sign_with_provider = 1013 [json_name = "jwsSignWithProvider"];`
+     * @return Whether the jwsSignWithProvider field is set.
+     */
+    public fun hasJwsSignWithProvider(): kotlin.Boolean {
+      return _builder.hasJwsSignWithProvider()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseJwsVerifyResponse jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];`
+     */
+    public var jwsVerifyWithProvider: me.really.jose.v1.JoseJwsVerifyResponse
+      @kotlin.jvm.JvmName("getJwsVerifyWithProvider")
+        get() = _builder.jwsVerifyWithProvider
+      @kotlin.jvm.JvmName("setJwsVerifyWithProvider")
+        set(value) {
+        _builder.jwsVerifyWithProvider = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseJwsVerifyResponse jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];`
+     */
+    public fun clearJwsVerifyWithProvider() {
+      _builder.clearJwsVerifyWithProvider()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseJwsVerifyResponse jws_verify_with_provider = 1014 [json_name = "jwsVerifyWithProvider"];`
+     * @return Whether the jwsVerifyWithProvider field is set.
+     */
+    public fun hasJwsVerifyWithProvider(): kotlin.Boolean {
+      return _builder.hasJwsVerifyWithProvider()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseJwsInspectResponse jws_inspect = 1015 [json_name = "jwsInspect"];`
+     */
+    public var jwsInspect: me.really.jose.v1.JoseJwsInspectResponse
+      @kotlin.jvm.JvmName("getJwsInspect")
+        get() = _builder.jwsInspect
+      @kotlin.jvm.JvmName("setJwsInspect")
+        set(value) {
+        _builder.jwsInspect = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseJwsInspectResponse jws_inspect = 1015 [json_name = "jwsInspect"];`
+     */
+    public fun clearJwsInspect() {
+      _builder.clearJwsInspect()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseJwsInspectResponse jws_inspect = 1015 [json_name = "jwsInspect"];`
+     * @return Whether the jwsInspect field is set.
+     */
+    public fun hasJwsInspect(): kotlin.Boolean {
+      return _builder.hasJwsInspect()
+    }
+
+    /**
      * `.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];`
      */
     public var jwtSignWithProvider: me.really.jose.v1.JoseJwtSignWithProviderResponse
@@ -588,6 +660,15 @@ public val me.really.jose.v1.JoseOperationResponseOrBuilder.signatureVerifyOrNul
 
 public val me.really.jose.v1.JoseOperationResponseOrBuilder.signatureSuiteInfoOrNull: me.really.jose.v1.JoseSignatureSuiteInfoResponse?
   get() = if (hasSignatureSuiteInfo()) getSignatureSuiteInfo() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.jwsSignWithProviderOrNull: me.really.jose.v1.JoseJwsSignResponse?
+  get() = if (hasJwsSignWithProvider()) getJwsSignWithProvider() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.jwsVerifyWithProviderOrNull: me.really.jose.v1.JoseJwsVerifyResponse?
+  get() = if (hasJwsVerifyWithProvider()) getJwsVerifyWithProvider() else null
+
+public val me.really.jose.v1.JoseOperationResponseOrBuilder.jwsInspectOrNull: me.really.jose.v1.JoseJwsInspectResponse?
+  get() = if (hasJwsInspect()) getJwsInspect() else null
 
 public val me.really.jose.v1.JoseOperationResponseOrBuilder.jwtSignWithProviderOrNull: me.really.jose.v1.JoseJwtSignWithProviderResponse?
   get() = if (hasJwtSignWithProvider()) getJwtSignWithProvider() else null

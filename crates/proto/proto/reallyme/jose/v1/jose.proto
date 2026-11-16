@@ -397,6 +397,9 @@ message JoseOperationResponse {
     JoseSignatureSignResponse signature_sign = 1010;
     JoseSignatureVerifyResponse signature_verify = 1011;
     JoseSignatureSuiteInfoResponse signature_suite_info = 1012;
+    JoseJwsSignResponse jws_sign_with_provider = 1013;
+    JoseJwsVerifyResponse jws_verify_with_provider = 1014;
+    JoseJwsInspectResponse jws_inspect = 1015;
     JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010;
     JoseJwtClaimsParseResponse jwt_claims_parse = 2011;
     JoseJweDeriveKeyResponse jwe_derive_key = 3010;
@@ -468,6 +471,9 @@ message JoseOperationRequest {
     JoseSignatureVerifyRequest signature_verify = 1011;
     // Rust adapter: jwt/select_algorithm.rs#algorithm_from_jwt_alg
     JoseSignatureSuiteInfoRequest signature_suite_info = 1012;
+    JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013;
+    JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014;
+    JoseJwsInspectRequest jws_inspect = 1015;
     // Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
     // Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
     JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010;
@@ -482,6 +488,89 @@ message JoseOperationRequest {
     JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012;
     JoseContractInfoRequest contract_info = 7000;
   }
+}
+
+// External signature registrations available to an injected provider. These
+// registrations do not enable a built-in signature implementation.
+// Rust selector: ExternalJwsAlgorithm; public; primitive; JWS_HEADER_MISMATCH
+enum JoseExternalJwsAlgorithm {
+  JOSE_EXTERNAL_JWS_ALGORITHM_UNSPECIFIED = 0;
+  // Rust variant: ExternalJwsAlgorithm.Es256; label=ES256
+  JOSE_EXTERNAL_JWS_ALGORITHM_ES256 = 100;
+  // Rust variant: ExternalJwsAlgorithm.Es384; label=ES384
+  JOSE_EXTERNAL_JWS_ALGORITHM_ES384 = 101;
+  // Rust variant: ExternalJwsAlgorithm.Es512; label=ES512
+  JOSE_EXTERNAL_JWS_ALGORITHM_ES512 = 102;
+  // Rust variant: ExternalJwsAlgorithm.Es256k; label=ES256K
+  JOSE_EXTERNAL_JWS_ALGORITHM_ES256K = 103;
+  // Rust variant: ExternalJwsAlgorithm.EdDsa; label=EdDSA
+  JOSE_EXTERNAL_JWS_ALGORITHM_EDDSA = 104;
+  // Rust variant: ExternalJwsAlgorithm.Ps256; label=PS256
+  JOSE_EXTERNAL_JWS_ALGORITHM_PS256 = 105;
+  // Rust variant: ExternalJwsAlgorithm.Ps384; label=PS384
+  JOSE_EXTERNAL_JWS_ALGORITHM_PS384 = 106;
+  // Rust variant: ExternalJwsAlgorithm.Ps512; label=PS512
+  JOSE_EXTERNAL_JWS_ALGORITHM_PS512 = 107;
+  // Rust variant: ExternalJwsAlgorithm.Rs256; label=RS256
+  JOSE_EXTERNAL_JWS_ALGORITHM_RS256 = 108;
+  // Rust variant: ExternalJwsAlgorithm.Rs384; label=RS384
+  JOSE_EXTERNAL_JWS_ALGORITHM_RS384 = 109;
+  // Rust variant: ExternalJwsAlgorithm.Rs512; label=RS512
+  JOSE_EXTERNAL_JWS_ALGORITHM_RS512 = 110;
+}
+
+// Sign attached compact JWS with exact caller-supplied protected-header bytes.
+// The provider must return the JOSE wire signature encoding for the algorithm.
+// Rust adapter: jws/provider.rs#external_jws_algorithm
+// Rust adapter: jws/provider.rs#sign_compact_jws_with_provider
+message JoseJwsSignWithProviderRequest {
+  // SENSITIVE: exact protected-header JSON, including caller metadata.
+  bytes protected_header_json = 1;
+  // SENSITIVE: attached content.
+  bytes payload = 2;
+  JoseExternalJwsAlgorithm algorithm = 3;
+  // SENSITIVE: caller-local capability, required for operation dispatch.
+  optional uint64 signer_handle = 4;
+  optional uint32 max_compact_bytes = 5;
+  bool allow_embedded_jwk = 6;
+}
+
+// Inspect compact framing and canonical base64url without authenticating it.
+// Rust adapter: jws/provider.rs#inspect_compact_jws
+// Rust adapter: jws/provider.rs#compact_jws_signing_parts
+message JoseJwsInspectRequest {
+  // SENSITIVE: complete compact input.
+  string compact = 1;
+  optional uint32 max_compact_bytes = 2;
+}
+
+// Unauthenticated observations for caller-owned verification.
+message JoseInspectedCompactJws {
+  // SENSITIVE: decoded protected-header JSON.
+  bytes protected_header_json = 1;
+  // SENSITIVE: decoded attached payload.
+  bytes payload = 2;
+  // Number of leading compact bytes covered by the signature.
+  uint32 signing_input_len = 3;
+  // SENSITIVE: received JOSE signature bytes.
+  bytes signature = 4;
+}
+
+message JoseJwsInspectResponse {
+  oneof outcome {
+    JoseInspectedCompactJws result = 1;
+    JoseError error = 2;
+  }
+}
+
+// Authenticate compact JWS with a caller-local signature verifier. An allowed
+// embedded JWK is profile data. The verifier selects and binds the trusted key.
+// Rust adapter: jws/provider.rs#verify_compact_jws_with_provider
+message JoseJwsVerifyWithProviderRequest {
+  JoseJwsInspectRequest input = 1;
+  // SENSITIVE: caller-local capability, required for operation dispatch.
+  optional uint64 verifier_handle = 2;
+  bool allow_embedded_jwk = 3;
 }
 
 message JoseJwsSignRequest {
@@ -1056,6 +1145,12 @@ enum JoseOperationKind {
   JOSE_OPERATION_KIND_SIGNATURE_VERIFY = 1011;
   // Rust variant: JoseOperationKind.SignatureSuiteInfo
   JOSE_OPERATION_KIND_SIGNATURE_SUITE_INFO = 1012;
+  // Rust variant: JoseOperationKind.JwsSignWithProvider
+  JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER = 1013;
+  // Rust variant: JoseOperationKind.JwsVerifyWithProvider
+  JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER = 1014;
+  // Rust variant: JoseOperationKind.JwsInspect
+  JOSE_OPERATION_KIND_JWS_INSPECT = 1015;
   // Rust variant: JoseOperationKind.JwtEncodeUnsigned
   JOSE_OPERATION_KIND_JWT_ENCODE_UNSIGNED = 2000;
   // Rust variant: JoseOperationKind.JwtDecodeUnsigned
