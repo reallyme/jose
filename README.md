@@ -69,10 +69,9 @@ ECDH-ES cases are retained in its matrix and must return the typed
 Package publication is split into unprivileged preflight and credentialed
 promotion workflows. Dispatch each package preflight with the version and full
 `source_sha` while `main` points at the release commit. The preflights require
-successful Required CI for that SHA. The GitHub publish forms default to the
-version and full source SHA qualified by the 0.5.0 preflights. For another
-candidate, use the values or `gh workflow run` command in that ecosystem's
-successful preflight summary. The publish workflows promote the exact preflight
+successful Required CI for that SHA. Use the version and full source SHA or
+the `gh workflow run` command from that ecosystem's successful preflight
+summary. The publish workflows promote the exact preflight
 artifacts and verify their digests or native inventory before upload.
 
 The Android lane tests a minified consumer against the staged AAR. Maven
@@ -144,7 +143,7 @@ reallyme-jose = "0.5.1"
 ```
 
 ```sh
-npm install @reallyme/jose@0.5.0
+npm install @reallyme/jose@0.5.1
 ```
 
 ## Supported JOSE Surface

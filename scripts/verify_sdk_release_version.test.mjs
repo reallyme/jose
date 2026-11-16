@@ -22,13 +22,20 @@ const writeFixture = (root, overrides = new Map()) => {
       "crates/ffi/Cargo.toml",
       `version = "${releaseVersion}"\nreallyme-jose = { version = "${releaseVersion}", path = "../jose" }\n`,
     ],
-    ["crates/wasm/Cargo.toml", `version = "${releaseVersion}"\n`],
+    [
+      "crates/wasm/Cargo.toml",
+      `version = "${releaseVersion}"\nreallyme-jose = { version = "=${releaseVersion}", path = "../jose" }\n`,
+    ],
     ["packages/kotlin/build.gradle.kts", `version = "${releaseVersion}"\n`],
     ["packages/kotlin-android/build.gradle.kts", `version = "${releaseVersion}"\n`],
-    ["Package.swift", `let ffiArtifactVersion = "${releaseVersion}"\n`],
+    ["Package.swift", `let ffiArtifactVersion = "0.2.0"\nlet ffiReleaseVersion = "${releaseVersion}"\n`],
     [
       "packages/ts/package.json",
       `{\n  "version": "${releaseVersion}",\n  "name": "@reallyme/jose"\n}\n`,
+    ],
+    [
+      "packages/ts/package-lock.json",
+      JSON.stringify({ version: releaseVersion, packages: { "": { version: releaseVersion } } }),
     ],
   ]);
   for (const [path, content] of overrides) files.set(path, content);
@@ -84,6 +91,33 @@ test("rejects a stale TypeScript package version", () => {
   );
   assert.equal(result.status, 1);
   assert.match(result.stderr, /packages\/ts\/package\.json is not bound to 0\.3\.0/u);
+});
+
+test("rejects a WASM manifest whose internal JOSE dependency is stale", () => {
+  const result = runVerifier(new Map([[
+    "crates/wasm/Cargo.toml",
+    `version = "${releaseVersion}"\nreallyme-jose = { version = "=0.2.0", path = "../jose" }\n`,
+  ]]));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /crates\/wasm\/Cargo\.toml is not bound to 0\.3\.0/u);
+});
+
+test("checks the Swift release version independently of the published binary pin", () => {
+  const result = runVerifier(new Map([[
+    "Package.swift",
+    `let ffiArtifactVersion = "${releaseVersion}"\nlet ffiReleaseVersion = "0.2.0"\n`,
+  ]]));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Package\.swift is not bound to 0\.3\.0/u);
+});
+
+test("rejects a stale root version in the npm lockfile", () => {
+  const result = runVerifier(new Map([[
+    "packages/ts/package-lock.json",
+    JSON.stringify({ version: releaseVersion, packages: { "": { version: "0.2.0" } } }),
+  ]]));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /packages\/ts\/package-lock\.json is not bound to 0\.3\.0/u);
 });
 
 test("rejects a non-semantic release input", () => {

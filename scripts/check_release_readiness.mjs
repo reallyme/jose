@@ -76,13 +76,12 @@ runNodeCheck("scripts/maven_central_bundle.test.mjs");
 runNodeCheck("scripts/release_crate_archives.test.mjs");
 
 const crateVersion = "0.5.1";
-const protoCrateVersion = "0.5.1";
+const protoCrateVersion = crateVersion;
 const buffaVersion = "0.1.2";
 const cryptoVersion = "0.4.2";
 const codecVersion = "0.4.3";
-const npmPackageVersion = "0.5.0";
-// Swift's binary pin tracks its independently published XCFramework.
-const linkedSwiftFfiVersion = "0.5.0";
+const npmPackageVersion = crateVersion;
+run(process.execPath, ["scripts/verify_sdk_release_version.mjs", crateVersion]);
 const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
 const releaseReadinessCommit = "55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f";
 // The existing 0.5.0 evidence qualifies a source tree with the 0.9.4 CI layout.
@@ -1328,7 +1327,10 @@ assertContains("Package.swift", '.iOS(.v16)');
 assertContains("Package.swift", 'name: "ReallyMeJOSE"');
 assertContains("Package.swift", 'exact: "1.39.0"');
 assertContains("Package.swift", 'path: "gen/swift"');
-assertContains("Package.swift", `ffiArtifactVersion = "${linkedSwiftFfiVersion}"`);
+assertContains("Package.swift", `ffiReleaseVersion = "${crateVersion}"`);
+if (!/^let ffiArtifactVersion = "[0-9]+\.[0-9]+\.[0-9]+"$/mu.test(readText("Package.swift"))) {
+  fail("Package.swift must pin a published Swift binary version");
+}
 assertContains("Package.swift", 'ffiArtifactLocalPathOverride = ""');
 assertNotContains("Package.swift", "0000000000000000000000000000000000000000000000000000000000000000");
 assertContains("Package.swift", "REALLYME_JOSE_SWIFTPM_RUNTIME_FFI");

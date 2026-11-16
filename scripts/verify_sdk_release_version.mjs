@@ -33,11 +33,12 @@ const assignments = [
   ["crates/proto/Cargo.toml", /^version = "([^"]+)"$/gmu],
   ["crates/ffi/Cargo.toml", /^version = "([^"]+)"$/gmu],
   ["crates/wasm/Cargo.toml", /^version = "([^"]+)"$/gmu],
+  ["crates/wasm/Cargo.toml", /^reallyme-jose = \{ version = "=([^"]+)"/gmu],
   ["Cargo.toml", /^reallyme-jose-proto = \{ version = "([^"]+)"/gmu],
   ["crates/ffi/Cargo.toml", /^reallyme-jose = \{ version = "([^"]+)"/gmu],
   ["packages/kotlin/build.gradle.kts", /^version = "([^"]+)"$/gmu],
   ["packages/kotlin-android/build.gradle.kts", /^version = "([^"]+)"$/gmu],
-  ["Package.swift", /^let ffiArtifactVersion = "([^"]+)"$/gmu],
+  ["Package.swift", /^let ffiReleaseVersion = "([^"]+)"$/gmu],
   ["packages/ts/package.json", /^  "version": "([^"]+)",$/gmu],
 ];
 for (const [path, pattern] of assignments) {
@@ -46,4 +47,16 @@ for (const [path, pattern] of assignments) {
     fail(`${path} is not bound to ${expectedVersion}`);
   }
 }
+const npmLockPath = "packages/ts/package-lock.json";
+const npmLockSource = readRegular(npmLockPath);
+let npmLock;
+try {
+  npmLock = JSON.parse(npmLockSource);
+} catch {
+  fail(`${npmLockPath} is malformed`);
+}
+if (npmLock?.version !== expectedVersion || npmLock?.packages?.[""]?.version !== expectedVersion) {
+  fail(`${npmLockPath} is not bound to ${expectedVersion}`);
+}
+
 console.log(`Rust, Swift, JVM, Android, and TypeScript package versions are bound to ${expectedVersion}`);

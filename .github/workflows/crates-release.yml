@@ -13,12 +13,10 @@ on:
         description: Release version from the successful package preflight
         required: true
         type: string
-        default: '0.5.0'
       source_sha:
         description: Full source SHA from this ecosystem's successful package preflight
         required: true
         type: string
-        default: '9aeae6356b65512a2c53832c46719de36e1d7e86'
 
 permissions:
   contents: read
