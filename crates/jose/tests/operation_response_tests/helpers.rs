@@ -58,6 +58,14 @@ fn normalize_response(response: JoseOperationResponse) -> Vec<u8> {
         panic!("canonical response omitted its response oneof");
     };
     match response {
+        Response::JwkThumbprintSha256(response) => {
+            use reallyme_jose::api::contract::__buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome;
+            match response.outcome.as_ref() {
+                Some(Outcome::Result(result)) => normalized_result(result.as_ref()),
+                Some(Outcome::Error(error)) => normalized_error(error),
+                None => panic!("JWK thumbprint response omitted its outcome"),
+            }
+        }
         Response::BoundaryError(error) => normalized_error(error),
         Response::JwsSign(response) | Response::JwsSignWithProvider(response) => match response.outcome.as_ref() {
             Some(JwsSignOutcome::Result(result)) => normalized_result(result.as_ref()),

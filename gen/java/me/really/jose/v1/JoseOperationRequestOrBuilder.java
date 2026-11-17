@@ -376,6 +376,27 @@ public interface JoseOperationRequestOrBuilder extends
   me.really.jose.v1.JoseJweDecryptWithProviderRequest getJweDecryptWithProvider();
 
   /**
+   * <pre>
+   * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+   * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   * @return Whether the jwkThumbprintSha256 field is set.
+   */
+  boolean hasJwkThumbprintSha256();
+  /**
+   * <pre>
+   * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+   * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   * @return The jwkThumbprintSha256.
+   */
+  me.really.jose.v1.JoseJwkThumbprintSha256Request getJwkThumbprintSha256();
+
+  /**
    * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
    * @return Whether the contractInfo field is set.
    */

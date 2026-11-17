@@ -12,6 +12,7 @@ use crate::api::contract::__buffa::oneof::{
     jose_jwe_derive_key_response::Outcome as JweDeriveKeyOutcome,
     jose_jwe_encrypt_response::Outcome as JweEncryptOutcome,
     jose_jwe_encrypt_with_provider_response::Outcome as JweEncryptWithProviderOutcome,
+    jose_jwk_thumbprint_sha256response::Outcome as JwkThumbprintSha256Outcome,
     jose_jws_inspect_response::Outcome as JwsInspectOutcome,
     jose_jws_sign_response::Outcome as JwsSignOutcome,
     jose_jws_verify_response::Outcome as JwsVerifyOutcome,
@@ -28,13 +29,27 @@ use crate::api::contract::{
     JoseCompactResult, JoseContractInfoResponse, JoseContractInfoResult, JoseInspectedCompactJws,
     JoseJweDecryptResponse, JoseJweDecryptWithProviderResponse, JoseJweDeriveKeyResponse,
     JoseJweEncryptResponse, JoseJweEncryptWithProviderResponse, JoseJwePlaintextResult,
-    JoseJwsInspectResponse, JoseJwsSignResponse, JoseJwsVerifyResponse, JoseJwtClaimsResult,
-    JoseJwtDecodeUnsignedResponse, JoseJwtEncodeUnsignedResponse, JoseJwtSignResponse,
-    JoseJwtSignWithProviderResponse, JoseJwtVerifyResponse, JoseOperationResponse, JoseSecretBytes,
-    JoseSignatureResult, JoseSignatureSignResponse, JoseSignatureSuiteInfoResponse,
-    JoseSignatureSuiteInfoResult, JoseSignatureVerifyResponse, JoseValidationResult,
-    JoseVerifyResult,
+    JoseJwkThumbprintSha256Response, JoseJwkThumbprintSha256Result, JoseJwsInspectResponse,
+    JoseJwsSignResponse, JoseJwsVerifyResponse, JoseJwtClaimsResult, JoseJwtDecodeUnsignedResponse,
+    JoseJwtEncodeUnsignedResponse, JoseJwtSignResponse, JoseJwtSignWithProviderResponse,
+    JoseJwtVerifyResponse, JoseOperationResponse, JoseSecretBytes, JoseSignatureResult,
+    JoseSignatureSignResponse, JoseSignatureSuiteInfoResponse, JoseSignatureSuiteInfoResult,
+    JoseSignatureVerifyResponse, JoseValidationResult, JoseVerifyResult,
 };
+
+pub(super) fn jwk_thumbprint_sha256_response(
+    result: JoseWireResult<JoseJwkThumbprintSha256Result>,
+) -> JoseOperationResponse {
+    let outcome = match result {
+        Ok(result) => JwkThumbprintSha256Outcome::Result(Box::new(result)),
+        Err(error) => JwkThumbprintSha256Outcome::Error(Box::new(jose_error(error))),
+    };
+    canonical_response(Response::JwkThumbprintSha256(Box::new(
+        JoseJwkThumbprintSha256Response {
+            outcome: Some(outcome),
+        },
+    )))
+}
 
 pub(super) fn jws_sign_response(
     result: JoseWireResult<JoseCompactResult>,

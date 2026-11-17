@@ -47,6 +47,7 @@ fn operation_kind() -> JoseOperationKind {
         13 => JoseOperationKind::JweEncryptWithProvider,
         14 => JoseOperationKind::JweDecryptWithProvider,
         15 => JoseOperationKind::ContractInfo,
+        16 => JoseOperationKind::JwkThumbprintSha256,
         _ => JoseOperationKind::JwtClaimsParse,
     }
 }

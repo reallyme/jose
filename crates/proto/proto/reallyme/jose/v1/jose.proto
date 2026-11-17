@@ -247,6 +247,23 @@ enum JoseErrorReason {
   // Rust failure: JwtError::SubjectMismatch
   JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH = 392;
 
+  // RFC 7638 JWK thumbprint input failures: 400-419.
+  // A required JWK member is absent or empty.
+  // Rust failure: JwkThumbprintErrorReason::MissingMember
+  JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER = 400;
+  // A required JWK member is not a string.
+  // Rust failure: JwkThumbprintErrorReason::InvalidMemberType
+  JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE = 401;
+  // The JWK key type is not EC, OKP, RSA, or oct.
+  // Rust failure: JwkThumbprintErrorReason::UnsupportedKeyType
+  JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE = 402;
+  // The JSON adapter requires an object.
+  // Rust failure: JwkThumbprintErrorReason::InvalidJsonObject
+  JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT = 403;
+  // A required member exceeds 8192 UTF-8 bytes.
+  // Rust failure: JwkThumbprintErrorReason::MemberTooLarge
+  JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE = 404;
+
   // Common operation execution boundary failures: 700-799.
   JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF = 700;
   JOSE_ERROR_REASON_COMMON_MALFORMED_JSON = 701;
@@ -263,6 +280,7 @@ enum JoseErrorReason {
   // Rust failure: JwsEs256Error::LengthOverflow
   // Rust failure: JweError::LengthOverflow
   // Rust failure: JwtError::LengthOverflow
+  // Rust failure: JwkThumbprintErrorReason::LengthOverflow
   JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW = 704;
   // Rust failure: JwsVerifyErrorReason::InvalidCompact
   // Rust failure: JwsEddsaError::InvalidCompactEncoding
@@ -289,6 +307,11 @@ enum JoseErrorReason {
   JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION = 901;
   // Rust failure: JweError::KeyDerivation
   JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED = 902;
+  // JWK thumbprint canonical serialization and allocation failures: 940-949.
+  // Rust failure: JwkThumbprintErrorReason::Serialization
+  JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION = 940;
+  // Rust failure: JwkThumbprintErrorReason::Allocation
+  JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION = 941;
 }
 
 // Rust selector: JwsAlgorithm; crate; provider; PROVIDER_UNSUPPORTED
@@ -405,6 +428,7 @@ message JoseOperationResponse {
     JoseJweDeriveKeyResponse jwe_derive_key = 3010;
     JoseJweEncryptWithProviderResponse jwe_encrypt_with_provider = 3011;
     JoseJweDecryptWithProviderResponse jwe_decrypt_with_provider = 3012;
+    JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000;
     JoseContractInfoResponse contract_info = 7000;
   }
 }
@@ -486,6 +510,9 @@ message JoseOperationRequest {
     // Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_bytes
     // Rust adapter: jwe/decrypt.rs#decrypt_compact_jwe_json
     JoseJweDecryptWithProviderRequest jwe_decrypt_with_provider = 3012;
+    // Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+    // Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+    JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000;
     JoseContractInfoRequest contract_info = 7000;
   }
 }
@@ -901,6 +928,8 @@ enum JoseContractLimit {
   JOSE_CONTRACT_LIMIT_COMPACT_BYTES = 1048576;
   JOSE_CONTRACT_LIMIT_PROTO_JSON_BYTES = 1572864;
   JOSE_CONTRACT_LIMIT_RESPONSE_OVERHEAD_BYTES = 32;
+  // Rust constant: jwk/thumbprint_sha256.rs#MAX_JWK_THUMBPRINT_MEMBER_BYTES = JWK_THUMBPRINT_MEMBER_BYTES
+  JOSE_CONTRACT_LIMIT_JWK_THUMBPRINT_MEMBER_BYTES = 8192;
   JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH = 64;
   JOSE_CONTRACT_LIMIT_TEMPORAL_SKEW_SECONDS = 300;
   JOSE_CONTRACT_LIMIT_DEFAULT_TEMPORAL_SKEW_SECONDS = 60;
@@ -1173,6 +1202,8 @@ enum JoseOperationKind {
   JOSE_OPERATION_KIND_JWE_ENCRYPT_WITH_PROVIDER = 3011;
   // Rust variant: JoseOperationKind.JweDecryptWithProvider
   JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER = 3012;
+  // Rust variant: JoseOperationKind.JwkThumbprintSha256
+  JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000;
   // Rust variant: JoseOperationKind.ContractInfo
   JOSE_OPERATION_KIND_CONTRACT_INFO = 7000;
 }
@@ -1246,6 +1277,65 @@ message JoseJwtClaimsParseResult {
 message JoseJwtClaimsParseResponse {
   oneof outcome {
     JoseJwtClaimsParseResult result = 1;
+    JoseError error = 2;
+  }
+}
+
+// RFC 7638 SHA-256 over required members only, in lexicographic order.
+// Each member must be nonempty and at most 8192 bytes in UTF-8. Members are
+// already JWK text; this operation does not decode, normalize, or validate key
+// material. Protocol-specific tighter limits belong to the caller.
+// JSON quotes, backslashes, and controls are escaped deterministically without
+// Unicode normalization. This extends RFC 7638 section 3.3 for member values
+// outside its unescaped-value domain.
+// Rust view: jwk/thumbprint_sha256.rs#JwkThumbprintMembers
+// Rust oneof view: jwk/thumbprint_sha256.rs#JwkThumbprintMembers = key
+message JoseJwkThumbprintSha256Request {
+  oneof key {
+    JoseJwkThumbprintEcMembers ec = 1;
+    JoseJwkThumbprintOkpMembers okp = 2;
+    JoseJwkThumbprintRsaMembers rsa = 3;
+    JoseJwkThumbprintOctMembers oct = 4;
+  }
+}
+
+message JoseJwkThumbprintEcMembers {
+  // SENSITIVE: caller-owned key metadata.
+  string crv = 1;
+  // SENSITIVE: caller-owned public key coordinate.
+  string x = 2;
+  // SENSITIVE: caller-owned public key coordinate.
+  string y = 3;
+}
+
+message JoseJwkThumbprintOkpMembers {
+  // SENSITIVE: caller-owned key metadata.
+  string crv = 1;
+  // SENSITIVE: caller-owned public key bytes in JWK encoding.
+  string x = 2;
+}
+
+message JoseJwkThumbprintRsaMembers {
+  // SENSITIVE: caller-owned public exponent in JWK encoding.
+  string e = 1;
+  // SENSITIVE: caller-owned modulus in JWK encoding.
+  string n = 2;
+}
+
+message JoseJwkThumbprintOctMembers {
+  // SENSITIVE: symmetric secret key in JWK encoding.
+  string k = 1;
+}
+
+// Rust owner: zeroize::Zeroizing<[u8; 32]>.
+message JoseJwkThumbprintSha256Result {
+  // SENSITIVE: 32-byte digest; symmetric-key thumbprints can enable guessing.
+  bytes digest = 1;
+}
+
+message JoseJwkThumbprintSha256Response {
+  oneof outcome {
+    JoseJwkThumbprintSha256Result result = 1;
     JoseError error = 2;
   }
 }

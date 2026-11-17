@@ -912,6 +912,9 @@ impl<'a> ::buffa::sensitive::Zeroize for JoseOperationResponseView<'a> {
             super::super::__buffa::view::JoseJweDecryptWithProviderResponseView<'a>,
         >();
         __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwkThumbprintSha256ResponseView<'a>,
+        >();
+        __requires_view_wipe_owner::<
             super::super::__buffa::view::JoseContractInfoResponseView<'a>,
         >();
         ::buffa::sensitive::Zeroize::zeroize(&mut self.contract_version);
@@ -1583,6 +1586,37 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationResponseView<'a> {
                     );
                 }
             }
+            4000u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_operation_response::Response::JwkThumbprintSha256(
+                        ref mut existing,
+                    ),
+                ) = view.response
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.response = Some(
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwkThumbprintSha256(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwkThumbprintSha256ResponseView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
             7000u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
@@ -1829,6 +1863,15 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationResponseView<'a> {
                                 ),
                             )
                         }
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwkThumbprintSha256(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_response::Response::JwkThumbprintSha256(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
                         super::super::__buffa::view::oneof::jose_operation_response::Response::ContractInfo(
                             v,
                         ) => {
@@ -2051,6 +2094,16 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationResponseView<'a> {
                             + inner as u64;
                 }
                 super::super::__buffa::view::oneof::jose_operation_response::Response::JweDecryptWithProvider(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 3u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwkThumbprintSha256(
                     x,
                 ) => {
                     let __slot = __cache.reserve();
@@ -2290,6 +2343,16 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationResponseView<'a> {
                     );
                     x.write_to(__cache, buf);
                 }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwkThumbprintSha256(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        4000u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
                 super::super::__buffa::view::oneof::jose_operation_response::Response::ContractInfo(
                     x,
                 ) => {
@@ -2429,6 +2492,11 @@ impl<'__a> ::serde::Serialize for JoseOperationResponseView<'__a> {
                 ) => {
                     __map.serialize_entry("jweDecryptWithProvider", v)?;
                 }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwkThumbprintSha256(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwkThumbprintSha256", v)?;
+                }
                 super::super::__buffa::view::oneof::jose_operation_response::Response::ContractInfo(
                     v,
                 ) => {
@@ -2540,6 +2608,9 @@ impl<'a> ::buffa::sensitive::Zeroize for JoseOperationRequestView<'a> {
         >();
         __requires_view_wipe_owner::<
             super::super::__buffa::view::JoseJweDecryptWithProviderRequestView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwkThumbprintSha256RequestView<'a>,
         >();
         __requires_view_wipe_owner::<
             super::super::__buffa::view::JoseContractInfoRequestView<'a>,
@@ -3172,6 +3243,37 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationRequestView<'a> {
                     );
                 }
             }
+            4000u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
+                        ref mut existing,
+                    ),
+                ) = view.operation
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.operation = Some(
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwkThumbprintSha256RequestView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
             7000u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
@@ -3408,6 +3510,15 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationRequestView<'a> {
                                 ),
                             )
                         }
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
                         super::super::__buffa::view::oneof::jose_operation_request::Operation::ContractInfo(
                             v,
                         ) => {
@@ -3614,6 +3725,16 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationRequestView<'a> {
                             + inner as u64;
                 }
                 super::super::__buffa::view::oneof::jose_operation_request::Operation::JweDecryptWithProvider(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 3u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
                     x,
                 ) => {
                     let __slot = __cache.reserve();
@@ -3837,6 +3958,16 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationRequestView<'a> {
                     );
                     x.write_to(__cache, buf);
                 }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        4000u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
                 super::super::__buffa::view::oneof::jose_operation_request::Operation::ContractInfo(
                     x,
                 ) => {
@@ -3965,6 +4096,11 @@ impl<'__a> ::serde::Serialize for JoseOperationRequestView<'__a> {
                     v,
                 ) => {
                     __map.serialize_entry("jweDecryptWithProvider", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwkThumbprintSha256", v)?;
                 }
                 super::super::__buffa::view::oneof::jose_operation_request::Operation::ContractInfo(
                     v,
@@ -20383,3 +20519,1640 @@ impl<'a> ::buffa::MessageName for JoseJwtClaimsParseResponseView<'a> {
 ::buffa::impl_default_view_instance!(JoseJwtClaimsParseResponseView);
 ::buffa::impl_view_reborrow!(JoseJwtClaimsParseResponseView);
 ::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwtClaimsParseResponseView);
+/// RFC 7638 SHA-256 over required members only, in lexicographic order.
+/// Each member must be nonempty and at most 8192 bytes in UTF-8. Members are
+/// already JWK text; this operation does not decode, normalize, or validate key
+/// material. Protocol-specific tighter limits belong to the caller.
+/// JSON quotes, backslashes, and controls are escaped deterministically without
+/// Unicode normalization. This extends RFC 7638 section 3.3 for member values
+/// outside its unescaped-value domain.
+/// Rust view: jwk/thumbprint_sha256.rs#JwkThumbprintMembers
+/// Rust oneof view: jwk/thumbprint_sha256.rs#JwkThumbprintMembers = key
+#[derive(Clone, Default)]
+pub struct JoseJwkThumbprintSha256RequestView<'a> {
+    pub key: ::core::option::Option<
+        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key<'a>,
+    >,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwkThumbprintSha256RequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintSha256RequestView")
+            .field("key", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwkThumbprintSha256RequestView<'a> {
+    fn zeroize(&mut self) {
+        fn __requires_view_wipe_owner<
+            T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+        >() {}
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwkThumbprintEcMembersView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwkThumbprintOkpMembersView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwkThumbprintRsaMembersView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwkThumbprintOctMembersView<'a>,
+        >();
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.key);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintSha256RequestView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwkThumbprintSha256RequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwkThumbprintSha256RequestView<'a> {
+    type Owned = super::super::JoseJwkThumbprintSha256Request;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(
+                        ref mut existing,
+                    ),
+                ) = view.key
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.key = Some(
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwkThumbprintEcMembersView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(
+                        ref mut existing,
+                    ),
+                ) = view.key
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.key = Some(
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwkThumbprintOkpMembersView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(
+                        ref mut existing,
+                    ),
+                ) = view.key
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.key = Some(
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwkThumbprintRsaMembersView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(
+                        ref mut existing,
+                    ),
+                ) = view.key
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.key = Some(
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwkThumbprintOctMembersView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintSha256Request,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintSha256Request,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwkThumbprintSha256Request as ::core::default::Default>::default();
+        __owned.key = match self.key.as_ref() {
+            ::core::option::Option::Some(v) => {
+                ::core::option::Option::Some(
+                    match v {
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                    },
+                )
+            }
+            ::core::option::Option::None => ::core::option::Option::None,
+        };
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwkThumbprintSha256RequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.key {
+            match v {
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.key {
+            match v {
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        3u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        4u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwkThumbprintSha256RequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if let ::core::option::Option::Some(ref __ov) = self.key {
+            match __ov {
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(
+                    v,
+                ) => {
+                    __map.serialize_entry("ec", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(
+                    v,
+                ) => {
+                    __map.serialize_entry("okp", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(
+                    v,
+                ) => {
+                    __map.serialize_entry("rsa", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(
+                    v,
+                ) => {
+                    __map.serialize_entry("oct", v)?;
+                }
+            }
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwkThumbprintSha256RequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintSha256Request";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintSha256Request";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Request";
+}
+::buffa::impl_default_view_instance!(JoseJwkThumbprintSha256RequestView);
+::buffa::impl_view_reborrow!(JoseJwkThumbprintSha256RequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwkThumbprintSha256RequestView);
+#[derive(Clone, Default)]
+pub struct JoseJwkThumbprintEcMembersView<'a> {
+    /// SENSITIVE: caller-owned key metadata.
+    ///
+    /// Field 1: `crv`
+    pub crv: &'a str,
+    /// SENSITIVE: caller-owned public key coordinate.
+    ///
+    /// Field 2: `x`
+    pub x: &'a str,
+    /// SENSITIVE: caller-owned public key coordinate.
+    ///
+    /// Field 3: `y`
+    pub y: &'a str,
+}
+impl<'a> ::core::fmt::Debug for JoseJwkThumbprintEcMembersView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintEcMembersView")
+            .field("crv", &::core::format_args!("[REDACTED]"))
+            .field("x", &::core::format_args!("[REDACTED]"))
+            .field("y", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwkThumbprintEcMembersView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintEcMembersView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwkThumbprintEcMembersView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwkThumbprintEcMembersView<'a> {
+    type Owned = super::super::JoseJwkThumbprintEcMembers;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.crv = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.x = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.y = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintEcMembers,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintEcMembers,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwkThumbprintEcMembers as ::core::default::Default>::default();
+        __owned.crv = ::buffa::ProtoString::copy_from_str(self.crv);
+        __owned.x = ::buffa::ProtoString::copy_from_str(self.x);
+        __owned.y = ::buffa::ProtoString::copy_from_str(self.y);
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwkThumbprintEcMembersView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.crv.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.crv) as u64;
+        }
+        if !self.x.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.x) as u64;
+        }
+        if !self.y.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.y) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.crv.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.crv, buf);
+        }
+        if !self.x.is_empty() {
+            ::buffa::types::put_string_field(2u32, &self.x, buf);
+        }
+        if !self.y.is_empty() {
+            ::buffa::types::put_string_field(3u32, &self.y, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwkThumbprintEcMembersView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.crv) {
+            __map
+                .serialize_entry(
+                    "crv",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.crv),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.x) {
+            __map
+                .serialize_entry(
+                    "x",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.x),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.y) {
+            __map
+                .serialize_entry(
+                    "y",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.y),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwkThumbprintEcMembersView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintEcMembers";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintEcMembers";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintEcMembers";
+}
+::buffa::impl_default_view_instance!(JoseJwkThumbprintEcMembersView);
+::buffa::impl_view_reborrow!(JoseJwkThumbprintEcMembersView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwkThumbprintEcMembersView);
+#[derive(Clone, Default)]
+pub struct JoseJwkThumbprintOkpMembersView<'a> {
+    /// SENSITIVE: caller-owned key metadata.
+    ///
+    /// Field 1: `crv`
+    pub crv: &'a str,
+    /// SENSITIVE: caller-owned public key bytes in JWK encoding.
+    ///
+    /// Field 2: `x`
+    pub x: &'a str,
+}
+impl<'a> ::core::fmt::Debug for JoseJwkThumbprintOkpMembersView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintOkpMembersView")
+            .field("crv", &::core::format_args!("[REDACTED]"))
+            .field("x", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwkThumbprintOkpMembersView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintOkpMembersView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwkThumbprintOkpMembersView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwkThumbprintOkpMembersView<'a> {
+    type Owned = super::super::JoseJwkThumbprintOkpMembers;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.crv = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.x = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintOkpMembers,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintOkpMembers,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwkThumbprintOkpMembers as ::core::default::Default>::default();
+        __owned.crv = ::buffa::ProtoString::copy_from_str(self.crv);
+        __owned.x = ::buffa::ProtoString::copy_from_str(self.x);
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwkThumbprintOkpMembersView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.crv.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.crv) as u64;
+        }
+        if !self.x.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.x) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.crv.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.crv, buf);
+        }
+        if !self.x.is_empty() {
+            ::buffa::types::put_string_field(2u32, &self.x, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwkThumbprintOkpMembersView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.crv) {
+            __map
+                .serialize_entry(
+                    "crv",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.crv),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.x) {
+            __map
+                .serialize_entry(
+                    "x",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.x),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwkThumbprintOkpMembersView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintOkpMembers";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintOkpMembers";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintOkpMembers";
+}
+::buffa::impl_default_view_instance!(JoseJwkThumbprintOkpMembersView);
+::buffa::impl_view_reborrow!(JoseJwkThumbprintOkpMembersView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwkThumbprintOkpMembersView);
+#[derive(Clone, Default)]
+pub struct JoseJwkThumbprintRsaMembersView<'a> {
+    /// SENSITIVE: caller-owned public exponent in JWK encoding.
+    ///
+    /// Field 1: `e`
+    pub e: &'a str,
+    /// SENSITIVE: caller-owned modulus in JWK encoding.
+    ///
+    /// Field 2: `n`
+    pub n: &'a str,
+}
+impl<'a> ::core::fmt::Debug for JoseJwkThumbprintRsaMembersView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintRsaMembersView")
+            .field("e", &::core::format_args!("[REDACTED]"))
+            .field("n", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwkThumbprintRsaMembersView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintRsaMembersView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwkThumbprintRsaMembersView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwkThumbprintRsaMembersView<'a> {
+    type Owned = super::super::JoseJwkThumbprintRsaMembers;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.e = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.n = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintRsaMembers,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintRsaMembers,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwkThumbprintRsaMembers as ::core::default::Default>::default();
+        __owned.e = ::buffa::ProtoString::copy_from_str(self.e);
+        __owned.n = ::buffa::ProtoString::copy_from_str(self.n);
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwkThumbprintRsaMembersView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.e.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.e) as u64;
+        }
+        if !self.n.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.n) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.e.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.e, buf);
+        }
+        if !self.n.is_empty() {
+            ::buffa::types::put_string_field(2u32, &self.n, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwkThumbprintRsaMembersView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.e) {
+            __map
+                .serialize_entry(
+                    "e",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.e),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.n) {
+            __map
+                .serialize_entry(
+                    "n",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.n),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwkThumbprintRsaMembersView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintRsaMembers";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintRsaMembers";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintRsaMembers";
+}
+::buffa::impl_default_view_instance!(JoseJwkThumbprintRsaMembersView);
+::buffa::impl_view_reborrow!(JoseJwkThumbprintRsaMembersView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwkThumbprintRsaMembersView);
+#[derive(Clone, Default)]
+pub struct JoseJwkThumbprintOctMembersView<'a> {
+    /// SENSITIVE: symmetric secret key in JWK encoding.
+    ///
+    /// Field 1: `k`
+    pub k: &'a str,
+}
+impl<'a> ::core::fmt::Debug for JoseJwkThumbprintOctMembersView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintOctMembersView")
+            .field("k", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwkThumbprintOctMembersView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintOctMembersView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwkThumbprintOctMembersView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwkThumbprintOctMembersView<'a> {
+    type Owned = super::super::JoseJwkThumbprintOctMembers;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.k = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintOctMembers,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintOctMembers,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwkThumbprintOctMembers as ::core::default::Default>::default();
+        __owned.k = ::buffa::ProtoString::copy_from_str(self.k);
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwkThumbprintOctMembersView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.k.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.k) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.k.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.k, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwkThumbprintOctMembersView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.k) {
+            __map
+                .serialize_entry(
+                    "k",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.k),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwkThumbprintOctMembersView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintOctMembers";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintOctMembers";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintOctMembers";
+}
+::buffa::impl_default_view_instance!(JoseJwkThumbprintOctMembersView);
+::buffa::impl_view_reborrow!(JoseJwkThumbprintOctMembersView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwkThumbprintOctMembersView);
+/// Rust owner: zeroize::Zeroizing\<\[u8; 32\]\>.
+#[derive(Clone, Default)]
+pub struct JoseJwkThumbprintSha256ResultView<'a> {
+    /// SENSITIVE: 32-byte digest; symmetric-key thumbprints can enable guessing.
+    ///
+    /// Field 1: `digest`
+    pub digest: &'a [u8],
+}
+impl<'a> ::core::fmt::Debug for JoseJwkThumbprintSha256ResultView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintSha256ResultView")
+            .field("digest", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwkThumbprintSha256ResultView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintSha256ResultView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwkThumbprintSha256ResultView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwkThumbprintSha256ResultView<'a> {
+    type Owned = super::super::JoseJwkThumbprintSha256Result;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.digest = ::buffa::types::borrow_bytes(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintSha256Result,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintSha256Result,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwkThumbprintSha256Result as ::core::default::Default>::default();
+        __owned.digest = ::core::convert::Into::into((self.digest).to_vec());
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwkThumbprintSha256ResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.digest.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.digest) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.digest.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.digest, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwkThumbprintSha256ResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_bytes(self.digest) {
+            __map
+                .serialize_entry(
+                    "digest",
+                    &::buffa::json_helpers::BytesPolicyJson::<
+                        crate::SecretBytes,
+                    >::new(self.digest),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwkThumbprintSha256ResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintSha256Result";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintSha256Result";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Result";
+}
+::buffa::impl_default_view_instance!(JoseJwkThumbprintSha256ResultView);
+::buffa::impl_view_reborrow!(JoseJwkThumbprintSha256ResultView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwkThumbprintSha256ResultView);
+#[derive(Clone, Default)]
+pub struct JoseJwkThumbprintSha256ResponseView<'a> {
+    pub outcome: ::core::option::Option<
+        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome<
+            'a,
+        >,
+    >,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwkThumbprintSha256ResponseView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintSha256ResponseView")
+            .field("outcome", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwkThumbprintSha256ResponseView<'a> {
+    fn zeroize(&mut self) {
+        fn __requires_view_wipe_owner<
+            T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+        >() {}
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwkThumbprintSha256ResultView<'a>,
+        >();
+        __requires_view_wipe_owner::<super::super::__buffa::view::JoseErrorView<'a>>();
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.outcome);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintSha256ResponseView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwkThumbprintSha256ResponseView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwkThumbprintSha256ResponseView<'a> {
+    type Owned = super::super::JoseJwkThumbprintSha256Response;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                        ref mut existing,
+                    ),
+                ) = view.outcome
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.outcome = Some(
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwkThumbprintSha256ResultView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let Some(
+                    super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                        ref mut existing,
+                    ),
+                ) = view.outcome
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.outcome = Some(
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseErrorView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintSha256Response,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwkThumbprintSha256Response,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwkThumbprintSha256Response as ::core::default::Default>::default();
+        __owned.outcome = match self.outcome.as_ref() {
+            ::core::option::Option::Some(v) => {
+                ::core::option::Option::Some(
+                    match v {
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                    },
+                )
+            }
+            ::core::option::Option::None => ::core::option::Option::None,
+        };
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwkThumbprintSha256ResponseView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwkThumbprintSha256ResponseView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if let ::core::option::Option::Some(ref __ov) = self.outcome {
+            match __ov {
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                    v,
+                ) => {
+                    __map.serialize_entry("result", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                    v,
+                ) => {
+                    __map.serialize_entry("error", v)?;
+                }
+            }
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwkThumbprintSha256ResponseView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintSha256Response";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintSha256Response";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Response";
+}
+::buffa::impl_default_view_instance!(JoseJwkThumbprintSha256ResponseView);
+::buffa::impl_view_reborrow!(JoseJwkThumbprintSha256ResponseView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwkThumbprintSha256ResponseView);

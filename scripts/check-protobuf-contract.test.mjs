@@ -156,3 +156,47 @@ impl From<NativeChoice> for Choice {}`);
   value.sources.set("choice.rs", value.sources.get("choice.rs").replace("    One,", "    One,\n    Extra,"));
   assert.throws(() => assertProtobufContract(value), /native selector variants differ/u);
 });
+
+function oneofViewFixture() {
+  const value = fixture();
+  value.schema = value.schema.replace("message ReadRequest {}", `// Rust view: value.rs#Members
+// Rust oneof view: value.rs#Members = key
+message ReadRequest {
+  oneof key {
+    KeyMembers oct = 1;
+  }
+}
+message KeyMembers {
+  // SENSITIVE: caller-owned secret.
+  string k = 1;
+}`);
+  value.sources.set("value.rs", `pub fn read() {}
+pub enum Members<'a> {
+    Oct { k: &'a str },
+}
+impl<'a> TryFrom<&'a ReadRequest> for Members<'a> {}`);
+  return value;
+}
+
+test("borrowed oneof views retain their schema conversion and exact member set", () => {
+  assert.doesNotThrow(() => assertProtobufContract(oneofViewFixture()));
+  for (const [before, after] of [
+    ["Oct { k: &'a str }", "Oct { k: &'a str, unchecked: &'a str }"],
+    ["Oct { k: &'a str }", "Unknown { k: &'a str }"],
+    ["Oct { k: &'a str },", "Oct { k: &'a str },\n    Unknown { k: &'a str },"],
+    ["TryFrom<&'a ReadRequest>", "TryFrom<&'a OtherRequest>"],
+  ]) {
+    const value = oneofViewFixture();
+    value.sources.set("value.rs", value.sources.get("value.rs").replace(before, after));
+    assert.throws(() => assertProtobufContract(value), TypeError);
+  }
+  const duplicate = oneofViewFixture();
+  duplicate.sources.set("duplicate.rs", "impl<'a> TryFrom<&'a ReadRequest> for Members<'a> {}");
+  assert.throws(() => assertProtobufContract(duplicate), TypeError);
+});
+
+test("reason-named native errors require the same schema mapping coverage", () => {
+  const value = fixture();
+  value.sources.set("error.rs", "pub enum DomainErrorReason {\n    Invalid,\n}");
+  assert.throws(() => assertProtobufContract(value), TypeError);
+});

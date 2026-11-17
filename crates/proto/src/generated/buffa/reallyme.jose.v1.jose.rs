@@ -413,6 +413,22 @@ pub enum JoseErrorReason {
     JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH = 391i32,
     /// Rust failure: JwtError::SubjectMismatch
     JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH = 392i32,
+    /// RFC 7638 JWK thumbprint input failures: 400-419.
+    /// A required JWK member is absent or empty.
+    /// Rust failure: JwkThumbprintErrorReason::MissingMember
+    JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER = 400i32,
+    /// A required JWK member is not a string.
+    /// Rust failure: JwkThumbprintErrorReason::InvalidMemberType
+    JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE = 401i32,
+    /// The JWK key type is not EC, OKP, RSA, or oct.
+    /// Rust failure: JwkThumbprintErrorReason::UnsupportedKeyType
+    JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE = 402i32,
+    /// The JSON adapter requires an object.
+    /// Rust failure: JwkThumbprintErrorReason::InvalidJsonObject
+    JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT = 403i32,
+    /// A required member exceeds 8192 UTF-8 bytes.
+    /// Rust failure: JwkThumbprintErrorReason::MemberTooLarge
+    JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE = 404i32,
     /// Common operation execution boundary failures: 700-799.
     JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF = 700i32,
     JOSE_ERROR_REASON_COMMON_MALFORMED_JSON = 701i32,
@@ -429,6 +445,7 @@ pub enum JoseErrorReason {
     /// Rust failure: JwsEs256Error::LengthOverflow
     /// Rust failure: JweError::LengthOverflow
     /// Rust failure: JwtError::LengthOverflow
+    /// Rust failure: JwkThumbprintErrorReason::LengthOverflow
     JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW = 704i32,
     /// Rust failure: JwsVerifyErrorReason::InvalidCompact
     /// Rust failure: JwsEddsaError::InvalidCompactEncoding
@@ -453,6 +470,11 @@ pub enum JoseErrorReason {
     JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION = 901i32,
     /// Rust failure: JweError::KeyDerivation
     JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED = 902i32,
+    /// JWK thumbprint canonical serialization and allocation failures: 940-949.
+    /// Rust failure: JwkThumbprintErrorReason::Serialization
+    JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION = 940i32,
+    /// Rust failure: JwkThumbprintErrorReason::Allocation
+    JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION = 941i32,
 }
 impl JoseErrorReason {
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_UNSPECIFIED`]; `Debug` prints the variant name.
@@ -629,6 +651,21 @@ impl JoseErrorReason {
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const JwtSubjectMismatch: Self = Self::JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwkThumbprintMissingMember: Self = Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwkThumbprintInvalidMemberType: Self = Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwkThumbprintUnsupportedKeyType: Self = Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwkThumbprintInvalidJsonObject: Self = Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwkThumbprintMemberTooLarge: Self = Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE;
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const CommonMalformedProtobuf: Self = Self::JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF;
@@ -668,6 +705,12 @@ impl JoseErrorReason {
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const BackendKeyDerivationFailed: Self = Self::JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BackendJwkThumbprintSerialization: Self = Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BackendJwkThumbprintAllocation: Self = Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION;
 }
 impl ::core::default::Default for JoseErrorReason {
     fn default() -> Self {
@@ -968,6 +1011,31 @@ impl ::buffa::Enumeration for JoseErrorReason {
                     Self::JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH,
                 )
             }
+            400i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER,
+                )
+            }
+            401i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE,
+                )
+            }
+            402i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE,
+                )
+            }
+            403i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT,
+                )
+            }
+            404i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE,
+                )
+            }
             700i32 => {
                 ::core::option::Option::Some(
                     Self::JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF,
@@ -1029,6 +1097,16 @@ impl ::buffa::Enumeration for JoseErrorReason {
             902i32 => {
                 ::core::option::Option::Some(
                     Self::JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED,
+                )
+            }
+            940i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION,
+                )
+            }
+            941i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION,
                 )
             }
             _ => ::core::option::Option::None,
@@ -1209,6 +1287,21 @@ impl ::buffa::Enumeration for JoseErrorReason {
             Self::JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH => {
                 "JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH"
             }
+            Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER => {
+                "JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER"
+            }
+            Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE => {
+                "JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE"
+            }
+            Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE => {
+                "JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE"
+            }
+            Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT => {
+                "JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT"
+            }
+            Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE => {
+                "JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE"
+            }
             Self::JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF => {
                 "JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF"
             }
@@ -1247,6 +1340,12 @@ impl ::buffa::Enumeration for JoseErrorReason {
             }
             Self::JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED => {
                 "JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED"
+            }
+            Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION => {
+                "JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION"
+            }
+            Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION => {
+                "JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION"
             }
         }
     }
@@ -1514,6 +1613,31 @@ impl ::buffa::Enumeration for JoseErrorReason {
                     Self::JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH,
                 )
             }
+            "JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER,
+                )
+            }
+            "JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE,
+                )
+            }
+            "JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE,
+                )
+            }
+            "JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT,
+                )
+            }
+            "JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE,
+                )
+            }
             "JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF" => {
                 ::core::option::Option::Some(
                     Self::JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF,
@@ -1575,6 +1699,16 @@ impl ::buffa::Enumeration for JoseErrorReason {
             "JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED" => {
                 ::core::option::Option::Some(
                     Self::JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED,
+                )
+            }
+            "JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION,
+                )
+            }
+            "JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION,
                 )
             }
             _ => ::core::option::Option::None,
@@ -1640,6 +1774,11 @@ impl ::buffa::Enumeration for JoseErrorReason {
             Self::JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH,
             Self::JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH,
             Self::JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH,
+            Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER,
+            Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE,
+            Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE,
+            Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT,
+            Self::JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE,
             Self::JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF,
             Self::JOSE_ERROR_REASON_COMMON_MALFORMED_JSON,
             Self::JOSE_ERROR_REASON_COMMON_MISSING_OPERATION,
@@ -1653,6 +1792,8 @@ impl ::buffa::Enumeration for JoseErrorReason {
             Self::JOSE_ERROR_REASON_BACKEND_INTERNAL,
             Self::JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION,
             Self::JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED,
+            Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION,
+            Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION,
         ]
     }
 }
@@ -2914,6 +3055,8 @@ pub enum JoseContractLimit {
     JOSE_CONTRACT_LIMIT_COMPACT_BYTES = 1048576i32,
     JOSE_CONTRACT_LIMIT_PROTO_JSON_BYTES = 1572864i32,
     JOSE_CONTRACT_LIMIT_RESPONSE_OVERHEAD_BYTES = 32i32,
+    /// Rust constant: jwk/thumbprint_sha256.rs#MAX_JWK_THUMBPRINT_MEMBER_BYTES = JWK_THUMBPRINT_MEMBER_BYTES
+    JOSE_CONTRACT_LIMIT_JWK_THUMBPRINT_MEMBER_BYTES = 8192i32,
     JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH = 64i32,
     JOSE_CONTRACT_LIMIT_TEMPORAL_SKEW_SECONDS = 300i32,
     JOSE_CONTRACT_LIMIT_DEFAULT_TEMPORAL_SKEW_SECONDS = 60i32,
@@ -2931,6 +3074,9 @@ impl JoseContractLimit {
     ///Idiomatic alias for [`Self::JOSE_CONTRACT_LIMIT_RESPONSE_OVERHEAD_BYTES`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const ResponseOverheadBytes: Self = Self::JOSE_CONTRACT_LIMIT_RESPONSE_OVERHEAD_BYTES;
+    ///Idiomatic alias for [`Self::JOSE_CONTRACT_LIMIT_JWK_THUMBPRINT_MEMBER_BYTES`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwkThumbprintMemberBytes: Self = Self::JOSE_CONTRACT_LIMIT_JWK_THUMBPRINT_MEMBER_BYTES;
     ///Idiomatic alias for [`Self::JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const ProtoRecursionDepth: Self = Self::JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH;
@@ -2994,6 +3140,11 @@ impl ::buffa::Enumeration for JoseContractLimit {
                     Self::JOSE_CONTRACT_LIMIT_RESPONSE_OVERHEAD_BYTES,
                 )
             }
+            8192i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_CONTRACT_LIMIT_JWK_THUMBPRINT_MEMBER_BYTES,
+                )
+            }
             64i32 => {
                 ::core::option::Option::Some(
                     Self::JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH,
@@ -3027,6 +3178,9 @@ impl ::buffa::Enumeration for JoseContractLimit {
             Self::JOSE_CONTRACT_LIMIT_RESPONSE_OVERHEAD_BYTES => {
                 "JOSE_CONTRACT_LIMIT_RESPONSE_OVERHEAD_BYTES"
             }
+            Self::JOSE_CONTRACT_LIMIT_JWK_THUMBPRINT_MEMBER_BYTES => {
+                "JOSE_CONTRACT_LIMIT_JWK_THUMBPRINT_MEMBER_BYTES"
+            }
             Self::JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH => {
                 "JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH"
             }
@@ -3054,6 +3208,11 @@ impl ::buffa::Enumeration for JoseContractLimit {
                     Self::JOSE_CONTRACT_LIMIT_RESPONSE_OVERHEAD_BYTES,
                 )
             }
+            "JOSE_CONTRACT_LIMIT_JWK_THUMBPRINT_MEMBER_BYTES" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_CONTRACT_LIMIT_JWK_THUMBPRINT_MEMBER_BYTES,
+                )
+            }
             "JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH" => {
                 ::core::option::Option::Some(
                     Self::JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH,
@@ -3078,6 +3237,7 @@ impl ::buffa::Enumeration for JoseContractLimit {
             Self::JOSE_CONTRACT_LIMIT_COMPACT_BYTES,
             Self::JOSE_CONTRACT_LIMIT_PROTO_JSON_BYTES,
             Self::JOSE_CONTRACT_LIMIT_RESPONSE_OVERHEAD_BYTES,
+            Self::JOSE_CONTRACT_LIMIT_JWK_THUMBPRINT_MEMBER_BYTES,
             Self::JOSE_CONTRACT_LIMIT_PROTO_RECURSION_DEPTH,
             Self::JOSE_CONTRACT_LIMIT_TEMPORAL_SKEW_SECONDS,
             Self::JOSE_CONTRACT_LIMIT_DEFAULT_TEMPORAL_SKEW_SECONDS,
@@ -3487,6 +3647,8 @@ pub enum JoseOperationKind {
     JOSE_OPERATION_KIND_JWE_ENCRYPT_WITH_PROVIDER = 3011i32,
     /// Rust variant: JoseOperationKind.JweDecryptWithProvider
     JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER = 3012i32,
+    /// Rust variant: JoseOperationKind.JwkThumbprintSha256
+    JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000i32,
     /// Rust variant: JoseOperationKind.ContractInfo
     JOSE_OPERATION_KIND_CONTRACT_INFO = 7000i32,
 }
@@ -3551,6 +3713,9 @@ impl JoseOperationKind {
     ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const JweDecryptWithProvider: Self = Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER;
+    ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwkThumbprintSha256: Self = Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256;
     ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_CONTRACT_INFO`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const ContractInfo: Self = Self::JOSE_OPERATION_KIND_CONTRACT_INFO;
@@ -3662,6 +3827,11 @@ impl ::buffa::Enumeration for JoseOperationKind {
                     Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER,
                 )
             }
+            4000i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
+                )
+            }
             7000i32 => {
                 ::core::option::Option::Some(Self::JOSE_OPERATION_KIND_CONTRACT_INFO)
             }
@@ -3716,6 +3886,9 @@ impl ::buffa::Enumeration for JoseOperationKind {
             }
             Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER => {
                 "JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER"
+            }
+            Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 => {
+                "JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256"
             }
             Self::JOSE_OPERATION_KIND_CONTRACT_INFO => {
                 "JOSE_OPERATION_KIND_CONTRACT_INFO"
@@ -3800,6 +3973,11 @@ impl ::buffa::Enumeration for JoseOperationKind {
                     Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER,
                 )
             }
+            "JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
+                )
+            }
             "JOSE_OPERATION_KIND_CONTRACT_INFO" => {
                 ::core::option::Option::Some(Self::JOSE_OPERATION_KIND_CONTRACT_INFO)
             }
@@ -3828,6 +4006,7 @@ impl ::buffa::Enumeration for JoseOperationKind {
             Self::JOSE_OPERATION_KIND_JWE_DERIVE_KEY,
             Self::JOSE_OPERATION_KIND_JWE_ENCRYPT_WITH_PROVIDER,
             Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER,
+            Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
             Self::JOSE_OPERATION_KIND_CONTRACT_INFO,
         ]
     }
@@ -5191,6 +5370,7 @@ const _: fn() = || {
     __requires_wipe_owner::<JoseJweDeriveKeyResponse>();
     __requires_wipe_owner::<JoseJweEncryptWithProviderResponse>();
     __requires_wipe_owner::<JoseJweDecryptWithProviderResponse>();
+    __requires_wipe_owner::<JoseJwkThumbprintSha256Response>();
     __requires_wipe_owner::<JoseContractInfoResponse>();
 };
 impl ::buffa::sensitive::Zeroize for JoseOperationResponse {
@@ -5411,6 +5591,16 @@ impl ::buffa::Message for JoseOperationResponse {
                         += 3u64 + ::buffa::encoding::varint_len(inner as u64) as u64
                             + inner as u64;
                 }
+                __buffa::oneof::jose_operation_response::Response::JwkThumbprintSha256(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 3u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
                 __buffa::oneof::jose_operation_response::Response::ContractInfo(x) => {
                     let __slot = __cache.reserve();
                     let inner = x.compute_size(__cache);
@@ -5611,6 +5801,16 @@ impl ::buffa::Message for JoseOperationResponse {
                 ) => {
                     ::buffa::types::put_len_delimited_header(
                         3012u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_operation_response::Response::JwkThumbprintSha256(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        4000u32,
                         u64::from(__cache.consume_next()),
                         buf,
                     );
@@ -6082,6 +6282,28 @@ impl ::buffa::Message for JoseOperationResponse {
                     ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
                     self.response = ::core::option::Option::Some(
                         __buffa::oneof::jose_operation_response::Response::JweDecryptWithProvider(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            4000u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_operation_response::Response::JwkThumbprintSha256(
+                        ref mut existing,
+                    ),
+                ) = self.response
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.response = ::core::option::Option::Some(
+                        __buffa::oneof::jose_operation_response::Response::JwkThumbprintSha256(
                             ::buffa::alloc::boxed::Box::new(val),
                         ),
                     );
@@ -6639,6 +6861,31 @@ impl<'de> ::serde::Deserialize<'de> for JoseOperationResponse {
                                 __r.response = Some(__variant);
                             }
                         }
+                        "jwkThumbprintSha256" | "jwk_thumbprint_sha256" => {
+                            let v: ::core::option::Option<
+                                JoseJwkThumbprintSha256Response,
+                            > = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwkThumbprintSha256Response,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_operation_response::Response::JwkThumbprintSha256(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.response.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'response'",
+                                        ),
+                                    );
+                                }
+                                __r.response = Some(__variant);
+                            }
+                        }
                         "contractInfo" | "contract_info" => {
                             let v: ::core::option::Option<JoseContractInfoResponse> = map
                                 .next_value_seed(
@@ -6778,6 +7025,7 @@ const _: fn() = || {
     __requires_wipe_owner::<JoseJweDeriveKeyRequest>();
     __requires_wipe_owner::<JoseJweEncryptWithProviderRequest>();
     __requires_wipe_owner::<JoseJweDecryptWithProviderRequest>();
+    __requires_wipe_owner::<JoseJwkThumbprintSha256Request>();
     __requires_wipe_owner::<JoseContractInfoRequest>();
 };
 impl ::buffa::sensitive::Zeroize for JoseOperationRequest {
@@ -6983,6 +7231,16 @@ impl ::buffa::Message for JoseOperationRequest {
                         += 3u64 + ::buffa::encoding::varint_len(inner as u64) as u64
                             + inner as u64;
                 }
+                __buffa::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 3u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
                 __buffa::oneof::jose_operation_request::Operation::ContractInfo(x) => {
                     let __slot = __cache.reserve();
                     let inner = x.compute_size(__cache);
@@ -7169,6 +7427,16 @@ impl ::buffa::Message for JoseOperationRequest {
                 ) => {
                     ::buffa::types::put_len_delimited_header(
                         3012u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        4000u32,
                         u64::from(__cache.consume_next()),
                         buf,
                     );
@@ -7609,6 +7877,28 @@ impl ::buffa::Message for JoseOperationRequest {
                     ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
                     self.operation = ::core::option::Option::Some(
                         __buffa::oneof::jose_operation_request::Operation::JweDecryptWithProvider(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            4000u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
+                        ref mut existing,
+                    ),
+                ) = self.operation
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.operation = ::core::option::Option::Some(
+                        __buffa::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
                             ::buffa::alloc::boxed::Box::new(val),
                         ),
                     );
@@ -8110,6 +8400,31 @@ impl<'de> ::serde::Deserialize<'de> for JoseOperationRequest {
                                 )?;
                             if let Some(v) = v {
                                 let __variant = __buffa::oneof::jose_operation_request::Operation::JweDecryptWithProvider(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.operation.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'operation'",
+                                        ),
+                                    );
+                                }
+                                __r.operation = Some(__variant);
+                            }
+                        }
+                        "jwkThumbprintSha256" | "jwk_thumbprint_sha256" => {
+                            let v: ::core::option::Option<
+                                JoseJwkThumbprintSha256Request,
+                            > = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwkThumbprintSha256Request,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_operation_request::Operation::JwkThumbprintSha256(
                                     ::buffa::alloc::boxed::Box::new(v),
                                 );
                                 if __r.operation.is_some() {
@@ -30298,4 +30613,2043 @@ pub mod jose_jwt_claims_parse_response {
     pub use super::__buffa::oneof::jose_jwt_claims_parse_response::Outcome;
     #[doc(inline)]
     pub use super::__buffa::view::oneof::jose_jwt_claims_parse_response::Outcome as OutcomeView;
+}
+/// RFC 7638 SHA-256 over required members only, in lexicographic order.
+/// Each member must be nonempty and at most 8192 bytes in UTF-8. Members are
+/// already JWK text; this operation does not decode, normalize, or validate key
+/// material. Protocol-specific tighter limits belong to the caller.
+/// JSON quotes, backslashes, and controls are escaped deterministically without
+/// Unicode normalization. This extends RFC 7638 section 3.3 for member values
+/// outside its unescaped-value domain.
+/// Rust view: jwk/thumbprint_sha256.rs#JwkThumbprintMembers
+/// Rust oneof view: jwk/thumbprint_sha256.rs#JwkThumbprintMembers = key
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwkThumbprintSha256Request {
+    #[serde(flatten)]
+    pub key: ::core::option::Option<
+        __buffa::oneof::jose_jwk_thumbprint_sha256request::Key,
+    >,
+}
+impl ::core::fmt::Debug for JoseJwkThumbprintSha256Request {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintSha256Request")
+            .field("key", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwkThumbprintSha256Request {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Request";
+}
+impl JoseJwkThumbprintSha256Request {
+    /// Sets this oneof, wiping an earlier value before replacement.
+    #[must_use]
+    pub fn with_key(
+        mut self,
+        value: __buffa::oneof::jose_jwk_thumbprint_sha256request::Key,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.key);
+        self.key = Some(value);
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<JoseJwkThumbprintEcMembers>();
+    __requires_wipe_owner::<JoseJwkThumbprintOkpMembers>();
+    __requires_wipe_owner::<JoseJwkThumbprintRsaMembers>();
+    __requires_wipe_owner::<JoseJwkThumbprintOctMembers>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwkThumbprintSha256Request {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.key);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintSha256Request {}
+impl ::core::ops::Drop for JoseJwkThumbprintSha256Request {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwkThumbprintSha256Request);
+impl ::buffa::MessageName for JoseJwkThumbprintSha256Request {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintSha256Request";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintSha256Request";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Request";
+}
+impl ::buffa::Message for JoseJwkThumbprintSha256Request {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.key {
+            match v {
+                __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.key {
+            match v {
+                __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(x) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(x) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(x) => {
+                    ::buffa::types::put_len_delimited_header(
+                        3u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(x) => {
+                    ::buffa::types::put_len_delimited_header(
+                        4u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(
+                        ref mut existing,
+                    ),
+                ) = self.key
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.key = ::core::option::Option::Some(
+                        __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(
+                        ref mut existing,
+                    ),
+                ) = self.key
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.key = ::core::option::Option::Some(
+                        __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(
+                        ref mut existing,
+                    ),
+                ) = self.key
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.key = ::core::option::Option::Some(
+                        __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(
+                        ref mut existing,
+                    ),
+                ) = self.key
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.key = ::core::option::Option::Some(
+                        __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.key = ::core::option::Option::None;
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwkThumbprintSha256Request {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwkThumbprintSha256Request;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwkThumbprintSha256Request")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwkThumbprintSha256Request, __A::Error> {
+                let mut __r = <JoseJwkThumbprintSha256Request as ::core::default::Default>::default();
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "ec" => {
+                            let v: ::core::option::Option<JoseJwkThumbprintEcMembers> = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwkThumbprintEcMembers,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Ec(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.key.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'key'",
+                                        ),
+                                    );
+                                }
+                                __r.key = Some(__variant);
+                            }
+                        }
+                        "okp" => {
+                            let v: ::core::option::Option<JoseJwkThumbprintOkpMembers> = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwkThumbprintOkpMembers,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Okp(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.key.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'key'",
+                                        ),
+                                    );
+                                }
+                                __r.key = Some(__variant);
+                            }
+                        }
+                        "rsa" => {
+                            let v: ::core::option::Option<JoseJwkThumbprintRsaMembers> = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwkThumbprintRsaMembers,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Rsa(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.key.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'key'",
+                                        ),
+                                    );
+                                }
+                                __r.key = Some(__variant);
+                            }
+                        }
+                        "oct" => {
+                            let v: ::core::option::Option<JoseJwkThumbprintOctMembers> = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwkThumbprintOctMembers,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_jwk_thumbprint_sha256request::Key::Oct(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.key.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'key'",
+                                        ),
+                                    );
+                                }
+                                __r.key = Some(__variant);
+                            }
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwkThumbprintSha256Request {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWK_THUMBPRINT_SHA256REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Request",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwkThumbprintSha256Request>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwkThumbprintSha256Request>,
+    is_wkt: false,
+};
+pub mod jose_jwk_thumbprint_sha256request {
+    #[allow(unused_imports)]
+    use super::*;
+    #[doc(inline)]
+    pub use super::__buffa::oneof::jose_jwk_thumbprint_sha256request::Key;
+    #[doc(inline)]
+    pub use super::__buffa::view::oneof::jose_jwk_thumbprint_sha256request::Key as KeyView;
+}
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwkThumbprintEcMembers {
+    /// SENSITIVE: caller-owned key metadata.
+    ///
+    /// Field 1: `crv`
+    #[serde(
+        rename = "crv",
+        with = "::buffa::json_helpers::string_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    #[serde(default)]
+    pub crv: crate::SecretString,
+    /// SENSITIVE: caller-owned public key coordinate.
+    ///
+    /// Field 2: `x`
+    #[serde(
+        rename = "x",
+        with = "::buffa::json_helpers::string_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    #[serde(default)]
+    pub x: crate::SecretString,
+    /// SENSITIVE: caller-owned public key coordinate.
+    ///
+    /// Field 3: `y`
+    #[serde(
+        rename = "y",
+        with = "::buffa::json_helpers::string_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    #[serde(default)]
+    pub y: crate::SecretString,
+}
+impl ::core::fmt::Debug for JoseJwkThumbprintEcMembers {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintEcMembers")
+            .field("crv", &::core::format_args!("[REDACTED]"))
+            .field("x", &::core::format_args!("[REDACTED]"))
+            .field("y", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwkThumbprintEcMembers {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintEcMembers";
+}
+impl JoseJwkThumbprintEcMembers {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::crv`] to `value`, consuming and returning `self`.
+    pub fn with_crv(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.crv);
+        self.crv = value.into();
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::x`] to `value`, consuming and returning `self`.
+    pub fn with_x(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.x);
+        self.x = value.into();
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::y`] to `value`, consuming and returning `self`.
+    pub fn with_y(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.y);
+        self.y = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwkThumbprintEcMembers {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.crv);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.x);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.y);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintEcMembers {}
+impl ::core::ops::Drop for JoseJwkThumbprintEcMembers {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwkThumbprintEcMembers);
+impl ::buffa::MessageName for JoseJwkThumbprintEcMembers {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintEcMembers";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintEcMembers";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintEcMembers";
+}
+impl ::buffa::Message for JoseJwkThumbprintEcMembers {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.crv.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.crv) as u64;
+        }
+        if !self.x.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.x) as u64;
+        }
+        if !self.y.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.y) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.crv.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.crv, buf);
+        }
+        if !self.x.is_empty() {
+            ::buffa::types::put_string_field(2u32, &self.x, buf);
+        }
+        if !self.y.is_empty() {
+            ::buffa::types::put_string_field(3u32, &self.y, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.crv = ::buffa::types::decode_string_to(buf)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.x = ::buffa::types::decode_string_to(buf)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.y = ::buffa::types::decode_string_to(buf)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.crv = ::core::default::Default::default();
+        self.x = ::core::default::Default::default();
+        self.y = ::core::default::Default::default();
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwkThumbprintEcMembers {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwkThumbprintEcMembers;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwkThumbprintEcMembers")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwkThumbprintEcMembers, __A::Error> {
+                let mut __r = <JoseJwkThumbprintEcMembers as ::core::default::Default>::default();
+                let mut __f_crv = false;
+                let mut __f_x = false;
+                let mut __f_y = false;
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "crv" => {
+                            if __f_crv {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("crv"),
+                                );
+                            }
+                            __f_crv = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretString;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretString,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.crv);
+                            __r.crv = value;
+                        }
+                        "x" => {
+                            if __f_x {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("x"),
+                                );
+                            }
+                            __f_x = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretString;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretString,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.x);
+                            __r.x = value;
+                        }
+                        "y" => {
+                            if __f_y {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("y"),
+                                );
+                            }
+                            __f_y = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretString;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretString,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.y);
+                            __r.y = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwkThumbprintEcMembers {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWK_THUMBPRINT_EC_MEMBERS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintEcMembers",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwkThumbprintEcMembers>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwkThumbprintEcMembers>,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwkThumbprintOkpMembers {
+    /// SENSITIVE: caller-owned key metadata.
+    ///
+    /// Field 1: `crv`
+    #[serde(
+        rename = "crv",
+        with = "::buffa::json_helpers::string_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    #[serde(default)]
+    pub crv: crate::SecretString,
+    /// SENSITIVE: caller-owned public key bytes in JWK encoding.
+    ///
+    /// Field 2: `x`
+    #[serde(
+        rename = "x",
+        with = "::buffa::json_helpers::string_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    #[serde(default)]
+    pub x: crate::SecretString,
+}
+impl ::core::fmt::Debug for JoseJwkThumbprintOkpMembers {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintOkpMembers")
+            .field("crv", &::core::format_args!("[REDACTED]"))
+            .field("x", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwkThumbprintOkpMembers {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintOkpMembers";
+}
+impl JoseJwkThumbprintOkpMembers {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::crv`] to `value`, consuming and returning `self`.
+    pub fn with_crv(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.crv);
+        self.crv = value.into();
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::x`] to `value`, consuming and returning `self`.
+    pub fn with_x(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.x);
+        self.x = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwkThumbprintOkpMembers {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.crv);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.x);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintOkpMembers {}
+impl ::core::ops::Drop for JoseJwkThumbprintOkpMembers {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwkThumbprintOkpMembers);
+impl ::buffa::MessageName for JoseJwkThumbprintOkpMembers {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintOkpMembers";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintOkpMembers";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintOkpMembers";
+}
+impl ::buffa::Message for JoseJwkThumbprintOkpMembers {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.crv.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.crv) as u64;
+        }
+        if !self.x.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.x) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.crv.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.crv, buf);
+        }
+        if !self.x.is_empty() {
+            ::buffa::types::put_string_field(2u32, &self.x, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.crv = ::buffa::types::decode_string_to(buf)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.x = ::buffa::types::decode_string_to(buf)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.crv = ::core::default::Default::default();
+        self.x = ::core::default::Default::default();
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwkThumbprintOkpMembers {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwkThumbprintOkpMembers;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwkThumbprintOkpMembers")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwkThumbprintOkpMembers, __A::Error> {
+                let mut __r = <JoseJwkThumbprintOkpMembers as ::core::default::Default>::default();
+                let mut __f_crv = false;
+                let mut __f_x = false;
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "crv" => {
+                            if __f_crv {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("crv"),
+                                );
+                            }
+                            __f_crv = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretString;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretString,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.crv);
+                            __r.crv = value;
+                        }
+                        "x" => {
+                            if __f_x {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("x"),
+                                );
+                            }
+                            __f_x = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretString;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretString,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.x);
+                            __r.x = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwkThumbprintOkpMembers {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWK_THUMBPRINT_OKP_MEMBERS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintOkpMembers",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwkThumbprintOkpMembers>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwkThumbprintOkpMembers>,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwkThumbprintRsaMembers {
+    /// SENSITIVE: caller-owned public exponent in JWK encoding.
+    ///
+    /// Field 1: `e`
+    #[serde(
+        rename = "e",
+        with = "::buffa::json_helpers::string_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    #[serde(default)]
+    pub e: crate::SecretString,
+    /// SENSITIVE: caller-owned modulus in JWK encoding.
+    ///
+    /// Field 2: `n`
+    #[serde(
+        rename = "n",
+        with = "::buffa::json_helpers::string_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    #[serde(default)]
+    pub n: crate::SecretString,
+}
+impl ::core::fmt::Debug for JoseJwkThumbprintRsaMembers {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintRsaMembers")
+            .field("e", &::core::format_args!("[REDACTED]"))
+            .field("n", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwkThumbprintRsaMembers {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintRsaMembers";
+}
+impl JoseJwkThumbprintRsaMembers {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::e`] to `value`, consuming and returning `self`.
+    pub fn with_e(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.e);
+        self.e = value.into();
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::n`] to `value`, consuming and returning `self`.
+    pub fn with_n(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.n);
+        self.n = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwkThumbprintRsaMembers {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.e);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.n);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintRsaMembers {}
+impl ::core::ops::Drop for JoseJwkThumbprintRsaMembers {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwkThumbprintRsaMembers);
+impl ::buffa::MessageName for JoseJwkThumbprintRsaMembers {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintRsaMembers";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintRsaMembers";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintRsaMembers";
+}
+impl ::buffa::Message for JoseJwkThumbprintRsaMembers {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.e.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.e) as u64;
+        }
+        if !self.n.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.n) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.e.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.e, buf);
+        }
+        if !self.n.is_empty() {
+            ::buffa::types::put_string_field(2u32, &self.n, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.e = ::buffa::types::decode_string_to(buf)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.n = ::buffa::types::decode_string_to(buf)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.e = ::core::default::Default::default();
+        self.n = ::core::default::Default::default();
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwkThumbprintRsaMembers {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwkThumbprintRsaMembers;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwkThumbprintRsaMembers")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwkThumbprintRsaMembers, __A::Error> {
+                let mut __r = <JoseJwkThumbprintRsaMembers as ::core::default::Default>::default();
+                let mut __f_e = false;
+                let mut __f_n = false;
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "e" => {
+                            if __f_e {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("e"),
+                                );
+                            }
+                            __f_e = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretString;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretString,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.e);
+                            __r.e = value;
+                        }
+                        "n" => {
+                            if __f_n {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("n"),
+                                );
+                            }
+                            __f_n = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretString;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretString,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.n);
+                            __r.n = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwkThumbprintRsaMembers {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWK_THUMBPRINT_RSA_MEMBERS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintRsaMembers",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwkThumbprintRsaMembers>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwkThumbprintRsaMembers>,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwkThumbprintOctMembers {
+    /// SENSITIVE: symmetric secret key in JWK encoding.
+    ///
+    /// Field 1: `k`
+    #[serde(
+        rename = "k",
+        with = "::buffa::json_helpers::string_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    #[serde(default)]
+    pub k: crate::SecretString,
+}
+impl ::core::fmt::Debug for JoseJwkThumbprintOctMembers {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintOctMembers")
+            .field("k", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwkThumbprintOctMembers {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintOctMembers";
+}
+impl JoseJwkThumbprintOctMembers {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::k`] to `value`, consuming and returning `self`.
+    pub fn with_k(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.k);
+        self.k = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<crate::SecretString>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwkThumbprintOctMembers {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.k);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintOctMembers {}
+impl ::core::ops::Drop for JoseJwkThumbprintOctMembers {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwkThumbprintOctMembers);
+impl ::buffa::MessageName for JoseJwkThumbprintOctMembers {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintOctMembers";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintOctMembers";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintOctMembers";
+}
+impl ::buffa::Message for JoseJwkThumbprintOctMembers {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.k.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.k) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.k.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.k, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.k = ::buffa::types::decode_string_to(buf)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.k = ::core::default::Default::default();
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwkThumbprintOctMembers {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwkThumbprintOctMembers;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwkThumbprintOctMembers")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwkThumbprintOctMembers, __A::Error> {
+                let mut __r = <JoseJwkThumbprintOctMembers as ::core::default::Default>::default();
+                let mut __f_k = false;
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "k" => {
+                            if __f_k {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field("k"),
+                                );
+                            }
+                            __f_k = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretString;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretString,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.k);
+                            __r.k = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwkThumbprintOctMembers {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWK_THUMBPRINT_OCT_MEMBERS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintOctMembers",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwkThumbprintOctMembers>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwkThumbprintOctMembers>,
+    is_wkt: false,
+};
+/// Rust owner: zeroize::Zeroizing\<\[u8; 32\]\>.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwkThumbprintSha256Result {
+    /// SENSITIVE: 32-byte digest; symmetric-key thumbprints can enable guessing.
+    ///
+    /// Field 1: `digest`
+    #[serde(
+        rename = "digest",
+        with = "::buffa::json_helpers::bytes_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_bytes"
+    )]
+    #[serde(default)]
+    pub digest: crate::SecretBytes,
+}
+impl ::core::fmt::Debug for JoseJwkThumbprintSha256Result {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintSha256Result")
+            .field("digest", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwkThumbprintSha256Result {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Result";
+}
+impl JoseJwkThumbprintSha256Result {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::digest`] to `value`, consuming and returning `self`.
+    pub fn with_digest(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretBytes>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.digest);
+        self.digest = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<crate::SecretBytes>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwkThumbprintSha256Result {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.digest);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintSha256Result {}
+impl ::core::ops::Drop for JoseJwkThumbprintSha256Result {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwkThumbprintSha256Result);
+impl ::buffa::MessageName for JoseJwkThumbprintSha256Result {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintSha256Result";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintSha256Result";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Result";
+}
+impl ::buffa::Message for JoseJwkThumbprintSha256Result {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.digest.is_empty() {
+            size += 1u64 + ::buffa::types::bytes_encoded_len(&self.digest) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.digest.is_empty() {
+            ::buffa::types::put_shared_bytes_field(1u32, &self.digest, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.digest = ::buffa::types::decode_bytes_to(buf)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.digest = ::core::default::Default::default();
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwkThumbprintSha256Result {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwkThumbprintSha256Result;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwkThumbprintSha256Result")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwkThumbprintSha256Result, __A::Error> {
+                let mut __r = <JoseJwkThumbprintSha256Result as ::core::default::Default>::default();
+                let mut __f_digest = false;
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "digest" => {
+                            if __f_digest {
+                                return Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "digest",
+                                    ),
+                                );
+                            }
+                            __f_digest = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretBytes;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretBytes,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::bytes_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.digest);
+                            __r.digest = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwkThumbprintSha256Result {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWK_THUMBPRINT_SHA256RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Result",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwkThumbprintSha256Result>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwkThumbprintSha256Result>,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwkThumbprintSha256Response {
+    #[serde(flatten)]
+    pub outcome: ::core::option::Option<
+        __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome,
+    >,
+}
+impl ::core::fmt::Debug for JoseJwkThumbprintSha256Response {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwkThumbprintSha256Response")
+            .field("outcome", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwkThumbprintSha256Response {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Response";
+}
+impl JoseJwkThumbprintSha256Response {
+    /// Sets this oneof, wiping an earlier value before replacement.
+    #[must_use]
+    pub fn with_outcome(
+        mut self,
+        value: __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.outcome);
+        self.outcome = Some(value);
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<JoseJwkThumbprintSha256Result>();
+    __requires_wipe_owner::<JoseError>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwkThumbprintSha256Response {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.outcome);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwkThumbprintSha256Response {}
+impl ::core::ops::Drop for JoseJwkThumbprintSha256Response {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwkThumbprintSha256Response);
+impl ::buffa::MessageName for JoseJwkThumbprintSha256Response {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwkThumbprintSha256Response";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwkThumbprintSha256Response";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Response";
+}
+impl ::buffa::Message for JoseJwkThumbprintSha256Response {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                        ref mut existing,
+                    ),
+                ) = self.outcome
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.outcome = ::core::option::Option::Some(
+                        __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                        ref mut existing,
+                    ),
+                ) = self.outcome
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.outcome = ::core::option::Option::Some(
+                        __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.outcome = ::core::option::Option::None;
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwkThumbprintSha256Response {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwkThumbprintSha256Response;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwkThumbprintSha256Response")
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwkThumbprintSha256Response, __A::Error> {
+                let mut __r = <JoseJwkThumbprintSha256Response as ::core::default::Default>::default();
+                while let Some(key) = map.next_key::<::buffa::alloc::string::String>()? {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    match key.as_str() {
+                        "result" => {
+                            let v: ::core::option::Option<
+                                JoseJwkThumbprintSha256Result,
+                            > = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwkThumbprintSha256Result,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Result(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.outcome.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'outcome'",
+                                        ),
+                                    );
+                                }
+                                __r.outcome = Some(__variant);
+                            }
+                        }
+                        "error" => {
+                            let v: ::core::option::Option<JoseError> = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseError,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome::Error(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.outcome.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'outcome'",
+                                        ),
+                                    );
+                                }
+                                __r.outcome = Some(__variant);
+                            }
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                Ok(__r)
+            }
+        }
+        d.deserialize_map(_V)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwkThumbprintSha256Response {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWK_THUMBPRINT_SHA256RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwkThumbprintSha256Response",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwkThumbprintSha256Response>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwkThumbprintSha256Response>,
+    is_wkt: false,
+};
+pub mod jose_jwk_thumbprint_sha256response {
+    #[allow(unused_imports)]
+    use super::*;
+    #[doc(inline)]
+    pub use super::__buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome;
+    #[doc(inline)]
+    pub use super::__buffa::view::oneof::jose_jwk_thumbprint_sha256response::Outcome as OutcomeView;
 }

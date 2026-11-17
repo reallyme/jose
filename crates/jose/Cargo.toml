@@ -49,6 +49,7 @@ jose-crypto = [
     "reallyme-crypto/aes",
     "reallyme-crypto/concat-kdf",
     "reallyme-crypto/csprng",
+    "reallyme-crypto/sha2",
     "reallyme-crypto/ed25519",
     "reallyme-crypto/p256",
     "reallyme-crypto/p384",

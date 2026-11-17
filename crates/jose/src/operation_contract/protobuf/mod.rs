@@ -7,6 +7,7 @@
 pub(crate) mod capabilities;
 pub(crate) mod extended;
 mod jwe;
+pub(crate) mod jwk;
 pub(crate) mod jws_provider;
 mod jws_sign;
 mod jws_verify;

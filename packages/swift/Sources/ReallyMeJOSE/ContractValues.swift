@@ -9,6 +9,7 @@ enum JoseContractValues {
   static let compactBytes: Int = 1_048_576
   static let protoJsonBytes: Int = 1_572_864
   static let responseOverheadBytes: Int = 32
+  static let jwkThumbprintMemberBytes: Int = 8_192
   static let protoRecursionDepth: Int = 64
   static let temporalSkewSeconds: UInt64 = 300
   static let defaultTemporalSkewSeconds: UInt64 = 60
@@ -74,6 +75,11 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
   case jwtAudienceMismatch = 390
   case jwtIssuerMismatch = 391
   case jwtSubjectMismatch = 392
+  case jwkThumbprintMissingMember = 400
+  case jwkThumbprintInvalidMemberType = 401
+  case jwkThumbprintUnsupportedKeyType = 402
+  case jwkThumbprintInvalidJSONObject = 403
+  case jwkThumbprintMemberTooLarge = 404
   case commonMalformedProtobuf = 700
   case commonMalformedJSON = 701
   case commonMissingOperation = 702
@@ -87,6 +93,8 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
   case backendInternal = 900
   case backendJSONSerialization = 901
   case backendKeyDerivationFailed = 902
+  case backendJwkThumbprintSerialization = 940
+  case backendJwkThumbprintAllocation = 941
 
   var branch: ReallyMeJOSEErrorBranch {
     switch self {
@@ -147,6 +155,11 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
     case .jwtAudienceMismatch: .primitive
     case .jwtIssuerMismatch: .primitive
     case .jwtSubjectMismatch: .primitive
+    case .jwkThumbprintMissingMember: .primitive
+    case .jwkThumbprintInvalidMemberType: .primitive
+    case .jwkThumbprintUnsupportedKeyType: .primitive
+    case .jwkThumbprintInvalidJSONObject: .primitive
+    case .jwkThumbprintMemberTooLarge: .primitive
     case .commonMalformedProtobuf: .primitive
     case .commonMalformedJSON: .primitive
     case .commonMissingOperation: .primitive
@@ -160,6 +173,8 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
     case .backendInternal: .backend
     case .backendJSONSerialization: .backend
     case .backendKeyDerivationFailed: .backend
+    case .backendJwkThumbprintSerialization: .backend
+    case .backendJwkThumbprintAllocation: .backend
     }
   }
 

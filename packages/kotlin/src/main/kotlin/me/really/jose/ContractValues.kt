@@ -11,6 +11,7 @@ internal object JoseContractValues {
     const val COMPACT_BYTES: Int = 1048576
     const val PROTO_JSON_BYTES: Int = 1572864
     const val RESPONSE_OVERHEAD_BYTES: Int = 32
+    const val JWK_THUMBPRINT_MEMBER_BYTES: Int = 8192
     const val PROTO_RECURSION_DEPTH: Int = 64
     const val TEMPORAL_SKEW_SECONDS: Long = 300L
     const val DEFAULT_TEMPORAL_SKEW_SECONDS: Long = 60L
@@ -76,6 +77,11 @@ public enum class ReallyMeJoseErrorReason(public val code: Int, internal val bra
     JWT_AUDIENCE_MISMATCH(390, ReallyMeJoseErrorBranch.PRIMITIVE),
     JWT_ISSUER_MISMATCH(391, ReallyMeJoseErrorBranch.PRIMITIVE),
     JWT_SUBJECT_MISMATCH(392, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWK_THUMBPRINT_MISSING_MEMBER(400, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWK_THUMBPRINT_INVALID_MEMBER_TYPE(401, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE(402, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWK_THUMBPRINT_INVALID_JSON_OBJECT(403, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWK_THUMBPRINT_MEMBER_TOO_LARGE(404, ReallyMeJoseErrorBranch.PRIMITIVE),
     COMMON_MALFORMED_PROTOBUF(700, ReallyMeJoseErrorBranch.PRIMITIVE),
     COMMON_MALFORMED_JSON(701, ReallyMeJoseErrorBranch.PRIMITIVE),
     COMMON_MISSING_OPERATION(702, ReallyMeJoseErrorBranch.PRIMITIVE),
@@ -89,6 +95,8 @@ public enum class ReallyMeJoseErrorReason(public val code: Int, internal val bra
     BACKEND_INTERNAL(900, ReallyMeJoseErrorBranch.BACKEND),
     BACKEND_JSON_SERIALIZATION(901, ReallyMeJoseErrorBranch.BACKEND),
     BACKEND_KEY_DERIVATION_FAILED(902, ReallyMeJoseErrorBranch.BACKEND),
+    BACKEND_JWK_THUMBPRINT_SERIALIZATION(940, ReallyMeJoseErrorBranch.BACKEND),
+    BACKEND_JWK_THUMBPRINT_ALLOCATION(941, ReallyMeJoseErrorBranch.BACKEND),
     ;
     internal companion object {
         private val byCode: Map<Int, ReallyMeJoseErrorReason> = entries.associateBy { it.code }

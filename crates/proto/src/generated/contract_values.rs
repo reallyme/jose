@@ -15,6 +15,8 @@ pub const COMPACT_BYTES: usize = 1048576;
 pub const PROTO_JSON_BYTES: usize = 1572864;
 /// Schema-defined response overhead bytes.
 pub const RESPONSE_OVERHEAD_BYTES: usize = 32;
+/// Schema-defined jwk thumbprint member bytes.
+pub const JWK_THUMBPRINT_MEMBER_BYTES: usize = 8192;
 /// Schema-defined proto recursion depth.
 pub const PROTO_RECURSION_DEPTH: u32 = 64;
 /// Schema-defined temporal skew seconds.
@@ -171,6 +173,21 @@ pub const fn error_branch(reason: JoseErrorReason) -> Option<JoseErrorBranch> {
         }
         JoseErrorReason::JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH => Some(JoseErrorBranch::Primitive),
         JoseErrorReason::JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH => Some(JoseErrorBranch::Primitive),
+        JoseErrorReason::JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE => {
+            Some(JoseErrorBranch::Primitive)
+        }
         JoseErrorReason::JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF => {
             Some(JoseErrorBranch::Primitive)
         }
@@ -202,6 +219,12 @@ pub const fn error_branch(reason: JoseErrorReason) -> Option<JoseErrorBranch> {
             Some(JoseErrorBranch::Backend)
         }
         JoseErrorReason::JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED => {
+            Some(JoseErrorBranch::Backend)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION => {
+            Some(JoseErrorBranch::Backend)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION => {
             Some(JoseErrorBranch::Backend)
         }
         JoseErrorReason::Unspecified => None,

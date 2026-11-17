@@ -44,6 +44,33 @@ export function assertNativeBindings({ schema, messages, enumNames, sources, fai
     new Set([...body.matchAll(/^\s*(?:(?:optional|repeated)\s+)?\w+\s+(\w+)\s*=/gmu)].map((match) => match[1])),
   ]));
   const viewFields = new Map();
+  const oneofViews = new Set();
+  const nativeCode = [...code.values()].join("\n");
+  for (const match of schema.matchAll(new RegExp(`// Rust oneof view: ${identityPattern} = (\\w+)`, "gu"))) {
+    const identity = `${match[1]}#${match[2]}`;
+    const owner = messages.find(({ start }) => start > match.index);
+    const oneof = owner?.body.match(new RegExp(`oneof ${match[3]} \\{([^}]+)\\}`, "u"))?.[1];
+    const declaration = code.get(match[1])?.match(new RegExp(`^pub enum ${match[2]}(?:<[^>]+>)? \\{([\\s\\S]*?)^\\}`, "mu"))?.[1];
+    if (!views.has(identity) || oneof === undefined || declaration === undefined) {
+      throw new TypeError("native oneof view lacks a schema owner");
+    }
+    const expected = [...oneof.matchAll(/^\s*(\w+)\s+(\w+)\s*=/gmu)];
+    const actual = [...declaration.matchAll(/^ {4}(\w+)\s*\{([^}]+)\}/gmu)];
+    if (expected.length === 0 || actual.length !== expected.length) {
+      throw new TypeError("native oneof view variants differ from the schema");
+    }
+    for (const [, type, field] of expected) {
+      const name = field.split("_").map((part) => part[0].toUpperCase() + part.slice(1)).join("");
+      const variant = actual.find((entry) => entry[1] === name);
+      const fields = variant === undefined ? [] : [...variant[2].matchAll(/\b(\w+)\s*:/gu)].map((entry) => entry[1]).sort();
+      if (JSON.stringify(fields) !== JSON.stringify([...(schemaFields.get(type) ?? [])].sort())) {
+        throw new TypeError("native oneof view fields differ from the schema");
+      }
+    }
+    const conversions = [...nativeCode.matchAll(new RegExp(`impl(?:<[^>]+>)?\\s+TryFrom<&(?:'\\w+\\s+)?${owner.name}>\\s+for\\s+${match[2]}(?:<[^>]+>)?\\s*\\{`, "gu"))];
+    if (conversions.length !== 1) throw new TypeError("native oneof view requires one total schema conversion");
+    oneofViews.add(identity);
+  }
   for (const match of bindings("view")) {
     const owner = messages.find(({ start, end }) => match.index >= start && match.index < end)
       ?? messages.find(({ start }) => start > match.index);
@@ -52,7 +79,6 @@ export function assertNativeBindings({ schema, messages, enumNames, sources, fai
     viewFields.set(identity, new Set([...(viewFields.get(identity) ?? []), ...schemaFields.get(owner.name)]));
   }
   const checkedFields = new Set();
-  const nativeCode = [...code.values()].join("\n");
   for (const [, name] of schema.matchAll(/\/\/ Rust selector: (\w+); (?:public|crate);/gu)) {
     const expected = [...schema.matchAll(new RegExp(`// Rust variant: ${name}\\.(\\w+)`, "gu"))].map((match) => match[1]).sort();
     const declarations = [...nativeCode.matchAll(new RegExp(`pub(?:\\(crate\\))? enum ${name} \\{([^}]+)\\}`, "gu"))];
@@ -65,7 +91,7 @@ export function assertNativeBindings({ schema, messages, enumNames, sources, fai
   for (const [path, source] of code) {
     if (/(?:^|\/)(?:tests(?:\/|\.rs$)|[^/]*_tests\.rs$)/u.test(path)) continue;
     for (const [, name] of source.matchAll(/^pub enum (\w+)\s*/gmu)) {
-      if (name.endsWith("Error")) continue;
+      if (/(?:Error|ErrorReason)$/u.test(name) || oneofViews.has(`${path}#${name}`)) continue;
       const conversions = [...nativeCode.matchAll(new RegExp(`\\bimpl\\s+TryFrom<([^;{]+)>\\s+for\\s+(?:\\w+::)*${name}\\s*\\{`, "gu"))];
       const input = conversions.length === 1 ? conversions[0][1].replace(/\s+/gu, "") : "";
       const schemaEnum = /^(?:\w+::)*EnumValue<((?:\w+::)*\w+)>$/u.exec(input)?.[1].split("::").at(-1);
@@ -91,7 +117,7 @@ export function assertNativeBindings({ schema, messages, enumNames, sources, fai
     for (const [, name] of source.matchAll(/^pub const (\w+)\s*:/gmu)) {
       if (!constants.has(`${path}#${name}`)) throw new TypeError("public native constant lacks schema binding");
     }
-    for (const [, error, body] of source.matchAll(/pub enum (\w+Error)\s*\{([\s\S]*?)^\}/gmu)) {
+    for (const [, error, body] of source.matchAll(/pub enum (\w+Error(?:Reason)?)\s*\{([\s\S]*?)^\}/gmu)) {
       for (const [, variant] of body.matchAll(/^ {4}(\w+)(?=\s*[({,])/gmu)) {
         const identity = `${error}::${variant}`;
         if (!failureBindings.includes(identity) || !failures.includes(identity) || !errorTests.includes(identity)) {

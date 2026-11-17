@@ -116,6 +116,9 @@ pub mod jose_operation_response {
                 Self::JweDecryptWithProvider(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
+                Self::JwkThumbprintSha256(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
                 Self::ContractInfo(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
@@ -250,6 +253,13 @@ pub mod jose_operation_response {
                 >,
             >,
         ),
+        JwkThumbprintSha256(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwkThumbprintSha256ResponseView<
+                    'a,
+                >,
+            >,
+        ),
         ContractInfo(
             ::buffa::alloc::boxed::Box<
                 super::super::super::super::__buffa::view::JoseContractInfoResponseView<
@@ -325,6 +335,9 @@ pub mod jose_operation_request {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JweDecryptWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwkThumbprintSha256(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::ContractInfo(value) => {
@@ -456,6 +469,13 @@ pub mod jose_operation_request {
         JweDecryptWithProvider(
             ::buffa::alloc::boxed::Box<
                 super::super::super::super::__buffa::view::JoseJweDecryptWithProviderRequestView<
+                    'a,
+                >,
+            >,
+        ),
+        JwkThumbprintSha256(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwkThumbprintSha256RequestView<
                     'a,
                 >,
             >,
@@ -1164,6 +1184,100 @@ pub mod jose_jwt_claims_parse_response {
         Result(
             ::buffa::alloc::boxed::Box<
                 super::super::super::super::__buffa::view::JoseJwtClaimsParseResultView<
+                    'a,
+                >,
+            >,
+        ),
+        Error(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseErrorView<'a>,
+            >,
+        ),
+    }
+    impl<'a> ::core::fmt::Debug for Outcome<'a> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.write_str("Outcome([REDACTED])")
+        }
+    }
+}
+pub mod jose_jwk_thumbprint_sha256request {
+    #[allow(unused_imports)]
+    use super::*;
+    impl<'a> ::buffa::sensitive::Zeroize for Key<'a> {
+        fn zeroize(&mut self) {
+            match self {
+                Self::Ec(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Okp(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Rsa(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Oct(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+            }
+        }
+    }
+    impl<'a> ::buffa::sensitive::ZeroizeOnDrop for Key<'a> {}
+    impl<'a> ::core::ops::Drop for Key<'a> {
+        fn drop(&mut self) {
+            ::buffa::sensitive::Zeroize::zeroize(self);
+        }
+    }
+    #[derive(Clone)]
+    pub enum Key<'a> {
+        Ec(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwkThumbprintEcMembersView<
+                    'a,
+                >,
+            >,
+        ),
+        Okp(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwkThumbprintOkpMembersView<
+                    'a,
+                >,
+            >,
+        ),
+        Rsa(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwkThumbprintRsaMembersView<
+                    'a,
+                >,
+            >,
+        ),
+        Oct(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwkThumbprintOctMembersView<
+                    'a,
+                >,
+            >,
+        ),
+    }
+    impl<'a> ::core::fmt::Debug for Key<'a> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.write_str("Key([REDACTED])")
+        }
+    }
+}
+pub mod jose_jwk_thumbprint_sha256response {
+    #[allow(unused_imports)]
+    use super::*;
+    impl<'a> ::buffa::sensitive::Zeroize for Outcome<'a> {
+        fn zeroize(&mut self) {
+            match self {
+                Self::Result(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Error(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+            }
+        }
+    }
+    impl<'a> ::buffa::sensitive::ZeroizeOnDrop for Outcome<'a> {}
+    impl<'a> ::core::ops::Drop for Outcome<'a> {
+        fn drop(&mut self) {
+            ::buffa::sensitive::Zeroize::zeroize(self);
+        }
+    }
+    #[derive(Clone)]
+    pub enum Outcome<'a> {
+        Result(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwkThumbprintSha256ResultView<
                     'a,
                 >,
             >,

@@ -50,6 +50,7 @@ func clearSensitiveFields(_ message: inout ReallyMeProtoJoseOperationResponse) {
   case .jweDeriveKey: clearSensitiveFields(&message.jweDeriveKey)
   case .jweEncryptWithProvider: clearSensitiveFields(&message.jweEncryptWithProvider)
   case .jweDecryptWithProvider: clearSensitiveFields(&message.jweDecryptWithProvider)
+  case .jwkThumbprintSha256: clearSensitiveFields(&message.jwkThumbprintSha256)
   case .contractInfo: clearSensitiveFields(&message.contractInfo)
   case nil: break
   }
@@ -77,6 +78,7 @@ func clearSensitiveFields(_ message: inout ReallyMeProtoJoseOperationRequest) {
   case .jweDeriveKey: clearSensitiveFields(&message.jweDeriveKey)
   case .jweEncryptWithProvider: clearSensitiveFields(&message.jweEncryptWithProvider)
   case .jweDecryptWithProvider: clearSensitiveFields(&message.jweDecryptWithProvider)
+  case .jwkThumbprintSha256: clearSensitiveFields(&message.jwkThumbprintSha256)
   case .contractInfo: clearSensitiveFields(&message.contractInfo)
   case nil: break
   }
@@ -490,4 +492,45 @@ func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwtClaimsParseRespon
   case nil: break
   }
   message = ReallyMeProtoJoseJwtClaimsParseResponse()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwkThumbprintSha256Request) {
+  switch message.key {
+  case .ec: clearSensitiveFields(&message.ec)
+  case .okp: clearSensitiveFields(&message.okp)
+  case .rsa: clearSensitiveFields(&message.rsa)
+  case .oct: clearSensitiveFields(&message.oct)
+  case nil: break
+  }
+  message = ReallyMeProtoJoseJwkThumbprintSha256Request()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwkThumbprintEcMembers) {
+  message = ReallyMeProtoJoseJwkThumbprintEcMembers()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwkThumbprintOkpMembers) {
+  message = ReallyMeProtoJoseJwkThumbprintOkpMembers()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwkThumbprintRsaMembers) {
+  message = ReallyMeProtoJoseJwkThumbprintRsaMembers()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwkThumbprintOctMembers) {
+  message = ReallyMeProtoJoseJwkThumbprintOctMembers()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwkThumbprintSha256Result) {
+  ReallyMeJOSEMemory.clearOwned(&message.digest)
+  message = ReallyMeProtoJoseJwkThumbprintSha256Result()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwkThumbprintSha256Response) {
+  switch message.outcome {
+  case .result: clearSensitiveFields(&message.result)
+  case .error: clearSensitiveFields(&message.error)
+  case nil: break
+  }
+  message = ReallyMeProtoJoseJwkThumbprintSha256Response()
 }

@@ -102,6 +102,13 @@ pub mod __buffa {
         reg.register_json_any(super::__JOSE_JWT_CLAIMS_PARSE_REQUEST_JSON_ANY);
         reg.register_json_any(super::__JOSE_JWT_CLAIMS_PARSE_RESULT_JSON_ANY);
         reg.register_json_any(super::__JOSE_JWT_CLAIMS_PARSE_RESPONSE_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWK_THUMBPRINT_SHA256REQUEST_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWK_THUMBPRINT_EC_MEMBERS_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWK_THUMBPRINT_OKP_MEMBERS_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWK_THUMBPRINT_RSA_MEMBERS_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWK_THUMBPRINT_OCT_MEMBERS_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWK_THUMBPRINT_SHA256RESULT_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWK_THUMBPRINT_SHA256RESPONSE_JSON_ANY);
     }
     impl ::buffa::json_helpers::ProtoElemJson for crate::SecretString {
         fn serialize_proto_json<__S: ::serde::Serializer>(
@@ -258,5 +265,19 @@ pub use self::__buffa::view::JoseJwtClaimsParseRequestView;
 pub use self::__buffa::view::JoseJwtClaimsParseResultView;
 #[doc(inline)]
 pub use self::__buffa::view::JoseJwtClaimsParseResponseView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwkThumbprintSha256RequestView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwkThumbprintEcMembersView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwkThumbprintOkpMembersView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwkThumbprintRsaMembersView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwkThumbprintOctMembersView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwkThumbprintSha256ResultView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwkThumbprintSha256ResponseView;
 #[doc(inline)]
 pub use self::__buffa::register_types;

@@ -4,7 +4,7 @@
 
 //! Canonical versioned protobuf responses for executable JOSE operations.
 
-use crate::operation_contract::protobuf::{capabilities, extended};
+use crate::operation_contract::protobuf::{capabilities, extended, jwk};
 use crate::operation_contract::providers::{BuiltinProviders, OperationProviders};
 use buffa::{EnumValue, Message};
 use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
@@ -19,14 +19,13 @@ use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
         jose_jwt_verify_response::Outcome as JwtVerifyOutcome,
         jose_operation_request::Operation as RequestOperation, jose_operation_response::Response,
     },
-    JoseError, JoseErrorReason, JoseOperationContractVersion, JoseOperationRequest,
-    JoseOperationResponse,
+    JoseErrorReason, JoseOperationContractVersion, JoseOperationRequest, JoseOperationResponse,
 };
 use zeroize::Zeroizing;
 
 use super::{
     decode_json, decode_protobuf, decode_protobuf_with_limit, encode_protobuf, jose_error,
-    validate_jose_error, JoseWireError, JoseWireResult, MAX_JOSE_PROTO_MESSAGE_BYTES,
+    JoseWireError, JoseWireResult, MAX_JOSE_PROTO_MESSAGE_BYTES,
     MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES,
 };
 use crate::operation_contract::protobuf::{
@@ -80,6 +79,9 @@ pub fn execute_operation_request_with_providers<R: SecureRandom + ?Sized>(
     };
 
     match &mut operation {
+        RequestOperation::JwkThumbprintSha256(request) => {
+            jwk_thumbprint_sha256_response(jwk::thumbprint(request))
+        }
         RequestOperation::JwsSign(request) => {
             jws_sign_response(sign_jws_request(core::mem::take(request.as_mut())))
         }
@@ -201,6 +203,18 @@ fn validate_response(
         return Err(backend_output_error());
     };
     match response {
+        Response::JwkThumbprintSha256(response) => {
+            require_operation(expected_operation, JoseOperationKind::JwkThumbprintSha256)?;
+            match &response.outcome {
+                Some(JwkThumbprintSha256Outcome::Result(result))
+                    if result.digest.len() == crate::jwk::SHA256_DIGEST_BYTES =>
+                {
+                    Ok(())
+                }
+                Some(JwkThumbprintSha256Outcome::Error(error)) => validate_response_error(error),
+                Some(JwkThumbprintSha256Outcome::Result(_)) | None => Err(backend_output_error()),
+            }
+        }
         Response::BoundaryError(error) => validate_response_error(error),
         Response::JwsSign(response) => {
             require_operation(expected_operation, JoseOperationKind::JwsSign)?;
@@ -378,32 +392,9 @@ fn validate_response(
     }
 }
 
-fn validate_contract_version(
-    version: EnumValue<JoseOperationContractVersion>,
-) -> JoseWireResult<()> {
-    if version.as_known() == Some(JoseOperationContractVersion::JOSE_OPERATION_CONTRACT_VERSION_V2)
-    {
-        Ok(())
-    } else {
-        Err(backend_output_error())
-    }
-}
-
 #[cfg(kani)]
 #[path = "operation_response_proofs.rs"]
 mod proofs;
-
-fn require_operation(actual: JoseOperationKind, expected: JoseOperationKind) -> JoseWireResult<()> {
-    if actual == expected {
-        Ok(())
-    } else {
-        Err(backend_output_error())
-    }
-}
-
-fn validate_response_error(error: &JoseError) -> JoseWireResult<()> {
-    validate_jose_error(error).map_err(|_| backend_output_error())
-}
 
 fn max_response_bytes() -> JoseWireResult<usize> {
     MAX_JOSE_PROTO_MESSAGE_BYTES
@@ -427,6 +418,7 @@ fn encode_response_or_error(response: JoseOperationResponse) -> Zeroizing<Vec<u8
 fn operation_scoped_backend_error(mut response: JoseOperationResponse) -> JoseOperationResponse {
     let error = backend_output_error();
     match response.response.take() {
+        Some(Response::JwkThumbprintSha256(_)) => jwk_thumbprint_sha256_response(Err(error)),
         Some(Response::JwsSign(_)) => jws_sign_response(Err(error)),
         Some(Response::JwsVerify(_)) => jws_verify_response(Err(error)),
         Some(Response::JwsSignWithProvider(_)) => jws_sign_with_provider_response(Err(error)),
@@ -473,6 +465,7 @@ use crate::api::contract::__buffa::oneof::{
     jose_jwe_decrypt_with_provider_response::Outcome as JweDecryptWithProviderOutcome,
     jose_jwe_derive_key_response::Outcome as JweDeriveKeyOutcome,
     jose_jwe_encrypt_with_provider_response::Outcome as JweEncryptWithProviderOutcome,
+    jose_jwk_thumbprint_sha256response::Outcome as JwkThumbprintSha256Outcome,
     jose_jws_inspect_response::Outcome as JwsInspectOutcome,
     jose_jwt_claims_parse_response::Outcome as JwtClaimsParseOutcome,
     jose_jwt_sign_with_provider_response::Outcome as JwtSignWithProviderOutcome,
@@ -485,13 +478,18 @@ mod build_response;
 use build_response::{
     contract_info_response, jwe_decrypt_response, jwe_decrypt_with_provider_response,
     jwe_derive_key_response, jwe_encrypt_response, jwe_encrypt_with_provider_response,
-    jws_inspect_response, jws_sign_response, jws_sign_with_provider_response, jws_verify_response,
-    jws_verify_with_provider_response, jwt_claims_parse_response, jwt_decode_unsigned_response,
-    jwt_encode_unsigned_response, jwt_sign_response, jwt_sign_with_provider_response,
-    jwt_verify_response, signature_sign_response, signature_suite_info_response,
-    signature_verify_response,
+    jwk_thumbprint_sha256_response, jws_inspect_response, jws_sign_response,
+    jws_sign_with_provider_response, jws_verify_response, jws_verify_with_provider_response,
+    jwt_claims_parse_response, jwt_decode_unsigned_response, jwt_encode_unsigned_response,
+    jwt_sign_response, jwt_sign_with_provider_response, jwt_verify_response,
+    signature_sign_response, signature_suite_info_response, signature_verify_response,
 };
 
 #[cfg(kani)]
 #[path = "jwe_response_width_proofs.rs"]
 mod jwe_response_width_proofs;
+
+mod validate_response_policy;
+use validate_response_policy::{
+    require_operation, validate_contract_version, validate_response_error,
+};

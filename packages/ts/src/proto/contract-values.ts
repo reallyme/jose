@@ -33,6 +33,7 @@ export const STRICT_TEMPORAL_DEFAULTS = Object.freeze({ requireExp: true, requir
 export const COMPACT_BYTES = 1048576;
 export const PROTO_JSON_BYTES = 1572864;
 export const RESPONSE_OVERHEAD_BYTES = 32;
+export const JWK_THUMBPRINT_MEMBER_BYTES = 8192;
 export const PROTO_RECURSION_DEPTH = 64;
 export const TEMPORAL_SKEW_SECONDS = 300n;
 export const DEFAULT_TEMPORAL_SKEW_SECONDS = 60n;
@@ -97,6 +98,11 @@ export const errorBranch = (reason: JoseErrorReason): ReallyMeJoseErrorBranch | 
     case JoseErrorReason.JWT_AUDIENCE_MISMATCH: return "primitive";
     case JoseErrorReason.JWT_ISSUER_MISMATCH: return "primitive";
     case JoseErrorReason.JWT_SUBJECT_MISMATCH: return "primitive";
+    case JoseErrorReason.JWK_THUMBPRINT_MISSING_MEMBER: return "primitive";
+    case JoseErrorReason.JWK_THUMBPRINT_INVALID_MEMBER_TYPE: return "primitive";
+    case JoseErrorReason.JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE: return "primitive";
+    case JoseErrorReason.JWK_THUMBPRINT_INVALID_JSON_OBJECT: return "primitive";
+    case JoseErrorReason.JWK_THUMBPRINT_MEMBER_TOO_LARGE: return "primitive";
     case JoseErrorReason.COMMON_MALFORMED_PROTOBUF: return "primitive";
     case JoseErrorReason.COMMON_MALFORMED_JSON: return "primitive";
     case JoseErrorReason.COMMON_MISSING_OPERATION: return "primitive";
@@ -110,6 +116,8 @@ export const errorBranch = (reason: JoseErrorReason): ReallyMeJoseErrorBranch | 
     case JoseErrorReason.BACKEND_INTERNAL: return "backend";
     case JoseErrorReason.BACKEND_JSON_SERIALIZATION: return "backend";
     case JoseErrorReason.BACKEND_KEY_DERIVATION_FAILED: return "backend";
+    case JoseErrorReason.BACKEND_JWK_THUMBPRINT_SERIALIZATION: return "backend";
+    case JoseErrorReason.BACKEND_JWK_THUMBPRINT_ALLOCATION: return "backend";
     default: return undefined;
   }
 };

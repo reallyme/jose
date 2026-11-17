@@ -7,6 +7,7 @@
 //! Total native failure mappings derived from schema bindings.
 
 use crate::jwe::JweError;
+use crate::jwk::JwkThumbprintErrorReason;
 use crate::jws::suites::{eddsa::JwsEddsaError, es256::JwsEs256Error};
 use crate::jwt::JwtError;
 use crate::operation_contract::jws::{
@@ -206,6 +207,35 @@ pub(crate) const fn jwt(error: &JwtError) -> JoseWireError {
         ),
         JwtError::Base64Url => JoseWireError::primitive_internal(
             JoseErrorReason::JOSE_ERROR_REASON_COMMON_INVALID_ENCODING,
+        ),
+    }
+}
+
+pub(crate) const fn jwk_thumbprint(error: &JwkThumbprintErrorReason) -> JoseWireError {
+    match error {
+        JwkThumbprintErrorReason::MissingMember => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER,
+        ),
+        JwkThumbprintErrorReason::InvalidMemberType => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE,
+        ),
+        JwkThumbprintErrorReason::UnsupportedKeyType => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE,
+        ),
+        JwkThumbprintErrorReason::InvalidJsonObject => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT,
+        ),
+        JwkThumbprintErrorReason::MemberTooLarge => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE,
+        ),
+        JwkThumbprintErrorReason::LengthOverflow => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW,
+        ),
+        JwkThumbprintErrorReason::Serialization => JoseWireError::backend_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION,
+        ),
+        JwkThumbprintErrorReason::Allocation => JoseWireError::backend_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION,
         ),
     }
 }

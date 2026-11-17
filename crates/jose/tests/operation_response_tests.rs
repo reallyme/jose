@@ -51,6 +51,7 @@ include!("operation_response_tests/extended.rs");
 include!("operation_response_tests/providers.rs");
 include!("operation_response_tests/cross_lane.rs");
 include!("operation_response_tests/dispatch.rs");
+include!("operation_response_tests/jwk.rs");
 
 #[test]
 fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std::error::Error>> {

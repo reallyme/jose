@@ -47,6 +47,7 @@ public  final class JoseOperationResponse extends
         || (hasJweDeriveKey() && getJweDeriveKey().reallyMeHasUnknownFieldsForValidation())
         || (hasJweEncryptWithProvider() && getJweEncryptWithProvider().reallyMeHasUnknownFieldsForValidation())
         || (hasJweDecryptWithProvider() && getJweDecryptWithProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwkThumbprintSha256() && getJwkThumbprintSha256().reallyMeHasUnknownFieldsForValidation())
         || (hasContractInfo() && getContractInfo().reallyMeHasUnknownFieldsForValidation());
   }
 
@@ -86,6 +87,7 @@ public  final class JoseOperationResponse extends
     JWE_DERIVE_KEY(3010),
     JWE_ENCRYPT_WITH_PROVIDER(3011),
     JWE_DECRYPT_WITH_PROVIDER(3012),
+    JWK_THUMBPRINT_SHA256(4000),
     CONTRACT_INFO(7000),
     RESPONSE_NOT_SET(0);
     private final int value;
@@ -122,6 +124,7 @@ public  final class JoseOperationResponse extends
         case 3010: return JWE_DERIVE_KEY;
         case 3011: return JWE_ENCRYPT_WITH_PROVIDER;
         case 3012: return JWE_DECRYPT_WITH_PROVIDER;
+        case 4000: return JWK_THUMBPRINT_SHA256;
         case 7000: return CONTRACT_INFO;
         case 0: return RESPONSE_NOT_SET;
         default: return null;
@@ -1262,6 +1265,56 @@ public  final class JoseOperationResponse extends
    */
   private void clearJweDecryptWithProvider() {
     if (responseCase_ == 3012) {
+      responseCase_ = 0;
+      response_ = null;
+    }
+  }
+
+  public static final int JWK_THUMBPRINT_SHA256_FIELD_NUMBER = 4000;
+  /**
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwkThumbprintSha256() {
+    return responseCase_ == 4000;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwkThumbprintSha256Response getJwkThumbprintSha256() {
+    if (responseCase_ == 4000) {
+       return (me.really.jose.v1.JoseJwkThumbprintSha256Response) response_;
+    }
+    return me.really.jose.v1.JoseJwkThumbprintSha256Response.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   */
+  private void setJwkThumbprintSha256(me.really.jose.v1.JoseJwkThumbprintSha256Response value) {
+    java.util.Objects.requireNonNull(value);
+    response_ = value;
+    responseCase_ = 4000;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   */
+  private void mergeJwkThumbprintSha256(me.really.jose.v1.JoseJwkThumbprintSha256Response value) {
+    java.util.Objects.requireNonNull(value);
+    if (responseCase_ == 4000 &&
+        response_ != me.really.jose.v1.JoseJwkThumbprintSha256Response.getDefaultInstance()) {
+      response_ = me.really.jose.v1.JoseJwkThumbprintSha256Response.newBuilder((me.really.jose.v1.JoseJwkThumbprintSha256Response) response_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      response_ = value;
+    }
+    responseCase_ = 4000;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   */
+  private void clearJwkThumbprintSha256() {
+    if (responseCase_ == 4000) {
       responseCase_ = 0;
       response_ = null;
     }
@@ -2539,6 +2592,54 @@ public  final class JoseOperationResponse extends
     }
 
     /**
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwkThumbprintSha256() {
+      return instance.hasJwkThumbprintSha256();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwkThumbprintSha256Response getJwkThumbprintSha256() {
+      return instance.getJwkThumbprintSha256();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    public Builder setJwkThumbprintSha256(me.really.jose.v1.JoseJwkThumbprintSha256Response value) {
+      copyOnWrite();
+      instance.setJwkThumbprintSha256(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    public Builder setJwkThumbprintSha256(
+        me.really.jose.v1.JoseJwkThumbprintSha256Response.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwkThumbprintSha256(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    public Builder mergeJwkThumbprintSha256(me.really.jose.v1.JoseJwkThumbprintSha256Response value) {
+      copyOnWrite();
+      instance.mergeJwkThumbprintSha256(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Response jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    public Builder clearJwkThumbprintSha256() {
+      copyOnWrite();
+      instance.clearJwkThumbprintSha256();
+      return this;
+    }
+
+    /**
      * <code>.reallyme.jose.v1.JoseContractInfoResponse contract_info = 7000 [json_name = "contractInfo"];</code>
      */
     @java.lang.Override
@@ -2625,14 +2726,15 @@ public  final class JoseOperationResponse extends
             me.really.jose.v1.JoseJweDeriveKeyResponse.class,
             me.really.jose.v1.JoseJweEncryptWithProviderResponse.class,
             me.really.jose.v1.JoseJweDecryptWithProviderResponse.class,
+            me.really.jose.v1.JoseJwkThumbprintSha256Response.class,
             me.really.jose.v1.JoseContractInfoResponse.class,
           };
           java.lang.String info =
-              "\u0000\u0016\u0001\u0000\n\u1b58\u0016\u0000\u0000\u0000\n\f\u0384<\u0000\u03e8<" +
+              "\u0000\u0017\u0001\u0000\n\u1b58\u0017\u0000\u0000\u0000\n\f\u0384<\u0000\u03e8<" +
               "\u0000\u03e9<\u0000\u03f2<\u0000\u03f3<\u0000\u03f4<\u0000\u03f5<\u0000\u03f6<\u0000" +
               "\u03f7<\u0000\u07d0<\u0000\u07d1<\u0000\u07d2<\u0000\u07d3<\u0000\u07da<\u0000\u07db" +
-              "<\u0000\u0bb8<\u0000\u0bb9<\u0000\u0bc2<\u0000\u0bc3<\u0000\u0bc4<\u0000\u1b58<\u0000" +
-              "";
+              "<\u0000\u0bb8<\u0000\u0bb9<\u0000\u0bc2<\u0000\u0bc3<\u0000\u0bc4<\u0000\u0fa0<\u0000" +
+              "\u1b58<\u0000";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

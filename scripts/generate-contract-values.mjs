@@ -79,6 +79,7 @@ export function generateContractValues({ check = false } = {}) {
 use crate::jwe::JweError;
 use crate::jws::suites::{eddsa::JwsEddsaError, es256::JwsEs256Error};
 use crate::jwt::JwtError;
+use crate::jwk::JwkThumbprintErrorReason;
 use crate::operation_contract::jws::{JwsSignError, JwsSignErrorReason, JwsVerifyError, JwsVerifyErrorReason};
 use crate::wire::{JoseWireError, JoseWireErrorConstructionError};
 use reallyme_jose_proto::generated::proto::reallyme::jose::v1::JoseErrorReason;
@@ -87,6 +88,7 @@ use reallyme_jose_proto::generated::proto::reallyme::jose::v1::JoseErrorReason;
   for (const [name, input, matched] of [
     ["construction", "JoseWireErrorConstructionError", "JoseWireErrorConstructionError"],
     ["jwe", "JweError", "JweError"], ["jwt", "JwtError", "JwtError"],
+    ["jwk_thumbprint", "JwkThumbprintErrorReason", "JwkThumbprintErrorReason"],
     ["jws_sign", "JwsSignError", "JwsSignErrorReason"], ["jws_verify", "JwsVerifyError", "JwsVerifyErrorReason"],
     ["eddsa", "JwsEddsaError", "JwsEddsaError"], ["es256", "JwsEs256Error", "JwsEs256Error"],
   ]) {

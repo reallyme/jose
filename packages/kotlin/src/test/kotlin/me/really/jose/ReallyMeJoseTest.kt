@@ -249,8 +249,8 @@ class ReallyMeJoseTest {
         decode.isAccessible = true
         for (reason in ReallyMeJoseErrorReason.entries) {
             val expected = when (reason.code) {
-                in 800..802 -> ReallyMeJoseErrorBranch.PROVIDER
-                in 900..902 -> ReallyMeJoseErrorBranch.BACKEND
+                in 800..899 -> ReallyMeJoseErrorBranch.PROVIDER
+                in 900..999 -> ReallyMeJoseErrorBranch.BACKEND
                 else -> ReallyMeJoseErrorBranch.PRIMITIVE
             }
             for (branch in ReallyMeJoseErrorBranch.entries) {

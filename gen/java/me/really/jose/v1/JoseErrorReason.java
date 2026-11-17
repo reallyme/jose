@@ -506,6 +506,52 @@ public enum JoseErrorReason
   JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH(392),
   /**
    * <pre>
+   * RFC 7638 JWK thumbprint input failures: 400-419.
+   * A required JWK member is absent or empty.
+   * Rust failure: JwkThumbprintErrorReason::MissingMember
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER = 400;</code>
+   */
+  JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER(400),
+  /**
+   * <pre>
+   * A required JWK member is not a string.
+   * Rust failure: JwkThumbprintErrorReason::InvalidMemberType
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE = 401;</code>
+   */
+  JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE(401),
+  /**
+   * <pre>
+   * The JWK key type is not EC, OKP, RSA, or oct.
+   * Rust failure: JwkThumbprintErrorReason::UnsupportedKeyType
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE = 402;</code>
+   */
+  JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE(402),
+  /**
+   * <pre>
+   * The JSON adapter requires an object.
+   * Rust failure: JwkThumbprintErrorReason::InvalidJsonObject
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT = 403;</code>
+   */
+  JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT(403),
+  /**
+   * <pre>
+   * A required member exceeds 8192 UTF-8 bytes.
+   * Rust failure: JwkThumbprintErrorReason::MemberTooLarge
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE = 404;</code>
+   */
+  JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE(404),
+  /**
+   * <pre>
    * Common operation execution boundary failures: 700-799.
    * </pre>
    *
@@ -540,6 +586,7 @@ public enum JoseErrorReason
    * Rust failure: JwsEs256Error::LengthOverflow
    * Rust failure: JweError::LengthOverflow
    * Rust failure: JwtError::LengthOverflow
+   * Rust failure: JwkThumbprintErrorReason::LengthOverflow
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW = 704;</code>
@@ -610,6 +657,23 @@ public enum JoseErrorReason
    * <code>JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED = 902;</code>
    */
   JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED(902),
+  /**
+   * <pre>
+   * JWK thumbprint canonical serialization and allocation failures: 940-949.
+   * Rust failure: JwkThumbprintErrorReason::Serialization
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION = 940;</code>
+   */
+  JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION(940),
+  /**
+   * <pre>
+   * Rust failure: JwkThumbprintErrorReason::Allocation
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION = 941;</code>
+   */
+  JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION(941),
   UNRECOGNIZED(-1),
   ;
 
@@ -1101,6 +1165,52 @@ public enum JoseErrorReason
   public static final int JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH_VALUE = 392;
   /**
    * <pre>
+   * RFC 7638 JWK thumbprint input failures: 400-419.
+   * A required JWK member is absent or empty.
+   * Rust failure: JwkThumbprintErrorReason::MissingMember
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER = 400;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER_VALUE = 400;
+  /**
+   * <pre>
+   * A required JWK member is not a string.
+   * Rust failure: JwkThumbprintErrorReason::InvalidMemberType
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE = 401;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE_VALUE = 401;
+  /**
+   * <pre>
+   * The JWK key type is not EC, OKP, RSA, or oct.
+   * Rust failure: JwkThumbprintErrorReason::UnsupportedKeyType
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE = 402;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE_VALUE = 402;
+  /**
+   * <pre>
+   * The JSON adapter requires an object.
+   * Rust failure: JwkThumbprintErrorReason::InvalidJsonObject
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT = 403;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT_VALUE = 403;
+  /**
+   * <pre>
+   * A required member exceeds 8192 UTF-8 bytes.
+   * Rust failure: JwkThumbprintErrorReason::MemberTooLarge
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE = 404;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE_VALUE = 404;
+  /**
+   * <pre>
    * Common operation execution boundary failures: 700-799.
    * </pre>
    *
@@ -1135,6 +1245,7 @@ public enum JoseErrorReason
    * Rust failure: JwsEs256Error::LengthOverflow
    * Rust failure: JweError::LengthOverflow
    * Rust failure: JwtError::LengthOverflow
+   * Rust failure: JwkThumbprintErrorReason::LengthOverflow
    * </pre>
    *
    * <code>JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW = 704;</code>
@@ -1205,6 +1316,23 @@ public enum JoseErrorReason
    * <code>JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED = 902;</code>
    */
   public static final int JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED_VALUE = 902;
+  /**
+   * <pre>
+   * JWK thumbprint canonical serialization and allocation failures: 940-949.
+   * Rust failure: JwkThumbprintErrorReason::Serialization
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION = 940;</code>
+   */
+  public static final int JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION_VALUE = 940;
+  /**
+   * <pre>
+   * Rust failure: JwkThumbprintErrorReason::Allocation
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION = 941;</code>
+   */
+  public static final int JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION_VALUE = 941;
 
 
   @java.lang.Override
@@ -1285,6 +1413,11 @@ public enum JoseErrorReason
       case 390: return JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH;
       case 391: return JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH;
       case 392: return JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH;
+      case 400: return JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER;
+      case 401: return JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE;
+      case 402: return JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE;
+      case 403: return JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT;
+      case 404: return JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE;
       case 700: return JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF;
       case 701: return JOSE_ERROR_REASON_COMMON_MALFORMED_JSON;
       case 702: return JOSE_ERROR_REASON_COMMON_MISSING_OPERATION;
@@ -1298,6 +1431,8 @@ public enum JoseErrorReason
       case 900: return JOSE_ERROR_REASON_BACKEND_INTERNAL;
       case 901: return JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION;
       case 902: return JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED;
+      case 940: return JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION;
+      case 941: return JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION;
       default: return null;
     }
   }

@@ -164,6 +164,11 @@ pub mod jose_operation_response {
                 super::super::super::JoseJweDecryptWithProviderResponse,
             >,
         ),
+        JwkThumbprintSha256(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::JoseJwkThumbprintSha256Response,
+            >,
+        ),
         ContractInfo(
             ::buffa::alloc::boxed::Box<super::super::super::JoseContractInfoResponse>,
         ),
@@ -234,6 +239,9 @@ pub mod jose_operation_response {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JweDecryptWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwkThumbprintSha256(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::ContractInfo(value) => {
@@ -438,6 +446,18 @@ pub mod jose_operation_response {
             Self::Some(Response::from(v))
         }
     }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintSha256Response>
+    for Response {
+        fn from(v: super::super::super::JoseJwkThumbprintSha256Response) -> Self {
+            Self::JwkThumbprintSha256(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintSha256Response>
+    for ::core::option::Option<Response> {
+        fn from(v: super::super::super::JoseJwkThumbprintSha256Response) -> Self {
+            Self::Some(Response::from(v))
+        }
+    }
     impl ::core::convert::From<super::super::super::JoseContractInfoResponse>
     for Response {
         fn from(v: super::super::super::JoseContractInfoResponse) -> Self {
@@ -518,6 +538,9 @@ pub mod jose_operation_response {
                 Self::JweDecryptWithProvider(v) => {
                     map.serialize_entry("jweDecryptWithProvider", &**v)?;
                 }
+                Self::JwkThumbprintSha256(v) => {
+                    map.serialize_entry("jwkThumbprintSha256", &**v)?;
+                }
                 Self::ContractInfo(v) => {
                     map.serialize_entry("contractInfo", &**v)?;
                 }
@@ -592,6 +615,11 @@ pub mod jose_operation_request {
                 super::super::super::JoseJweDecryptWithProviderRequest,
             >,
         ),
+        JwkThumbprintSha256(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::JoseJwkThumbprintSha256Request,
+            >,
+        ),
         ContractInfo(
             ::buffa::alloc::boxed::Box<super::super::super::JoseContractInfoRequest>,
         ),
@@ -659,6 +687,9 @@ pub mod jose_operation_request {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JweDecryptWithProvider(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwkThumbprintSha256(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::ContractInfo(value) => {
@@ -898,6 +929,18 @@ pub mod jose_operation_request {
             Self::Some(Operation::from(v))
         }
     }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintSha256Request>
+    for Operation {
+        fn from(v: super::super::super::JoseJwkThumbprintSha256Request) -> Self {
+            Self::JwkThumbprintSha256(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintSha256Request>
+    for ::core::option::Option<Operation> {
+        fn from(v: super::super::super::JoseJwkThumbprintSha256Request) -> Self {
+            Self::Some(Operation::from(v))
+        }
+    }
     impl ::core::convert::From<super::super::super::JoseContractInfoRequest>
     for Operation {
         fn from(v: super::super::super::JoseContractInfoRequest) -> Self {
@@ -974,6 +1017,9 @@ pub mod jose_operation_request {
                 }
                 Self::JweDecryptWithProvider(v) => {
                     map.serialize_entry("jweDecryptWithProvider", &**v)?;
+                }
+                Self::JwkThumbprintSha256(v) => {
+                    map.serialize_entry("jwkThumbprintSha256", &**v)?;
                 }
                 Self::ContractInfo(v) => {
                     map.serialize_entry("contractInfo", &**v)?;
@@ -2298,6 +2344,190 @@ pub mod jose_jwt_claims_parse_response {
     impl ::core::convert::From<super::super::super::JoseJwtClaimsParseResult>
     for ::core::option::Option<Outcome> {
         fn from(v: super::super::super::JoseJwtClaimsParseResult) -> Self {
+            Self::Some(Outcome::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseError> for Outcome {
+        fn from(v: super::super::super::JoseError) -> Self {
+            Self::Error(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseError>
+    for ::core::option::Option<Outcome> {
+        fn from(v: super::super::super::JoseError) -> Self {
+            Self::Some(Outcome::from(v))
+        }
+    }
+    impl ::serde::Serialize for Outcome {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            s: __S,
+        ) -> ::core::result::Result<__S::Ok, __S::Error> {
+            use ::serde::ser::SerializeMap;
+            let mut map = s.serialize_map(Some(1))?;
+            match self {
+                Self::Result(v) => {
+                    map.serialize_entry("result", &**v)?;
+                }
+                Self::Error(v) => {
+                    map.serialize_entry("error", &**v)?;
+                }
+            }
+            map.end()
+        }
+    }
+}
+pub mod jose_jwk_thumbprint_sha256request {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, PartialEq)]
+    pub enum Key {
+        Ec(::buffa::alloc::boxed::Box<super::super::super::JoseJwkThumbprintEcMembers>),
+        Okp(
+            ::buffa::alloc::boxed::Box<super::super::super::JoseJwkThumbprintOkpMembers>,
+        ),
+        Rsa(
+            ::buffa::alloc::boxed::Box<super::super::super::JoseJwkThumbprintRsaMembers>,
+        ),
+        Oct(
+            ::buffa::alloc::boxed::Box<super::super::super::JoseJwkThumbprintOctMembers>,
+        ),
+    }
+    impl ::core::fmt::Debug for Key {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.write_str("Key([REDACTED])")
+        }
+    }
+    impl ::buffa::sensitive::Zeroize for Key {
+        fn zeroize(&mut self) {
+            match self {
+                Self::Ec(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Okp(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Rsa(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Oct(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+            }
+        }
+    }
+    impl ::buffa::sensitive::ZeroizeOnDrop for Key {}
+    impl ::core::ops::Drop for Key {
+        fn drop(&mut self) {
+            ::buffa::sensitive::Zeroize::zeroize(self);
+        }
+    }
+    impl ::buffa::Oneof for Key {}
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintEcMembers> for Key {
+        fn from(v: super::super::super::JoseJwkThumbprintEcMembers) -> Self {
+            Self::Ec(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintEcMembers>
+    for ::core::option::Option<Key> {
+        fn from(v: super::super::super::JoseJwkThumbprintEcMembers) -> Self {
+            Self::Some(Key::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintOkpMembers>
+    for Key {
+        fn from(v: super::super::super::JoseJwkThumbprintOkpMembers) -> Self {
+            Self::Okp(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintOkpMembers>
+    for ::core::option::Option<Key> {
+        fn from(v: super::super::super::JoseJwkThumbprintOkpMembers) -> Self {
+            Self::Some(Key::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintRsaMembers>
+    for Key {
+        fn from(v: super::super::super::JoseJwkThumbprintRsaMembers) -> Self {
+            Self::Rsa(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintRsaMembers>
+    for ::core::option::Option<Key> {
+        fn from(v: super::super::super::JoseJwkThumbprintRsaMembers) -> Self {
+            Self::Some(Key::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintOctMembers>
+    for Key {
+        fn from(v: super::super::super::JoseJwkThumbprintOctMembers) -> Self {
+            Self::Oct(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintOctMembers>
+    for ::core::option::Option<Key> {
+        fn from(v: super::super::super::JoseJwkThumbprintOctMembers) -> Self {
+            Self::Some(Key::from(v))
+        }
+    }
+    impl ::serde::Serialize for Key {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            s: __S,
+        ) -> ::core::result::Result<__S::Ok, __S::Error> {
+            use ::serde::ser::SerializeMap;
+            let mut map = s.serialize_map(Some(1))?;
+            match self {
+                Self::Ec(v) => {
+                    map.serialize_entry("ec", &**v)?;
+                }
+                Self::Okp(v) => {
+                    map.serialize_entry("okp", &**v)?;
+                }
+                Self::Rsa(v) => {
+                    map.serialize_entry("rsa", &**v)?;
+                }
+                Self::Oct(v) => {
+                    map.serialize_entry("oct", &**v)?;
+                }
+            }
+            map.end()
+        }
+    }
+}
+pub mod jose_jwk_thumbprint_sha256response {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, PartialEq)]
+    pub enum Outcome {
+        Result(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::JoseJwkThumbprintSha256Result,
+            >,
+        ),
+        Error(::buffa::alloc::boxed::Box<super::super::super::JoseError>),
+    }
+    impl ::core::fmt::Debug for Outcome {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.write_str("Outcome([REDACTED])")
+        }
+    }
+    impl ::buffa::sensitive::Zeroize for Outcome {
+        fn zeroize(&mut self) {
+            match self {
+                Self::Result(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Error(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+            }
+        }
+    }
+    impl ::buffa::sensitive::ZeroizeOnDrop for Outcome {}
+    impl ::core::ops::Drop for Outcome {
+        fn drop(&mut self) {
+            ::buffa::sensitive::Zeroize::zeroize(self);
+        }
+    }
+    impl ::buffa::Oneof for Outcome {}
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintSha256Result>
+    for Outcome {
+        fn from(v: super::super::super::JoseJwkThumbprintSha256Result) -> Self {
+            Self::Result(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwkThumbprintSha256Result>
+    for ::core::option::Option<Outcome> {
+        fn from(v: super::super::super::JoseJwkThumbprintSha256Result) -> Self {
             Self::Some(Outcome::from(v))
         }
     }

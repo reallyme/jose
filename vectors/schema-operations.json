@@ -95,7 +95,55 @@
       "name": "contract-info",
       "request_json": "{\"contractInfo\":{}}",
       "request_hex": "c2b50300",
-      "response_hex": "5002c2b5035f0a5d0a0b8080408080602040ac023c1209646e78c801d201dc011a0564c801ac022228e807e907f207f307f407f507f607f707d00fd10fd20fd30fda0fdb0fb817b917c217c317c417d8362a0d64c801ac029003f403d804bc0530013a0120"
+      "response_hex": "5002c2b503630a610a0d80804080806020804040ac023c1209646e78c801d201dc011a0564c801ac02222ae807e907f207f307f407f507f607f707d00fd10fd20fd30fda0fdb0fb817b917c217c317c417a01fd8362a0d64c801ac029003f403d804bc0530013a0120"
+    },
+    {
+      "name": "jwk-ec",
+      "request_json": "{\"jwkThumbprintSha256\":{\"ec\":{\"crv\":\"P-256\",\"x\":\"x\",\"y\":\"y\"}}}",
+      "request_hex": "82fa010f0a0d0a05502d3235361201781a0179",
+      "response_hex": "500282fa01240a220a20953618c0f88e54b9c41a7ff6b5e75a26cf7b7ec1df4dd4748ddb0b25517646e0"
+    },
+    {
+      "name": "jwk-okp-rfc8037",
+      "request_json": "{\"jwkThumbprintSha256\":{\"okp\":{\"crv\":\"Ed25519\",\"x\":\"11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo\"}}}",
+      "request_hex": "82fa013812360a0745643235353139122b3131715941594b7843726656535f3754795751484f6737686376506170694d6c727749616150634855526f",
+      "response_hex": "500282fa01240a220a2090facafea9b1556698540f70c0117a22ea37bd5cf3ed3c47093c1707282b4b89"
+    },
+    {
+      "name": "jwk-rsa-rfc7638",
+      "request_json": "{\"jwkThumbprintSha256\":{\"rsa\":{\"e\":\"AQAB\",\"n\":\"0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw\"}}}",
+      "request_hex": "82fa01e2021adf020a044151414212d6023076783761676f656247635153757550694c4a585a70744e396e6e6472516d625845707332616941466257684d37384c6857783463626266414174565438367a777531524b37615046467875684452314c3674536f635f424a4543506562574b52586a425a43694656346e336f6b6e6a684d73746e3634745a5f32572d354a734759344863356e397942584172776c39336c7174375f524e357736436630683451795135762d363559476a5152305f4644573251767a715933363851514d696341746153717a73384b4a5a676e596239633764307a6764415a487a7536714d5176524c3568616a726e316e393143624f70624953443038714e4c7972646b742d6246545768414934764d5146683657655a7530664d346c4664324e635277723358506b73494e4861512d475f78426e6949716277304c73316a4634342d6373464375722d6b45675538617761704a7a4b6e71444b6777",
+      "response_hex": "500282fa01240a220a203736cbb1787cb8309c77ee8c3705c5e16ffb9e859715901f1e4c59b11182f57b"
+    },
+    {
+      "name": "jwk-oct",
+      "request_json": "{\"jwkThumbprintSha256\":{\"oct\":{\"k\":\"c2VjcmV0\"}}}",
+      "request_hex": "82fa010c220a0a086332566a636d5630",
+      "response_hex": "500282fa01240a220a200d6061d1210800f621d71e6ebe8b78cf70216a29079313496b701d6b67d3f828"
+    },
+    {
+      "name": "jwk-oct-escaping",
+      "request_json": "{\"jwkThumbprintSha256\":{\"oct\":{\"k\":\"\\\"\\\\\\u0000\\né雪\"}}}",
+      "request_hex": "82fa010d220b0a09225c000ac3a9e99baa",
+      "response_hex": "500282fa01240a220a203d0b909a09b158440533fd16a0c3009468d3691b22d5d6e64d23ab163a509159"
+    },
+    {
+      "name": "jwk-missing-key",
+      "request_json": "{\"jwkThumbprintSha256\":{}}",
+      "request_hex": "82fa0100",
+      "response_hex": "500282fa010712050a03089003"
+    },
+    {
+      "name": "jwk-missing-ec-coordinate",
+      "request_json": "{\"jwkThumbprintSha256\":{\"ec\":{\"crv\":\"P-256\",\"x\":\"x\"}}}",
+      "request_hex": "82fa010c0a0a0a05502d323536120178",
+      "response_hex": "500282fa010712050a03089003"
+    },
+    {
+      "name": "jwk-empty-oct",
+      "request_json": "{\"jwkThumbprintSha256\":{\"oct\":{\"k\":\"\"}}}",
+      "request_hex": "82fa01022200",
+      "response_hex": "500282fa010712050a03089003"
     }
   ]
 }

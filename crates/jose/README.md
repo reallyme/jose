@@ -27,6 +27,26 @@ as the borrowed native APIs. Injected provider handles are scoped to the caller.
 reallyme-jose = "0.5.1"
 ```
 
+## JWK Thumbprints
+
+`jwk::thumbprint_sha256` computes an RFC 7638 SHA-256 thumbprint from borrowed
+`JwkThumbprintMembers::{Ec, Okp, Rsa, Oct}` members and returns
+`Zeroizing<[u8; 32]>`. It includes only the required members in lexicographic
+order. Canonical JSON storage is also zeroized on drop, including symmetric
+`oct` key text. Callers retain ownership and cleanup of their borrowed input.
+
+Each member must be nonempty and at most 8,192 UTF-8 bytes before escaping.
+Values are already encoded JWK text; this API does not decode or normalize
+them, check curve names, or validate cryptographic key material. Callers retain
+any stricter protocol limits. `jwk::thumbprint_sha256_from_json` borrows from
+a caller-owned JSON object and ignores extra fields. Callers own JSON parsing,
+duplicate-member rejection, input limits, and JSON storage cleanup.
+
+Quotes, backslashes, and control characters are JSON-escaped deterministically;
+this extends RFC 7638 section 3.3, which defines only unescaped member values.
+Failures use fixed `JwkThumbprintErrorReason` variants with schema reason codes.
+The generated `jwk_thumbprint_sha256` operation uses the same implementation.
+
 ## Security Model
 
 - JWT verification binds the token header algorithm to the supplied JWK

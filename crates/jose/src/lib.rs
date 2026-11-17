@@ -76,6 +76,8 @@ mod verify_signed_payload;
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub mod jwe;
 #[cfg(any(feature = "native", feature = "wasm"))]
+pub mod jwk;
+#[cfg(any(feature = "native", feature = "wasm"))]
 pub mod jws;
 #[cfg(any(feature = "native", feature = "wasm"))]
 pub mod jwt;

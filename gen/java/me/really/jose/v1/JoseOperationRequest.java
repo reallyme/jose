@@ -56,6 +56,7 @@ public  final class JoseOperationRequest extends
         || (hasJweDeriveKey() && getJweDeriveKey().reallyMeHasUnknownFieldsForValidation())
         || (hasJweEncryptWithProvider() && getJweEncryptWithProvider().reallyMeHasUnknownFieldsForValidation())
         || (hasJweDecryptWithProvider() && getJweDecryptWithProvider().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwkThumbprintSha256() && getJwkThumbprintSha256().reallyMeHasUnknownFieldsForValidation())
         || (hasContractInfo() && getContractInfo().reallyMeHasUnknownFieldsForValidation());
   }
 
@@ -94,6 +95,7 @@ public  final class JoseOperationRequest extends
     JWE_DERIVE_KEY(3010),
     JWE_ENCRYPT_WITH_PROVIDER(3011),
     JWE_DECRYPT_WITH_PROVIDER(3012),
+    JWK_THUMBPRINT_SHA256(4000),
     CONTRACT_INFO(7000),
     OPERATION_NOT_SET(0);
     private final int value;
@@ -129,6 +131,7 @@ public  final class JoseOperationRequest extends
         case 3010: return JWE_DERIVE_KEY;
         case 3011: return JWE_ENCRYPT_WITH_PROVIDER;
         case 3012: return JWE_DECRYPT_WITH_PROVIDER;
+        case 4000: return JWK_THUMBPRINT_SHA256;
         case 7000: return CONTRACT_INFO;
         case 0: return OPERATION_NOT_SET;
         default: return null;
@@ -1486,6 +1489,81 @@ public  final class JoseOperationRequest extends
    */
   private void clearJweDecryptWithProvider() {
     if (operationCase_ == 3012) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWK_THUMBPRINT_SHA256_FIELD_NUMBER = 4000;
+  /**
+   * <pre>
+   * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+   * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwkThumbprintSha256() {
+    return operationCase_ == 4000;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+   * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwkThumbprintSha256Request getJwkThumbprintSha256() {
+    if (operationCase_ == 4000) {
+       return (me.really.jose.v1.JoseJwkThumbprintSha256Request) operation_;
+    }
+    return me.really.jose.v1.JoseJwkThumbprintSha256Request.getDefaultInstance();
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+   * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   */
+  private void setJwkThumbprintSha256(me.really.jose.v1.JoseJwkThumbprintSha256Request value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 4000;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+   * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   */
+  private void mergeJwkThumbprintSha256(me.really.jose.v1.JoseJwkThumbprintSha256Request value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 4000 &&
+        operation_ != me.really.jose.v1.JoseJwkThumbprintSha256Request.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJwkThumbprintSha256Request.newBuilder((me.really.jose.v1.JoseJwkThumbprintSha256Request) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 4000;
+  }
+  /**
+   * <pre>
+   * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+   * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+   * </pre>
+   *
+   * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+   */
+  private void clearJwkThumbprintSha256() {
+    if (operationCase_ == 4000) {
       operationCase_ = 0;
       operation_ = null;
     }
@@ -3050,6 +3128,84 @@ public  final class JoseOperationRequest extends
     }
 
     /**
+     * <pre>
+     * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+     * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwkThumbprintSha256() {
+      return instance.hasJwkThumbprintSha256();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+     * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwkThumbprintSha256Request getJwkThumbprintSha256() {
+      return instance.getJwkThumbprintSha256();
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+     * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    public Builder setJwkThumbprintSha256(me.really.jose.v1.JoseJwkThumbprintSha256Request value) {
+      copyOnWrite();
+      instance.setJwkThumbprintSha256(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+     * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    public Builder setJwkThumbprintSha256(
+        me.really.jose.v1.JoseJwkThumbprintSha256Request.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwkThumbprintSha256(builderForValue.build());
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+     * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    public Builder mergeJwkThumbprintSha256(me.really.jose.v1.JoseJwkThumbprintSha256Request value) {
+      copyOnWrite();
+      instance.mergeJwkThumbprintSha256(value);
+      return this;
+    }
+    /**
+     * <pre>
+     * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+     * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+     * </pre>
+     *
+     * <code>.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];</code>
+     */
+    public Builder clearJwkThumbprintSha256() {
+      copyOnWrite();
+      instance.clearJwkThumbprintSha256();
+      return this;
+    }
+
+    /**
      * <code>.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];</code>
      */
     @java.lang.Override
@@ -3134,13 +3290,15 @@ public  final class JoseOperationRequest extends
             me.really.jose.v1.JoseJweDeriveKeyRequest.class,
             me.really.jose.v1.JoseJweEncryptWithProviderRequest.class,
             me.really.jose.v1.JoseJweDecryptWithProviderRequest.class,
+            me.really.jose.v1.JoseJwkThumbprintSha256Request.class,
             me.really.jose.v1.JoseContractInfoRequest.class,
           };
           java.lang.String info =
-              "\u0000\u0014\u0001\u0000\u03e8\u1b58\u0014\u0000\u0000\u0000\u03e8<\u0000\u03e9<" +
+              "\u0000\u0015\u0001\u0000\u03e8\u1b58\u0015\u0000\u0000\u0000\u03e8<\u0000\u03e9<" +
               "\u0000\u03f2<\u0000\u03f3<\u0000\u03f4<\u0000\u03f5<\u0000\u03f6<\u0000\u03f7<\u0000" +
               "\u07d0<\u0000\u07d1<\u0000\u07d2<\u0000\u07d3<\u0000\u07da<\u0000\u07db<\u0000\u0bb8" +
-              "<\u0000\u0bb9<\u0000\u0bc2<\u0000\u0bc3<\u0000\u0bc4<\u0000\u1b58<\u0000";
+              "<\u0000\u0bb9<\u0000\u0bc2<\u0000\u0bc3<\u0000\u0bc4<\u0000\u0fa0<\u0000\u1b58<\u0000" +
+              "";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

@@ -739,6 +739,45 @@ public object JoseOperationRequestKt {
     }
 
     /**
+     * ```
+     * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+     * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];`
+     */
+    public var jwkThumbprintSha256: me.really.jose.v1.JoseJwkThumbprintSha256Request
+      @kotlin.jvm.JvmName("getJwkThumbprintSha256")
+        get() = _builder.jwkThumbprintSha256
+      @kotlin.jvm.JvmName("setJwkThumbprintSha256")
+        set(value) {
+        _builder.jwkThumbprintSha256 = value
+      }
+    /**
+     * ```
+     * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+     * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];`
+     */
+    public fun clearJwkThumbprintSha256() {
+      _builder.clearJwkThumbprintSha256()
+    }
+    /**
+     * ```
+     * Rust adapter: jwk/thumbprint_sha256.rs#thumbprint_sha256
+     * Rust adapter: jwk/borrow_json_members.rs#thumbprint_sha256_from_json
+     * ```
+     *
+     * `.reallyme.jose.v1.JoseJwkThumbprintSha256Request jwk_thumbprint_sha256 = 4000 [json_name = "jwkThumbprintSha256"];`
+     * @return Whether the jwkThumbprintSha256 field is set.
+     */
+    public fun hasJwkThumbprintSha256(): kotlin.Boolean {
+      return _builder.hasJwkThumbprintSha256()
+    }
+
+    /**
      * `.reallyme.jose.v1.JoseContractInfoRequest contract_info = 7000 [json_name = "contractInfo"];`
      */
     public var contractInfo: me.really.jose.v1.JoseContractInfoRequest
@@ -829,6 +868,9 @@ public val me.really.jose.v1.JoseOperationRequestOrBuilder.jweEncryptWithProvide
 
 public val me.really.jose.v1.JoseOperationRequestOrBuilder.jweDecryptWithProviderOrNull: me.really.jose.v1.JoseJweDecryptWithProviderRequest?
   get() = if (hasJweDecryptWithProvider()) getJweDecryptWithProvider() else null
+
+public val me.really.jose.v1.JoseOperationRequestOrBuilder.jwkThumbprintSha256OrNull: me.really.jose.v1.JoseJwkThumbprintSha256Request?
+  get() = if (hasJwkThumbprintSha256()) getJwkThumbprintSha256() else null
 
 public val me.really.jose.v1.JoseOperationRequestOrBuilder.contractInfoOrNull: me.really.jose.v1.JoseContractInfoRequest?
   get() = if (hasContractInfo()) getContractInfo() else null

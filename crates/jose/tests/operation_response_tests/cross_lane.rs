@@ -31,7 +31,7 @@ fn schema_operations_match_every_sdk_binary_and_json_fixture(
     }
     let corpus: Corpus =
         serde_json::from_str(include_str!("../../../../vectors/schema-operations.json"))?;
-    assert_eq!(corpus.cases.len(), 16);
+    assert_eq!(corpus.cases.len(), 24);
     for vector in corpus.cases {
         let binary = zeroize::Zeroizing::new(decode(&vector.request_hex)?);
         let expected = zeroize::Zeroizing::new(decode(&vector.response_hex)?);

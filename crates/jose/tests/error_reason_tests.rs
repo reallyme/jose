@@ -410,3 +410,47 @@ fn jws_es256_error_maps_every_variant() {
         assert_eq!(native.reason(), expected);
     }
 }
+
+#[test]
+fn every_error_has_an_exact_schema_reason_and_fixed_message() {
+    use reallyme_jose::jwk::JwkThumbprintErrorReason;
+    let cases = [
+        (
+            JwkThumbprintErrorReason::MissingMember,
+            JoseErrorReason::JwkThumbprintMissingMember,
+        ),
+        (
+            JwkThumbprintErrorReason::InvalidMemberType,
+            JoseErrorReason::JwkThumbprintInvalidMemberType,
+        ),
+        (
+            JwkThumbprintErrorReason::UnsupportedKeyType,
+            JoseErrorReason::JwkThumbprintUnsupportedKeyType,
+        ),
+        (
+            JwkThumbprintErrorReason::InvalidJsonObject,
+            JoseErrorReason::JwkThumbprintInvalidJsonObject,
+        ),
+        (
+            JwkThumbprintErrorReason::MemberTooLarge,
+            JoseErrorReason::JwkThumbprintMemberTooLarge,
+        ),
+        (
+            JwkThumbprintErrorReason::LengthOverflow,
+            JoseErrorReason::CommonLengthOverflow,
+        ),
+        (
+            JwkThumbprintErrorReason::Allocation,
+            JoseErrorReason::BackendJwkThumbprintAllocation,
+        ),
+        (
+            JwkThumbprintErrorReason::Serialization,
+            JoseErrorReason::BackendJwkThumbprintSerialization,
+        ),
+    ];
+    assert_eq!(core::mem::size_of::<JwkThumbprintErrorReason>(), 1);
+    for (error, reason) in cases {
+        assert_eq!(error.reason(), reason);
+        assert!(!error.to_string().contains("symmetric-key"));
+    }
+}
