@@ -219,7 +219,7 @@ printf '%s\\n' "$*" >> "$TEST_SDK_CALLS"
 cat >/dev/null
 printf 'target=%s\\n' "$TEST_TARGET" > "$ANDROID_AVD_HOME/runtime.ini"
 `);
-      const result = spawnSync("bash", [join(checkout, "scripts/prepare-android-runtime.sh"), join(root, "runtime.apk"), "runtime", join(root, "repository")], {
+      const result = spawnSync("/bin/bash", [join(checkout, "scripts/prepare-android-runtime.sh"), join(root, "runtime.apk"), "runtime", join(root, "repository")], {
         encoding: "utf8", timeout: 10_000,
         env: { ...process.env, PATH: `${bin}${delimiter}${process.env.PATH ?? ""}`, ANDROID_HOME: sdk, ANDROID_AVD_HOME: avdHome, TEST_TARGET: target, TEST_SDK_CALLS: join(root, "sdk-calls") },
       });

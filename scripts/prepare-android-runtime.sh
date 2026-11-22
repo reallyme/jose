@@ -14,6 +14,7 @@ readonly sdk="${ANDROID_HOME:?expected Android SDK path}"
 readonly avd_home="${ANDROID_AVD_HOME:?expected an isolated AVD directory}"
 readonly avd_device="${ANDROID_AVD_DEVICE:-pixel}"
 readonly image="system-images;android-37.0;google_apis_ps16k;x86_64"
+readonly sdk_image="system-images/android-37.0/google_apis_ps16k/x86_64"
 [[ "$apk" = /* && "$repository" = /* && -d "$repository" && "$avd" =~ ^[a-zA-Z0-9_-]+$ ]]
 
 cd "$root"
@@ -28,7 +29,7 @@ packages/kotlin-android/gradlew --no-daemon --dependency-verification strict -p 
 cp packages/kotlin-android/consumer-r8-runtime/build/outputs/apk/release/consumer-r8-runtime-release.apk "$apk"
 
 mkdir -p "$avd_home"
-for package in emulator platforms/android-37.0 "${image//;/\/}"; do
+for package in emulator platforms/android-37.0 "$sdk_image"; do
   { yes 2>/dev/null || true; } | "$sdk/cmdline-tools/23.0/bin/android" --sdk="$sdk" --no-metrics sdk install "$package"
 done
 printf 'no\n' | "$sdk/cmdline-tools/23.0/bin/avdmanager" create avd --force --name "$avd" --package "$image" --device "$avd_device"
