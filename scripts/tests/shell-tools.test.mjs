@@ -182,3 +182,13 @@ test("Android runtime gate builds before emulator startup and waits for package 
   assert.ok(packageServiceOffset > emulatorOffset);
   assert.ok(installOffset > packageServiceOffset);
 });
+
+
+test("CI installs only after framework stability using the supported Mesa renderer", () => {
+  const source = readFileSync(join(scripts, "run-android-emulator.sh"), "utf8");
+  const stability = source.indexOf('node scripts/wait-android-services.mjs "$ANDROID_SERIAL"');
+  const install = source.indexOf('node "$helper" install');
+  assert.ok(stability >= 0 && install > stability);
+  assert.ok(source.includes("-gpu lavapipe"));
+  assert.ok(source.includes('page_size" != 16384'));
+});

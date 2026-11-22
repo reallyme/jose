@@ -16,6 +16,13 @@ import urllib.request
 
 MAX_BYTES = 4194304
 MAX_PACKAGES = 1000
+LOCKFILES = (
+    "packages/kotlin/gradle.lockfile",
+    "packages/kotlin/buildscript-gradle.lockfile",
+    "packages/kotlin-android/gradle.lockfile",
+    "packages/kotlin-android/buildscript-gradle.lockfile",
+    "packages/kotlin-android/consumer-r8-runtime/gradle.lockfile",
+)
 COORDINATE = re.compile(r"[A-Za-z0-9_.-]+:[A-Za-z0-9_.-]+\Z")
 VERSION = re.compile(r"[A-Za-z0-9_.+\[\],()-]+\Z")
 ADVISORY = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{4,127}\Z")
@@ -38,6 +45,7 @@ class AdvisoryError(Exception):
 def parse_locks(sources: list[str]) -> list[dict[str, object]]:
     packages = set()
     for source in sources:
+        populated = False
         for line in source.splitlines():
             if not line or line.startswith("#") or line.startswith("empty="):
                 continue
@@ -48,9 +56,12 @@ def parse_locks(sources: list[str]) -> list[dict[str, object]]:
             name, version = ":".join(parts[:2]), parts[2]
             if not COORDINATE.fullmatch(name) or not VERSION.fullmatch(version) or len(version) > 128:
                 raise AdvisoryError(AdvisoryReason.INPUT)
+            populated = True
             packages.add((name, version))
             if len(packages) > MAX_PACKAGES:
                 raise AdvisoryError(AdvisoryReason.INPUT)
+        if not populated:
+            raise AdvisoryError(AdvisoryReason.INPUT)
     if not packages:
         raise AdvisoryError(AdvisoryReason.INPUT)
     return [{"package": {"ecosystem": "Maven", "name": name}, "version": version}
@@ -65,7 +76,8 @@ def findings(queries: list[dict[str, object]], response: object) -> list[dict[st
         raise AdvisoryError(AdvisoryReason.RESPONSE)
     failures = []
     for query, result in zip(queries, results):
-        if not isinstance(result, dict):
+        if (not isinstance(result, dict) or "error" in result or "errors" in result
+                or result.get("next_page_token") or result.get("nextPageToken")):
             raise AdvisoryError(AdvisoryReason.RESPONSE)
         vulnerabilities = result.get("vulns", [])
         if not isinstance(vulnerabilities, list):
@@ -103,11 +115,11 @@ def query_registry(queries: list[dict[str, object]]) -> object:
     raise AdvisoryError(AdvisoryReason.NETWORK)
 
 
-def main() -> int:
-    root = Path(__file__).resolve().parent.parent
+def read_locks(root: Path) -> list[str]:
     try:
         sources = []
-        for path in [root / "packages/kotlin/gradle.lockfile", root / "packages/kotlin-android/gradle.lockfile"]:
+        for name in LOCKFILES:
+            path = root / name
             if path.is_symlink():
                 raise AdvisoryError(AdvisoryReason.INPUT)
             with path.open("rb") as source:
@@ -115,7 +127,17 @@ def main() -> int:
             if len(data) > MAX_BYTES:
                 raise AdvisoryError(AdvisoryReason.INPUT)
             sources.append(data.decode("utf-8"))
-        queries = parse_locks(sources)
+        return sources
+    except OSError:
+        raise AdvisoryError(AdvisoryReason.IO) from None
+    except UnicodeError:
+        raise AdvisoryError(AdvisoryReason.INPUT) from None
+
+
+def main() -> int:
+    root = Path(__file__).resolve().parent.parent
+    try:
+        queries = parse_locks(read_locks(root))
         vulnerable = findings(queries, query_registry(queries))
         if vulnerable:
             print(json.dumps({"reason": AdvisoryReason.VULNERABLE.value, "dependencies": vulnerable}), file=sys.stderr)

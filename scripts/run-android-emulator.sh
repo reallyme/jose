@@ -54,7 +54,7 @@ timeout --kill-after=2s 10s "$ADB" start-server
 for attempt in 1 2; do
   "$ANDROID_HOME/emulator/emulator" -avd "$ANDROID_AVD_NAME" -port 5554 \
     -no-window -no-audio -no-boot-anim -no-snapshot -wipe-data \
-    -gpu swiftshader -partition-size 4096 \
+    -gpu lavapipe -partition-size 4096 -no-metrics \
     >"$emulator_log" 2>&1 &
   emulator_pid=$!
 
@@ -71,6 +71,11 @@ for attempt in 1 2; do
   fi
 done
 
+# The guest compositor crashed during earlier installs despite a successful
+# point-in-time readiness probe. Use the Mesa renderer and require stable
+# framework processes before attempting an installation.
+node scripts/wait-android-services.mjs "$ANDROID_SERIAL"
+
 for ((attempt = 1; attempt <= max_install_attempts; attempt++)); do
   if node "$helper" install "$ANDROID_SERIAL" "$APK_PATH"; then
     break
@@ -84,6 +89,7 @@ for ((attempt = 1; attempt <= max_install_attempts; attempt++)); do
   echo "Rechecking Android package services before retrying APK installation." >&2
   sleep "$install_retry_delay_seconds"
   node "$helper" wait "$ANDROID_SERIAL" "$service_recovery_wait_seconds"
+  node scripts/wait-android-services.mjs "$ANDROID_SERIAL"
 done
 
 # Confirm that JNI runs on a guest with the release's required page size.

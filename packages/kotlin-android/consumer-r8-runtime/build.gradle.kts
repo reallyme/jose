@@ -40,6 +40,14 @@ android {
     }
 }
 
+// The release gate resolves the staged AAR by Maven coordinates. Lock that
+// complete graph independently; source-tree development uses the root project.
+if (providers.gradleProperty("reallyme.jose.androidConsumerRepository").isPresent) {
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+}
+
 dependencies {
     if (providers.gradleProperty("reallyme.jose.androidConsumerRepository").isPresent) {
         implementation("me.really:jose-android:${rootProject.version}")

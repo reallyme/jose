@@ -7,7 +7,26 @@ import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 import groovy.json.JsonSlurper
 import java.net.URI
 import java.security.MessageDigest
+import java.util.Properties
 import java.util.zip.ZipFile
+
+// Plugin dependencies resolve before project configurations. Apply the same
+// audited versions in both scopes and lock the plugin graph independently.
+buildscript {
+    val jvmToolVersions = java.util.Properties().apply {
+        file("../../gradle/jvm-tool-versions.properties").inputStream().use { load(it) }
+    }
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+        resolutionStrategy.force(*jvmToolVersions.stringPropertyNames().sorted().map { module ->
+            "${module.replace('/', ':')}:${jvmToolVersions.getProperty(module)}"
+        }.toTypedArray())
+    }
+    // AGP supports newer KGP versions through an explicit classpath dependency.
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${jvmToolVersions.getProperty("org.jetbrains.kotlin/kotlin-gradle-plugin")}")
+    }
+}
 
 plugins {
     id("com.android.library") version "9.5.2"
@@ -23,29 +42,18 @@ dependencyLocking {
     lockAllConfigurations()
 }
 
-// AGP's lint tool resolves older crypto and HTTP libraries. Constrain these
-// build-time modules without changing the published runtime API.
-val bouncyCastleToolVersion = "1.87"
-val commonsLangToolVersion = "3.22.0"
-val apacheHttpClientToolVersion = "4.5.14"
-val guavaToolVersion = "33.8.0-jre"
-configurations.configureEach {
-    resolutionStrategy.eachDependency {
-        if (requested.group == "com.google.guava" && requested.name == "guava") {
-            useVersion(guavaToolVersion)
-            because("Android build tools otherwise select a vulnerable Guava version")
-        } else if (requested.group == "org.bouncycastle" && requested.name.endsWith("-jdk18on")) {
-            useVersion(bouncyCastleToolVersion)
-            because("AGP tool configurations otherwise select vulnerable Bouncy Castle versions")
-        } else if (requested.group == "org.apache.commons" && requested.name == "commons-lang3") {
-            useVersion(commonsLangToolVersion)
-            because("AGP lint tooling otherwise selects a vulnerable Commons Lang version")
-        } else if (
-            requested.group == "org.apache.httpcomponents" &&
-            requested.name in setOf("httpclient", "httpmime")
-        ) {
-            useVersion(apacheHttpClientToolVersion)
-            because("AGP lint tooling otherwise selects an outdated HttpComponents client")
+// Compiler, lint, and runtime configurations share the audited tooling policy.
+val jvmToolVersions = Properties().apply {
+    file("../../gradle/jvm-tool-versions.properties").inputStream().use { load(it) }
+}
+allprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            val patched = jvmToolVersions.getProperty("${requested.group}/${requested.name}")
+            if (patched != null) {
+                useVersion(patched)
+                because("Use the audited JVM tooling dependency versions")
+            }
         }
     }
 }

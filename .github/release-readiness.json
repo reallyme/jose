@@ -50,7 +50,8 @@
         "packages/kotlin/",
         "gen/java/",
         "gen/kotlin/",
-        "vectors/"
+        "vectors/",
+        "gradle/"
       ]
     },
     "conformance": {
@@ -60,7 +61,8 @@
         "packages/kotlin/",
         "gen/java/",
         "gen/kotlin/",
-        "vectors/"
+        "vectors/",
+        "gradle/"
       ]
     },
     "formal": {

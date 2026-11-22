@@ -9,7 +9,22 @@ import org.gradle.jvm.tasks.Jar
 import groovy.json.JsonSlurper
 import java.net.URI
 import java.security.MessageDigest
+import java.util.Properties
 import java.util.zip.ZipFile
+
+// Plugin dependencies resolve before project configurations. Apply the same
+// audited versions in both scopes and lock the plugin graph independently.
+buildscript {
+    val jvmToolVersions = java.util.Properties().apply {
+        file("../../gradle/jvm-tool-versions.properties").inputStream().use { load(it) }
+    }
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+        resolutionStrategy.force(*jvmToolVersions.stringPropertyNames().sorted().map { module ->
+            "${module.replace('/', ':')}:${jvmToolVersions.getProperty(module)}"
+        }.toTypedArray())
+    }
+}
 
 plugins {
     kotlin("jvm") version "2.4.21"
@@ -25,14 +40,16 @@ dependencyLocking {
     lockAllConfigurations()
 }
 
-// The Kotlin compiler resolves Bouncy Castle independently of this library's
-// runtime graph. Keep its build-time crypto modules on the patched release.
-val bouncyCastleToolVersion = "1.87"
+// Compiler, lint, and runtime configurations share the audited tooling policy.
+val jvmToolVersions = Properties().apply {
+    file("../../gradle/jvm-tool-versions.properties").inputStream().use { load(it) }
+}
 configurations.configureEach {
     resolutionStrategy.eachDependency {
-        if (requested.group == "org.bouncycastle" && requested.name.endsWith("-jdk18on")) {
-            useVersion(bouncyCastleToolVersion)
-            because("The compiler's bundled Bouncy Castle version has published security advisories")
+        val patched = jvmToolVersions.getProperty("${requested.group}/${requested.name}")
+        if (patched != null) {
+            useVersion(patched)
+            because("Use the audited JVM tooling dependency versions")
         }
     }
 }

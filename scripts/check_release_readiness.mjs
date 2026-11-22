@@ -1567,11 +1567,36 @@ assertNotContains("crates/ffi/src/lib.rs", "pub mod kotlin;");
 assertContains("crates/ffi/src/kotlin.rs", "Java_me_really_jose_ReallyMeJoseNative_executeOperationNative");
 assertContains("crates/ffi/src/kotlin.rs", "rm_jose_execute_owned_operation_v1");
 assertContains("crates/ffi/src/kotlin.rs", "Zeroizing<Vec<u8>>");
+for (const sdk of ["kotlin", "kotlin-android"]) {
+  assertContains(`packages/${sdk}/build.gradle.kts`, "resolutionStrategy.activateDependencyLocking()");
+  assertContains(`packages/${sdk}/build.gradle.kts`, "../../gradle/jvm-tool-versions.properties");
+  assertContains(`packages/${sdk}/build.gradle.kts`, "resolutionStrategy.force(");
+  assertContains(`packages/${sdk}/buildscript-gradle.lockfile`, "org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.21=classpath");
+}
+for (const coordinate of [
+  "com.google.guava/guava=33.8.0-jre",
+  "org.apache.commons/commons-lang3=3.22.0",
+  "org.apache.httpcomponents/httpclient=4.5.14",
+  "org.bitbucket.b_c/jose4j=0.9.7",
+  "org.bouncycastle/bcprov-jdk18on=1.87",
+  "org.jdom/jdom2=2.0.6.1",
+  "org.jetbrains.kotlin/kotlin-gradle-plugin=2.4.21",
+]) {
+  assertContains("gradle/jvm-tool-versions.properties", coordinate);
+}
+for (const coordinate of [
+  "com.google.guava:guava:33.8.0-jre",
+  "org.apache.commons:commons-lang3:3.22.0",
+  "org.bitbucket.b_c:jose4j:0.9.7",
+  "org.bouncycastle:bcprov-jdk18on:1.87",
+  "org.jdom:jdom2:2.0.6.1",
+]) {
+  assertContains("packages/kotlin-android/buildscript-gradle.lockfile", `${coordinate}=classpath`);
+}
 assertContains("packages/kotlin/build.gradle.kts", 'kotlin("jvm") version "2.4.21"');
 assertContains("packages/kotlin/build.gradle.kts", "jvmToolchain(21)");
 assertContains("packages/kotlin/build.gradle.kts", "lockAllConfigurations()");
 assertContains("packages/kotlin/build.gradle.kts", 'api("com.google.protobuf:protobuf-javalite:4.36.2")');
-assertContains("packages/kotlin/build.gradle.kts", 'val bouncyCastleToolVersion = "1.87"');
 assertContains("packages/kotlin/gradle.lockfile", "org.bouncycastle:bcprov-jdk18on:1.87=kotlinBouncyCastleConfiguration");
 assertContains("packages/kotlin/build.gradle.kts", "verifyJarContainsNativeResources");
 assertContains("packages/kotlin/build.gradle.kts", "verifyJvmNativeManifest(");
@@ -1645,9 +1670,6 @@ assertContains("scripts/verify_maven_release_repository.mjs", "Selected Maven pu
 assertContains("scripts/verify_maven_release_repository.mjs", "native manifest is not bound to the release source SHA");
 
 assertContains("packages/kotlin-android/build.gradle.kts", 'id("com.android.library") version "9.5.2"');
-assertContains("packages/kotlin-android/build.gradle.kts", 'val bouncyCastleToolVersion = "1.87"');
-assertContains("packages/kotlin-android/build.gradle.kts", 'val commonsLangToolVersion = "3.22.0"');
-assertContains("packages/kotlin-android/build.gradle.kts", 'val apacheHttpClientToolVersion = "4.5.14"');
 assertContains("packages/kotlin-android/gradle.lockfile", "org.bouncycastle:bcprov-jdk18on:1.87=androidLintTool");
 assertContains("packages/kotlin-android/gradle.lockfile", "org.apache.commons:commons-lang3:3.22.0=androidLintTool");
 assertContains("packages/kotlin-android/gradle.lockfile", "org.apache.httpcomponents:httpclient:4.5.14=androidLintTool");
@@ -1671,6 +1693,8 @@ for (const abi of ["arm64-v8a", "armeabi-v7a", "x86_64", "x86"]) {
 }
 assertContains("packages/kotlin-android/consumer-rules.pro", "ReallyMeJoseNative");
 assertContains("packages/kotlin-android/consumer-rules.pro", "me.really.jose.v1.**");
+assertContains("packages/kotlin-android/consumer-r8-runtime/build.gradle.kts", "lockAllConfigurations()");
+assertContains("packages/kotlin-android/consumer-r8-runtime/gradle.lockfile", `me.really:jose-android:${crateVersion}=`);
 assertContains("packages/kotlin-android/consumer-r8-runtime/build.gradle.kts", "isMinifyEnabled = true");
 assertContains("packages/kotlin-android/consumer-r8-runtime/src/main/java/me/really/jose/consumer/r8/ConsumerR8RuntimeActivity.java", "JWS_INVALID_SIGNATURE");
 assertContains("packages/kotlin-android/consumer-r8-runtime/src/main/java/me/really/jose/consumer/r8/ConsumerR8RuntimeActivity.java", "encryptJwe");
@@ -2251,7 +2275,7 @@ assertKotlinSourcePolicy({
 
 if (!policyOnlyMode) {
   run(process.execPath, ["--test", "scripts/tests/operation-contract-readiness.test.mjs"]);
-  run(process.execPath, ["--test", "scripts/tests/shell-tools.test.mjs"]);
+  run(process.execPath, ["--test", "scripts/tests/shell-tools.test.mjs", "scripts/tests/android-services.test.mjs"]);
   run("cargo", ["fmt", "--manifest-path", "tools/vector-audit/Cargo.toml", "--check"]);
   run("cargo", [
     "clippy",
