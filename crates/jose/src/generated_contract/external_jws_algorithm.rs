@@ -32,6 +32,8 @@ pub enum ExternalJwsAlgorithm {
     Rs384,
     /// Schema-defined RS512 identity.
     Rs512,
+    /// Schema-defined HS256 identity.
+    Hs256,
 }
 
 impl TryFrom<buffa::EnumValue<crate::api::contract::JoseExternalJwsAlgorithm>>
@@ -51,6 +53,7 @@ impl TryFrom<buffa::EnumValue<crate::api::contract::JoseExternalJwsAlgorithm>>
             Some(Contract::JOSE_EXTERNAL_JWS_ALGORITHM_RS256) => Ok(Self::Rs256),
             Some(Contract::JOSE_EXTERNAL_JWS_ALGORITHM_RS384) => Ok(Self::Rs384),
             Some(Contract::JOSE_EXTERNAL_JWS_ALGORITHM_RS512) => Ok(Self::Rs512),
+            Some(Contract::JOSE_EXTERNAL_JWS_ALGORITHM_HS256) => Ok(Self::Hs256),
             _ => Err(crate::wire::JoseWireError::primitive_internal(
                 crate::api::contract::JoseErrorReason::JOSE_ERROR_REASON_JWS_HEADER_MISMATCH,
             )),
@@ -72,6 +75,7 @@ impl From<ExternalJwsAlgorithm> for Contract {
             ExternalJwsAlgorithm::Rs256 => Self::JOSE_EXTERNAL_JWS_ALGORITHM_RS256,
             ExternalJwsAlgorithm::Rs384 => Self::JOSE_EXTERNAL_JWS_ALGORITHM_RS384,
             ExternalJwsAlgorithm::Rs512 => Self::JOSE_EXTERNAL_JWS_ALGORITHM_RS512,
+            ExternalJwsAlgorithm::Hs256 => Self::JOSE_EXTERNAL_JWS_ALGORITHM_HS256,
         }
     }
 }
@@ -92,6 +96,7 @@ impl ExternalJwsAlgorithm {
             Self::Rs256 => "RS256",
             Self::Rs384 => "RS384",
             Self::Rs512 => "RS512",
+            Self::Hs256 => "HS256",
         }
     }
 }
@@ -110,6 +115,7 @@ impl ExternalJwsAlgorithm {
             "RS256" => Some(Self::Rs256),
             "RS384" => Some(Self::Rs384),
             "RS512" => Some(Self::Rs512),
+            "HS256" => Some(Self::Hs256),
             _ => None,
         }
     }

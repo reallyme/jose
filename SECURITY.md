@@ -1,86 +1,51 @@
 # Security Policy
 
-`reallyme-jose` is security-sensitive JOSE infrastructure. Please report
-suspected vulnerabilities privately rather than opening a public issue.
+Report suspected vulnerabilities privately to **security@really.me**. Do not
+open a public issue. For encrypted disclosure, request our current PGP key
+before sending details.
 
-## Reporting a Vulnerability
+Include the affected version and platform, a minimal reproducer, and the
+security impact. Do not send production secrets, private keys, access tokens,
+or personal data.
 
-**Do not open a public issue for a security vulnerability.**
+Reports may concern any Rust crate, C/JNI adapter, Swift, Kotlin/JVM, Android,
+or TypeScript/WASM package in this repository. Platform support is listed in
+the [supported JOSE surface](README.md#supported-jose-surface).
 
-Report privately to **security@really.me**. For end-to-end encrypted
-disclosure, request our current PGP key in a first, contentless message; we
-will reply with it before you send details.
+## Signature identity
 
-Please include, to the extent you can:
+ES256 verification accepts valid high-S P-256 signatures. Different compact
+JWS or JWT strings can therefore authenticate the same claims. Use validated
+claims and issuer-controlled identifiers for deduplication, revocation, and
+cache keys instead of treating raw token bytes as a unique identity.
+ES256K verification rejects high-S signatures.
 
-- affected crate version and feature lane;
-- a minimal reproducer or malformed compact JOSE value when possible;
-- whether the issue affects confidentiality, integrity, availability, or key
-  binding policy;
-- any known exposure window.
+## JWE sender authentication
 
-Do not include production secrets, private keys, access tokens, JWT claims with
-PII, or raw user data in the report.
+JWE decryption authenticates the protected header and ciphertext under the
+content-encryption key; it does not identify the sender. With `dir`, anyone
+holding that key can create a message. With `ECDH-ES`, anyone holding the
+recipient's public key can create one.
 
-## Supported Surface
+Require an independently verified signature or a key-distribution protocol
+that establishes the sender's identity before trusting decrypted claims.
+Binding `kid`, `typ`, `cty`, `apu`, or `apv` constrains the protocol context but
+does not establish sender identity.
 
-This repository contains the Rust JOSE and protobuf crates, native C/JNI
-adapter, Swift and Kotlin/JVM/Android packages, and TypeScript/WASM facade.
-Report issues in any of these surfaces. Native and WASM algorithm support
-differs; see the [supported JOSE surface](README.md#supported-jose-surface).
+## Compression
 
-The release readiness checks in `scripts/check_release_readiness.mjs`, the
-dependency policy in `deny.toml`, and the fuzz harnesses under `fuzz/` are part
-of the automated validation used to maintain these packages.
+Compression is disabled by default. Opting in enables raw DEFLATE (`DEF`)
+before encryption. Decryption verifies the AES-GCM tag before any inflate work
+and limits decompressed plaintext to 1 MiB.
 
-## Signature Malleability
+Do not combine secrets with attacker-controlled data in compressed plaintext
+when ciphertext length is observable: this can create a compression side
+channel. Leave compression disabled when strict memory erasure is required;
+codec workspaces and allocator copies may retain plaintext.
 
-ES256 verification follows the JOSE ecosystem interoperability policy from
-`reallyme-crypto`: high-S P-256 ECDSA signatures are accepted. This means an
-ES256 JWS or JWT compact string is not a unique identifier for the signed
-claims. Callers that deduplicate, revoke, cache, or audit by token hash must
-canonicalize the signature representation first, or key those decisions on
-validated claims and issuer-controlled identifiers instead of the raw compact
-token bytes.
+## WASM deployment
 
-ES256K uses the stricter secp256k1 policy from `reallyme-crypto` and rejects
-high-S signatures.
-
-## JWE Authentication Semantics
-
-Compact JWE decryption authenticates the protected header and ciphertext under
-the content-encryption key. It does not authenticate the sender. With `dir`,
-decryption proves only that the token was produced by someone with the direct
-content-encryption key. With `ECDH-ES`, anyone with the recipient public key can
-mint a syntactically valid encrypted message for that recipient.
-
-Applications must not treat decrypted JWE claims as issuer-authenticated unless
-the plaintext carries an independently verified signature or the key
-distribution model separately establishes sender authentication. Binding
-`apu`/`apv`, `kid`, `typ`, and `cty` through an explicit policy constrains the
-protocol context; it does not establish who sent an ECDH-ES message because a
-sender can choose those public header values.
-
-Compact-JWE compression is opt-in and supports only raw DEFLATE through the
-typed `DEF` algorithm. Compression occurs before encryption. Decryption verifies
-the AES-GCM tag before any inflate work, rejects malformed or trailing data, and
-enforces a 1 MiB decompressed-plaintext ceiling and a DEFLATE input-work bound
-to limit memory and CPU amplification.
-Intermediate compressed and decompressed plaintext buffers are zeroized on
-drop. Applications must not compress plaintext that combines secrets with
-attacker-controlled values when the resulting ciphertext length is observable;
-that construction can create a compression side channel.
-
-## WASM Trust Boundary
-
-The `wasm` feature lane executes the supported cryptographic operations in
-package-owned Rust implementations compiled to WebAssembly. The JavaScript host
-supplies secure randomness through Web Crypto; public-key validation, supported
-ECDH agreement, and GCM tag verification remain inside `reallyme-crypto`.
-
-The supported TypeScript facade requires explicit provider installation and
-validates the canonical response contract. A substituted module can fabricate
-results, so provider identity, bundler configuration, and the host randomness
-source remain deployment trust boundaries. Pin and review them together with
-the published package. Unsupported P-384 and P-521 ECDH-ES operations fail closed
-in the WASM lane rather than falling back to an ambient provider.
+Install a trusted WASM provider before using the TypeScript facade. Pin and
+review the module, bundler configuration, and host Web Crypto randomness source;
+a substituted module can fabricate results. ECDH-ES P-384 and P-521 are
+unsupported in WASM and return `providerUnsupported`.

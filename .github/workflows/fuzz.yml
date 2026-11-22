@@ -43,12 +43,14 @@ jobs:
           persist-credentials: false
 
       - name: Install Rust nightly
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: ${{ env.NIGHTLY_TOOLCHAIN }}
 
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        # Ignored files remain local; remote build caches are disabled.
+        if: false
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
 
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz --version "$CARGO_FUZZ_VERSION" --locked
@@ -57,6 +59,8 @@ jobs:
         run: cargo metadata --manifest-path fuzz/Cargo.toml --locked --format-version 1 > /dev/null
 
       - name: Restore and persist fuzz corpus
+        # Ignored files remain local; remote build caches are disabled.
+        if: false
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: fuzz/corpus/${{ matrix.target }}
@@ -69,9 +73,16 @@ jobs:
           cargo +nightly-2026-09-15 fuzz run ${{ matrix.target }} --
           -max_total_time="$FUZZ_MAX_TOTAL_TIME_SECONDS" -rss_limit_mb=4096
 
-      - name: Upload crash artifacts
+      - name: Check artifact privacy
+        id: artifact-privacy-5
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: ./.github/actions/check-artifact-privacy
+        with:
+          path: fuzz/artifacts/${{ matrix.target }}
+
+      - name: Upload crash artifacts
+        if: ${{ (failure()) && steps.artifact-privacy-5.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: fuzz-artifacts-${{ matrix.target }}
           path: fuzz/artifacts/${{ matrix.target }}

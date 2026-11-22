@@ -14,18 +14,20 @@ on:
     types: [checks_requested]
 
 permissions:
-  actions: write
-  checks: read
-  contents: write
-  pull-requests: write
-  statuses: write
+  contents: read
 
 jobs:
-  CLAAssistant:
-    # This workflow uses repository write permissions and never checks out PR code.
+  cla-signatures:
+    # Only the signature action may update the signature branch, comment, and
+    # rerun a failed PR check. It never checks out or executes PR code.
     # Filter comments here so ordinary issue and PR discussion does not start
     # a runner. Only signature and recheck comments on PRs reach the action.
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: write
     if: >-
+      github.event_name != 'merge_group' &&
       github.repository_owner == 'reallyme' &&
       toJSON(github.event.repository.private) == 'false' &&
       (github.event.repository.visibility == null || github.event.repository.visibility == 'public') &&
@@ -37,7 +39,6 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check contributor signatures
-        if: github.event_name == 'pull_request_target' || github.event_name == 'issue_comment'
         uses: iainmcgin/cla-github-action@0d27e5a16278d4adb6b0c4b92f08ad27b0a21dc8 # v3.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,8 +49,21 @@ jobs:
           allowlist: 'dependabot[bot],github-actions[bot],renovate[bot]'
           require-opener-as-author: 'true'
 
+  cla-merge-queue:
+    # Queue validation only reads PR metadata and completed workflow runs.
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    if: >-
+      github.event_name == 'merge_group' &&
+      github.repository_owner == 'reallyme' &&
+      toJSON(github.event.repository.private) == 'false' &&
+      (github.event.repository.visibility == null || github.event.repository.visibility == 'public')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
       - name: Verify CLA checks for queued pull requests
-        if: github.event_name == 'merge_group'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BASE_SHA: ${{ github.event.merge_group.base_sha }}
@@ -116,3 +130,36 @@ jobs:
               exit 1
             fi
           done
+
+  CLAAssistant:
+    # Keep one required check name while isolating the write-capable action
+    # from the read-only queue check. Failed or skipped required work fails closed.
+    needs: [cla-signatures, cla-merge-queue]
+    permissions:
+      contents: none
+    if: >-
+      always() &&
+      github.repository_owner == 'reallyme' &&
+      toJSON(github.event.repository.private) == 'false' &&
+      (github.event.repository.visibility == null || github.event.repository.visibility == 'public') &&
+      (github.event_name != 'issue_comment' ||
+      (github.event.issue.pull_request &&
+      (github.event.comment.body == 'recheck' ||
+      contains(github.event.comment.body, 'I have read the CLA Document and I hereby sign the CLA'))))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require the applicable CLA result
+        env:
+          SIGNATURE_RESULT: ${{ needs.cla-signatures.result }}
+          QUEUE_RESULT: ${{ needs.cla-merge-queue.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$GITHUB_EVENT_NAME" in
+            pull_request_target|issue_comment)
+              [[ "$SIGNATURE_RESULT" == success && "$QUEUE_RESULT" == skipped ]] ;;
+            merge_group)
+              [[ "$QUEUE_RESULT" == success && "$SIGNATURE_RESULT" == skipped ]] ;;
+            *) exit 1 ;;
+          esac

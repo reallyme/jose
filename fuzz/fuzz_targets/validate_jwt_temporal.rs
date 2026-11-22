@@ -32,8 +32,7 @@ const EXPECTED_AUDIENCE: &str = "fuzz-audience";
 // Scalar one is a public test fixture whose matching generator point is in
 // `support`; keeping it fixed makes every fuzz iteration deterministic.
 const P256_PRIVATE_KEY_ONE: [u8; PRIVATE_KEY_LEN] = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 ];
 
 fuzz_target!(|data: &[u8]| {
@@ -46,12 +45,8 @@ fuzz_target!(|data: &[u8]| {
     let Ok(jwt) = encode_signed_jwt(&claims, &jwk, &P256_PRIVATE_KEY_ONE) else {
         return;
     };
-    let policy = JwtClaimsValidationPolicy::new(
-        input.temporal_policy(),
-        EXPECTED_AUDIENCE,
-        None,
-        None,
-    );
+    let policy =
+        JwtClaimsValidationPolicy::new(input.temporal_policy(), EXPECTED_AUDIENCE, None, None);
     let _: Result<Value, _> = decode_verify_jwt_with_claims_validation(
         &jwt,
         &jwk,
@@ -81,9 +76,18 @@ impl TemporalInput {
             clock_skew_seconds: read_u64(data, CLOCK_SKEW_OFFSET)?,
             future_iat_skew_seconds: read_u64(data, FUTURE_IAT_SKEW_OFFSET)?,
             flags: *data.get(FLAGS_OFFSET)?,
-            exp: claim_value(*data.get(EXP_SELECTOR_OFFSET)?, read_u64(data, EXP_VALUE_OFFSET)?),
-            nbf: claim_value(*data.get(NBF_SELECTOR_OFFSET)?, read_u64(data, NBF_VALUE_OFFSET)?),
-            iat: claim_value(*data.get(IAT_SELECTOR_OFFSET)?, read_u64(data, IAT_VALUE_OFFSET)?),
+            exp: claim_value(
+                *data.get(EXP_SELECTOR_OFFSET)?,
+                read_u64(data, EXP_VALUE_OFFSET)?,
+            ),
+            nbf: claim_value(
+                *data.get(NBF_SELECTOR_OFFSET)?,
+                read_u64(data, NBF_VALUE_OFFSET)?,
+            ),
+            iat: claim_value(
+                *data.get(IAT_SELECTOR_OFFSET)?,
+                read_u64(data, IAT_VALUE_OFFSET)?,
+            ),
         })
     }
 
@@ -99,7 +103,10 @@ impl TemporalInput {
 
     fn claims(&self) -> Value {
         let mut claims = Map::new();
-        claims.insert("aud".to_owned(), Value::String(EXPECTED_AUDIENCE.to_owned()));
+        claims.insert(
+            "aud".to_owned(),
+            Value::String(EXPECTED_AUDIENCE.to_owned()),
+        );
         insert_optional_claim(&mut claims, "exp", self.exp.clone());
         insert_optional_claim(&mut claims, "nbf", self.nbf.clone());
         insert_optional_claim(&mut claims, "iat", self.iat.clone());

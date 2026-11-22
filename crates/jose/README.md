@@ -1,189 +1,118 @@
 # reallyme-jose
 
-`reallyme-jose` provides compact JOSE, JWT, JWS, and JWE helpers for ReallyMe
-identity workflows.
-
-The crate keeps the JOSE policy layer separate from lower-level primitives:
-
-- cryptographic operations go through `reallyme-crypto`;
-- the exact `Algorithm` type used by JWT/JOSE helpers is re-exported from this
-  crate, so consumers do not need a separate `reallyme-crypto-core` dependency;
-- codec operations go through `reallyme-codec`.
-
-The companion `reallyme-jose-proto` crate publishes the generated protobuf
-types included by both runtime lanes. It is versioned with this crate so
-FFI, WASM, Swift, Kotlin, TypeScript, and generated-SDK adapters can share one
-transport-neutral operation contract. It does not define a network or RPC
-protocol; the embedding adapter owns transport and lifecycle concerns. The
-schema is the public contract for operations, policies, algorithms, and errors.
-`api::contract` re-exports the generated types, while `api::execute` and
-`api::execute_with_providers` execute them through the same semantic functions
-as the borrowed native APIs. Injected provider handles are scoped to the caller.
+Compact JWS, JWT, and JWE operations for Rust. The default feature is `native`;
+WASM builds use `--no-default-features --features wasm`. The wasm lane uses
+package-owned Rust cryptographic implementations and host-provided randomness.
+RSA JWS/JWE, AES-KW, PBES2, and JWE JSON serialization are unsupported.
 
 ## Install
 
 ```toml
 [dependencies]
-reallyme-jose = "0.5.1"
+reallyme-jose = "0.5.2"
 ```
 
-## JWK Thumbprints
+`Algorithm` is re-exported for callers selecting JWT algorithms.
+`api::contract` re-exports the generated types included by both runtime lanes.
+Use `api::execute` for generated requests or `api::execute_with_providers` with
+a caller-owned provider context. Keep `reallyme-jose-proto` on the same release
+line; pre-1.0 minor releases may change the operation contract.
 
-`jwk::thumbprint_sha256` computes an RFC 7638 SHA-256 thumbprint from borrowed
-`JwkThumbprintMembers::{Ec, Okp, Rsa, Oct}` members and returns
-`Zeroizing<[u8; 32]>`. It includes only the required members in lexicographic
-order. Canonical JSON storage is also zeroized on drop, including symmetric
-`oct` key text. Callers retain ownership and cleanup of their borrowed input.
+## JWK thumbprints
 
-Each member must be nonempty and at most 8,192 UTF-8 bytes before escaping.
-Values are already encoded JWK text; this API does not decode or normalize
-them, check curve names, or validate cryptographic key material. Callers retain
-any stricter protocol limits. `jwk::thumbprint_sha256_from_json` borrows from
-a caller-owned JSON object and ignores extra fields. Callers own JSON parsing,
-duplicate-member rejection, input limits, and JSON storage cleanup.
+`jwk::thumbprint_sha256` accepts borrowed
+`JwkThumbprintMembers::{Ec, Okp, Rsa, Oct}` members and returns a
+`Zeroizing<[u8; 32]>` RFC 7638 SHA-256 digest. Only required members are included,
+in lexicographic order. Members must be nonempty and at most 8,192 UTF-8 bytes
+before JSON escaping. Callers may enforce stricter limits.
 
-Quotes, backslashes, and control characters are JSON-escaped deterministically;
-this extends RFC 7638 section 3.3, which defines only unescaped member values.
-Failures use fixed `JwkThumbprintErrorReason` variants with schema reason codes.
-The generated `jwk_thumbprint_sha256` operation uses the same implementation.
+Supply already-encoded JWK text. This function does not normalize encodings,
+validate curves, or validate cryptographic keys. The JSON adapter,
+`jwk::thumbprint_sha256_from_json`, ignores extra fields; callers must handle
+parsing, duplicate members, input limits, and cleanup of the JSON object.
+Quotes, backslashes, and control characters are JSON-escaped; RFC 7638 section
+3.3 specifies only unescaped values. Errors use `JwkThumbprintErrorReason`.
+Canonical JSON and digest owners zeroize on drop; borrowed inputs remain
+caller-owned.
 
-## Security Model
+## Verification and encryption requirements
 
-- JWT verification binds the token header algorithm to the supplied JWK
-  algorithm and curve metadata, the JWK `kid` when present, and the caller's
-  public-key bytes.
-- Unsigned JWT decoding is parsing only; it does not authenticate the sender.
-- The canonical protobuf wire boundary returns a versioned
-  `JoseOperationResponse` whose generated oneofs preserve the selected
-  operation, success/error outcome, error branch, and exact `JoseErrorReason`.
-- Owned wire outputs use zeroizing buffers because result bytes can contain
-  claims JSON, decrypted plaintext, or structured error bytes.
-- Compact JWS, signed JWT, and compact JWE parsing reject duplicate protected
-  header members before policy evaluation.
-- Unsigned JWT parsing and verified claims JSON also reject duplicate object
-  members so mixed deployments cannot disagree on first-wins versus last-wins
-  claim interpretation.
-- `b64`, `crit`, `jku`, and `x5u` protected-header parameters fail closed.
-  Compact-JWE `zip = "DEF"` is supported only when the caller explicitly adds
-  the typed DEFLATE algorithm to the protected-header policy; every other `zip`
-  value is rejected as unsupported.
-  Embedded `jwk` headers are rejected. JWE also rejects `x5c`. An explicit
-  signed-JWT header policy can allow `jwk` or `x5c` presence, but ignores their
-  contents; the supplied JWK and public key remain authoritative. Compact JWS
-  accepts non-critical `x5c` and JAdES metadata without interpreting it so the
-  authenticated-parts APIs can return the exact signed header. Profile-aware
-  callers must bind that returned metadata to the supplied verification key.
-- ES256 verification accepts otherwise valid high-S signatures as RFC 7515
-  permits; applications should not use compact-token byte equality as an
-  issuer-independent uniqueness guarantee. Face ID and Secure Enclave protected
-  P-256 signers may produce canonical signatures, but verifier acceptance is
-  based on JOSE/P-256 ECDSA validity rather than that platform-specific emission
-  detail. JWT-only ES256K verification intentionally differs: the secp256k1
-  backend enforces low-S and rejects otherwise valid high-S signatures.
-- Signed JWT temporal validation accepts only positive, integral NumericDate
-  seconds. Fractional, negative, and zero values are rejected as a deliberate
-  fail-closed profile even though RFC 7519's NumericDate syntax is broader.
-- Direct-key JWE encryption generates a fresh 96-bit IV but cannot count uses of
-  a caller-owned CEK. Callers must enforce an AES-GCM per-key invocation budget
-  and rotate the CEK before the applicable NIST SP 800-38D limit.
-  Swift and Kotlin FFI adapters use two AES-GCM invocations for each direct-key
-  request because they perform a sizing call and a write call.
-- Raw DEFLATE compression, when requested, runs before encryption. Decryption
-  authenticates AES-GCM before inflating, rejects trailing compressed data, and
-  caps decompressed plaintext at 1 MiB. Intermediate compressed and
-  decompressed plaintext owners zeroize on drop. Codec workspaces and allocator
-  copies created during growth can retain data; strict erasure requirements
-  should leave compression disabled. Compression remains disabled
-  by default because ciphertext length can expose secret-dependent information;
-  do not mix attacker-controlled and confidential values in compressed content.
-  OpenID4VCI adapters may advertise `zip_values_supported: ["DEF"]` only when
-  they opt in to this policy; absent metadata means no compression.
-- ECDH-ES protected headers use a deliberately minimal `epk` profile. Only
-  `kty`, `crv`, `x`, and `y` are accepted; standalone-JWK metadata such as
-  `kid`, `use`, or `alg`, private `d`, and shortened EC coordinates fail
-  closed. Coordinates must use the full curve width required by RFC 7518.
-- The random source passed to compact-JWE encryption supplies the AES-GCM IV.
-  ECDH-ES ephemeral keypairs are generated independently by the cryptographic
-  backend's CSPRNG, so deterministic IV injection is not an ECDH test hook.
-- Deserialized claim values such as `serde_json::Value` are caller-owned and do not
-  zeroize on drop. Use the claims-JSON byte helpers for adapters that need an
-  explicit zeroizing owner at the JOSE boundary.
-- The wasm lane uses package-owned Rust cryptographic implementations and
-  executes the applicable portable JOSE vectors under a JavaScript WASM host.
-  The host supplies secure randomness through the Web Crypto integration.
-- JWK parsing, validation, and thumbprints are delegated to `reallyme-crypto`;
-  this crate only consumes validated key metadata for JOSE policy decisions.
-  The upstream native JWK deserializer rejects unrecognized members, including
-  `key_ops`, `x5c`, and `ext`. The operation-contract JSON adapter accepts
-  additional public members and applies its own operation policy.
-- JOSE algorithm policy follows RFC 7515, RFC 7516, RFC 7518, RFC 7519, and
-  RFC 8725. The `EdDSA` identifier is bound to Ed25519 key metadata. RFC 9864's
-  fully specified `Ed25519` identifier is not yet accepted.
+- Unsigned JWT decoding does not authenticate the sender. Signed JWT verification
+  binds the header algorithm to the supplied JWK metadata and public key.
+- Compact protected headers and verified claims JSON reject duplicate members.
+  `b64`, `crit`, `jku`, and `x5u` protected headers are unsupported. A policy that
+  permits embedded `jwk` or `x5c` does not authorize those keys or certificates;
+  bind accepted metadata to the verification key supplied by the caller.
+- ES256 accepts otherwise valid high-S signatures. Use validated claims and
+  issuer-controlled identifiers for token identity. ES256K requires low-S
+  signatures. `EdDSA` selects Ed25519; the `Ed25519` JOSE label is unsupported.
+- JWT NumericDate values must be positive integral seconds. Zero, negative,
+  and fractional values are rejected. Select an explicit verification mode and
+  supply the current time for modes that validate time claims.
+- Direct JWE encryption generates a fresh 96-bit IV. Callers must enforce the
+  AES-GCM per-key invocation budget and rotate CEKs before the applicable limit.
+  Count repeated encryption calls, including any sizing and write calls made
+  through caller-owned FFI buffers.
+- JWE authentication does not establish sender identity. Verify an independent
+  signature or use a key-distribution protocol that authenticates the sender.
+- ECDH-ES `epk` accepts only `kty`, `crv`, `x`, and `y`; coordinates must have
+  the full curve width. ECDH-ES P-384 and P-521 are unavailable in WASM. The
+  supplied random source controls JWE IVs, not backend-generated ephemeral keys.
+- `serde_json::Value` and other deserialized claims do not zeroize on drop.
+  Prefer the claims-JSON byte helpers when an explicit zeroizing owner is needed,
+  and clear caller-owned key, claims, and plaintext buffers after use.
 
-## Unsupported JOSE Features
+Compression is opt-in through the typed `DEF` policy. Raw DEFLATE runs before
+encryption; decryption authenticates the tag before inflating and caps output
+at 1 MiB. Do not mix secrets with attacker-controlled values when ciphertext
+length is observable. Codec workspaces and allocator copies may retain data;
+leave compression disabled when strict erasure is required. OpenID4VCI adapters
+may advertise `zip_values_supported: ["DEF"]` only when compression is enabled.
+See the repository [security policy](../../SECURITY.md) for reporting and
+integration precautions.
 
-This crate does not implement RSA JWS/JWE, AES-KW, PBES2, or JWE JSON
-serialization. Expanding the supported surface requires explicit algorithms,
-tests, and conformance records.
+## Caller-owned compact JWS providers
+
+Use `jws::sign_compact_jws_with_provider` when the caller supplies the exact
+protected-header JSON and controls the signing key. The generated
+`JoseJwsSignWithProviderRequest` selects the asymmetric registration and can
+restrict compact size. Return JOSE wire signature bytes from the callback.
+
+`jws::verify_compact_jws_with_provider` passes the selected registration, exact
+signing input, and decoded parts to the verifier. The caller must authorize the
+algorithm and key. An allowed public `jwk` header does not establish trust.
+Verification succeeds only when the callback succeeds.
+`jws::inspect_compact_jws` returns unauthenticated parts for parsing alone.
 
 ## Operation Execution Boundary
 
-Use `reallyme_jose::wire::execute_operation_v1`
-for the canonical binary protobuf entrypoint and `execute_operation_json_v1` for the
-generated ProtoJSON request adapter. Both return zeroizing binary
-`JoseOperationResponse` bytes. Callers must use
-`decode_operation_response_v1` with the submitted `JoseOperationKind`; it requires
-response contract V2 and
-rejects unknown versions, missing outcomes, malformed errors, and operation
-mismatches as typed backend failures.
+`wire::execute_operation_v1` accepts binary protobuf;
+`wire::execute_operation_json_v1` accepts generated ProtoJSON. Both return
+binary `JoseOperationResponse` bytes. Owned wire outputs use zeroizing buffers.
+Decode them with `decode_operation_response_v1` and the submitted
+`JoseOperationKind`; it requires response contract V2 and rejects mismatched
+operations, unknown versions, missing outcomes, and malformed errors.
 
-`JoseOperationRequest` selects exactly one operation. The returned canonical
-response selects the same operation and then exactly one generated `result` or
-`error` outcome. Failures before a trusted request operation exists use
-`boundary_error`; later failures remain under the selected operation.
+A response selects the requested operation and one `result` or `error` outcome.
+Failures before operation selection use `boundary_error`; later failures remain
+under the selected operation. Generated types and field semantics are described
+in the [protobuf crate](../proto/README.md). The `wire` module exposes those
+message and enum types; adapters must use a compatible protobuf crate version.
 
-The versioned entrypoints above are the only executable wire contract,
-preventing adapters from inferring
-an operation or error branch from untyped payload bytes.
+JWT wire header policy is presence-sensitive. Omitting it requires `typ: JWT`;
+set `allow_missing_typ` in an explicit policy to accept a legacy issuer without
+that header. JWT signing's optional `header_options` distinguishes the default
+JWT type, an omitted type, and a caller-selected type; an empty type is rejected.
 
-The `wire` module deliberately exposes `reallyme-jose-proto` generated message
-and enum types. Treat that dependency as the adapter ABI for a given published
-release, but not as the preferred application SDK surface. Pre-1.0 minor
-releases may intentionally revise the schema, so adapters should keep the
-protobuf and Rust crates on the same release line.
+JWT verification selects `signature_only`, `claims`, or `temporal_only` in
+`verification.mode`. Claims validation binds audience and optional issuer or
+subject. Temporal-only validation checks time claims without authorizing the
+recipient. Time-validating modes require a valid current time and bounded skew.
 
-JWT wire header policy is presence-sensitive. Omitting the policy requires an
-explicit `typ: JWT` header. An explicit policy may accept missing `typ` for a
-legacy issuer by setting `allow_missing_typ` to true.
-
-JWT wire temporal validation is also explicit. A verify request selects one
-`verification.mode`: `signature_only`, `claims`, or `temporal_only`.
-Time-validating modes require a valid current time and bounded skew; omitting
-the mode fails closed. JWT signing's optional `header_options` distinguishes
-the default JWT type, an explicitly omitted type, and a caller-selected type.
-An empty selected type is rejected.
-
-JWE decrypt requests expose the native protected-header policy at the wire
-boundary. Adapters can require `kid` and bind exact `kid`, `typ`, `cty`, `apu`,
-and `apv` values. Presence wrapper messages distinguish an omitted expectation
-from an explicitly expected empty value.
-
-The JSON adapter enforces both a representation-specific text limit and the
-binary protobuf message limit after decoding. Since byte fields expand in JSON,
-large binary payloads are more efficient through the binary protobuf lane.
-
-This crate does not define or run an RPC service. FFI, JNI, WASM, Swift,
-Kotlin, TypeScript, or external transport wrappers should remain thin owners of
-transport concerns and delegate operation execution to the canonical wire lane.
-
-## References
-
-- [RFC 7515: JSON Web Signature](https://www.rfc-editor.org/rfc/rfc7515.html)
-- [RFC 7516: JSON Web Encryption](https://www.rfc-editor.org/rfc/rfc7516.html)
-- [RFC 7518: JSON Web Algorithms](https://www.rfc-editor.org/rfc/rfc7518.html)
-- [RFC 7519: JSON Web Token](https://www.rfc-editor.org/rfc/rfc7519.html)
-- [RFC 8725: JSON Web Token Best Current Practices](https://www.rfc-editor.org/rfc/rfc8725.html)
-- [RFC 9864: Fully-Specified Algorithms for JOSE and COSE](https://www.rfc-editor.org/rfc/rfc9864.html)
+JWE decrypt policy can require `kid` and bind exact `kid`, `typ`, `cty`, `apu`,
+and `apv` values. Presence wrappers distinguish an omitted expectation from an
+explicitly expected empty value. JSON requests have a text limit as well as the
+decoded binary-message limit; use binary protobuf for large byte payloads.
 
 ## License
 
@@ -196,18 +125,3 @@ option. See [LICENSE](LICENSE) and
 Copyright © 2026 by ReallyMe Technologies Limited.
 
 ReallyMe<sup>®</sup> is a registered trademark of ReallyMe LLC.
-
-## Caller-owned compact JWS providers
-
-Use `jws::sign_compact_jws_with_provider` when the caller supplies the exact
-protected-header JSON and controls the signing key. The generated
-`JoseJwsSignWithProviderRequest` binds the chosen asymmetric registration and
-can tighten the compact size limit. The callback returns the JOSE wire
-signature bytes for that registration.
-
-`jws::verify_compact_jws_with_provider` passes the selected registration, exact
-received signing input and decoded parts to the verifier. The caller must
-authorize the algorithm and verification key. An explicitly permitted public
-`jwk` header is profile data and does not establish trust. The API produces an
-authenticated result only when the callback succeeds. For parsing alone,
-`jws::inspect_compact_jws` returns unauthenticated parts.

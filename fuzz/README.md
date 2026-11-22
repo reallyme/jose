@@ -1,50 +1,33 @@
-# Fuzzing Harnesses
+# Fuzzing
 
-Coverage-guided libFuzzer targets exercise JOSE compact serializations as
-untrusted input. Each target asserts the same baseline property: invalid input
-must fail closed with typed errors and must not panic, overflow, read out of
-bounds, or run unbounded.
+Run targets from the repository root. The fuzz crate is outside the main Cargo
+workspace and uses the pinned nightly toolchain below.
 
-The fuzz crate lives outside the main Cargo workspace. It declares an empty
-`[workspace]` because `libfuzzer-sys` uses a `#![no_main]` runtime that is not
-compatible with the production crate's strict lint configuration.
-
-## Targets
-
-| Target | Parser under test |
+| Target | Input or operation |
 | --- | --- |
-| `compact_jwe` | compact JWE direct decryption parser and protected-header policy |
-| `compact_jwe_ecdh_es` | compact JWE ECDH-ES protected-header, `epk`, point validation, and Concat-KDF path |
-| `parse_jwe_header` | public compact-JWE protected-header deserialization, duplicate members, dangerous extensions, and minimal `epk` profile |
-| `compact_jws_es256` | compact JWS ES256 parser and protected-header policy |
-| `signed_jwt` | signed JWT parser, duplicate-header guard, and ES256 key binding |
-| `validate_jwt_temporal` | authenticated temporal-claim values, native verification time, and temporal-policy boundaries |
-| `unsigned_jwt` | unsigned JWT parser and `alg = "none"` policy |
-| `operation_wire` | canonical binary protobuf and generated ProtoJSON execution, including every operation-contract semantic adapter |
-| `operation_response` | untrusted canonical V1 response decoding, operation discrimination, nested outcome validation, and cross-operation rejection |
-| `ffi_operation` | C ABI request/output pointer, length, aliasing, ABI-version, capacity, panic-firewall, and cleanup boundary |
-
-Seed corpora live under `fuzz/corpus/<target>/`. The JOSE dictionary in
-`fuzz/dictionaries/jose.dict` gives libFuzzer compact-serialization and header
-tokens so short scheduled runs do not need to discover Base64URL-shaped inputs
-from scratch.
-
-## Running
+| `compact_jwe` | Direct JWE and protected-header policy |
+| `compact_jwe_ecdh_es` | ECDH-ES headers, `epk`, key agreement, and Concat-KDF |
+| `parse_jwe_header` | JWE protected-header JSON |
+| `compact_jws_es256` | ES256 compact JWS |
+| `signed_jwt` | Signed JWT headers and key binding |
+| `validate_jwt_temporal` | NumericDate and temporal-policy boundaries |
+| `unsigned_jwt` | Unsigned JWT and `alg = "none"` |
+| `operation_wire` | Binary protobuf and ProtoJSON requests |
+| `operation_response` | V2 responses, operation matching, and error decoding |
+| `ffi_operation` | C ABI pointers, lengths, aliasing, output capacity, and cleanup |
 
 ```sh
 rustup toolchain install nightly-2026-09-15
 cargo install cargo-fuzz --version 0.13.2 --locked
-
 cargo +nightly-2026-09-15 fuzz build
-cargo +nightly-2026-09-15 fuzz run compact_jwe -- -max_total_time=60
 cargo +nightly-2026-09-15 fuzz run compact_jwe_ecdh_es -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
-cargo +nightly-2026-09-15 fuzz run signed_jwt -- -max_total_time=60
-cargo +nightly-2026-09-15 fuzz run operation_wire -- -max_total_time=60 -dict=fuzz/dictionaries/jose.dict
-cargo +nightly-2026-09-15 fuzz run operation_response -- -max_total_time=60
-cargo +nightly-2026-09-15 fuzz run ffi_operation -- -max_total_time=60
 ```
 
-Reproduce a crash artifact with:
+Replace `compact_jwe_ecdh_es` with another target from the table. Seed corpora
+are under `fuzz/corpus/<target>/`; `fuzz/dictionaries/jose.dict` supplies JOSE
+tokens to libFuzzer.
+
+Reproduce a saved failure with:
 
 ```sh
 cargo +nightly-2026-09-15 fuzz run <target> fuzz/artifacts/<target>/<crash-file>

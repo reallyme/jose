@@ -1,0 +1,563 @@
+{
+  "schema": 1,
+  "exceptions": [
+    {
+      "kind": "action",
+      "path": ".github/workflows/android-ci.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/crates-package-preflight.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/crates-release.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/formal-verification.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/fuzz-ci.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/fuzz.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/kotlin-android-package-preflight.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/kotlin-android-package-release.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/kotlin-ci.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/npm-package-preflight.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/npm-package-release.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/protobuf-ci.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/readiness.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/rust-ci.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/swift-ci.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/swift-package-preflight.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "action",
+      "path": ".github/workflows/swift-package-release.yml",
+      "name": "dtolnay/rust-toolchain",
+      "current": "df2a88e9fe4098bad09cb42c3dec7187f15861fc",
+      "latest": "683b588c487a69d01f6c6ddf40f036ff682cc2c8",
+      "reason": "The retained pin is two commits ahead of the advertised v1 tag. The upstream comparison changes only upstream CI tests and leaves the action implementation identical. Moving to v1 would downgrade the existing reviewed pin.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "allocator-api2",
+      "current": "0.2.21",
+      "latest": "0.4.0",
+      "reason": "Required by hashbrown 0.17.2 (^0.2.9). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "block-buffer",
+      "current": "0.10.4",
+      "latest": "0.12.1",
+      "reason": "Required by digest 0.10.7 (^0.10). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "cpufeatures",
+      "current": "0.2.17",
+      "latest": "0.3.1",
+      "reason": "Required by keccak 0.1.6 (^0.2). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "crypto-common",
+      "current": "0.1.7",
+      "latest": "0.2.2",
+      "reason": "Required by digest 0.10.7 (^0.1.3). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "digest",
+      "current": "0.10.7",
+      "latest": "0.11.3",
+      "reason": "Required by ark-ff 0.6.0 (^0.10); ark-serialize 0.6.0 (^0.10); sha3 0.10.9 (^0.10.7). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "educe",
+      "current": "0.6.0",
+      "latest": "0.8.2",
+      "reason": "Required by ark-ec 0.6.0 (^0.6.0); ark-ff 0.6.0 (^0.6.0); ark-poly 0.6.0 (^0.6.0). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "generic-array",
+      "current": "0.14.7",
+      "latest": "1.4.5",
+      "reason": "Required by block-buffer 0.10.4 (^0.14); crypto-common 0.1.7 (=0.14.7). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "getrandom",
+      "current": "0.2.17",
+      "latest": "0.4.3",
+      "reason": "Required by rand_core 0.6.4 (^0.2); reallyme-crypto-poseidon2 0.4.5 (^0.2.17). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "itertools",
+      "current": "0.14.0",
+      "latest": "0.15.0",
+      "reason": "Required by ark-ec 0.6.0 (^0.14). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "keccak",
+      "current": "0.1.6",
+      "latest": "0.2.2",
+      "reason": "Required by sha3 0.10.9 (^0.1.4). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "minicov",
+      "current": "0.3.8",
+      "latest": "0.3.9",
+      "reason": "Required by wasm-bindgen-test 0.3.80 (=0.3.8). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "num-bigint",
+      "current": "0.4.8",
+      "latest": "0.5.1",
+      "reason": "Required by ark-ec 0.6.0 (^0.4); ark-ff 0.6.0 (^0.4); ark-ff-macros 0.6.0 (^0.4); ark-serialize 0.6.0 (^0.4). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "r-efi",
+      "current": "6.0.0",
+      "latest": "7.2.0",
+      "reason": "Required by getrandom 0.4.3 (^6). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "rand",
+      "current": "0.8.8",
+      "latest": "0.10.4",
+      "reason": "Required by ark-std 0.6.0 (^0.8). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "rand_chacha",
+      "current": "0.3.1",
+      "latest": "0.10.0",
+      "reason": "Required by rand 0.8.8 (^0.3.0). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "rand_core",
+      "current": "0.6.4",
+      "latest": "0.10.1",
+      "reason": "Required by rand 0.8.8 (^0.6.0); rand_chacha 0.3.1 (^0.6.0). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "sha3",
+      "current": "0.10.9",
+      "latest": "0.12.0",
+      "reason": "Required by reallyme-crypto-kmac 0.4.5 (^0.10.9); sha3-kmac 0.3.0 (^0.10). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "sha3",
+      "current": "0.11.0",
+      "latest": "0.12.0",
+      "reason": "Required by slh-dsa 0.2.0-rc.5 (^0.11). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "slh-dsa",
+      "current": "0.2.0-rc.5",
+      "latest": "0.1.0",
+      "reason": "Crypto 0.4.5 pins the reviewed SLH-DSA 0.2 implementation; stable 0.1.0 is API-incompatible. Retain the exact upstream version pending a compatible stable release.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "syn",
+      "current": "2.0.119",
+      "latest": "3.0.10",
+      "reason": "Required by ark-ff-asm 0.6.0 (^2.0); ark-ff-macros 0.6.0 (^2.0); ark-serialize-derive 0.6.0 (^2.0); curve25519-dalek-derive 0.1.1 (^2.0.27). Other current upstream consumers also require this version line. The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "wasi",
+      "current": "0.11.1+wasi-snapshot-preview1",
+      "latest": "0.14.7+wasi-0.2.4",
+      "reason": "Required by getrandom 0.2.17 (^0.11). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "Cargo.lock",
+      "name": "windows-link",
+      "current": "0.2.1",
+      "latest": "0.100.0",
+      "reason": "Required by jni 0.22.4 (^0.2); windows-sys 0.61.2 (^0.2.1). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "allocator-api2",
+      "current": "0.2.21",
+      "latest": "0.4.0",
+      "reason": "Required by hashbrown 0.17.2 (^0.2.9). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "block-buffer",
+      "current": "0.10.4",
+      "latest": "0.12.1",
+      "reason": "Required by digest 0.10.7 (^0.10). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "cpufeatures",
+      "current": "0.2.17",
+      "latest": "0.3.1",
+      "reason": "Required by keccak 0.1.6 (^0.2). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "crypto-common",
+      "current": "0.1.7",
+      "latest": "0.2.2",
+      "reason": "Required by digest 0.10.7 (^0.1.3). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "digest",
+      "current": "0.10.7",
+      "latest": "0.11.3",
+      "reason": "Required by ark-ff 0.6.0 (^0.10); ark-serialize 0.6.0 (^0.10); sha3 0.10.9 (^0.10.7). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "educe",
+      "current": "0.6.0",
+      "latest": "0.8.2",
+      "reason": "Required by ark-ec 0.6.0 (^0.6.0); ark-ff 0.6.0 (^0.6.0); ark-poly 0.6.0 (^0.6.0). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "generic-array",
+      "current": "0.14.7",
+      "latest": "1.4.5",
+      "reason": "Required by block-buffer 0.10.4 (^0.14); crypto-common 0.1.7 (=0.14.7). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "getrandom",
+      "current": "0.2.17",
+      "latest": "0.4.3",
+      "reason": "Required by rand_core 0.6.4 (^0.2). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "itertools",
+      "current": "0.14.0",
+      "latest": "0.15.0",
+      "reason": "Required by ark-ec 0.6.0 (^0.14). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "keccak",
+      "current": "0.1.6",
+      "latest": "0.2.2",
+      "reason": "Required by sha3 0.10.9 (^0.1.4). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "num-bigint",
+      "current": "0.4.8",
+      "latest": "0.5.1",
+      "reason": "Required by ark-ec 0.6.0 (^0.4); ark-ff 0.6.0 (^0.4); ark-ff-macros 0.6.0 (^0.4); ark-serialize 0.6.0 (^0.4). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "r-efi",
+      "current": "6.0.0",
+      "latest": "7.2.0",
+      "reason": "Required by getrandom 0.4.3 (^6). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "rand",
+      "current": "0.8.8",
+      "latest": "0.10.4",
+      "reason": "Required by ark-std 0.6.0 (^0.8). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "rand_chacha",
+      "current": "0.3.1",
+      "latest": "0.10.0",
+      "reason": "Required by rand 0.8.8 (^0.3.0). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "rand_core",
+      "current": "0.6.4",
+      "latest": "0.10.1",
+      "reason": "Required by rand 0.8.8 (^0.6.0); rand_chacha 0.3.1 (^0.6.0). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "sha3",
+      "current": "0.10.9",
+      "latest": "0.12.0",
+      "reason": "Required by reallyme-crypto-kmac 0.4.5 (^0.10.9); sha3-kmac 0.3.0 (^0.10). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "sha3",
+      "current": "0.11.0",
+      "latest": "0.12.0",
+      "reason": "Required by slh-dsa 0.2.0-rc.5 (^0.11). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "slh-dsa",
+      "current": "0.2.0-rc.5",
+      "latest": "0.1.0",
+      "reason": "Crypto 0.4.5 pins the reviewed SLH-DSA 0.2 implementation; stable 0.1.0 is API-incompatible. Retain the exact upstream version pending a compatible stable release.",
+      "expires": "2026-12-19"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "syn",
+      "current": "2.0.119",
+      "latest": "3.0.10",
+      "reason": "Required by ark-ff-asm 0.6.0 (^2.0); ark-ff-macros 0.6.0 (^2.0); ark-serialize-derive 0.6.0 (^2.0); curve25519-dalek-derive 0.1.1 (^2.0.27). Other current upstream consumers also require this version line. The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "wasi",
+      "current": "0.11.1+wasi-snapshot-preview1",
+      "latest": "0.14.7+wasi-0.2.4",
+      "reason": "Required by getrandom 0.2.17 (^0.11). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "fuzz/Cargo.lock",
+      "name": "windows-link",
+      "current": "0.2.1",
+      "latest": "0.100.0",
+      "reason": "Required by jni 0.22.4 (^0.2); windows-sys 0.61.2 (^0.2.1). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "tools/vector-audit/Cargo.lock",
+      "name": "r-efi",
+      "current": "6.0.0",
+      "latest": "7.2.0",
+      "reason": "Required by getrandom 0.4.3 (^6). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    },
+    {
+      "kind": "crate",
+      "path": "tools/vector-audit/Cargo.lock",
+      "name": "syn",
+      "current": "2.0.119",
+      "latest": "3.0.10",
+      "reason": "Required by curve25519-dalek-derive 0.1.1 (^2.0.27). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "expires": "2026-12-21"
+    }
+  ]
+}

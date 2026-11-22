@@ -7,6 +7,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { lstatSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { assertPublicationPrivacy } from "./check-publication-privacy.mjs";
 
 const VERSION_PATTERN = /^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$/u;
 const MAX_ARTIFACT_BYTES = 536_870_912;
@@ -30,6 +31,7 @@ if (
   fail("expected repository root, semantic version, and optional package selection");
 }
 const root = resolve(rootArgument);
+try { assertPublicationPrivacy(root, { releasePayload: "maven" }); } catch { fail("publication violates repository privacy policy"); }
 
 const expectedSourceSha = () => {
   let checkedOutSha;

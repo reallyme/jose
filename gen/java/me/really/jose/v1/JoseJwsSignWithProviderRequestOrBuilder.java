@@ -72,6 +72,10 @@ public interface JoseJwsSignWithProviderRequestOrBuilder extends
   int getMaxCompactBytes();
 
   /**
+   * <pre>
+   * HS256 always rejects embedded JWKs; its provider retains the symmetric key.
+   * </pre>
+   *
    * <code>bool allow_embedded_jwk = 6 [json_name = "allowEmbeddedJwk"];</code>
    * @return The allowEmbeddedJwk.
    */

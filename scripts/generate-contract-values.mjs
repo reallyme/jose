@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { sdkVerification } from "./generate-sdk-verification.mjs";
 import { policyPresets } from "./generate-policy-presets.mjs";
 import { nativeSelectors } from "./generate-native-selectors.mjs";
-import { schemaMessages } from "./read-proto-schema.mjs";
+import { swiftCleanup } from "./generate-swift-cleanup.mjs";
 
 const root = new URL("../", import.meta.url);
 const header = readFileSync(new URL(import.meta.url), "utf8").split("\n").slice(1, 4).join("\n") +
@@ -162,34 +162,6 @@ use reallyme_jose_proto::generated::proto::reallyme::jose::v1::JoseErrorReason;
   const tsValues = [...tsGenerated.matchAll(/^export (?:const|enum) (\w+)/gmu)].map((value) => value[1]);
   const exports = header + `export {\n${tsValues.map((name) => `  ${name},`).join("\n")}\n} from "./proto/generated/reallyme/jose/v1/jose_pb.js";\n` +
     `export type {\n${tsTypes.map((name) => `  ${name},`).join("\n")}\n} from "./proto/generated/reallyme/jose/v1/jose_pb.js";\n`;
-  const messages = schemaMessages(schema);
-  const messageNames = new Set(messages.map(({ name }) => name));
-  let swiftCleanup = header + "import ReallyMeJOSEProto\n\n";
-  for (const { name, body } of messages) {
-    const oneof = /oneof\s+(\w+)\s*\{([\s\S]*?)\}/u.exec(body);
-    const ordinary = oneof === null ? body : body.replace(oneof[0], "");
-    const statements = [];
-    for (const [, cardinality, type, field] of ordinary.matchAll(/^\s*(?:(optional|repeated)\s+)?(\w+)\s+(\w+)\s*=/gmu)) {
-      const property = camel(field);
-      if (type === "bytes") statements.push(`  ReallyMeJOSEMemory.clearOwned(&message.${property})`);
-      if (messageNames.has(type)) {
-        if (cardinality === "repeated") statements.push(`  for index in message.${property}.indices { clearSensitiveFields(&message.${property}[index]) }`);
-        else {
-          const statement = `  if message.has${title(property)} { clearSensitiveFields(&message.${property}) }`;
-          statements.push(statement.length <= 100 ? statement : `  if message.has${title(property)} {\n    clearSensitiveFields(&message.${property})\n  }`);
-        }
-      }
-    }
-    if (oneof !== null) {
-      statements.push(`  switch message.${camel(oneof[1])} {`);
-      for (const [, type, field] of oneof[2].matchAll(/^\s*(\w+)\s+(\w+)\s*=/gmu)) {
-        statements.push(`  case .${camel(field)}: ${messageNames.has(type) ? `clearSensitiveFields(&message.${camel(field)})` : "break"}`);
-      }
-      statements.push("  case nil: break", "  }");
-    }
-    statements.push(`  message = ReallyMeProto${name}()`);
-    swiftCleanup += `func clearSensitiveFields(_ message: inout ReallyMeProto${name}) {\n${statements.join("\n")}\n}\n\n`;
-  }
   const formattedRust = spawnSync("rustfmt", ["--edition", "2021", "--emit", "stdout"], { input: rust, encoding: "utf8" });
   if (formattedRust.status !== 0) throw new TypeError("formatting schema-derived Rust values failed");
   const formattedFailures = spawnSync("rustfmt", ["--edition", "2021", "--emit", "stdout"], { input: failureSource, encoding: "utf8" });
@@ -207,7 +179,7 @@ use reallyme_jose_proto::generated::proto::reallyme::jose::v1::JoseErrorReason;
     ["packages/swift/Sources/ReallyMeJOSE/ContractAlgorithms.swift", swiftAlgorithms.trimEnd() + "\n"],
     ["packages/kotlin/src/main/kotlin/me/really/jose/ContractAlgorithms.kt", kotlinAlgorithms.trimEnd() + "\n"],
     ["packages/ts/src/proto.ts", exports],
-    ["packages/swift/Sources/ReallyMeJOSE/ContractMemory.swift", swiftCleanup.trimEnd() + "\n"],
+    ...swiftCleanup(schema, header),
   ]);
   for (const [relative, content] of files) {
     const path = fileURLToPath(new URL(relative, root));

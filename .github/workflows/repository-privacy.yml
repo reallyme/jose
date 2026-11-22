@@ -1,0 +1,78 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: Repository Privacy
+
+on:
+  pull_request_target:
+  push:
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  privacy:
+    name: Repository privacy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout complete candidate history
+        if: github.event_name != 'pull_request_target'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Enforce repository privacy
+        if: github.event_name != 'pull_request_target'
+        uses: ./.github/actions/check-repository-privacy
+
+      - name: Test local hooks and archive checks
+        if: github.event_name != 'pull_request_target'
+        run: python3 -m unittest discover -s scripts -p 'test_repository_privacy*.py'
+
+      - name: Install Node
+        if: github.event_name != 'pull_request_target'
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          package-manager-cache: false
+          node-version: '26'
+
+      - name: Test publication privacy boundary
+        if: github.event_name != 'pull_request_target'
+        run: node --test scripts/check-publication-privacy.test.mjs
+
+      - name: Checkout trusted base policy
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: policy
+          persist-credentials: false
+
+      - name: Checkout candidate for data inspection only
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: candidate
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install privacy-check runtime
+        if: github.event_name == 'pull_request_target'
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.15'
+
+      # Never execute candidate scripts or tests in pull_request_target.
+      - name: Inspect candidate with trusted base checker
+        if: github.event_name == 'pull_request_target'
+        working-directory: candidate
+        run: |
+          python3 -I "$GITHUB_WORKSPACE/policy/scripts/check_repository_privacy.py" index
+          python3 -I "$GITHUB_WORKSPACE/policy/scripts/check_repository_privacy.py" history HEAD

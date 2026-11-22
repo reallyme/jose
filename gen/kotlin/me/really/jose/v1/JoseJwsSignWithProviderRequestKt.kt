@@ -171,6 +171,10 @@ public object JoseJwsSignWithProviderRequestKt {
     }
 
     /**
+     * ```
+     * HS256 always rejects embedded JWKs; its provider retains the symmetric key.
+     * ```
+     *
      * `bool allow_embedded_jwk = 6 [json_name = "allowEmbeddedJwk"];`
      */
     public var allowEmbeddedJwk: kotlin.Boolean
@@ -181,6 +185,10 @@ public object JoseJwsSignWithProviderRequestKt {
         _builder.allowEmbeddedJwk = value
       }
     /**
+     * ```
+     * HS256 always rejects embedded JWKs; its provider retains the symmetric key.
+     * ```
+     *
      * `bool allow_embedded_jwk = 6 [json_name = "allowEmbeddedJwk"];`
      */
     public fun clearAllowEmbeddedJwk() {

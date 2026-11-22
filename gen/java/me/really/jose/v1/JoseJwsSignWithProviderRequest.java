@@ -250,6 +250,10 @@ public  final class JoseJwsSignWithProviderRequest extends
   public static final int ALLOW_EMBEDDED_JWK_FIELD_NUMBER = 6;
   private boolean allowEmbeddedJwk_;
   /**
+   * <pre>
+   * HS256 always rejects embedded JWKs; its provider retains the symmetric key.
+   * </pre>
+   *
    * <code>bool allow_embedded_jwk = 6 [json_name = "allowEmbeddedJwk"];</code>
    * @return The allowEmbeddedJwk.
    */
@@ -258,6 +262,10 @@ public  final class JoseJwsSignWithProviderRequest extends
     return allowEmbeddedJwk_;
   }
   /**
+   * <pre>
+   * HS256 always rejects embedded JWKs; its provider retains the symmetric key.
+   * </pre>
+   *
    * <code>bool allow_embedded_jwk = 6 [json_name = "allowEmbeddedJwk"];</code>
    * @param value The allowEmbeddedJwk to set.
    */
@@ -266,6 +274,10 @@ public  final class JoseJwsSignWithProviderRequest extends
     allowEmbeddedJwk_ = value;
   }
   /**
+   * <pre>
+   * HS256 always rejects embedded JWKs; its provider retains the symmetric key.
+   * </pre>
+   *
    * <code>bool allow_embedded_jwk = 6 [json_name = "allowEmbeddedJwk"];</code>
    */
   private void clearAllowEmbeddedJwk() {
@@ -593,6 +605,10 @@ public  final class JoseJwsSignWithProviderRequest extends
     }
 
     /**
+     * <pre>
+     * HS256 always rejects embedded JWKs; its provider retains the symmetric key.
+     * </pre>
+     *
      * <code>bool allow_embedded_jwk = 6 [json_name = "allowEmbeddedJwk"];</code>
      * @return The allowEmbeddedJwk.
      */
@@ -601,6 +617,10 @@ public  final class JoseJwsSignWithProviderRequest extends
       return instance.getAllowEmbeddedJwk();
     }
     /**
+     * <pre>
+     * HS256 always rejects embedded JWKs; its provider retains the symmetric key.
+     * </pre>
+     *
      * <code>bool allow_embedded_jwk = 6 [json_name = "allowEmbeddedJwk"];</code>
      * @param value The allowEmbeddedJwk to set.
      * @return This builder for chaining.
@@ -611,6 +631,10 @@ public  final class JoseJwsSignWithProviderRequest extends
       return this;
     }
     /**
+     * <pre>
+     * HS256 always rejects embedded JWKs; its provider retains the symmetric key.
+     * </pre>
+     *
      * <code>bool allow_embedded_jwk = 6 [json_name = "allowEmbeddedJwk"];</code>
      * @return This builder for chaining.
      */

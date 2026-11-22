@@ -4,6 +4,7 @@
 
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -14,8 +15,12 @@ import { publishArchives, registryMetadata, registryRequestBody, validateUploadR
 const version = "0.5.0";
 const source = "1".repeat(40);
 const packages = ["reallyme-jose-proto", "reallyme-jose"];
+const fixtureArchive = (name, path = "README.md") => execFileSync(
+  process.platform === "win32" ? "python" : "python3",
+  ["-c", "import io,sys,tarfile; data=io.BytesIO(); archive=tarfile.open(fileobj=data,mode='w:gz'); entry=tarfile.TarInfo(sys.argv[1]+'/'+sys.argv[2]); content=b'public fixture'; entry.size=len(content); archive.addfile(entry,io.BytesIO(content)); archive.close(); sys.stdout.buffer.write(data.getvalue())", `${name}-${version}`, path],
+);
 const archives = packages.map((name) => {
-  const bytes = Buffer.from(name);
+  const bytes = fixtureArchive(name);
   return {
     file: `${name}-${version}.crate`,
     metadata: { name, vers: version },
@@ -73,6 +78,18 @@ test("registry promotion waits for the dependency checksum before uploading the 
   assert.deepEqual(events, packages.flatMap((name) => [`read ${name}`, `publish ${name}`, `read ${name}`]));
 });
 
+test("a valid digest cannot authorize a private path inside a crate", (t) => {
+  const directory = mkdtempSync(join(tmpdir(), "reallyme-jose-crates-privacy-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const entries = archives.map(({ file, metadata, bytes }, index) => {
+    const payload = index === 0 ? fixtureArchive(metadata.name, "AGENTS.md") : bytes;
+    writeFileSync(join(directory, file), payload);
+    return { file, metadata, sha256: createHash("sha256").update(payload).digest("hex") };
+  });
+  writeFileSync(join(directory, "crate-archives.json"), JSON.stringify({ schema: 1, version, sourceSha: source, entries }));
+  assert.throws(() => verifiedArchives(directory, version, source), { code: "publication-privacy-rejected" });
+});
+
 test("registry retries accept previously uploaded bytes only when their checksum matches", async () => {
   const unexpectedUpload = async () => assert.fail("existing version must never be uploaded again");
   const matching = async (name) => archives.find((archive) => archive.metadata.name === name).sha256;
@@ -108,7 +125,7 @@ test("Cargo metadata preserves registry aliases and normalizes the versioned wor
   const runtime = {
     name: "reallyme-buffa",
     source: "registry+https://github.com/rust-lang/crates.io-index",
-    req: "=0.1.2",
+    req: "=0.1.3",
     rename: "buffa",
     features: ["json"],
     optional: true,
@@ -126,7 +143,7 @@ test("Cargo metadata preserves registry aliases and normalizes the versioned wor
   const metadata = registryMetadata(pkg, version, "fixture");
   assert.equal(metadata.readme, "fixture");
   assert.deepEqual(metadata.deps[0], {
-    name: "reallyme-buffa", version_req: "=0.1.2", features: ["json"],
+    name: "reallyme-buffa", version_req: "=0.1.3", features: ["json"],
     optional: true, default_features: false, target: null, kind: "normal",
     registry: null, explicit_name_in_toml: "buffa",
   });

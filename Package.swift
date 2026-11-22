@@ -6,10 +6,10 @@
 import Foundation
 import PackageDescription
 
-let ffiArtifactChecksum = "c3ab124561206e5e597593a50db9312fefba73d2b44cc500e9d6c3c43a8106c2"
-let ffiArtifactVersion = "0.5.0"
+let ffiArtifactChecksum = "d2cfbf64164376dcaa045c6d641bbcc2ef761def9e56be6efcbfb60ace68452b"
+let ffiArtifactVersion = "0.5.2"
 // Release preparation binds the candidate XCFramework's checksum and artifact version.
-let ffiReleaseVersion = "0.5.1"
+let ffiReleaseVersion = "0.5.2"
 let ffiArtifactLocalPathOverride = ""
 // Source-tree CI exercises runtime loading before testing the linked release
 // artifact. Require a repository-local marker as a second gate so an inherited
@@ -81,7 +81,7 @@ let package = Package(
     .library(name: "ReallyMeJOSEProto", targets: ["ReallyMeJOSEProto"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/apple/swift-protobuf.git", exact: "1.39.0")
+    .package(url: "https://github.com/apple/swift-protobuf.git", exact: "1.41.0")
   ],
   targets: packageTargets
 )

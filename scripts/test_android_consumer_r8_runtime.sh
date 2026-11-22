@@ -8,7 +8,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly REPO_ROOT
 readonly ANDROID_HOME_VALUE="${ANDROID_HOME:-"$HOME/Library/Android/sdk"}"
-readonly ANDROID_NDK_HOME_VALUE="${ANDROID_NDK_HOME:-"$ANDROID_HOME_VALUE/ndk/29.0.14206865"}"
+readonly ANDROID_NDK_HOME_VALUE="${ANDROID_NDK_HOME:-"$ANDROID_HOME_VALUE/ndk/30.0.16248370"}"
 readonly ADB="${ADB:-"$ANDROID_HOME_VALUE/platform-tools/adb"}"
 readonly EMULATOR="${EMULATOR:-"$ANDROID_HOME_VALUE/emulator/emulator"}"
 readonly SDKMANAGER="${SDKMANAGER:-"$ANDROID_HOME_VALUE/cmdline-tools/latest/bin/sdkmanager"}"

@@ -980,6 +980,9 @@ public nonisolated enum ReallyMeProtoJoseExternalJwsAlgorithm: SwiftProtobuf.Enu
 
   /// Rust variant: ExternalJwsAlgorithm.Rs512; label=RS512
   case rs512 // = 110
+
+  /// Rust variant: ExternalJwsAlgorithm.Hs256; label=HS256
+  case hs256 // = 111
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -1000,6 +1003,7 @@ public nonisolated enum ReallyMeProtoJoseExternalJwsAlgorithm: SwiftProtobuf.Enu
     case 108: self = .rs256
     case 109: self = .rs384
     case 110: self = .rs512
+    case 111: self = .hs256
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -1018,6 +1022,7 @@ public nonisolated enum ReallyMeProtoJoseExternalJwsAlgorithm: SwiftProtobuf.Enu
     case .rs256: return 108
     case .rs384: return 109
     case .rs512: return 110
+    case .hs256: return 111
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -1036,6 +1041,7 @@ public nonisolated enum ReallyMeProtoJoseExternalJwsAlgorithm: SwiftProtobuf.Enu
     .rs256,
     .rs384,
     .rs512,
+    .hs256,
   ]
 
 }
@@ -2279,6 +2285,7 @@ public nonisolated struct ReallyMeProtoJoseJwsSignWithProviderRequest: Sendable 
   /// Clears the value of `maxCompactBytes`. Subsequent reads from it will return its default value.
   public mutating func clearMaxCompactBytes() {self._maxCompactBytes = nil}
 
+  /// HS256 always rejects embedded JWKs; its provider retains the symmetric key.
   public var allowEmbeddedJwk: Bool = false
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -4393,7 +4400,7 @@ nonisolated extension ReallyMeProtoJoseOperationContractVersion: SwiftProtobuf._
 }
 
 nonisolated extension ReallyMeProtoJoseExternalJwsAlgorithm: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_EXTERNAL_JWS_ALGORITHM_UNSPECIFIED\0\u{2}d\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_ES256\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_ES384\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_ES512\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_ES256K\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_EDDSA\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_PS256\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_PS384\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_PS512\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_RS256\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_RS384\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_RS512\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_EXTERNAL_JWS_ALGORITHM_UNSPECIFIED\0\u{2}d\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_ES256\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_ES384\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_ES512\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_ES256K\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_EDDSA\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_PS256\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_PS384\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_PS512\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_RS256\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_RS384\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_RS512\0\u{1}JOSE_EXTERNAL_JWS_ALGORITHM_HS256\0")
 }
 
 nonisolated extension ReallyMeProtoJoseNamedCurve: SwiftProtobuf._ProtoNameProviding {

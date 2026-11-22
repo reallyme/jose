@@ -28,13 +28,18 @@ target/
 .secrets/
 **/.secrets/
 
-# Local developer state
-/AGENTS.md
-/.agents/
-/.claude/
-/.codex/
-/.release-readiness/
-/.release-readiness-upstream/
+# Local-only names apply at every repository depth. Privacy checks enforce
+# this block independently of later or nested negation rules.
+# BEGIN LOCAL-ONLY PATHS
+AGENTS.md
+.agents/
+.claude/
+.codex/
+.local/
+.build/
+.release-readiness/
+.release-readiness-upstream/
+# END LOCAL-ONLY PATHS
 
 # Local execution logs
 *.log
@@ -91,6 +96,10 @@ pnpm-debug.log*
 .vite/
 dist/
 coverage/
+
+# Python guard tooling
+__pycache__/
+*.py[cod]
 
 # Swift Package Manager
 .build/

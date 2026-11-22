@@ -1,0 +1,32 @@
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+name: Check artifact privacy
+description: Reject ignored upload paths and local-only files in nested packages.
+inputs:
+  release-payload:
+    description: Reviewed release payload capability; empty keeps all ignore rules strict.
+    required: false
+    default: ''
+  path:
+    description: Exact upload-artifact path patterns, including exclusions.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install privacy-check runtime
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+        python-version: '3.15'
+    - name: Inspect upload payload
+      shell: bash
+      env:
+        ARTIFACT_PRIVACY_PATHS: ${{ inputs.path }}
+        ARTIFACT_PRIVACY_RELEASE_PAYLOAD: ${{ inputs.release-payload }}
+      run: |
+        if [ "$RUNNER_OS" = Windows ]; then
+          python "$GITHUB_ACTION_PATH/../../../scripts/check_artifact_privacy.py"
+        else
+          python3 "$GITHUB_ACTION_PATH/../../../scripts/check_artifact_privacy.py"
+        fi

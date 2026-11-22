@@ -10,14 +10,14 @@ import java.security.MessageDigest
 import java.util.zip.ZipFile
 
 plugins {
-    id("com.android.library") version "9.5.1"
-    id("com.android.application") version "9.5.1" apply false
+    id("com.android.library") version "9.5.2"
+    id("com.android.application") version "9.5.2" apply false
     `maven-publish`
     signing
 }
 
 group = "me.really"
-version = "0.5.1"
+version = "0.5.2"
 
 dependencyLocking {
     lockAllConfigurations()
@@ -25,12 +25,16 @@ dependencyLocking {
 
 // AGP's lint tool resolves older crypto and HTTP libraries. Constrain these
 // build-time modules without changing the published runtime API.
-val bouncyCastleToolVersion = "1.86"
-val commonsLangToolVersion = "3.21.0"
+val bouncyCastleToolVersion = "1.87"
+val commonsLangToolVersion = "3.22.0"
 val apacheHttpClientToolVersion = "4.5.14"
+val guavaToolVersion = "33.8.0-jre"
 configurations.configureEach {
     resolutionStrategy.eachDependency {
-        if (requested.group == "org.bouncycastle" && requested.name.endsWith("-jdk18on")) {
+        if (requested.group == "com.google.guava" && requested.name == "guava") {
+            useVersion(guavaToolVersion)
+            because("Android build tools otherwise select a vulnerable Guava version")
+        } else if (requested.group == "org.bouncycastle" && requested.name.endsWith("-jdk18on")) {
             useVersion(bouncyCastleToolVersion)
             because("AGP tool configurations otherwise select vulnerable Bouncy Castle versions")
         } else if (requested.group == "org.apache.commons" && requested.name == "commons-lang3") {
@@ -111,7 +115,7 @@ val androidJniLib32BitAlignmentPolicy = mapOf(
     "x86/libreallyme_jose_ffi.so" to "presence-and-manifest",
 )
 val requiredAndroidNativeManifest = "reallyme-jose/native-manifest.json"
-val androidNdkVersion = "29.0.14206865"
+val androidNdkVersion = "30.0.16248370"
 
 fun sha256Hex(bytes: ByteArray): String {
     val digest = MessageDigest.getInstance("SHA-256").digest(bytes)

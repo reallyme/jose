@@ -30,19 +30,19 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: reallyme/release-readiness
-          ref: 55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
           path: .release-readiness
           persist-credentials: false
 
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
+          package-manager-cache: false
           node-version: '26'
 
-      # Save on main so later candidates can reuse the cache and PR code
-      # cannot seed it. Queue-only repositories can refresh it by dispatching
-      # CI on main when the cache key changes or the entry is evicted.
       - name: Restore Gradle cache
+        # Ignored files remain local; remote build caches are disabled.
+        if: false
         id: android-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -52,20 +52,20 @@ jobs:
           key: android-runtime-${{ runner.os }}-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', '**/gradle-wrapper.properties', '**/libs.versions.toml', 'scripts/prepare-android-runtime.sh') }}
 
       - name: Validate Gradle wrappers
-        uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
       - name: Install Java
-        uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: '21'
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
       - name: Install pinned Android NDK
         run: |
-          { yes 2>/dev/null || true; } | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "ndk;29.0.14206865"
-          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/29.0.14206865" >> "${GITHUB_ENV}"
+          { yes 2>/dev/null || true; } | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "ndk;30.0.16248370"
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/30.0.16248370" >> "${GITHUB_ENV}"
       - name: Verify native manifest writer
         run: node --test scripts/write_native_manifest.test.mjs
 
@@ -113,10 +113,17 @@ jobs:
 
       # Release qualification accepts a main run or, with a merge queue, the
       # queue run that main fast-forwarded to. PR runs never qualify.
-      - name: Upload tested Android publication
+      - name: Check artifact privacy
+        id: artifact-privacy-3
         if: >-
           (github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')) ||
           (github.event_name == 'merge_group' && startsWith(github.ref, 'refs/heads/gh-readonly-queue/main/'))
+        uses: ./.github/actions/check-artifact-privacy
+        with:
+          path: ${{ runner.temp }}/android-publication/
+
+      - name: Upload tested Android publication
+        if: ${{ ((github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')) || (github.event_name == 'merge_group' && startsWith(github.ref, 'refs/heads/gh-readonly-queue/main/'))) && steps.artifact-privacy-3.outcome == 'success' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: android-maven-${{ github.sha }}
@@ -125,7 +132,8 @@ jobs:
           overwrite: true
 
       - name: Save Gradle cache
-        if: github.ref == 'refs/heads/main' && steps.android-cache.outputs.cache-hit != 'true'
+        # Ignored files remain local; remote build caches are disabled.
+        if: false
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |

@@ -44,22 +44,27 @@ jobs:
         with:
           ref: ${{ inputs.source_sha }}
           persist-credentials: false
+          fetch-depth: 0
+
+      - name: Enforce repository privacy
+        uses: ./.github/actions/check-repository-privacy
 
       - name: Install release Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
 
       - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
+          package-manager-cache: false
           node-version: '26'
 
       - name: Checkout release-readiness runner
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: ${{ inputs.source_sha == '9aeae6356b65512a2c53832c46719de36e1d7e86' && '5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8' || '55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f' }}
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
           path: .release-readiness
           persist-credentials: false
 
@@ -102,14 +107,15 @@ jobs:
           digest-mismatch: error
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
           components: llvm-tools-preview
 
       - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
+          package-manager-cache: false
           node-version: '26'
 
       - name: Select Xcode 26.6
@@ -128,7 +134,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: ${{ inputs.source_sha == '9aeae6356b65512a2c53832c46719de36e1d7e86' && '5a7c5b4785a2c47589dca7f18be11ed99d5dd7b8' || '55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f' }}
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
           path: .release-readiness
           persist-credentials: false
 
@@ -165,14 +171,15 @@ jobs:
           digest-mismatch: error
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
           components: llvm-tools-preview
 
       - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
+          package-manager-cache: false
           node-version: '26'
 
       - name: Select Xcode 26.6
@@ -225,8 +232,8 @@ jobs:
           gh release create "v${RELEASE_VERSION}" build/swift/ReallyMeJOSEFFI.xcframework.zip --verify-tag --title "ReallyMe JOSE v${RELEASE_VERSION}" --notes-file - <<'RELEASE_NOTES'
           - introduce the V2 protobuf operation contract with explicit field presence and schema-defined operation reasons
           - preserve platform-specific SDK setup errors and expose their schema-defined codes
-          - generate Rust protobuf memory cleanup and redaction with ReallyMe Buffa 0.1.2
-          - use ReallyMe Codec 0.4.3 for the shared native and WASM runtime
-          - use ReallyMe Crypto 0.4.2 for the shared cryptographic operations
+          - generate Rust protobuf memory cleanup and redaction with ReallyMe Buffa 0.1.3
+          - use ReallyMe Codec 0.4.5 for the shared native and WASM runtime
+          - use ReallyMe Crypto 0.4.5 for the shared cryptographic operations
           - regenerate SDK bindings and rebuild native binaries together for V2
           RELEASE_NOTES

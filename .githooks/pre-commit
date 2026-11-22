@@ -1,0 +1,12 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2026 ReallyMe Technologies Limited
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+set -eu
+directory=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -f "$directory/check_repository_privacy.py" ]; then
+  exec python3 "$directory/check_repository_privacy.py" index
+fi
+root=$(git rev-parse --show-toplevel)
+exec python3 "$root/scripts/check_repository_privacy.py" index

@@ -9,8 +9,10 @@ import { lstatSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertPublicationPaths, npmPublicationFiles } from "../../../scripts/check-publication-privacy.mjs";
 
 const packageDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+assertPublicationPaths(["dist/"], { prefix: "packages/ts", releasePayload: "npm" });
 const readUtf8 = (path) => readFileSync(path, "utf8");
 const requiredFiles = [
   "package/dist/index.js",
@@ -27,26 +29,7 @@ const requiredFiles = [
   "package/README.md",
   "package/package.json",
 ];
-const allowedFiles = new Set([
-  "package/LICENSE", "package/NOTICE", "package/README.md", "package/package.json",
-  "package/dist/boundary.d.ts", "package/dist/boundary.js",
-  "package/dist/contract-verification.d.ts", "package/dist/contract-verification.js",
-  "package/dist/errors.d.ts", "package/dist/errors.js",
-  "package/dist/facade-support.d.ts", "package/dist/facade-support.js",
-  "package/dist/facade.d.ts", "package/dist/facade.js",
-  "package/dist/facade-shapes.d.ts", "package/dist/facade-shapes.js",
-  "package/dist/index.d.ts", "package/dist/index.js",
-  "package/dist/memory.d.ts", "package/dist/memory.js",
-  "package/dist/proto.d.ts", "package/dist/proto.js",
-  "package/dist/proto/contract-values.d.ts", "package/dist/proto/contract-values.js",
-  "package/dist/proto/generated/reallyme/jose/v1/jose_pb.d.ts",
-  "package/dist/proto/generated/reallyme/jose/v1/jose_pb.js",
-  "package/dist/provider.d.ts", "package/dist/provider.js",
-  "package/dist/validate.d.ts", "package/dist/validate.js",
-  "package/dist/wasm/LICENSE", "package/dist/wasm/reallyme_jose_wasm_bg.wasm",
-  "package/dist/wasm/reallyme_jose_wasm.js",
-  "package/dist/wasmModuleTypes.d.ts", "package/dist/wasmModuleTypes.js",
-]);
+const allowedFiles = new Set(npmPublicationFiles().map((file) => `package/${file}`));
 
 const fail = (message) => {
   process.stderr.write(`${message}\n`);
@@ -142,6 +125,10 @@ const unexpectedFiles = [...names].filter((file) => !allowedFiles.has(file));
 if (unexpectedFiles.length !== 0 || names.size !== allowedFiles.size) {
   fail(`npm package contains an unreviewed file inventory: ${unexpectedFiles.join(", ")}`);
 }
+
+assertPublicationPaths([...names].map((file) => file.slice("package/".length)), {
+  prefix: "packages/ts", releasePayload: "npm",
+});
 
 const declarations = readUtf8(resolve(packageDirectory, "dist", "wasmModuleTypes.d.ts"));
 const expectedFunctions = new Set(["executeOperation", "executeOperationJson"]);

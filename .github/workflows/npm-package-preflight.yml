@@ -16,7 +16,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: '0.5.1'
+        default: '0.5.2'
 
 permissions:
   contents: read
@@ -34,7 +34,7 @@ jobs:
   verify-source-sha:
     name: Verify release source and evidence
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       actions: read
       contents: read
@@ -48,20 +48,27 @@ jobs:
           persist-credentials: false
 
       - name: Install release Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
 
-      - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - name: Install dependency maintenance tools
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
         with:
+          tool: cargo-audit@0.23.0,cargo-outdated@0.19.0
+          fallback: none
+
+      - name: Install Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          package-manager-cache: false
           node-version: '26'
 
       - name: Checkout release-readiness runner
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
           path: .release-readiness
           persist-credentials: false
 
@@ -78,6 +85,18 @@ jobs:
           RELEASE_TAG: v${{ inputs.version }}
           GH_TOKEN: ${{ github.token }}
         run: node .release-readiness/scripts/run-consumer-check.mjs --check-release npm preflight "$RELEASE_VERSION" "$RELEASE_TAG" "$SOURCE_SHA"
+
+      - name: Check artifact privacy
+        id: artifact-privacy-8
+        uses: ./.github/actions/check-artifact-privacy
+        with:
+          path: ${{ runner.temp }}/release-readiness-ci.json
+
+      - name: Verify publication privacy
+        shell: bash
+        env:
+          PUBLICATION_PATH: ${{ runner.temp }}/release-readiness-ci.json
+        run: node .release-readiness/scripts/repository-privacy.mjs --artifact "$PUBLICATION_PATH"
 
       - name: Record verified CI
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -97,22 +116,21 @@ jobs:
           ref: ${{ needs.verify-source-sha.outputs.release_sha }}
           persist-credentials: false
       - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
+          package-manager-cache: false
           node-version: '26'
-          cache: npm
-          cache-dependency-path: packages/ts/package-lock.json
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
           targets: wasm32-unknown-unknown
       - name: Install wasm-pack
-        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
         with:
           tool: wasm-pack@${{ env.WASM_PACK_VERSION }}
       - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
         with:
           tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}
       - name: Install TypeScript dependencies
@@ -121,7 +139,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
           path: .release-readiness
           persist-credentials: false
       - name: Verify release metadata
@@ -146,8 +164,25 @@ jobs:
           fi
           cd ../../build/npm
           sha256sum "reallyme-jose-${RELEASE_VERSION}.tgz" > "reallyme-jose-${RELEASE_VERSION}.tgz.sha256"
+      - name: Check artifact privacy
+        id: artifact-privacy-9
+        uses: ./.github/actions/check-artifact-privacy
+        with:
+          release-payload: npm
+          path: |
+            build/npm/reallyme-jose-${{ inputs.version }}.tgz
+            build/npm/reallyme-jose-${{ inputs.version }}.tgz.sha256
+
+      - name: Verify publication privacy
+        shell: bash
+        env:
+          PUBLICATION_PATH: |
+            build/npm/reallyme-jose-${{ inputs.version }}.tgz
+            build/npm/reallyme-jose-${{ inputs.version }}.tgz.sha256
+        run: node .release-readiness/scripts/repository-privacy.mjs --artifact "$PUBLICATION_PATH"
+
       - name: Upload immutable npm tarball
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: reallyme-jose-npm-${{ inputs.version }}-${{ needs.verify-source-sha.outputs.release_sha }}
           path: |

@@ -17,7 +17,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: '0.5.1'
+        default: '0.5.2'
 
 permissions:
   contents: read
@@ -27,23 +27,23 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  CARGO_AUDIT_VERSION: 0.22.2
+  CARGO_AUDIT_VERSION: 0.23.0
   CARGO_CHECK_EXTERNAL_TYPES_VERSION: 0.5.0
-  CARGO_DENY_VERSION: 0.20.2
-  CARGO_NEXTEST_VERSION: 0.9.146
-  CARGO_SEMVER_CHECKS_VERSION: 0.50.0
+  CARGO_DENY_VERSION: 0.22.0
+  CARGO_NEXTEST_VERSION: 0.9.152
+  CARGO_SEMVER_CHECKS_VERSION: 0.51.0
   EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20
   WASM_BINDGEN_CLI_VERSION: 0.2.130
-  BUFFA_VERSION: 0.1.2
-  BUF_VERSION: 1.73.0
-  BUF_LINUX_X86_64_SHA256: 8f2986298ad08f0cc1bf999b9797b7c383adf32d7edf0f73d6f1e1a701baeac1
+  BUFFA_VERSION: 0.1.3
+  BUF_VERSION: 1.75.0
+  BUF_LINUX_X86_64_SHA256: fad1e38d6909bbb583a4da81d8c02a01046e2cd663bde7e337dd24277393764b
 
 
 jobs:
   verify-source-sha:
     name: Verify release source and evidence
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       actions: read
       contents: read
@@ -57,20 +57,27 @@ jobs:
           persist-credentials: false
 
       - name: Install release Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
 
-      - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - name: Install dependency maintenance tools
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
         with:
+          tool: cargo-audit@0.23.0,cargo-outdated@0.19.0
+          fallback: none
+
+      - name: Install Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          package-manager-cache: false
           node-version: '26'
 
       - name: Checkout release-readiness runner
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
           path: .release-readiness
           persist-credentials: false
 
@@ -87,6 +94,18 @@ jobs:
           RELEASE_TAG: v${{ inputs.version }}
           GH_TOKEN: ${{ github.token }}
         run: node .release-readiness/scripts/run-consumer-check.mjs --check-release crates preflight "$RELEASE_VERSION" "$RELEASE_TAG" "$SOURCE_SHA"
+
+      - name: Check artifact privacy
+        id: artifact-privacy-1
+        uses: ./.github/actions/check-artifact-privacy
+        with:
+          path: ${{ runner.temp }}/release-readiness-ci.json
+
+      - name: Verify publication privacy
+        shell: bash
+        env:
+          PUBLICATION_PATH: ${{ runner.temp }}/release-readiness-ci.json
+        run: node .release-readiness/scripts/repository-privacy.mjs --artifact "$PUBLICATION_PATH"
 
       - name: Record verified CI
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -108,48 +127,52 @@ jobs:
           persist-credentials: false
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
 
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        # Ignored files remain local; remote build caches are disabled.
+        if: false
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           key: buffa-${{ env.BUFFA_VERSION }}
 
       - name: Install nextest
-        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
         with:
-          tool: cargo-nextest@${{ env.CARGO_NEXTEST_VERSION }}
+          tool: cargo-nextest@0.9.152
 
       - name: Install cargo-deny
-        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
         with:
-          tool: cargo-deny@${{ env.CARGO_DENY_VERSION }}
+          tool: cargo-deny@0.22.0
+          fallback: none
 
       - name: Install cargo-audit
-        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
         with:
-          tool: cargo-audit@${{ env.CARGO_AUDIT_VERSION }}
+          tool: cargo-audit@0.23.0
 
       - name: Install external-type checker
-        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
         with:
-          tool: cargo-check-external-types@${{ env.CARGO_CHECK_EXTERNAL_TYPES_VERSION }}
+          tool: cargo-check-external-types@0.5.0
 
       - name: Install external-type checker toolchain
         run: rustup toolchain install "$EXTERNAL_TYPES_NIGHTLY" --profile minimal
 
       - name: Install wasm-bindgen test runner
-        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
         with:
           tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}
 
       - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
+          package-manager-cache: false
           node-version: '26'
 
       - name: Checkout Rust semver baseline
@@ -250,7 +273,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
           path: .release-readiness
           persist-credentials: false
 
@@ -275,6 +298,19 @@ jobs:
           SOURCE_SHA: ${{ needs.verify-source-sha.outputs.release_sha }}
           RELEASE_VERSION: ${{ inputs.version }}
         run: node scripts/release_crate_archives.mjs seal target/package/release-inspected build/crate-release "$RELEASE_VERSION" "$SOURCE_SHA"
+
+      - name: Check artifact privacy
+        id: artifact-privacy-2
+        uses: ./.github/actions/check-artifact-privacy
+        with:
+          release-payload: crates
+          path: build/crate-release
+
+      - name: Verify publication privacy
+        shell: bash
+        env:
+          PUBLICATION_PATH: build/crate-release
+        run: node .release-readiness/scripts/repository-privacy.mjs --artifact "$PUBLICATION_PATH"
 
       - name: Upload inspected crate archives
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

@@ -544,6 +544,8 @@ enum JoseExternalJwsAlgorithm {
   JOSE_EXTERNAL_JWS_ALGORITHM_RS384 = 109;
   // Rust variant: ExternalJwsAlgorithm.Rs512; label=RS512
   JOSE_EXTERNAL_JWS_ALGORITHM_RS512 = 110;
+  // Rust variant: ExternalJwsAlgorithm.Hs256; label=HS256
+  JOSE_EXTERNAL_JWS_ALGORITHM_HS256 = 111;
 }
 
 // Sign attached compact JWS with exact caller-supplied protected-header bytes.
@@ -559,6 +561,7 @@ message JoseJwsSignWithProviderRequest {
   // SENSITIVE: caller-local capability, required for operation dispatch.
   optional uint64 signer_handle = 4;
   optional uint32 max_compact_bytes = 5;
+  // HS256 always rejects embedded JWKs; its provider retains the symmetric key.
   bool allow_embedded_jwk = 6;
 }
 

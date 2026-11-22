@@ -34,7 +34,8 @@ plugins:
       - target=ts
 
   # SwiftProtobuf types are bundled behind the typed Swift SDK facade. Keep the
-  # generator version aligned with the package dependency and release policy.
+  # generator at the latest hosted release; its output is compatible with the
+  # newer pinned SwiftProtobuf runtime.
   - remote: buf.build/apple/swift:v1.39.0
     out: gen/swift
     opt:

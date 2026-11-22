@@ -14,6 +14,8 @@ use crate::generated_contract::ExternalJwsAlgorithm;
 use crate::measure_encoding::base64url_len;
 use crate::wire::{JoseWireError, JoseWireResult};
 
+const HS256_TAG_BYTES: usize = 32;
+
 use super::{
     parse_compact::{
         build_sig_structure, parse_compact_jws, CompactJwsParts, MAX_COMPACT_JWS_BYTES,
@@ -24,7 +26,7 @@ use super::{
 /// Selects an exact JOSE signature registration for an external provider.
 ///
 /// # Errors
-/// Rejects registrations outside the asymmetric external-provider contract.
+/// Rejects registrations outside the external-provider contract.
 pub fn external_jws_algorithm(name: &str) -> JoseWireResult<JoseExternalJwsAlgorithm> {
     ExternalJwsAlgorithm::from_jose_name(name)
         .map(Into::into)
@@ -64,7 +66,9 @@ pub fn sign_compact_jws_with_provider<E: From<JoseWireError>>(
     let attached = Zeroizing::new(bytes_to_base64url(payload));
     let signing_input = build_sig_structure(&protected, &attached, length_overflow())?;
     let signature = signer(expected.into(), &signing_input)?;
-    if signature.is_empty() {
+    if signature.is_empty()
+        || (expected == ExternalJwsAlgorithm::Hs256 && signature.len() != HS256_TAG_BYTES)
+    {
         return Err(primitive(Reason::JwsBadRawSignature).into());
     }
     let len = check_signed_length(signing_input.len(), signature.len(), limit)?;
@@ -134,6 +138,9 @@ pub fn verify_compact_jws_with_provider<E: From<JoseWireError>, T>(
     let input = request.input.as_option().ok_or_else(invalid_compact)?;
     let mut parsed = inspect_compact_jws(input)?;
     let algorithm = validate_header(&parsed.protected_header_json, request.allow_embedded_jwk)?;
+    if algorithm == ExternalJwsAlgorithm::Hs256 && parsed.signature.len() != HS256_TAG_BYTES {
+        return Err(primitive(Reason::JwsBadRawSignature).into());
+    }
     let signing_input_len =
         usize::try_from(parsed.signing_input_len).map_err(|_| length_overflow())?;
     let signing_input = input
@@ -182,11 +189,17 @@ fn validate_header(
             return Err(mismatch());
         }
     }
-    fields
+    let algorithm = fields
         .get("alg")
         .and_then(serde_json::Value::as_str)
         .and_then(ExternalJwsAlgorithm::from_jose_name)
-        .ok_or_else(mismatch)
+        .ok_or_else(mismatch)?;
+    // A symmetric MAC has no public embedded verification key. Refuse this
+    // combination even when an asymmetric caller enables embedded JWKs.
+    if algorithm == ExternalJwsAlgorithm::Hs256 && fields.contains_key("jwk") {
+        return Err(mismatch());
+    }
+    Ok(algorithm)
 }
 
 fn decode_segment(encoded: &str, reason: Reason) -> JoseWireResult<Zeroizing<Vec<u8>>> {

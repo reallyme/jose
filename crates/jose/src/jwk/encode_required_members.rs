@@ -80,16 +80,5 @@ impl Write for CountBytes {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::CountBytes;
-    use std::io::{ErrorKind, Write};
-
-    #[test]
-    fn counting_writer_rejects_overflow_without_changing_its_count() {
-        let mut counter = CountBytes(usize::MAX);
-        assert!(counter
-            .write(&[0])
-            .is_err_and(|error| error.kind() == ErrorKind::FileTooLarge));
-        assert_eq!(counter.0, usize::MAX);
-    }
-}
+#[path = "encode_required_members_tests.rs"]
+mod tests;

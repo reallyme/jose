@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 import { execFileSync } from "node:child_process";
+import { assertPublicationPrivacy } from "./check-publication-privacy.mjs";
 import { lstatSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -45,6 +46,7 @@ if (!checksumPattern.test(sidecar) || sidecarText !== `${sidecar}\n`) {
   fail("checksum sidecar is malformed");
 }
 readRegular(archivePath, maximumArchiveBytes, "XCFramework archive");
+try { assertPublicationPrivacy(archivePath, { releasePayload: "swift" }); } catch { fail("archive violates repository privacy policy"); }
 const manifest = readRegular(manifestPath, 1_048_576, "Package.swift").toString("utf8");
 
 let computed;

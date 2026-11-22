@@ -9,6 +9,7 @@ import { copyFileSync, constants, lstatSync, mkdirSync, readFileSync, readdirSyn
 import { join, resolve } from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { pathToFileURL } from "node:url";
+import { assertPublicationPrivacy } from "./check-publication-privacy.mjs";
 
 const packages = ["reallyme-jose-proto", "reallyme-jose"];
 const versionPattern = /^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$/u;
@@ -107,6 +108,7 @@ function seal(input, output, version, sourceSha) {
     const file = archiveName(name, version);
     const path = resolve(input, file);
     const bytes = readRegular(path, maxArchiveBytes);
+    assertPublicationPrivacy(path, { releasePayload: "crates" });
     const vcs = JSON.parse(run("tar", ["-xOzf", path, `${name}-${version}/.cargo_vcs_info.json`]));
     if (vcs?.git?.sha1 !== sourceSha || (vcs.git.dirty !== undefined && vcs.git.dirty !== false)) {
       fail("archive-source-mismatch");
@@ -145,6 +147,7 @@ export function verifiedArchives(directory, version, sourceSha) {
     }
     const bytes = readRegular(join(directory, file), maxArchiveBytes);
     if (sha256(bytes) !== entry.sha256) fail("archive-digest-mismatch");
+    assertPublicationPrivacy(join(directory, file), { releasePayload: "crates" });
     return { ...entry, bytes };
   });
 }

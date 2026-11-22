@@ -12,7 +12,7 @@ if [ "$#" -eq 0 ]; then
   readonly ROOT_DIR
   cd "${ROOT_DIR}"
   # The checker consumes rustdoc JSON format 57 from this nightly. Only its
-  # documentation pass uses the older compiler; normal builds enforce Rust 1.99.
+  # documentation pass uses the older compiler; normal builds enforce Rust 1.100.
   export CARGO="${ROOT_DIR}/scripts/check_public_external_types.sh"
   export RUSTUP_TOOLCHAIN="${TOOLCHAIN}"
   exec cargo-check-external-types check-external-types \

@@ -9,8 +9,8 @@
 use libfuzzer_sys::fuzz_target;
 use reallyme_jose_ffi::status::JoseFfiStatus;
 use reallyme_jose_ffi::{
-    rm_jose_execute_operation_json_v1, rm_jose_execute_operation_v1,
-    rm_jose_max_response_bytes, rm_jose_zeroize_buffer, JOSE_ABI_VERSION,
+    rm_jose_execute_operation_json_v1, rm_jose_execute_operation_v1, rm_jose_max_response_bytes,
+    rm_jose_zeroize_buffer, JOSE_ABI_VERSION,
 };
 
 const JSON_MASK: u8 = 0x01;

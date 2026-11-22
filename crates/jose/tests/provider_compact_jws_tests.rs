@@ -227,3 +227,78 @@ impl OperationProviders for TestProvider {
         Ok(())
     }
 }
+
+#[test]
+fn hs256_uses_the_same_canonical_provider_boundary() -> JoseWireResult<()> {
+    let request = JoseJwsSignWithProviderRequest::default()
+        .with_protected_header_json(br#"{"alg":"HS256","typ":"JWT"}"#.as_slice())
+        .with_payload(PAYLOAD)
+        .with_algorithm(JoseExternalJwsAlgorithm::Hs256);
+    let tag = [0x37; 32];
+    let signed = sign_compact_jws_with_provider(&request, |algorithm, _| {
+        assert_eq!(algorithm, JoseExternalJwsAlgorithm::Hs256);
+        Ok::<_, JoseWireError>(Zeroizing::new(tag.to_vec()))
+    })?;
+    let (receipt, ()) = verify_compact_jws_with_provider(
+        &verify_request(signed.compact.as_str()),
+        |algorithm, _, parsed| {
+            assert_eq!(algorithm, JoseExternalJwsAlgorithm::Hs256);
+            assert_eq!(parsed.signature.as_slice(), tag);
+            Ok::<_, JoseWireError>(())
+        },
+    )?;
+    assert_eq!(receipt.payload.as_slice(), PAYLOAD);
+    Ok(())
+}
+
+#[test]
+fn malformed_hs256_tags_are_rejected_before_the_verifier() {
+    let request = JoseJwsSignWithProviderRequest::default()
+        .with_protected_header_json(br#"{"alg":"HS256","typ":"JWT"}"#.as_slice())
+        .with_payload(PAYLOAD)
+        .with_algorithm(JoseExternalJwsAlgorithm::Hs256);
+    for length in [0, 1, 31, 33, 64] {
+        let failure = sign_compact_jws_with_provider(&request, |_, _| {
+            Ok::<_, JoseWireError>(Zeroizing::new(vec![0x37; length]))
+        });
+        assert!(
+            matches!(failure, Err(error) if error.reason() == JoseErrorReason::JwsBadRawSignature)
+        );
+        if length == 0 {
+            continue;
+        }
+        let compact = format!(
+            "{}.{}.{}",
+            bytes_to_base64url(request.protected_header_json.as_slice()),
+            bytes_to_base64url(PAYLOAD),
+            bytes_to_base64url(&vec![0x37; length])
+        );
+        let invoked = Cell::new(false);
+        let failure = verify_compact_jws_with_provider(&verify_request(&compact), |_, _, _| {
+            invoked.set(true);
+            Ok::<_, JoseWireError>(())
+        });
+        assert!(!invoked.get());
+        assert!(
+            matches!(failure, Err(error) if error.reason() == JoseErrorReason::JwsBadRawSignature)
+        );
+    }
+}
+
+#[test]
+fn hs256_rejects_embedded_public_keys_before_provider_selection() {
+    let invoked = Cell::new(false);
+    let request = JoseJwsSignWithProviderRequest::default()
+        .with_protected_header_json(
+            br#"{"alg":"HS256","jwk":{"kty":"RSA","n":"AQ","e":"AQAB"}}"#.as_slice(),
+        )
+        .with_payload(PAYLOAD)
+        .with_algorithm(JoseExternalJwsAlgorithm::Hs256)
+        .with_allow_embedded_jwk(true);
+    let failure = sign_compact_jws_with_provider(&request, |_, _| {
+        invoked.set(true);
+        Ok::<_, JoseWireError>(Zeroizing::new(vec![0x37; 32]))
+    });
+    assert!(!invoked.get());
+    assert!(matches!(failure, Err(error) if error.reason() == JoseErrorReason::JwsHeaderMismatch));
+}

@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directories:
+      - /
+      - /fuzz
+      - /tools/vector-audit
+    schedule:
+      interval: weekly
+  - package-ecosystem: npm
+    directories:
+      - /packages/ts
+      - /tools/panva-goldens
+    schedule:
+      interval: weekly
+  - package-ecosystem: gradle
+    directories:
+      - /packages/kotlin
+      - /packages/kotlin-android
+      - /packages/kotlin-android/consumer-r8-runtime
+    schedule:
+      interval: weekly
+  - package-ecosystem: swift
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

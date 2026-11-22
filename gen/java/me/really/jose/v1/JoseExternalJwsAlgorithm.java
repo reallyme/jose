@@ -109,6 +109,14 @@ public enum JoseExternalJwsAlgorithm
    * <code>JOSE_EXTERNAL_JWS_ALGORITHM_RS512 = 110;</code>
    */
   JOSE_EXTERNAL_JWS_ALGORITHM_RS512(110),
+  /**
+   * <pre>
+   * Rust variant: ExternalJwsAlgorithm.Hs256; label=HS256
+   * </pre>
+   *
+   * <code>JOSE_EXTERNAL_JWS_ALGORITHM_HS256 = 111;</code>
+   */
+  JOSE_EXTERNAL_JWS_ALGORITHM_HS256(111),
   UNRECOGNIZED(-1),
   ;
 
@@ -204,6 +212,14 @@ public enum JoseExternalJwsAlgorithm
    * <code>JOSE_EXTERNAL_JWS_ALGORITHM_RS512 = 110;</code>
    */
   public static final int JOSE_EXTERNAL_JWS_ALGORITHM_RS512_VALUE = 110;
+  /**
+   * <pre>
+   * Rust variant: ExternalJwsAlgorithm.Hs256; label=HS256
+   * </pre>
+   *
+   * <code>JOSE_EXTERNAL_JWS_ALGORITHM_HS256 = 111;</code>
+   */
+  public static final int JOSE_EXTERNAL_JWS_ALGORITHM_HS256_VALUE = 111;
 
 
   @java.lang.Override
@@ -238,6 +254,7 @@ public enum JoseExternalJwsAlgorithm
       case 108: return JOSE_EXTERNAL_JWS_ALGORITHM_RS256;
       case 109: return JOSE_EXTERNAL_JWS_ALGORITHM_RS384;
       case 110: return JOSE_EXTERNAL_JWS_ALGORITHM_RS512;
+      case 111: return JOSE_EXTERNAL_JWS_ALGORITHM_HS256;
       default: return null;
     }
   }

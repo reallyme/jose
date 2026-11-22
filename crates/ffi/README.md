@@ -1,32 +1,29 @@
 # ReallyMe JOSE C ABI
 
-`reallyme-jose-ffi` is the non-publishable native boundary used by supported
-platform packages. It executes binary protobuf and ProtoJSON requests and returns the same
-canonical binary response for either encoding. The C ABI also provides
-authoritative size limits and caller-owned buffer cleanup.
-
-Callers must invoke `rm_jose_abi_version` and require the exact expected value
-before calling or casting any other loaded symbol. Operation calls also receive
-the ABI version and fail closed if it differs.
+Use `include/reallyme_jose.h` for declarations and status codes. Call
+`rm_jose_abi_version` and require the expected value before resolving or calling
+other operational symbols. Execution calls also take the expected ABI version.
+Binary protobuf and ProtoJSON requests both return binary
+`JoseOperationResponse` bytes.
 
 ## Owned responses
 
-Use `rm_jose_execute_owned_operation_v1` for binary protobuf and
-`rm_jose_execute_owned_operation_json_v1` for ProtoJSON. Initialize the
-owner slot to `NULL`. Either function executes the request once and
-stores a unique owner in that slot on transport success. Transport errors
-leave the slot unchanged. The request remains caller-owned and may be
-cleared as soon as the execute call returns.
+Use `rm_jose_execute_owned_operation_v1` for binary protobuf or
+`rm_jose_execute_owned_operation_json_v1` for ProtoJSON. Initialize the owner
+slot to `NULL`. A successful transport call executes once and stores the
+response owner in that slot; transport errors leave the slot unchanged.
+The caller retains the request and may clear it after the call returns.
 
-`rm_jose_owned_response_view_v1` returns an immutable pointer and its exact
-encoded length. Keep the owner alive while reading the view. End all reads,
-then pass the original slot to `rm_jose_owned_response_release_v1` in the
-same library image. Release clears the slot, zeroizes the response
-allocation including spare capacity, and frees it. Releasing the cleared
-slot succeeds. Synchronize release with all use of the owner and its views.
-Caller-owned copies have their own cleanup obligation.
+`rm_jose_owned_response_view_v1` returns an immutable pointer and encoded length.
+Keep the owner alive until all reads finish, then release the original slot
+through `rm_jose_owned_response_release_v1` in the same library image. Release
+clears the slot, zeroizes the allocation, and frees it. Releasing an already
+cleared slot succeeds. Synchronize reads and release; clear caller-owned copies
+separately.
 
 ```c
+#include "reallyme_jose.h"
+
 rm_jose_status_t decode_response(const uint8_t *data, size_t len);
 
 rm_jose_status_t execute_and_decode(const uint8_t *request, size_t request_len) {
@@ -50,40 +47,29 @@ rm_jose_status_t execute_and_decode(const uint8_t *request, size_t request_len) 
 }
 ```
 
-JNI and the linked Swift provider use the owned calls. The runtime-loaded
-Swift provider uses them when the native image exports them and supports
-the caller-owned buffer calls for older images.
-
 ## Caller-owned buffers
 
-The existing `rm_jose_execute_operation_v1` and
-`rm_jose_execute_operation_json_v1` take caller-owned input, output, and
-produced-length storage. Nonempty ranges must fit within live allocations
-and be mutually disjoint. Output and produced-length storage may start
-uninitialized. A capacity mismatch reports the exact required response size
-and leaves the output unchanged. A successful call writes the encoded
-response into the reported prefix and preserves the remaining bytes.
-A sizing call and a write call each execute the request. If the operation
-outcome changes between calls, the write call reports its actual length.
+`rm_jose_execute_operation_v1` and `rm_jose_execute_operation_json_v1` take
+caller-owned input, output, and produced-length storage. Nonempty ranges must
+fit live allocations and be mutually disjoint. Output and produced-length
+storage may start uninitialized. A capacity mismatch returns the required
+response size and leaves the output unchanged. Success writes the response
+prefix and preserves the remaining output bytes.
 
-Call `rm_jose_zeroize_buffer` before releasing caller-owned storage that
-may contain private keys, claims, compact tokens, JWK JSON, or plaintext.
+Sizing and writing each execute the operation. Results can change between
+calls, and the write reports its actual length. Prefer owned responses when
+an operation must execute once. For caller-owned buffer cleanup, use
+`rm_jose_zeroize_buffer` before releasing storage containing keys, claims,
+compact tokens, JWK JSON, or plaintext.
 
-C status values describe pointer, capacity, ABI, panic, or other transport
-state. JOSE success and typed primitive/provider/backend failures are carried
-inside the canonical `JoseOperationResponse`; platform adapters must not infer
-semantic errors from the C status alone.
+C status values describe transport failures. Callers must not infer
+semantic errors from the C status alone; decode `JoseOperationResponse` and
+handle its operation outcome.
 
-Release artifacts must be built with the workspace `release-ffi` profile,
-which fixes `panic=unwind` independently of ambient Cargo flags. The crate
-rejects `panic=abort`, and every non-leaf export uses the scoped redacting
-panic firewall. Use the checked-in header at `include/reallyme_jose.h`; do not
-redeclare symbols independently in a platform package.
-
-The supported Swift dynamic artifact uses `RTLD_LOCAL` and statically links its
-Rust runtime. Custom builds that share a Rust standard library across dynamic
-images are unsupported and must not unload this image while another component
-could retain its process-global panic-hook state.
+Build native artifacts with `cargo build -p reallyme-jose-ffi --profile release-ffi`.
+`panic=abort` is unsupported. Custom dynamic builds that share a Rust standard
+library across images are unsupported; do not unload such an image while
+other components may retain its runtime state.
 
 ## License
 

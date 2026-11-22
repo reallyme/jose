@@ -54,6 +54,10 @@ fn schema_parity_and_invalid_values() {
             Contract::JOSE_EXTERNAL_JWS_ALGORITHM_RS512,
             ExternalJwsAlgorithm::Rs512,
         ),
+        (
+            Contract::JOSE_EXTERNAL_JWS_ALGORITHM_HS256,
+            ExternalJwsAlgorithm::Hs256,
+        ),
     ];
     for (contract, native) in cases {
         assert_eq!(

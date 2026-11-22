@@ -16,7 +16,7 @@ on:
         description: Release version without leading v
         required: true
         type: string
-        default: '0.5.1'
+        default: '0.5.2'
 
 permissions:
   contents: read
@@ -30,7 +30,7 @@ jobs:
   verify-source-sha:
     name: Verify release source and evidence
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     permissions:
       actions: read
       contents: read
@@ -46,20 +46,27 @@ jobs:
           persist-credentials: false
 
       - name: Install release Rust toolchain
-        uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
 
-      - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - name: Install dependency maintenance tools
+        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
         with:
+          tool: cargo-audit@0.23.0,cargo-outdated@0.19.0
+          fallback: none
+
+      - name: Install Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          package-manager-cache: false
           node-version: '26'
 
       - name: Checkout release-readiness runner
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
           path: .release-readiness
           persist-credentials: false
 
@@ -76,6 +83,18 @@ jobs:
           RELEASE_TAG: v${{ inputs.version }}
           GH_TOKEN: ${{ github.token }}
         run: node .release-readiness/scripts/run-consumer-check.mjs --check-release maven preflight "$RELEASE_VERSION" "$RELEASE_TAG" "$SOURCE_SHA"
+
+      - name: Check artifact privacy
+        id: artifact-privacy-10
+        uses: ./.github/actions/check-artifact-privacy
+        with:
+          path: ${{ runner.temp }}/release-readiness-ci.json
+
+      - name: Verify publication privacy
+        shell: bash
+        env:
+          PUBLICATION_PATH: ${{ runner.temp }}/release-readiness-ci.json
+        run: node .release-readiness/scripts/repository-privacy.mjs --artifact "$PUBLICATION_PATH"
 
       - name: Record verified CI
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -103,13 +122,21 @@ jobs:
         with:
           ref: ${{ needs.verify-source-sha.outputs.release_sha }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
       - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
+          package-manager-cache: false
           node-version: '26'
+      - name: Checkout release-readiness runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: reallyme/release-readiness
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
+          path: .release-readiness
+          persist-credentials: false
       - name: Build host JNI resource
         shell: bash
         run: scripts/build_kotlin_native_resource.sh build/kotlin-native-resources
@@ -121,13 +148,41 @@ jobs:
         run: >-
           node scripts/verify_native_artifact_handoff.mjs record
           build/kotlin-native-resources build/kotlin-native-digests "${NATIVE_PLATFORM}"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - name: Check artifact privacy
+        id: artifact-privacy-11
+        uses: ./.github/actions/check-artifact-privacy
+        with:
+          release-payload: native
+          path: build/kotlin-native-resources
+
+      - name: Verify publication privacy
+        shell: bash
+        env:
+          PUBLICATION_PATH: build/kotlin-native-resources
+        run: node .release-readiness/scripts/repository-privacy.mjs --artifact "$PUBLICATION_PATH"
+
+      - name: Upload native JNI resource
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: kotlin-native-${{ matrix.platform }}
           path: build/kotlin-native-resources
           if-no-files-found: error
           retention-days: 30
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - name: Check artifact privacy
+        id: artifact-privacy-12
+        uses: ./.github/actions/check-artifact-privacy
+        with:
+          release-payload: native
+          path: build/kotlin-native-digests
+
+      - name: Verify publication privacy
+        shell: bash
+        env:
+          PUBLICATION_PATH: build/kotlin-native-digests
+        run: node .release-readiness/scripts/repository-privacy.mjs --artifact "$PUBLICATION_PATH"
+
+      - name: Upload native JNI digest
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: kotlin-digest-${{ matrix.platform }}
           path: build/kotlin-native-digests
@@ -146,24 +201,25 @@ jobs:
         with:
           ref: ${{ needs.verify-source-sha.outputs.release_sha }}
           persist-credentials: false
-      - uses: gradle/actions/wrapper-validation@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
-      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # v6.0.0
+      - uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: '21'
       - name: Install Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
+          package-manager-cache: false
           node-version: '26'
-      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # master
+      - uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master
         with:
           toolchain: 1.100.0
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: kotlin-native-*
           path: build/kotlin-native-resources
           merge-multiple: true
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: kotlin-digest-*
           path: build/kotlin-native-digests
@@ -178,7 +234,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: reallyme/release-readiness
-          ref: 55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f
+          ref: 16aab5287de498e858ff3b85d9e66d7c9f7ebb74
           path: .release-readiness
           persist-credentials: false
 
@@ -215,7 +271,21 @@ jobs:
           node --test scripts/promote_maven_release_repository.test.mjs scripts/verify_native_artifact_handoff.test.mjs scripts/verify_sdk_release_version.test.mjs
           node scripts/verify_maven_release_repository.mjs build/maven-release "${RELEASE_VERSION}"
           node .release-readiness/scripts/run-consumer-check.mjs --policy-only
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - name: Check artifact privacy
+        id: artifact-privacy-13
+        uses: ./.github/actions/check-artifact-privacy
+        with:
+          release-payload: maven
+          path: build/maven-release
+
+      - name: Verify publication privacy
+        shell: bash
+        env:
+          PUBLICATION_PATH: build/maven-release
+        run: node .release-readiness/scripts/repository-privacy.mjs --artifact "$PUBLICATION_PATH"
+
+      - name: Upload Maven publications
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: maven-publications-${{ inputs.version }}-${{ needs.verify-source-sha.outputs.release_sha }}
           path: build/maven-release

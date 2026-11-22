@@ -113,13 +113,21 @@ node .release-readiness/scripts/run-consumer-check.mjs
 ```
 
 The `.release-readiness` checkout is pinned to commit
-`55115f21d5bf9a3fbc1bb8d10484aecba6e7bd8f` (release v0.9.5) before execution.
+`16aab5287de498e858ff3b85d9e66d7c9f7ebb74` (release v0.9.9) before execution.
+Package preflight also checks dependency freshness, security advisories, and
+CI action and tool pins. With cargo-audit 0.23.0 and cargo-outdated 0.19.0
+installed, run it locally before preparing a candidate:
+
+```sh
+node .release-readiness/scripts/run-consumer-check.mjs --check-dependencies
+```
+
 With that revision checked out alongside JOSE, check the public CI wiring and
 generated bindings locally:
 
 ```sh
 RELEASE_READINESS_PUBLIC_REPO=true node ../release-readiness/scripts/run-consumer-check.mjs --check-workflows
-RELEASE_READINESS_PUBLIC_REPO=true RELEASE_VERSION=0.5.1 \
+RELEASE_READINESS_PUBLIC_REPO=true RELEASE_VERSION=0.5.2 \
   node ../release-readiness/scripts/run-consumer-check.mjs \
   --generated-freshness --release-packages --policy-only
 ```
@@ -139,11 +147,11 @@ service-discovery model. Those concerns belong to the embedding application.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.5.1"
+reallyme-jose = "0.5.2"
 ```
 
 ```sh
-npm install @reallyme/jose@0.5.1
+npm install @reallyme/jose@0.5.2
 ```
 
 ## Supported JOSE Surface
@@ -336,7 +344,7 @@ node scripts/generate-jose-proto.mjs
 ```
 
 `api::contract` exposes generated protobuf types and Buffa enum wrappers.
-The Rust runtime and generators use the exact ReallyMe Buffa 0.1.2 family.
+The Rust runtime and generators use the exact ReallyMe Buffa 0.1.3 family.
 The generator configures cleanup, guarded JSON, and borrowed views in
 `buf.gen.yaml`.
 `api::execute` executes generated requests; `api::execute_with_providers` accepts
@@ -356,6 +364,36 @@ schema reachability and generated-code freshness. See the
 
 ## Release Checks
 
+Install the repository privacy hooks after cloning with
+`python3 scripts/install_repository_hooks.py`. Python 3.11 or newer and Git are
+required. The installer preserves existing hook setups and installs guards in
+the shared local Git directory so branch switches and linked worktrees retain
+protection. The guards reject force-added ignored files, staged ignore-policy
+bypasses, and local-only paths in outgoing branch or tag history. They never
+delete local files.
+
+`python3 scripts/check_repository_privacy.py index` checks the exact staged
+snapshot and working ignore rules. The command
+`python3 scripts/check_repository_privacy.py history HEAD` checks candidate
+ancestry using each commit's ignore rules while
+applying protected local-only names throughout. Later build-directory exclusions
+do not retroactively remove legitimate historical source layouts.
+
+Release validators inspect archive entries, including nested packages, against
+repository ignore rules. Package adapters can admit explicitly reviewed compiler
+outputs for npm, Swift, Maven, native libraries, and Rust crates. These capabilities
+never permit Git tracking, protected private paths, specific ignore rules, or
+unexpected files within build directories. Repository
+privacy runs in CI and in the required release-readiness lane. Local hooks can
+be bypassed by Git options; protected remote branches, required checks, and
+controlled publication credentials are also necessary. CI cannot prevent an
+unprotected branch from being uploaded before a check runs.
+
+Artifact uploads enforce the same release inventories and private-path checks.
+Remote build caches are disabled; dependency caches and unreviewed build output
+remain on the runner that created them. Local `npm publish` and the Maven Central
+bundle script use the same package validation as CI.
+
 The release path is Rust-first. CI runs formatting, linting, tests, native and
 wasm feature-lane checks, dependency policy, advisory audit, release-readiness
 checks, protobuf lint and generated-code freshness, package inspection, and fuzz
@@ -370,7 +408,9 @@ boundaries plus the protobuf/JSON process boundary.
 
 The [Formal Verification workflow](.github/workflows/formal-verification.yml)
 runs Kani against Rust production code used for JWS and JWT verification, JWE
-decryption, protobuf dispatch, and native C ABI validation.
+decryption, protobuf dispatch, and native C ABI validation. It runs only on
+explicit manual dispatch for the selected revision; automatic Required CI does
+not invoke the proof solvers.
 The temporal harnesses cover the full `u64` domain for verification time,
 skew policy, and decoded NumericDates, including missing required claims,
 zero timestamps, exclusive expiration, inclusive future-time boundaries,
