@@ -78,6 +78,9 @@ jobs:
           npm audit --prefix packages/ts
           npm audit --prefix tools/panva-goldens
 
+      - name: Test JVM advisory validation
+        run: python3 -m unittest discover -s scripts -p 'test_jvm_advisories.py'
+
       - name: Audit JVM dependency locks
         run: python3 scripts/check_jvm_advisories.py
 
