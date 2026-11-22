@@ -8,7 +8,7 @@ and iOS 16 or newer.
 ```swift
 .package(
   url: "https://github.com/reallyme/jose",
-  from: "0.5.2"
+  "0.6.0"..<"0.7.0"
 )
 ```
 

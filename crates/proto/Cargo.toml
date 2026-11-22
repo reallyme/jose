@@ -1,6 +1,6 @@
 [package]
 name = "reallyme-jose-proto"
-version = "0.5.2"
+version = "0.6.0"
 description = "ReallyMe JOSE protobuf boundary messages generated with Buffa."
 edition.workspace = true
 rust-version.workspace = true

@@ -8,7 +8,7 @@ Windows x86-64.
 
 ```kotlin
 repositories { mavenCentral() }
-dependencies { implementation("me.really:jose:0.5.2") }
+dependencies { implementation("me.really:jose:0.6.0") }
 ```
 
 The SDK loads the bundled library into an owner-restricted directory and

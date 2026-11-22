@@ -9,7 +9,7 @@ RSA JWS/JWE, AES-KW, PBES2, and JWE JSON serialization are unsupported.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.5.2"
+reallyme-jose = "0.6.0"
 ```
 
 `Algorithm` is re-exported for callers selecting JWT algorithms.

@@ -84,7 +84,7 @@ runNodeCheck("scripts/generate-swift-cleanup.test.mjs");
 runNodeCheck("scripts/maven_central_bundle.test.mjs");
 runNodeCheck("scripts/release_crate_archives.test.mjs");
 
-const crateVersion = "0.5.2";
+const crateVersion = "0.6.0";
 const protoCrateVersion = crateVersion;
 const buffaVersion = "0.1.3";
 const cryptoVersion = "0.4.5";

@@ -348,7 +348,7 @@ class PrivacyTests(unittest.TestCase):
     def test_maven_release_inventory_rejects_extra_build_files(self) -> None:
         self.write(".gitignore", POLICY + b"build/\n")
         repository = self.root / "build/maven-central-upload/bundle-root"
-        self.write("build/maven-central-upload/bundle-root/me/really/jose/0.5.2/jose-0.5.2.pom", b"fixture")
+        self.write("build/maven-central-upload/bundle-root/me/really/jose/0.6.0/jose-0.6.0.pom", b"fixture")
         with Inspector() as inspector:
             check = ReleaseInspector(self.root, inspector, ReleasePayload.MAVEN)
             check.directory(repository)
@@ -376,6 +376,17 @@ class PrivacyTests(unittest.TestCase):
             check = ReleaseInspector(self.root, inspector, ReleasePayload.MAVEN)
             check.archive("library.aar", payload)
             self.assertIn(metadata, check.findings)
+
+    def test_android_upload_requires_the_scoped_maven_capability(self) -> None:
+        self.write(".gitignore", POLICY + b"build/\n")
+        metadata = "META-INF/com/android/build/gradle/aar-metadata.properties"
+        self.write("publication/repository/me/really/jose-android/0.6.0/jose-android-0.6.0.aar",
+                   self.zip_bytes({metadata: b"aarFormatVersion=1.0"}))
+        self.write("publication/android-publication.json", b"{}")
+        self.assertIn(metadata, check_upload(self.root, "publication"))
+        self.assertEqual(check_upload(self.root, "publication", ReleasePayload.MAVEN), set())
+        self.write("publication/.local/credentials")
+        self.assertTrue(check_upload(self.root, "publication", ReleasePayload.MAVEN))
 
     def test_clean_payload_cannot_authorize_an_ignored_publication_source(self) -> None:
         archive = self.write("target/release.zip", self.zip_bytes({"public.txt": b"fixture"}))
