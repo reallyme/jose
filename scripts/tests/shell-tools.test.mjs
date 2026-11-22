@@ -13,6 +13,39 @@ import { fileURLToPath } from "node:url";
 const scripts = fileURLToPath(new URL("..", import.meta.url));
 const executable = (path, source) => writeFileSync(path, source, { mode: 0o700 });
 
+test("historical baseline checkouts stay outside the publication inventory", () => {
+  const root = mkdtempSync(join(tmpdir(), "jose-baseline-inventory-"));
+  try {
+    const workflow = readFileSync(join(scripts, "../.github/workflows/crates-package-preflight.yml"), "utf8");
+    const location = /name: Checkout Rust semver baseline[\s\S]*?\n\s+path: ([^\r\n]+)/u.exec(workflow)?.[1].trim();
+    assert.ok(typeof location === "string" && /^[A-Za-z0-9_.\/-]+$/u.test(location));
+    assert.ok(!location.startsWith("/") && !location.split("/").includes(".."));
+    const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith("GIT_")));
+    const git = (directory, args) => {
+      const result = spawnSync("git", ["-C", directory, ...args], { env, encoding: "utf8", timeout: 10_000 });
+      assert.equal(result.status, 0, result.stderr);
+      return result.stdout;
+    };
+    git(root, ["init", "--quiet", "--initial-branch=main", "--template="]);
+    copyFileSync(join(scripts, "../.gitignore"), join(root, ".gitignore"));
+    writeFileSync(join(root, "README.md"), "Public fixture.\n");
+    git(root, ["add", ".gitignore", "README.md"]);
+    for (const path of [location, "historical-checkout"]) {
+      const directory = join(root, path);
+      mkdirSync(directory, { recursive: true });
+      git(directory, ["init", "--quiet", "--initial-branch=main", "--template="]);
+      writeFileSync(join(directory, "README.md"), "Historical fixture.\n");
+    }
+    const inventory = git(root, ["ls-files", "--cached", "--others", "--exclude-standard", "-z"]).split("\0");
+    assert.ok(inventory.includes("historical-checkout/"));
+    assert.ok(inventory.every((path) => !path.startsWith(location)));
+    assert.ok(workflow.includes(`prepare_semver_baseline.mjs ${location}`));
+    assert.ok(workflow.includes(`--baseline-root ${location}`));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("Swift runtime tests remain on their supported Darwin lane", () => {
   const root = mkdtempSync(join(tmpdir(), "jose-swift-platform-test-"));
   try {

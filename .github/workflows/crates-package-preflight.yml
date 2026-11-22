@@ -183,11 +183,11 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: 5bef20507fb65b19ef8969b5795ddf01620ed668
-          path: .semver-baseline
+          path: .local/semver-baseline
           persist-credentials: false
 
       - name: Prepare reproducible Rust semver baseline
-        run: node scripts/prepare_semver_baseline.mjs .semver-baseline
+        run: node scripts/prepare_semver_baseline.mjs .local/semver-baseline
 
       - name: Install cargo-semver-checks
         run: cargo install cargo-semver-checks --version "$CARGO_SEMVER_CHECKS_VERSION" --locked
@@ -195,7 +195,7 @@ jobs:
       - name: Check public Rust API semver
         run: >-
           cargo semver-checks --workspace --exclude reallyme-jose-ffi
-          --baseline-root .semver-baseline
+          --baseline-root .local/semver-baseline
 
       - name: Verify locked dependency graph
         run: cargo metadata --locked --format-version 1 --no-deps
