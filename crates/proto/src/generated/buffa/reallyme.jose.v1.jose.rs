@@ -3662,10 +3662,11 @@ pub enum JoseOperationKind {
     JOSE_OPERATION_KIND_JWE_ENCRYPT_WITH_PROVIDER = 3011i32,
     /// Rust variant: JoseOperationKind.JweDecryptWithProvider
     JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER = 3012i32,
-    /// Rust variant: JoseOperationKind.JwkThumbprintSha256
-    JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000i32,
     /// Rust variant: JoseOperationKind.ContractInfo
     JOSE_OPERATION_KIND_CONTRACT_INFO = 7000i32,
+    /// Append native selector bindings to preserve existing Rust discriminants.
+    /// Rust variant: JoseOperationKind.JwkThumbprintSha256
+    JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000i32,
 }
 impl JoseOperationKind {
     ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_UNSPECIFIED`]; `Debug` prints the variant name.
@@ -3728,12 +3729,12 @@ impl JoseOperationKind {
     ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const JweDecryptWithProvider: Self = Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER;
-    ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256`]; `Debug` prints the variant name.
-    #[allow(non_upper_case_globals)]
-    pub const JwkThumbprintSha256: Self = Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256;
     ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_CONTRACT_INFO`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const ContractInfo: Self = Self::JOSE_OPERATION_KIND_CONTRACT_INFO;
+    ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwkThumbprintSha256: Self = Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256;
 }
 impl ::core::default::Default for JoseOperationKind {
     fn default() -> Self {
@@ -3842,13 +3843,13 @@ impl ::buffa::Enumeration for JoseOperationKind {
                     Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER,
                 )
             }
+            7000i32 => {
+                ::core::option::Option::Some(Self::JOSE_OPERATION_KIND_CONTRACT_INFO)
+            }
             4000i32 => {
                 ::core::option::Option::Some(
                     Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
                 )
-            }
-            7000i32 => {
-                ::core::option::Option::Some(Self::JOSE_OPERATION_KIND_CONTRACT_INFO)
             }
             _ => ::core::option::Option::None,
         }
@@ -3902,11 +3903,11 @@ impl ::buffa::Enumeration for JoseOperationKind {
             Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER => {
                 "JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER"
             }
-            Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 => {
-                "JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256"
-            }
             Self::JOSE_OPERATION_KIND_CONTRACT_INFO => {
                 "JOSE_OPERATION_KIND_CONTRACT_INFO"
+            }
+            Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 => {
+                "JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256"
             }
         }
     }
@@ -3988,13 +3989,13 @@ impl ::buffa::Enumeration for JoseOperationKind {
                     Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER,
                 )
             }
+            "JOSE_OPERATION_KIND_CONTRACT_INFO" => {
+                ::core::option::Option::Some(Self::JOSE_OPERATION_KIND_CONTRACT_INFO)
+            }
             "JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256" => {
                 ::core::option::Option::Some(
                     Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
                 )
-            }
-            "JOSE_OPERATION_KIND_CONTRACT_INFO" => {
-                ::core::option::Option::Some(Self::JOSE_OPERATION_KIND_CONTRACT_INFO)
             }
             _ => ::core::option::Option::None,
         }
@@ -4021,8 +4022,8 @@ impl ::buffa::Enumeration for JoseOperationKind {
             Self::JOSE_OPERATION_KIND_JWE_DERIVE_KEY,
             Self::JOSE_OPERATION_KIND_JWE_ENCRYPT_WITH_PROVIDER,
             Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER,
-            Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
             Self::JOSE_OPERATION_KIND_CONTRACT_INFO,
+            Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
         ]
     }
 }

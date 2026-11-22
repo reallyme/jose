@@ -174,20 +174,21 @@ public enum JoseOperationKind
   JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER(3012),
   /**
    * <pre>
-   * Rust variant: JoseOperationKind.JwkThumbprintSha256
-   * </pre>
-   *
-   * <code>JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000;</code>
-   */
-  JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256(4000),
-  /**
-   * <pre>
    * Rust variant: JoseOperationKind.ContractInfo
    * </pre>
    *
    * <code>JOSE_OPERATION_KIND_CONTRACT_INFO = 7000;</code>
    */
   JOSE_OPERATION_KIND_CONTRACT_INFO(7000),
+  /**
+   * <pre>
+   * Append native selector bindings to preserve existing Rust discriminants.
+   * Rust variant: JoseOperationKind.JwkThumbprintSha256
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000;</code>
+   */
+  JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256(4000),
   UNRECOGNIZED(-1),
   ;
 
@@ -349,20 +350,21 @@ public enum JoseOperationKind
   public static final int JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER_VALUE = 3012;
   /**
    * <pre>
-   * Rust variant: JoseOperationKind.JwkThumbprintSha256
-   * </pre>
-   *
-   * <code>JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000;</code>
-   */
-  public static final int JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256_VALUE = 4000;
-  /**
-   * <pre>
    * Rust variant: JoseOperationKind.ContractInfo
    * </pre>
    *
    * <code>JOSE_OPERATION_KIND_CONTRACT_INFO = 7000;</code>
    */
   public static final int JOSE_OPERATION_KIND_CONTRACT_INFO_VALUE = 7000;
+  /**
+   * <pre>
+   * Append native selector bindings to preserve existing Rust discriminants.
+   * Rust variant: JoseOperationKind.JwkThumbprintSha256
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000;</code>
+   */
+  public static final int JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256_VALUE = 4000;
 
 
   @java.lang.Override
@@ -405,8 +407,8 @@ public enum JoseOperationKind
       case 3010: return JOSE_OPERATION_KIND_JWE_DERIVE_KEY;
       case 3011: return JOSE_OPERATION_KIND_JWE_ENCRYPT_WITH_PROVIDER;
       case 3012: return JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER;
-      case 4000: return JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256;
       case 7000: return JOSE_OPERATION_KIND_CONTRACT_INFO;
+      case 4000: return JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256;
       default: return null;
     }
   }

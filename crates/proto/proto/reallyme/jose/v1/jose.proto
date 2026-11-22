@@ -1205,10 +1205,11 @@ enum JoseOperationKind {
   JOSE_OPERATION_KIND_JWE_ENCRYPT_WITH_PROVIDER = 3011;
   // Rust variant: JoseOperationKind.JweDecryptWithProvider
   JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER = 3012;
-  // Rust variant: JoseOperationKind.JwkThumbprintSha256
-  JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000;
   // Rust variant: JoseOperationKind.ContractInfo
   JOSE_OPERATION_KIND_CONTRACT_INFO = 7000;
+  // Append native selector bindings to preserve existing Rust discriminants.
+  // Rust variant: JoseOperationKind.JwkThumbprintSha256
+  JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000;
 }
 
 // Semantic native transport classes; C ABI numeric representations remain an

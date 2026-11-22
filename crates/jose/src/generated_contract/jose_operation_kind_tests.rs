@@ -87,12 +87,12 @@ fn schema_parity_and_invalid_values() {
             JoseOperationKind::JweDecryptWithProvider,
         ),
         (
-            Contract::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
-            JoseOperationKind::JwkThumbprintSha256,
-        ),
-        (
             Contract::JOSE_OPERATION_KIND_CONTRACT_INFO,
             JoseOperationKind::ContractInfo,
+        ),
+        (
+            Contract::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
+            JoseOperationKind::JwkThumbprintSha256,
         ),
     ];
     for (contract, native) in cases {

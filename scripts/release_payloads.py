@@ -80,6 +80,11 @@ def reviewed_output(path: str, payload: ReleasePayload) -> bool:
         return path.startswith("build/npm/") and re.fullmatch(
             r"reallyme-jose-" + VERSION + r"\.tgz(?:\.sha256)?", Path(path).name) is not None
     if payload == ReleasePayload.MAVEN:
+        # AGP's required AAR metadata uses a package component named build.
+        # This exact compiled descriptor is distinct from arbitrary build output.
+        metadata = "META-INF/com/android/build/gradle/aar-metadata.properties"
+        if path == metadata or (directory and metadata.startswith(path + "/")):
+            return True
         for prefix in ["build/maven-release/", "build/maven-central-upload/bundle-root/"]:
             if path.startswith(prefix):
                 relative = path[len(prefix):]

@@ -91,7 +91,7 @@ const cryptoVersion = "0.4.5";
 const codecVersion = "0.4.5";
 const npmPackageVersion = crateVersion;
 run(process.execPath, ["scripts/verify_sdk_release_version.mjs", crateVersion]);
-const rustSemverBaselineCommit = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
+const rustSemverBaselineCommit = "5bef20507fb65b19ef8969b5795ddf01620ed668";
 const releaseReadinessCommit = "16aab5287de498e858ff3b85d9e66d7c9f7ebb74";
 const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-check.mjs";
 const releaseRust = "1.100.0";

@@ -54,6 +54,19 @@ include!("operation_response_tests/dispatch.rs");
 include!("operation_response_tests/jwk.rs");
 
 #[test]
+#[allow(
+    clippy::as_conversions,
+    reason = "The downstream enum cast is the behavior protected by this regression test."
+)]
+fn adding_operations_preserves_existing_native_discriminants() {
+    const LEGACY_CONTRACT_INFO_DISCRIMINANT: isize = 19;
+    assert_eq!(
+        JoseOperationKind::ContractInfo as isize,
+        LEGACY_CONTRACT_INFO_DISCRIMINANT
+    );
+}
+
+#[test]
 fn all_operations_match_binary_and_proto_json_routes() -> Result<(), Box<dyn std::error::Error>> {
     let (jws_public, jws_private) = generate_keypair(Algorithm::Ed25519)?;
     let jws_sign = operation(RequestOperation::JwsSign(Box::new(JoseJwsSignRequest {

@@ -9,7 +9,7 @@ import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-export const RUST_SEMVER_BASELINE_COMMIT = "cc7870f049eeef3ab09699797d2fa78b5c17dbcf";
+export const RUST_SEMVER_BASELINE_COMMIT = "5bef20507fb65b19ef8969b5795ddf01620ed668";
 
 const MAX_MANIFEST_BYTES = 65_536;
 const MAX_LOCKFILE_BYTES = 524_288;

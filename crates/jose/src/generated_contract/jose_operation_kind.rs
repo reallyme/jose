@@ -48,10 +48,10 @@ pub enum JoseOperationKind {
     JweEncryptWithProvider,
     /// Schema-defined JweDecryptWithProvider identity.
     JweDecryptWithProvider,
-    /// Schema-defined JwkThumbprintSha256 identity.
-    JwkThumbprintSha256,
     /// Schema-defined ContractInfo identity.
     ContractInfo,
+    /// Schema-defined JwkThumbprintSha256 identity.
+    JwkThumbprintSha256,
 }
 
 impl TryFrom<buffa::EnumValue<crate::api::contract::JoseOperationKind>> for JoseOperationKind {
@@ -89,10 +89,10 @@ impl TryFrom<buffa::EnumValue<crate::api::contract::JoseOperationKind>> for Jose
             Some(Contract::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER) => {
                 Ok(Self::JweDecryptWithProvider)
             }
+            Some(Contract::JOSE_OPERATION_KIND_CONTRACT_INFO) => Ok(Self::ContractInfo),
             Some(Contract::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256) => {
                 Ok(Self::JwkThumbprintSha256)
             }
-            Some(Contract::JOSE_OPERATION_KIND_CONTRACT_INFO) => Ok(Self::ContractInfo),
             _ => Err(crate::wire::JoseWireError::backend_internal(
                 crate::api::contract::JoseErrorReason::JOSE_ERROR_REASON_BACKEND_INTERNAL,
             )),
@@ -132,10 +132,10 @@ impl From<JoseOperationKind> for Contract {
             JoseOperationKind::JweDecryptWithProvider => {
                 Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER
             }
+            JoseOperationKind::ContractInfo => Self::JOSE_OPERATION_KIND_CONTRACT_INFO,
             JoseOperationKind::JwkThumbprintSha256 => {
                 Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256
             }
-            JoseOperationKind::ContractInfo => Self::JOSE_OPERATION_KIND_CONTRACT_INFO,
         }
     }
 }

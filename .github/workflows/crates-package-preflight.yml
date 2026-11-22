@@ -178,7 +178,7 @@ jobs:
       - name: Checkout Rust semver baseline
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: cc7870f049eeef3ab09699797d2fa78b5c17dbcf
+          ref: 5bef20507fb65b19ef8969b5795ddf01620ed668
           path: .semver-baseline
           persist-credentials: false
 

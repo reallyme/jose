@@ -6,7 +6,7 @@
 import Foundation
 import PackageDescription
 
-let ffiArtifactChecksum = "d2cfbf64164376dcaa045c6d641bbcc2ef761def9e56be6efcbfb60ace68452b"
+let ffiArtifactChecksum = "771a8052896e09b09d4f2f70b774d205a0f5539a51e0a5b7d345e0a338def715"
 let ffiArtifactVersion = "0.5.2"
 // Release preparation binds the candidate XCFramework's checksum and artifact version.
 let ffiReleaseVersion = "0.5.2"

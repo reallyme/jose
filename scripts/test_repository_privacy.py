@@ -357,6 +357,26 @@ class PrivacyTests(unittest.TestCase):
             check.directory(repository)
             self.assertIn("build/maven-central-upload/bundle-root/private.txt", check.findings)
 
+    def test_maven_capability_admits_only_the_required_aar_build_descriptor(self) -> None:
+        self.write(".gitignore", POLICY + b"build/\n")
+        metadata = "META-INF/com/android/build/gradle/aar-metadata.properties"
+        payload = self.zip_bytes({metadata: b"aarFormatVersion=1.0"})
+        with Inspector() as inspector:
+            check = ReleaseInspector(self.root, inspector, ReleasePayload.MAVEN)
+            check.archive("library.aar", payload)
+            self.assertEqual(check.findings, set())
+            unknown = "META-INF/com/android/build/private.properties"
+            check.archive("library.aar", self.zip_bytes({unknown: b"fixture"}))
+            self.assertIn(unknown, check.findings)
+            private = "META-INF/com/android/build/AGENTS.md"
+            check.archive("library.aar", self.zip_bytes({private: b"fixture"}))
+            self.assertIn(private, check.findings)
+        self.write(".gitignore", POLICY + b"build/\n" + metadata.encode("utf-8") + b"\n")
+        with Inspector() as inspector:
+            check = ReleaseInspector(self.root, inspector, ReleasePayload.MAVEN)
+            check.archive("library.aar", payload)
+            self.assertIn(metadata, check.findings)
+
     def test_clean_payload_cannot_authorize_an_ignored_publication_source(self) -> None:
         archive = self.write("target/release.zip", self.zip_bytes({"public.txt": b"fixture"}))
         directory = self.write(".private-state/public.txt").parent

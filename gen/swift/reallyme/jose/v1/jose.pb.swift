@@ -1421,11 +1421,12 @@ public nonisolated enum ReallyMeProtoJoseOperationKind: SwiftProtobuf.Enum, Swif
   /// Rust variant: JoseOperationKind.JweDecryptWithProvider
   case jweDecryptWithProvider // = 3012
 
-  /// Rust variant: JoseOperationKind.JwkThumbprintSha256
-  case jwkThumbprintSha256 // = 4000
-
   /// Rust variant: JoseOperationKind.ContractInfo
   case contractInfo // = 7000
+
+  /// Append native selector bindings to preserve existing Rust discriminants.
+  /// Rust variant: JoseOperationKind.JwkThumbprintSha256
+  case jwkThumbprintSha256 // = 4000
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -1510,8 +1511,8 @@ public nonisolated enum ReallyMeProtoJoseOperationKind: SwiftProtobuf.Enum, Swif
     .jweDeriveKey,
     .jweEncryptWithProvider,
     .jweDecryptWithProvider,
-    .jwkThumbprintSha256,
     .contractInfo,
+    .jwkThumbprintSha256,
   ]
 
 }

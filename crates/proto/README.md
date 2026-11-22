@@ -30,6 +30,10 @@ ABI V1 entrypoints require response contract V2. Earlier wire semantics are
 unsupported. Regenerate bindings and rebuild native/WASM binaries and SDKs
 together when updating the contract.
 
+Generated Rust enums and oneofs are exhaustive. Schema additions that pass
+the protobuf compatibility check can still require new downstream Rust match
+arms. Native selector views are non-exhaustive and require a wildcard arm.
+
 JWT signing uses `header_options`: omission defaults to `typ: JWT`; a present
 message without `typ` omits the header; a present empty `typ` is rejected.
 JWT verification requires one `verification.mode`: `signature_only`, `claims`,
