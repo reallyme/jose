@@ -184,11 +184,53 @@ test("Android runtime gate builds before emulator startup and waits for package 
 });
 
 
-test("CI installs only after framework stability using the supported Mesa renderer", () => {
+test("CI installs only after framework stability", () => {
   const source = readFileSync(join(scripts, "run-android-emulator.sh"), "utf8");
   const stability = source.indexOf('node scripts/wait-android-services.mjs "$ANDROID_SERIAL"');
   const install = source.indexOf('node "$helper" install');
   assert.ok(stability >= 0 && install > stability);
-  assert.ok(source.includes("-gpu lavapipe"));
   assert.ok(source.includes('page_size" != 16384'));
 });
+
+
+for (const target of ["android-37.0", "android-0", "android-37"]) {
+  test(`Android preparation validates the generated AVD target: ${target}`, () => {
+    const root = mkdtempSync(join(tmpdir(), "jose-avd-target-test-"));
+    try {
+      const checkout = join(root, "checkout");
+      const sdk = join(root, "sdk");
+      const avdHome = join(root, "avd");
+      const bin = join(root, "bin");
+      for (const directory of ["scripts", "packages/kotlin-android/consumer-r8-runtime/build/outputs/apk/release"]) {
+        mkdirSync(join(checkout, directory), { recursive: true });
+      }
+      mkdirSync(join(sdk, "cmdline-tools/23.0/bin"), { recursive: true });
+      mkdirSync(bin);
+      mkdirSync(join(root, "repository"));
+      copyFileSync(join(scripts, "prepare-android-runtime.sh"), join(checkout, "scripts/prepare-android-runtime.sh"));
+      writeFileSync(join(checkout, "packages/kotlin-android/build.gradle.kts"), 'version = "0.6.0"\n');
+      writeFileSync(join(checkout, "packages/kotlin-android/consumer-r8-runtime/build/outputs/apk/release/consumer-r8-runtime-release.apk"), "fixture");
+      executable(join(checkout, "packages/kotlin-android/gradlew"), "#!/bin/sh\nexit 0\n");
+      executable(join(bin, "node"), "#!/bin/sh\nexit 0\n");
+      executable(join(sdk, "cmdline-tools/23.0/bin/android"), `#!/bin/sh
+printf '%s\\n' "$*" >> "$TEST_SDK_CALLS"
+`);
+      executable(join(sdk, "cmdline-tools/23.0/bin/avdmanager"), `#!/bin/sh
+cat >/dev/null
+printf 'target=%s\\n' "$TEST_TARGET" > "$ANDROID_AVD_HOME/runtime.ini"
+`);
+      const result = spawnSync("bash", [join(checkout, "scripts/prepare-android-runtime.sh"), join(root, "runtime.apk"), "runtime", join(root, "repository")], {
+        encoding: "utf8", timeout: 10_000,
+        env: { ...process.env, PATH: `${bin}${delimiter}${process.env.PATH ?? ""}`, ANDROID_HOME: sdk, ANDROID_AVD_HOME: avdHome, TEST_TARGET: target, TEST_SDK_CALLS: join(root, "sdk-calls") },
+      });
+      assert.equal(result.status, target === "android-37.0" ? 0 : 1, result.stderr);
+      const calls = readFileSync(join(root, "sdk-calls"), "utf8").trim().split("\n");
+      assert.equal(calls.length, 3);
+      assert.ok(calls.every((call) => call.startsWith(`--sdk=${sdk} --no-metrics sdk install `)));
+      assert.ok(calls[2].endsWith("system-images/android-37.0/google_apis_ps16k/x86_64"));
+      if (target !== "android-37.0") assert.match(result.stderr, /AVD target does not match/u);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+}

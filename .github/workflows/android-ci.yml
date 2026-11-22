@@ -64,7 +64,10 @@ jobs:
           toolchain: 1.100.0
       - name: Install pinned Android NDK
         run: |
-          { yes 2>/dev/null || true; } | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "ndk;30.0.16248370"
+          # Older runner tools misparse API 37.0 and write target=android-0.
+          { yes 2>/dev/null || true; } | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" "cmdline-tools;23.0"
+          grep -Fxq 'Pkg.Revision=23.0' "${ANDROID_HOME}/cmdline-tools/23.0/source.properties"
+          { yes 2>/dev/null || true; } | "${ANDROID_HOME}/cmdline-tools/23.0/bin/android" --sdk="${ANDROID_HOME}" --no-metrics sdk install "ndk/30.0.16248370"
           echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/30.0.16248370" >> "${GITHUB_ENV}"
       - name: Verify native manifest writer
         run: node --test scripts/write_native_manifest.test.mjs

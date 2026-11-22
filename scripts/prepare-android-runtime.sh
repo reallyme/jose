@@ -28,5 +28,12 @@ packages/kotlin-android/gradlew --no-daemon --dependency-verification strict -p 
 cp packages/kotlin-android/consumer-r8-runtime/build/outputs/apk/release/consumer-r8-runtime-release.apk "$apk"
 
 mkdir -p "$avd_home"
-{ yes 2>/dev/null || true; } | "$sdk/cmdline-tools/latest/bin/sdkmanager" emulator "platforms;android-37.0" "$image"
-printf 'no\n' | "$sdk/cmdline-tools/latest/bin/avdmanager" create avd --force --name "$avd" --package "$image" --device "$avd_device"
+for package in emulator platforms/android-37.0 "${image//;/\/}"; do
+  { yes 2>/dev/null || true; } | "$sdk/cmdline-tools/23.0/bin/android" --sdk="$sdk" --no-metrics sdk install "$package"
+done
+printf 'no\n' | "$sdk/cmdline-tools/23.0/bin/avdmanager" create avd --force --name "$avd" --package "$image" --device "$avd_device"
+# Reject the known Major.Minor parsing failure before booting a broken guest.
+if ! grep -Fxq 'target=android-37.0' "$avd_home/$avd.ini"; then
+  echo 'Android AVD target does not match the required API 37.0 image.' >&2
+  exit 1
+fi

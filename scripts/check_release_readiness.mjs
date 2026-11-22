@@ -1669,6 +1669,9 @@ assertContains("scripts/verify_native_artifact_handoff.mjs", "exact expected fil
 assertContains("scripts/verify_maven_release_repository.mjs", "Selected Maven publication artifacts");
 assertContains("scripts/verify_maven_release_repository.mjs", "native manifest is not bound to the release source SHA");
 
+assertContains(".github/workflows/android-ci.yml", '"cmdline-tools;23.0"');
+assertContains("scripts/prepare-android-runtime.sh", "cmdline-tools/23.0/bin/avdmanager");
+assertContains("scripts/prepare-android-runtime.sh", "target=android-37.0");
 assertContains("packages/kotlin-android/build.gradle.kts", 'id("com.android.library") version "9.5.2"');
 assertContains("packages/kotlin-android/gradle.lockfile", "org.bouncycastle:bcprov-jdk18on:1.87=androidLintTool");
 assertContains("packages/kotlin-android/gradle.lockfile", "org.apache.commons:commons-lang3:3.22.0=androidLintTool");
@@ -1776,7 +1779,7 @@ for (const vectorId of [
 ]) {
   assertContains("vectors/jwe-compact.json", vectorId);
 }
-assertContains(".github/workflows/android-ci.yml", "ndk;30.0.16248370");
+assertContains(".github/workflows/android-ci.yml", "ndk/30.0.16248370");
 assertContains(".github/workflows/android-ci.yml", "scripts/run-android-emulator.sh");
 assertContains("scripts/run-android-emulator.sh", "scripts/test-android-runtime.sh");
 assertContains(".github/workflows/android-ci.yml", "scripts/stage-android-publication.sh");

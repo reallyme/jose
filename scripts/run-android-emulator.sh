@@ -33,6 +33,9 @@ stop_emulator() {
 
 collect_diagnostics() {
   node "$helper" diagnostics "$ANDROID_SERIAL" || true
+  # A framework restart can fill the system buffer before its crash is read.
+  timeout --kill-after=2s 10s "$ADB" -s "$ANDROID_SERIAL" logcat -d -b crash -t 200 -v threadtime -v printable \
+    | LC_ALL=C tr -cd '\11\12\40-\176' | sed 's/##\[/# #[/g; s/^/guest crash | /' >&2 || true
   # Prefix host output and neutralize legacy workflow command markers.
   LC_ALL=C tail -n 200 "$emulator_log" | tr -cd '\11\12\40-\176' | sed 's/##\[/# #[/g; s/^/emulator | /' >&2 || true
 }
@@ -54,7 +57,7 @@ timeout --kill-after=2s 10s "$ADB" start-server
 for attempt in 1 2; do
   "$ANDROID_HOME/emulator/emulator" -avd "$ANDROID_AVD_NAME" -port 5554 \
     -no-window -no-audio -no-boot-anim -no-snapshot -wipe-data \
-    -gpu lavapipe -partition-size 4096 -no-metrics \
+    -gpu swiftshader -partition-size 4096 -no-metrics \
     >"$emulator_log" 2>&1 &
   emulator_pid=$!
 
@@ -72,8 +75,8 @@ for attempt in 1 2; do
 done
 
 # The guest compositor crashed during earlier installs despite a successful
-# point-in-time readiness probe. Use the Mesa renderer and require stable
-# framework processes before attempting an installation.
+# point-in-time readiness probe. Require stable framework processes after
+# the AVD target and registered services have been checked.
 node scripts/wait-android-services.mjs "$ANDROID_SERIAL"
 
 for ((attempt = 1; attempt <= max_install_attempts; attempt++)); do
