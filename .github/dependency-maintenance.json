@@ -223,7 +223,7 @@
       "name": "getrandom",
       "current": "0.2.17",
       "latest": "0.4.3",
-      "reason": "Required by rand_core 0.6.4 (^0.2); reallyme-crypto-poseidon2 0.4.5 (^0.2.17). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "reason": "Required by rand_core 0.6.4 (^0.2); reallyme-crypto-poseidon2 0.4.6 (^0.2.17). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
       "expires": "2026-12-21"
     },
     {
@@ -304,7 +304,7 @@
       "name": "sha3",
       "current": "0.10.9",
       "latest": "0.12.0",
-      "reason": "Required by reallyme-crypto-kmac 0.4.5 (^0.10.9); sha3-kmac 0.3.0 (^0.10). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "reason": "Required by reallyme-crypto-kmac 0.4.6 (^0.10.9); sha3-kmac 0.3.0 (^0.10). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
       "expires": "2026-12-21"
     },
     {
@@ -322,7 +322,7 @@
       "name": "slh-dsa",
       "current": "0.2.0-rc.5",
       "latest": "0.1.0",
-      "reason": "Crypto 0.4.5 pins the reviewed SLH-DSA 0.2 implementation; stable 0.1.0 is API-incompatible. Retain the exact upstream version pending a compatible stable release.",
+      "reason": "Crypto 0.4.6 pins the reviewed SLH-DSA 0.2 implementation; stable 0.1.0 is API-incompatible. Retain the exact upstream version pending a compatible stable release.",
       "expires": "2026-12-19"
     },
     {
@@ -493,7 +493,7 @@
       "name": "sha3",
       "current": "0.10.9",
       "latest": "0.12.0",
-      "reason": "Required by reallyme-crypto-kmac 0.4.5 (^0.10.9); sha3-kmac 0.3.0 (^0.10). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
+      "reason": "Required by reallyme-crypto-kmac 0.4.6 (^0.10.9); sha3-kmac 0.3.0 (^0.10). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
       "expires": "2026-12-21"
     },
     {
@@ -511,7 +511,7 @@
       "name": "slh-dsa",
       "current": "0.2.0-rc.5",
       "latest": "0.1.0",
-      "reason": "Crypto 0.4.5 pins the reviewed SLH-DSA 0.2 implementation; stable 0.1.0 is API-incompatible. Retain the exact upstream version pending a compatible stable release.",
+      "reason": "Crypto 0.4.6 pins the reviewed SLH-DSA 0.2 implementation; stable 0.1.0 is API-incompatible. Retain the exact upstream version pending a compatible stable release.",
       "expires": "2026-12-19"
     },
     {

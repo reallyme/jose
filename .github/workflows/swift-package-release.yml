@@ -233,7 +233,7 @@ jobs:
           - introduce the V2 protobuf operation contract with explicit field presence and schema-defined operation reasons
           - preserve platform-specific SDK setup errors and expose their schema-defined codes
           - generate Rust protobuf memory cleanup and redaction with ReallyMe Buffa 0.1.3
-          - use ReallyMe Codec 0.4.5 for the shared native and WASM runtime
-          - use ReallyMe Crypto 0.4.5 for the shared cryptographic operations
+          - use ReallyMe Codec 0.4.6 for the shared native and WASM runtime
+          - use ReallyMe Crypto 0.4.6 for the shared cryptographic operations
           - regenerate SDK bindings and rebuild native binaries together for V2
           RELEASE_NOTES
