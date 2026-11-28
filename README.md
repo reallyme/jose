@@ -127,7 +127,7 @@ generated bindings locally:
 
 ```sh
 RELEASE_READINESS_PUBLIC_REPO=true node ../release-readiness/scripts/run-consumer-check.mjs --check-workflows
-RELEASE_READINESS_PUBLIC_REPO=true RELEASE_VERSION=0.6.0 \
+RELEASE_READINESS_PUBLIC_REPO=true RELEASE_VERSION=0.7.0 \
   node ../release-readiness/scripts/run-consumer-check.mjs \
   --generated-freshness --release-packages --policy-only
 ```
@@ -147,11 +147,11 @@ service-discovery model. Those concerns belong to the embedding application.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.6.0"
+reallyme-jose = "0.7.0"
 ```
 
 ```sh
-npm install @reallyme/jose@0.6.0
+npm install @reallyme/jose@0.7.0
 ```
 
 ## Supported JOSE Surface

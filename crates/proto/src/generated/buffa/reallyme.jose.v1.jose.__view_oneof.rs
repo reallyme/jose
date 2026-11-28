@@ -2,6 +2,82 @@
 // Modified by ReallyMe Technologies Limited.
 // source: reallyme/jose/v1/jose.proto
 
+pub mod jose_jws_transport_frame_response {
+    #[allow(unused_imports)]
+    use super::*;
+    impl<'a> ::buffa::sensitive::Zeroize for Outcome<'a> {
+        fn zeroize(&mut self) {
+            match self {
+                Self::Result(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Error(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+            }
+        }
+    }
+    impl<'a> ::buffa::sensitive::ZeroizeOnDrop for Outcome<'a> {}
+    impl<'a> ::core::ops::Drop for Outcome<'a> {
+        fn drop(&mut self) {
+            ::buffa::sensitive::Zeroize::zeroize(self);
+        }
+    }
+    #[derive(Clone)]
+    pub enum Outcome<'a> {
+        Result(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsTransportFrameResultView<
+                    'a,
+                >,
+            >,
+        ),
+        Error(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseErrorView<'a>,
+            >,
+        ),
+    }
+    impl<'a> ::core::fmt::Debug for Outcome<'a> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.write_str("Outcome([REDACTED])")
+        }
+    }
+}
+pub mod jose_jws_transport_compose_response {
+    #[allow(unused_imports)]
+    use super::*;
+    impl<'a> ::buffa::sensitive::Zeroize for Outcome<'a> {
+        fn zeroize(&mut self) {
+            match self {
+                Self::Result(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Error(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+            }
+        }
+    }
+    impl<'a> ::buffa::sensitive::ZeroizeOnDrop for Outcome<'a> {}
+    impl<'a> ::core::ops::Drop for Outcome<'a> {
+        fn drop(&mut self) {
+            ::buffa::sensitive::Zeroize::zeroize(self);
+        }
+    }
+    #[derive(Clone)]
+    pub enum Outcome<'a> {
+        Result(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsTransportCompactResultView<
+                    'a,
+                >,
+            >,
+        ),
+        Error(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseErrorView<'a>,
+            >,
+        ),
+    }
+    impl<'a> ::core::fmt::Debug for Outcome<'a> {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.write_str("Outcome([REDACTED])")
+        }
+    }
+}
 pub mod jose_error {
     #[allow(unused_imports)]
     use super::*;
@@ -99,6 +175,12 @@ pub mod jose_operation_response {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JwsInspect(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsFrameUnauthenticated(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsComposeUnauthenticated(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JwtSignWithProvider(value) => {
@@ -218,6 +300,20 @@ pub mod jose_operation_response {
                 super::super::super::super::__buffa::view::JoseJwsInspectResponseView<'a>,
             >,
         ),
+        JwsFrameUnauthenticated(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsTransportFrameResponseView<
+                    'a,
+                >,
+            >,
+        ),
+        JwsComposeUnauthenticated(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsTransportComposeResponseView<
+                    'a,
+                >,
+            >,
+        ),
         JwtSignWithProvider(
             ::buffa::alloc::boxed::Box<
                 super::super::super::super::__buffa::view::JoseJwtSignWithProviderResponseView<
@@ -320,6 +416,12 @@ pub mod jose_operation_request {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JwsInspect(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsFrameUnauthenticated(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsComposeUnauthenticated(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JwtSignWithProvider(value) => {
@@ -436,6 +538,20 @@ pub mod jose_operation_request {
         JwsInspect(
             ::buffa::alloc::boxed::Box<
                 super::super::super::super::__buffa::view::JoseJwsInspectRequestView<'a>,
+            >,
+        ),
+        JwsFrameUnauthenticated(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsTransportFrameRequestView<
+                    'a,
+                >,
+            >,
+        ),
+        JwsComposeUnauthenticated(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::super::__buffa::view::JoseJwsTransportComposeRequestView<
+                    'a,
+                >,
             >,
         ),
         JwtSignWithProvider(

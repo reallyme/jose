@@ -51,6 +51,16 @@ export const errorBranch = (reason: JoseErrorReason): ReallyMeJoseErrorBranch | 
     case JoseErrorReason.JWS_INVALID_SIGNATURE: return "primitive";
     case JoseErrorReason.JWS_SIGN_FAILED: return "primitive";
     case JoseErrorReason.JWS_BAD_DER_SIGNATURE: return "primitive";
+    case JoseErrorReason.JWS_TRANSPORT_MISSING_POLICY: return "primitive";
+    case JoseErrorReason.JWS_TRANSPORT_INVALID_CHARACTER_POLICY: return "primitive";
+    case JoseErrorReason.JWS_TRANSPORT_MISSING_BUDGET: return "primitive";
+    case JoseErrorReason.JWS_TRANSPORT_MISSING_MEMBER: return "primitive";
+    case JoseErrorReason.JWS_TRANSPORT_INPUT_TOO_LARGE: return "primitive";
+    case JoseErrorReason.JWS_TRANSPORT_OUTPUT_TOO_LARGE: return "primitive";
+    case JoseErrorReason.JWS_TRANSPORT_EMPTY_MEMBER: return "primitive";
+    case JoseErrorReason.JWS_TRANSPORT_INVALID_CHARACTERS: return "primitive";
+    case JoseErrorReason.JWS_TRANSPORT_LENGTH_OVERFLOW: return "primitive";
+    case JoseErrorReason.JWS_TRANSPORT_INVALID_FRAMING: return "primitive";
     case JoseErrorReason.JWE_INVALID_HEADER: return "primitive";
     case JoseErrorReason.JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM: return "primitive";
     case JoseErrorReason.JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM: return "primitive";
@@ -118,6 +128,7 @@ export const errorBranch = (reason: JoseErrorReason): ReallyMeJoseErrorBranch | 
     case JoseErrorReason.BACKEND_KEY_DERIVATION_FAILED: return "backend";
     case JoseErrorReason.BACKEND_JWK_THUMBPRINT_SERIALIZATION: return "backend";
     case JoseErrorReason.BACKEND_JWK_THUMBPRINT_ALLOCATION: return "backend";
+    case JoseErrorReason.BACKEND_JWS_TRANSPORT_ALLOCATION: return "backend";
     default: return undefined;
   }
 };

@@ -2,6 +2,2528 @@
 // Modified by ReallyMe Technologies Limited.
 // source: reallyme/jose/v1/jose.proto
 
+#[derive(Clone, Default)]
+pub struct JoseJwsTransportMemberPolicyView<'a> {
+    /// Field 1: `characters`
+    pub characters: ::buffa::EnumValue<super::super::JoseJwsTransportCharacterPolicy>,
+    /// Field 2: `allow_empty`
+    pub allow_empty: bool,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsTransportMemberPolicyView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportMemberPolicyView")
+            .field("characters", &::core::format_args!("[REDACTED]"))
+            .field("allow_empty", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsTransportMemberPolicyView<'a> {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.characters);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.allow_empty);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportMemberPolicyView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsTransportMemberPolicyView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsTransportMemberPolicyView<'a> {
+    type Owned = super::super::JoseJwsTransportMemberPolicy;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.characters = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.allow_empty = ::buffa::types::decode_bool(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportMemberPolicy,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportMemberPolicy,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsTransportMemberPolicy as ::core::default::Default>::default();
+        __owned.characters = self.characters;
+        __owned.allow_empty = self.allow_empty;
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsTransportMemberPolicyView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.characters.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if self.allow_empty {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.characters.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        if self.allow_empty {
+            ::buffa::types::put_bool_field(2u32, self.allow_empty, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsTransportMemberPolicyView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_default_enum_value(&self.characters) {
+            __map.serialize_entry("characters", &self.characters)?;
+        }
+        if self.allow_empty {
+            __map.serialize_entry("allowEmpty", &self.allow_empty)?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsTransportMemberPolicyView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportMemberPolicy";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportMemberPolicy";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportMemberPolicy";
+}
+::buffa::impl_default_view_instance!(JoseJwsTransportMemberPolicyView);
+::buffa::impl_view_reborrow!(JoseJwsTransportMemberPolicyView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsTransportMemberPolicyView);
+/// Each member independently selects empty-string and character admission.
+#[derive(Clone, Default)]
+pub struct JoseJwsTransportPolicyView<'a> {
+    /// Field 1: `protected_header`
+    pub protected_header: ::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseJwsTransportMemberPolicyView<'a>,
+    >,
+    /// Field 2: `payload`
+    pub payload: ::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseJwsTransportMemberPolicyView<'a>,
+    >,
+    /// Field 3: `signature`
+    pub signature: ::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseJwsTransportMemberPolicyView<'a>,
+    >,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsTransportPolicyView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportPolicyView")
+            .field("protected_header", &::core::format_args!("[REDACTED]"))
+            .field("payload", &::core::format_args!("[REDACTED]"))
+            .field("signature", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsTransportPolicyView<'a> {
+    fn zeroize(&mut self) {
+        fn __requires_view_wipe_owner<
+            T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+        >() {}
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportMemberPolicyView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportMemberPolicyView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportMemberPolicyView<'a>,
+        >();
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.protected_header);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.payload);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.signature);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportPolicyView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsTransportPolicyView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsTransportPolicyView<'a> {
+    type Owned = super::super::JoseJwsTransportPolicy;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.protected_header.as_mut() {
+                    ::core::option::Option::Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.protected_header = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::JoseJwsTransportMemberPolicyView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.payload.as_mut() {
+                    ::core::option::Option::Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.payload = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::JoseJwsTransportMemberPolicyView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.signature.as_mut() {
+                    ::core::option::Option::Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.signature = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::JoseJwsTransportMemberPolicyView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportPolicy,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportPolicy,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsTransportPolicy as ::core::default::Default>::default();
+        __owned.protected_header = match self.protected_header.as_option() {
+            Some(v) => {
+                ::buffa::MessageField::<
+                    super::super::JoseJwsTransportMemberPolicy,
+                    ::buffa::Inline<super::super::JoseJwsTransportMemberPolicy>,
+                >::some(v.to_owned_from_source(__buffa_src)?)
+            }
+            None => ::buffa::MessageField::none(),
+        };
+        __owned.payload = match self.payload.as_option() {
+            Some(v) => {
+                ::buffa::MessageField::<
+                    super::super::JoseJwsTransportMemberPolicy,
+                    ::buffa::Inline<super::super::JoseJwsTransportMemberPolicy>,
+                >::some(v.to_owned_from_source(__buffa_src)?)
+            }
+            None => ::buffa::MessageField::none(),
+        };
+        __owned.signature = match self.signature.as_option() {
+            Some(v) => {
+                ::buffa::MessageField::<
+                    super::super::JoseJwsTransportMemberPolicy,
+                    ::buffa::Inline<super::super::JoseJwsTransportMemberPolicy>,
+                >::some(v.to_owned_from_source(__buffa_src)?)
+            }
+            None => ::buffa::MessageField::none(),
+        };
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsTransportPolicyView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(__v) = self.protected_header.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.payload.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.signature.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(__v) = self.protected_header.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.payload.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.signature.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                3u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsTransportPolicyView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        {
+            if let ::core::option::Option::Some(__v) = self.protected_header.as_option()
+            {
+                __map.serialize_entry("protectedHeader", __v)?;
+            }
+        }
+        {
+            if let ::core::option::Option::Some(__v) = self.payload.as_option() {
+                __map.serialize_entry("payload", __v)?;
+            }
+        }
+        {
+            if let ::core::option::Option::Some(__v) = self.signature.as_option() {
+                __map.serialize_entry("signature", __v)?;
+            }
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsTransportPolicyView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportPolicy";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportPolicy";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportPolicy";
+}
+::buffa::impl_default_view_instance!(JoseJwsTransportPolicyView);
+::buffa::impl_view_reborrow!(JoseJwsTransportPolicyView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsTransportPolicyView);
+/// Required caller budget in UTF-8 bytes, without a verification-limit clamp.
+#[derive(Clone, Default)]
+pub struct JoseJwsTransportFrameBudgetsView<'a> {
+    /// Field 1: `max_input_bytes`
+    pub max_input_bytes: ::core::option::Option<u64>,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsTransportFrameBudgetsView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportFrameBudgetsView")
+            .field("max_input_bytes", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsTransportFrameBudgetsView<'a> {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_input_bytes);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportFrameBudgetsView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsTransportFrameBudgetsView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsTransportFrameBudgetsView<'a> {
+    type Owned = super::super::JoseJwsTransportFrameBudgets;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.max_input_bytes = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint64(&mut cur)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportFrameBudgets,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportFrameBudgets,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsTransportFrameBudgets as ::core::default::Default>::default();
+        __owned.max_input_bytes = self.max_input_bytes;
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsTransportFrameBudgetsView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(v) = self.max_input_bytes {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(v) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(v) = self.max_input_bytes {
+            ::buffa::types::put_uint64_field(1u32, v, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsTransportFrameBudgetsView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if let ::core::option::Option::Some(__v) = self.max_input_bytes {
+            __map
+                .serialize_entry(
+                    "maxInputBytes",
+                    &::buffa::json_helpers::ProtoJson(&__v),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsTransportFrameBudgetsView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportFrameBudgets";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportFrameBudgets";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameBudgets";
+}
+::buffa::impl_default_view_instance!(JoseJwsTransportFrameBudgetsView);
+::buffa::impl_view_reborrow!(JoseJwsTransportFrameBudgetsView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsTransportFrameBudgetsView);
+#[derive(Clone, Default)]
+pub struct JoseJwsTransportComposeBudgetsView<'a> {
+    /// Aggregate UTF-8 bytes of the three member strings, excluding inserted dots.
+    /// Explicit zero admits three empty members when their policies allow them.
+    ///
+    /// Field 1: `max_input_bytes`
+    pub max_input_bytes: ::core::option::Option<u64>,
+    /// UTF-8 bytes of the result, including the two inserted dots.
+    ///
+    /// Field 2: `max_output_bytes`
+    pub max_output_bytes: ::core::option::Option<u64>,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsTransportComposeBudgetsView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportComposeBudgetsView")
+            .field("max_input_bytes", &::core::format_args!("[REDACTED]"))
+            .field("max_output_bytes", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsTransportComposeBudgetsView<'a> {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_input_bytes);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_output_bytes);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportComposeBudgetsView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsTransportComposeBudgetsView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsTransportComposeBudgetsView<'a> {
+    type Owned = super::super::JoseJwsTransportComposeBudgets;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.max_input_bytes = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint64(&mut cur)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.max_output_bytes = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint64(&mut cur)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportComposeBudgets,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportComposeBudgets,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsTransportComposeBudgets as ::core::default::Default>::default();
+        __owned.max_input_bytes = self.max_input_bytes;
+        __owned.max_output_bytes = self.max_output_bytes;
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsTransportComposeBudgetsView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(v) = self.max_input_bytes {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(v) as u64;
+        }
+        if let ::core::option::Option::Some(v) = self.max_output_bytes {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(v) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(v) = self.max_input_bytes {
+            ::buffa::types::put_uint64_field(1u32, v, buf);
+        }
+        if let ::core::option::Option::Some(v) = self.max_output_bytes {
+            ::buffa::types::put_uint64_field(2u32, v, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsTransportComposeBudgetsView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if let ::core::option::Option::Some(__v) = self.max_input_bytes {
+            __map
+                .serialize_entry(
+                    "maxInputBytes",
+                    &::buffa::json_helpers::ProtoJson(&__v),
+                )?;
+        }
+        if let ::core::option::Option::Some(__v) = self.max_output_bytes {
+            __map
+                .serialize_entry(
+                    "maxOutputBytes",
+                    &::buffa::json_helpers::ProtoJson(&__v),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsTransportComposeBudgetsView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportComposeBudgets";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportComposeBudgets";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeBudgets";
+}
+::buffa::impl_default_view_instance!(JoseJwsTransportComposeBudgetsView);
+::buffa::impl_view_reborrow!(JoseJwsTransportComposeBudgetsView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsTransportComposeBudgetsView);
+/// Exactly two separators are required. The original input is never decoded.
+/// Rust adapter: jws/transport/frame.rs#frame_compact_jws_unauthenticated
+/// Rust view: jws/transport/frame.rs#FrameCompactJwsRequest
+#[derive(Clone, Default)]
+pub struct JoseJwsTransportFrameRequestView<'a> {
+    /// SENSITIVE: encoded claims or other caller-owned transport data.
+    ///
+    /// Field 1: `compact`
+    pub compact: &'a str,
+    /// Field 2: `policy`
+    pub policy: ::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseJwsTransportPolicyView<'a>,
+    >,
+    /// Field 3: `budgets`
+    pub budgets: ::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseJwsTransportFrameBudgetsView<'a>,
+    >,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsTransportFrameRequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportFrameRequestView")
+            .field("compact", &::core::format_args!("[REDACTED]"))
+            .field("policy", &::core::format_args!("[REDACTED]"))
+            .field("budgets", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsTransportFrameRequestView<'a> {
+    fn zeroize(&mut self) {
+        fn __requires_view_wipe_owner<
+            T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+        >() {}
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportPolicyView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportFrameBudgetsView<'a>,
+        >();
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.policy);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.budgets);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportFrameRequestView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsTransportFrameRequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsTransportFrameRequestView<'a> {
+    type Owned = super::super::JoseJwsTransportFrameRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.compact = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.policy.as_mut() {
+                    ::core::option::Option::Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.policy = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::JoseJwsTransportPolicyView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.budgets.as_mut() {
+                    ::core::option::Option::Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.budgets = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::JoseJwsTransportFrameBudgetsView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportFrameRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportFrameRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsTransportFrameRequest as ::core::default::Default>::default();
+        __owned.compact = ::buffa::ProtoString::copy_from_str(self.compact);
+        __owned.policy = match self.policy.as_option() {
+            Some(v) => {
+                ::buffa::MessageField::<
+                    super::super::JoseJwsTransportPolicy,
+                    ::buffa::Inline<super::super::JoseJwsTransportPolicy>,
+                >::some(v.to_owned_from_source(__buffa_src)?)
+            }
+            None => ::buffa::MessageField::none(),
+        };
+        __owned.budgets = match self.budgets.as_option() {
+            Some(v) => {
+                ::buffa::MessageField::<
+                    super::super::JoseJwsTransportFrameBudgets,
+                    ::buffa::Inline<super::super::JoseJwsTransportFrameBudgets>,
+                >::some(v.to_owned_from_source(__buffa_src)?)
+            }
+            None => ::buffa::MessageField::none(),
+        };
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsTransportFrameRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.compact.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.compact) as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.policy.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.budgets.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.compact.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.compact, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.policy.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.budgets.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                3u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsTransportFrameRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.compact) {
+            __map
+                .serialize_entry(
+                    "compact",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.compact),
+                )?;
+        }
+        {
+            if let ::core::option::Option::Some(__v) = self.policy.as_option() {
+                __map.serialize_entry("policy", __v)?;
+            }
+        }
+        {
+            if let ::core::option::Option::Some(__v) = self.budgets.as_option() {
+                __map.serialize_entry("budgets", __v)?;
+            }
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsTransportFrameRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportFrameRequest";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportFrameRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameRequest";
+}
+::buffa::impl_default_view_instance!(JoseJwsTransportFrameRequestView);
+::buffa::impl_view_reborrow!(JoseJwsTransportFrameRequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsTransportFrameRequestView);
+/// Byte offsets into the original UTF-8 compact string, never an authenticated
+/// receipt. Header is \[0, protected_header_end), payload starts one byte later
+/// and ends at payload_end; signature starts at signature_start and continues
+/// to input end. Signing input is \[0, payload_end). Offsets borrow no ownership.
+/// Rust view: jws/transport/frame.rs#UnauthenticatedCompactJwsView
+#[derive(Clone, Default)]
+pub struct JoseJwsTransportFrameResultView<'a> {
+    /// Field 1: `protected_header_end`
+    pub protected_header_end: u64,
+    /// Field 2: `payload_end`
+    pub payload_end: u64,
+    /// Field 3: `signature_start`
+    pub signature_start: u64,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsTransportFrameResultView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportFrameResultView")
+            .field("protected_header_end", &::core::format_args!("[REDACTED]"))
+            .field("payload_end", &::core::format_args!("[REDACTED]"))
+            .field("signature_start", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsTransportFrameResultView<'a> {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.protected_header_end);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.payload_end);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.signature_start);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportFrameResultView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsTransportFrameResultView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsTransportFrameResultView<'a> {
+    type Owned = super::super::JoseJwsTransportFrameResult;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.protected_header_end = ::buffa::types::decode_uint64(&mut cur)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.payload_end = ::buffa::types::decode_uint64(&mut cur)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.signature_start = ::buffa::types::decode_uint64(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportFrameResult,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportFrameResult,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsTransportFrameResult as ::core::default::Default>::default();
+        __owned.protected_header_end = self.protected_header_end;
+        __owned.payload_end = self.payload_end;
+        __owned.signature_start = self.signature_start;
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsTransportFrameResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.protected_header_end != 0u64 {
+            size
+                += 1u64
+                    + ::buffa::types::uint64_encoded_len(self.protected_header_end)
+                        as u64;
+        }
+        if self.payload_end != 0u64 {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(self.payload_end) as u64;
+        }
+        if self.signature_start != 0u64 {
+            size
+                += 1u64
+                    + ::buffa::types::uint64_encoded_len(self.signature_start) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.protected_header_end != 0u64 {
+            ::buffa::types::put_uint64_field(1u32, self.protected_header_end, buf);
+        }
+        if self.payload_end != 0u64 {
+            ::buffa::types::put_uint64_field(2u32, self.payload_end, buf);
+        }
+        if self.signature_start != 0u64 {
+            ::buffa::types::put_uint64_field(3u32, self.signature_start, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsTransportFrameResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_zero_u64(&self.protected_header_end) {
+            __map
+                .serialize_entry(
+                    "protectedHeaderEnd",
+                    &::buffa::json_helpers::ProtoJson(&self.protected_header_end),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_zero_u64(&self.payload_end) {
+            __map
+                .serialize_entry(
+                    "payloadEnd",
+                    &::buffa::json_helpers::ProtoJson(&self.payload_end),
+                )?;
+        }
+        if !::buffa::json_helpers::skip_if::is_zero_u64(&self.signature_start) {
+            __map
+                .serialize_entry(
+                    "signatureStart",
+                    &::buffa::json_helpers::ProtoJson(&self.signature_start),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsTransportFrameResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportFrameResult";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportFrameResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameResult";
+}
+::buffa::impl_default_view_instance!(JoseJwsTransportFrameResultView);
+::buffa::impl_view_reborrow!(JoseJwsTransportFrameResultView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsTransportFrameResultView);
+/// Join supplied member strings verbatim with two inserted dots. Member text
+/// can itself contain dots when the selected character policy permits them;
+/// the result may therefore fail subsequent framing or strict JOSE inspection.
+/// JSON object parsing and application-profile policy remain caller-owned.
+/// Rust adapter: jws/transport/compose.rs#compose_compact_jws_unauthenticated
+/// Rust view: jws/transport/compose.rs#ComposeCompactJwsRequest
+#[derive(Clone, Default)]
+pub struct JoseJwsTransportComposeRequestView<'a> {
+    /// SENSITIVE: original member text; absence differs from an admitted empty value.
+    ///
+    /// Field 1: `protected_header`
+    pub protected_header: ::core::option::Option<&'a str>,
+    /// SENSITIVE: encoded or opaque payload text; never decoded by transport.
+    ///
+    /// Field 2: `payload`
+    pub payload: ::core::option::Option<&'a str>,
+    /// SENSITIVE: original signature text; no cryptographic assertion is made.
+    ///
+    /// Field 3: `signature`
+    pub signature: ::core::option::Option<&'a str>,
+    /// Field 4: `policy`
+    pub policy: ::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseJwsTransportPolicyView<'a>,
+    >,
+    /// Field 5: `budgets`
+    pub budgets: ::buffa::MessageFieldView<
+        super::super::__buffa::view::JoseJwsTransportComposeBudgetsView<'a>,
+    >,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsTransportComposeRequestView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportComposeRequestView")
+            .field("protected_header", &::core::format_args!("[REDACTED]"))
+            .field("payload", &::core::format_args!("[REDACTED]"))
+            .field("signature", &::core::format_args!("[REDACTED]"))
+            .field("policy", &::core::format_args!("[REDACTED]"))
+            .field("budgets", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsTransportComposeRequestView<'a> {
+    fn zeroize(&mut self) {
+        fn __requires_view_wipe_owner<
+            T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+        >() {}
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportPolicyView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportComposeBudgetsView<'a>,
+        >();
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.policy);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.budgets);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportComposeRequestView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsTransportComposeRequestView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsTransportComposeRequestView<'a> {
+    type Owned = super::super::JoseJwsTransportComposeRequest;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.protected_header = ::core::option::Option::Some(
+                    ::buffa::types::borrow_str(&mut cur)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.payload = ::core::option::Option::Some(
+                    ::buffa::types::borrow_str(&mut cur)?,
+                );
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.signature = ::core::option::Option::Some(
+                    ::buffa::types::borrow_str(&mut cur)?,
+                );
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.policy.as_mut() {
+                    ::core::option::Option::Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.policy = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::JoseJwsTransportPolicyView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                match view.budgets.as_mut() {
+                    ::core::option::Option::Some(existing) => {
+                        ::buffa::MessageView::merge_into_view(existing, sub, __sub_ctx)?
+                    }
+                    None => {
+                        view.budgets = ::buffa::MessageFieldView::set(
+                            <super::super::__buffa::view::JoseJwsTransportComposeBudgetsView as ::buffa::MessageView>::decode_view_ctx(
+                                sub,
+                                __sub_ctx,
+                            )?,
+                        );
+                    }
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportComposeRequest,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportComposeRequest,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsTransportComposeRequest as ::core::default::Default>::default();
+        __owned.protected_header = self
+            .protected_header
+            .map(::buffa::ProtoString::copy_from_str);
+        __owned.payload = self.payload.map(::buffa::ProtoString::copy_from_str);
+        __owned.signature = self.signature.map(::buffa::ProtoString::copy_from_str);
+        __owned.policy = match self.policy.as_option() {
+            Some(v) => {
+                ::buffa::MessageField::<
+                    super::super::JoseJwsTransportPolicy,
+                    ::buffa::Inline<super::super::JoseJwsTransportPolicy>,
+                >::some(v.to_owned_from_source(__buffa_src)?)
+            }
+            None => ::buffa::MessageField::none(),
+        };
+        __owned.budgets = match self.budgets.as_option() {
+            Some(v) => {
+                ::buffa::MessageField::<
+                    super::super::JoseJwsTransportComposeBudgets,
+                    ::buffa::Inline<super::super::JoseJwsTransportComposeBudgets>,
+                >::some(v.to_owned_from_source(__buffa_src)?)
+            }
+            None => ::buffa::MessageField::none(),
+        };
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsTransportComposeRequestView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.protected_header {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let ::core::option::Option::Some(ref v) = self.payload {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let ::core::option::Option::Some(ref v) = self.signature {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.policy.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.budgets.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.protected_header {
+            ::buffa::types::put_string_field(1u32, v, buf);
+        }
+        if let ::core::option::Option::Some(ref v) = self.payload {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        if let ::core::option::Option::Some(ref v) = self.signature {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.policy.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                4u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.budgets.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                5u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsTransportComposeRequestView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if let ::core::option::Option::Some(__v) = self.protected_header {
+            __map
+                .serialize_entry(
+                    "protectedHeader",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(__v),
+                )?;
+        }
+        if let ::core::option::Option::Some(__v) = self.payload {
+            __map
+                .serialize_entry(
+                    "payload",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(__v),
+                )?;
+        }
+        if let ::core::option::Option::Some(__v) = self.signature {
+            __map
+                .serialize_entry(
+                    "signature",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(__v),
+                )?;
+        }
+        {
+            if let ::core::option::Option::Some(__v) = self.policy.as_option() {
+                __map.serialize_entry("policy", __v)?;
+            }
+        }
+        {
+            if let ::core::option::Option::Some(__v) = self.budgets.as_option() {
+                __map.serialize_entry("budgets", __v)?;
+            }
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsTransportComposeRequestView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportComposeRequest";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportComposeRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeRequest";
+}
+::buffa::impl_default_view_instance!(JoseJwsTransportComposeRequestView);
+::buffa::impl_view_reborrow!(JoseJwsTransportComposeRequestView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsTransportComposeRequestView);
+/// Rust view: jws/transport/compose.rs#UnauthenticatedCompactJws
+#[derive(Clone, Default)]
+pub struct JoseJwsTransportCompactResultView<'a> {
+    /// SENSITIVE: exact forwarded members, with no authentication implication.
+    ///
+    /// Field 1: `compact`
+    pub compact: &'a str,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsTransportCompactResultView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportCompactResultView")
+            .field("compact", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsTransportCompactResultView<'a> {
+    fn zeroize(&mut self) {}
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportCompactResultView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsTransportCompactResultView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsTransportCompactResultView<'a> {
+    type Owned = super::super::JoseJwsTransportCompactResult;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                view.compact = ::buffa::types::borrow_str(&mut cur)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportCompactResult,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportCompactResult,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsTransportCompactResult as ::core::default::Default>::default();
+        __owned.compact = ::buffa::ProtoString::copy_from_str(self.compact);
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsTransportCompactResultView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.compact.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.compact) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.compact.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.compact, buf);
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsTransportCompactResultView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_empty_str(self.compact) {
+            __map
+                .serialize_entry(
+                    "compact",
+                    &::buffa::json_helpers::StringPolicyJson::<
+                        crate::SecretString,
+                    >::new(self.compact),
+                )?;
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsTransportCompactResultView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportCompactResult";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportCompactResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportCompactResult";
+}
+::buffa::impl_default_view_instance!(JoseJwsTransportCompactResultView);
+::buffa::impl_view_reborrow!(JoseJwsTransportCompactResultView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsTransportCompactResultView);
+#[derive(Clone, Default)]
+pub struct JoseJwsTransportFrameResponseView<'a> {
+    /// UNSPECIFIED on success or an envelope/backend failure; otherwise this
+    /// operation-local reason must project exactly to the JoseError stack code.
+    ///
+    /// Field 3: `transport_reason`
+    pub transport_reason: ::buffa::EnumValue<super::super::JoseJwsTransportErrorReason>,
+    pub outcome: ::core::option::Option<
+        super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome<
+            'a,
+        >,
+    >,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsTransportFrameResponseView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportFrameResponseView")
+            .field("transport_reason", &::core::format_args!("[REDACTED]"))
+            .field("outcome", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsTransportFrameResponseView<'a> {
+    fn zeroize(&mut self) {
+        fn __requires_view_wipe_owner<
+            T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+        >() {}
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportFrameResultView<'a>,
+        >();
+        __requires_view_wipe_owner::<super::super::__buffa::view::JoseErrorView<'a>>();
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.transport_reason);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.outcome);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportFrameResponseView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsTransportFrameResponseView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsTransportFrameResponseView<'a> {
+    type Owned = super::super::JoseJwsTransportFrameResponse;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.transport_reason = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let ::core::option::Option::Some(
+                    super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                        ref mut existing,
+                    ),
+                ) = view.outcome
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.outcome = ::core::option::Option::Some(
+                        super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsTransportFrameResultView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let ::core::option::Option::Some(
+                    super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Error(
+                        ref mut existing,
+                    ),
+                ) = view.outcome
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.outcome = ::core::option::Option::Some(
+                        super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Error(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseErrorView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportFrameResponse,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportFrameResponse,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsTransportFrameResponse as ::core::default::Default>::default();
+        __owned.transport_reason = self.transport_reason;
+        __owned.outcome = match self.outcome.as_ref() {
+            ::core::option::Option::Some(v) => {
+                ::core::option::Option::Some(
+                    match v {
+                        super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Error(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jws_transport_frame_response::Outcome::Error(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                    },
+                )
+            }
+            ::core::option::Option::None => ::core::option::Option::None,
+        };
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsTransportFrameResponseView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Error(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        {
+            let val = self.transport_reason.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Error(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+        {
+            let val = self.transport_reason.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(3u32, val, buf);
+            }
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsTransportFrameResponseView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_default_enum_value(
+            &self.transport_reason,
+        ) {
+            __map.serialize_entry("transportReason", &self.transport_reason)?;
+        }
+        if let ::core::option::Option::Some(ref __ov) = self.outcome {
+            match __ov {
+                super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                    v,
+                ) => {
+                    __map.serialize_entry("result", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome::Error(
+                    v,
+                ) => {
+                    __map.serialize_entry("error", v)?;
+                }
+            }
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsTransportFrameResponseView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportFrameResponse";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportFrameResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameResponse";
+}
+::buffa::impl_default_view_instance!(JoseJwsTransportFrameResponseView);
+::buffa::impl_view_reborrow!(JoseJwsTransportFrameResponseView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsTransportFrameResponseView);
+#[derive(Clone, Default)]
+pub struct JoseJwsTransportComposeResponseView<'a> {
+    /// UNSPECIFIED on success or an envelope/backend failure; otherwise this
+    /// operation-local reason must project exactly to the JoseError stack code.
+    ///
+    /// Field 3: `transport_reason`
+    pub transport_reason: ::buffa::EnumValue<super::super::JoseJwsTransportErrorReason>,
+    pub outcome: ::core::option::Option<
+        super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome<
+            'a,
+        >,
+    >,
+    #[doc(hidden)]
+    pub __buffa_phantom: ::core::marker::PhantomData<&'a ()>,
+}
+impl<'a> ::core::fmt::Debug for JoseJwsTransportComposeResponseView<'a> {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportComposeResponseView")
+            .field("transport_reason", &::core::format_args!("[REDACTED]"))
+            .field("outcome", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl<'a> ::buffa::sensitive::Zeroize for JoseJwsTransportComposeResponseView<'a> {
+    fn zeroize(&mut self) {
+        fn __requires_view_wipe_owner<
+            T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+        >() {}
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportCompactResultView<'a>,
+        >();
+        __requires_view_wipe_owner::<super::super::__buffa::view::JoseErrorView<'a>>();
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.transport_reason);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.outcome);
+    }
+}
+impl<'a> ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportComposeResponseView<'a> {}
+impl<'a> ::core::ops::Drop for JoseJwsTransportComposeResponseView<'a> {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+impl<'a> ::buffa::MessageView<'a> for JoseJwsTransportComposeResponseView<'a> {
+    type Owned = super::super::JoseJwsTransportComposeResponse;
+    fn decode_view(buf: &'a [u8]) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        let __limit = ::core::cell::Cell::new(::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT);
+        let __elem = ::core::cell::Cell::new(::buffa::DEFAULT_ELEMENT_MEMORY_LIMIT);
+        <Self as ::buffa::MessageView>::decode_view_ctx(
+            buf,
+            ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit)
+                .with_element_memory(&__elem),
+        )
+    }
+    fn decode_view_with_ctx(
+        buf: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+        <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+    }
+    #[inline]
+    fn merge_view_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        cur: &'a [u8],
+        _before_tag: &'a [u8],
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+        let _ = ctx;
+        #[allow(unused_variables)]
+        let view = self;
+        let mut cur = cur;
+        match tag.field_number() {
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                view.transport_reason = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(&mut cur)?,
+                );
+            }
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let ::core::option::Option::Some(
+                    super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                        ref mut existing,
+                    ),
+                ) = view.outcome
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.outcome = ::core::option::Option::Some(
+                        super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsTransportCompactResultView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let ::core::option::Option::Some(
+                    super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                        ref mut existing,
+                    ),
+                ) = view.outcome
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.outcome = ::core::option::Option::Some(
+                        super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseErrorView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, &mut cur, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(cur)
+    }
+    fn to_owned_message(
+        &self,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportComposeResponse,
+        ::buffa::DecodeError,
+    > {
+        self.to_owned_from_source(None)
+    }
+    #[allow(
+        clippy::useless_conversion,
+        clippy::needless_update,
+        clippy::field_reassign_with_default
+    )]
+    fn to_owned_from_source(
+        &self,
+        __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+    ) -> ::core::result::Result<
+        super::super::JoseJwsTransportComposeResponse,
+        ::buffa::DecodeError,
+    > {
+        #[allow(unused_imports)]
+        use ::buffa::alloc::string::ToString as _;
+        let _ = __buffa_src;
+        let mut __owned = <super::super::JoseJwsTransportComposeResponse as ::core::default::Default>::default();
+        __owned.transport_reason = self.transport_reason;
+        __owned.outcome = match self.outcome.as_ref() {
+            ::core::option::Option::Some(v) => {
+                ::core::option::Option::Some(
+                    match v {
+                        super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                    },
+                )
+            }
+            ::core::option::Option::None => ::core::option::Option::None,
+        };
+        ::core::result::Result::Ok(__owned)
+    }
+}
+impl<'a> ::buffa::ViewEncode<'a> for JoseJwsTransportComposeResponseView<'a> {
+    #[allow(clippy::needless_borrow, clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        {
+            let val = self.transport_reason.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        ::buffa::saturate_size(size)
+    }
+    #[allow(clippy::needless_borrow)]
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+        {
+            let val = self.transport_reason.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(3u32, val, buf);
+            }
+        }
+    }
+}
+/// Serializes this view as protobuf JSON.
+///
+/// Implicit-presence fields with default values are omitted, `required`
+/// fields are always emitted, explicit-presence (`optional`) fields are
+/// emitted only when set, bytes fields are base64-encoded, and enum
+/// values are their proto name strings.
+///
+/// This impl uses `serialize_map(None)` because the number of emitted
+/// fields depends on default-omission rules; serializers that require
+/// known map lengths (e.g. `bincode`) will return a runtime error.
+/// Use the owned message type for those formats.
+impl<'__a> ::serde::Serialize for JoseJwsTransportComposeResponseView<'__a> {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        __s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        use ::serde::ser::SerializeMap as _;
+        let mut __map = __s.serialize_map(::core::option::Option::None)?;
+        if !::buffa::json_helpers::skip_if::is_default_enum_value(
+            &self.transport_reason,
+        ) {
+            __map.serialize_entry("transportReason", &self.transport_reason)?;
+        }
+        if let ::core::option::Option::Some(ref __ov) = self.outcome {
+            match __ov {
+                super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                    v,
+                ) => {
+                    __map.serialize_entry("result", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                    v,
+                ) => {
+                    __map.serialize_entry("error", v)?;
+                }
+            }
+        }
+        __map.end()
+    }
+}
+impl<'a> ::buffa::MessageName for JoseJwsTransportComposeResponseView<'a> {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportComposeResponse";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportComposeResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeResponse";
+}
+::buffa::impl_default_view_instance!(JoseJwsTransportComposeResponseView);
+::buffa::impl_view_reborrow!(JoseJwsTransportComposeResponseView);
+::buffa::unsafe_impl_view_lifetime_parametric!(JoseJwsTransportComposeResponseView);
 /// JoseError is the public, non-PII error envelope for JOSE boundary failures.
 /// The oneof keeps caller-owned input/primitive failures, provider availability
 /// failures, and backend/internal failures distinct while JoseErrorReason keeps
@@ -897,6 +3419,12 @@ impl<'a> ::buffa::sensitive::Zeroize for JoseOperationResponseView<'a> {
             super::super::__buffa::view::JoseJwsInspectResponseView<'a>,
         >();
         __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportFrameResponseView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportComposeResponseView<'a>,
+        >();
+        __requires_view_wipe_owner::<
             super::super::__buffa::view::JoseJwtSignWithProviderResponseView<'a>,
         >();
         __requires_view_wipe_owner::<
@@ -1431,6 +3959,68 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationResponseView<'a> {
                     );
                 }
             }
+            1016u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let ::core::option::Option::Some(
+                    super::super::__buffa::view::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                        ref mut existing,
+                    ),
+                ) = view.response
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.response = ::core::option::Option::Some(
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsTransportFrameResponseView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            1017u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let ::core::option::Option::Some(
+                    super::super::__buffa::view::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
+                        ref mut existing,
+                    ),
+                ) = view.response
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.response = ::core::option::Option::Some(
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsTransportComposeResponseView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
             2010u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
@@ -1818,6 +4408,24 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationResponseView<'a> {
                                 ),
                             )
                         }
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
                         super::super::__buffa::view::oneof::jose_operation_response::Response::JwtSignWithProvider(
                             v,
                         ) => {
@@ -2044,6 +4652,26 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationResponseView<'a> {
                             + inner as u64;
                 }
                 super::super::__buffa::view::oneof::jose_operation_response::Response::JwsInspect(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
                     x,
                 ) => {
                     let __slot = __cache.reserve();
@@ -2293,6 +4921,26 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationResponseView<'a> {
                     );
                     x.write_to(__cache, buf);
                 }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1016u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1017u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
                 super::super::__buffa::view::oneof::jose_operation_response::Response::JwtSignWithProvider(
                     x,
                 ) => {
@@ -2467,6 +5115,16 @@ impl<'__a> ::serde::Serialize for JoseOperationResponseView<'__a> {
                 ) => {
                     __map.serialize_entry("jwsInspect", v)?;
                 }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwsFrameUnauthenticated", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwsComposeUnauthenticated", v)?;
+                }
                 super::super::__buffa::view::oneof::jose_operation_response::Response::JwtSignWithProvider(
                     v,
                 ) => {
@@ -2593,6 +5251,12 @@ impl<'a> ::buffa::sensitive::Zeroize for JoseOperationRequestView<'a> {
         >();
         __requires_view_wipe_owner::<
             super::super::__buffa::view::JoseJwsInspectRequestView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportFrameRequestView<'a>,
+        >();
+        __requires_view_wipe_owner::<
+            super::super::__buffa::view::JoseJwsTransportComposeRequestView<'a>,
         >();
         __requires_view_wipe_owner::<
             super::super::__buffa::view::JoseJwtSignWithProviderRequestView<'a>,
@@ -3088,6 +5752,68 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationRequestView<'a> {
                     );
                 }
             }
+            1016u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let ::core::option::Option::Some(
+                    super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                        ref mut existing,
+                    ),
+                ) = view.operation
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.operation = ::core::option::Option::Some(
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsTransportFrameRequestView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
+            1017u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                let __sub_ctx = ctx.descend()?;
+                let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                if let ::core::option::Option::Some(
+                    super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
+                        ref mut existing,
+                    ),
+                ) = view.operation
+                {
+                    ::buffa::MessageView::merge_into_view(
+                        &mut **existing,
+                        sub,
+                        __sub_ctx,
+                    )?;
+                } else {
+                    view.operation = ::core::option::Option::Some(
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
+                            ::buffa::alloc::boxed::Box::new(
+                                <super::super::__buffa::view::JoseJwsTransportComposeRequestView as ::buffa::MessageView>::decode_view_ctx(
+                                    sub,
+                                    __sub_ctx,
+                                )?,
+                            ),
+                        ),
+                    );
+                }
+            }
             2010u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
@@ -3465,6 +6191,24 @@ impl<'a> ::buffa::MessageView<'a> for JoseOperationRequestView<'a> {
                                 ),
                             )
                         }
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
+                        super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
+                            v,
+                        ) => {
+                            super::super::__buffa::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
+                                ::buffa::alloc::boxed::Box::new(
+                                    v.to_owned_from_source(__buffa_src)?,
+                                ),
+                            )
+                        }
                         super::super::__buffa::view::oneof::jose_operation_request::Operation::JwtSignWithProvider(
                             v,
                         ) => {
@@ -3675,6 +6419,26 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationRequestView<'a> {
                             + inner as u64;
                 }
                 super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsInspect(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
                     x,
                 ) => {
                     let __slot = __cache.reserve();
@@ -3908,6 +6672,26 @@ impl<'a> ::buffa::ViewEncode<'a> for JoseOperationRequestView<'a> {
                     );
                     x.write_to(__cache, buf);
                 }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1016u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1017u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
                 super::super::__buffa::view::oneof::jose_operation_request::Operation::JwtSignWithProvider(
                     x,
                 ) => {
@@ -4071,6 +6855,16 @@ impl<'__a> ::serde::Serialize for JoseOperationRequestView<'__a> {
                     v,
                 ) => {
                     __map.serialize_entry("jwsInspect", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwsFrameUnauthenticated", v)?;
+                }
+                super::super::__buffa::view::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
+                    v,
+                ) => {
+                    __map.serialize_entry("jwsComposeUnauthenticated", v)?;
                 }
                 super::super::__buffa::view::oneof::jose_operation_request::Operation::JwtSignWithProvider(
                     v,

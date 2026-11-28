@@ -37,6 +37,62 @@ use crate::api::contract::{
     JoseSignatureVerifyResponse, JoseValidationResult, JoseVerifyResult,
 };
 
+pub(super) fn jws_frame_unauthenticated_response(
+    result: Result<
+        crate::api::contract::JoseJwsTransportFrameResult,
+        crate::jws::transport::JwsTransportErrorReason,
+    >,
+) -> JoseOperationResponse {
+    use crate::api::contract::__buffa::oneof::jose_jws_transport_frame_response::Outcome;
+    let (result, transport_reason) = transport_result(result);
+    let outcome = match result {
+        Ok(result) => Outcome::Result(Box::new(result)),
+        Err(error) => Outcome::Error(Box::new(jose_error(error))),
+    };
+    canonical_response(Response::JwsFrameUnauthenticated(Box::new(
+        crate::api::contract::JoseJwsTransportFrameResponse::default()
+            .with_outcome(outcome)
+            .with_transport_reason(transport_reason),
+    )))
+}
+
+pub(super) fn jws_compose_unauthenticated_response(
+    result: Result<
+        crate::api::contract::JoseJwsTransportCompactResult,
+        crate::jws::transport::JwsTransportErrorReason,
+    >,
+) -> JoseOperationResponse {
+    use crate::api::contract::__buffa::oneof::jose_jws_transport_compose_response::Outcome;
+    let (result, transport_reason) = transport_result(result);
+    let outcome = match result {
+        Ok(result) => Outcome::Result(Box::new(result)),
+        Err(error) => Outcome::Error(Box::new(jose_error(error))),
+    };
+    canonical_response(Response::JwsComposeUnauthenticated(Box::new(
+        crate::api::contract::JoseJwsTransportComposeResponse::default()
+            .with_outcome(outcome)
+            .with_transport_reason(transport_reason),
+    )))
+}
+
+fn transport_result<T>(
+    result: Result<T, crate::jws::transport::JwsTransportErrorReason>,
+) -> (
+    JoseWireResult<T>,
+    crate::api::contract::JoseJwsTransportErrorReason,
+) {
+    match result {
+        Ok(result) => (
+            Ok(result),
+            crate::api::contract::JoseJwsTransportErrorReason::Unspecified,
+        ),
+        Err(error) => (
+            Err(crate::map_failure::jws_transport(&error)),
+            error.reason(),
+        ),
+    }
+}
+
 pub(super) fn jwk_thumbprint_sha256_response(
     result: JoseWireResult<JoseJwkThumbprintSha256Result>,
 ) -> JoseOperationResponse {
@@ -311,5 +367,23 @@ pub(super) fn jwt_claims_parse_response(
         crate::api::contract::JoseJwtClaimsParseResponse {
             outcome: Some(outcome),
         },
+    )))
+}
+
+pub(super) fn jws_frame_backend_response() -> JoseOperationResponse {
+    use crate::api::contract::__buffa::oneof::jose_jws_transport_frame_response::Outcome;
+    canonical_response(Response::JwsFrameUnauthenticated(Box::new(
+        crate::api::contract::JoseJwsTransportFrameResponse::default().with_outcome(
+            Outcome::Error(Box::new(jose_error(super::backend_output_error()))),
+        ),
+    )))
+}
+
+pub(super) fn jws_compose_backend_response() -> JoseOperationResponse {
+    use crate::api::contract::__buffa::oneof::jose_jws_transport_compose_response::Outcome;
+    canonical_response(Response::JwsComposeUnauthenticated(Box::new(
+        crate::api::contract::JoseJwsTransportComposeResponse::default().with_outcome(
+            Outcome::Error(Box::new(jose_error(super::backend_output_error()))),
+        ),
     )))
 }

@@ -6,10 +6,10 @@
 import Foundation
 import PackageDescription
 
-let ffiArtifactChecksum = "5aa22838fd8ba8b01bdeb643a7713a6f84af66805a6db41f2b599d1a0c2a313a"
+let ffiArtifactChecksum = "2c368c1e96c4dc451351429fdeb5cbff42309543037e33e072ba8cb3b575f4e6"
 let ffiArtifactVersion = "0.6.0"
 // Release preparation binds the candidate XCFramework's checksum and artifact version.
-let ffiReleaseVersion = "0.6.0"
+let ffiReleaseVersion = "0.7.0"
 let ffiArtifactLocalPathOverride = ""
 // Source-tree CI exercises runtime loading before testing the linked release
 // artifact. Require a repository-local marker as a second gate so an inherited

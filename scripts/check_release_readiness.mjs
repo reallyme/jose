@@ -84,7 +84,7 @@ runNodeCheck("scripts/generate-swift-cleanup.test.mjs");
 runNodeCheck("scripts/maven_central_bundle.test.mjs");
 runNodeCheck("scripts/release_crate_archives.test.mjs");
 
-const crateVersion = "0.6.0";
+const crateVersion = "0.7.0";
 const protoCrateVersion = crateVersion;
 const buffaVersion = "0.1.3";
 const cryptoVersion = "0.4.6";
@@ -1477,11 +1477,11 @@ assertContains(swiftReleaseWorkflow, "gh release create");
 assertContains(swiftReleaseWorkflow, "--notes-file -");
 assertContains(
   swiftReleaseWorkflow,
-  "- introduce the V2 protobuf operation contract with explicit field presence and schema-defined operation reasons",
+  "- add unauthenticated compact-JWS framing and verbatim forwarding with explicit admission policies and byte budgets",
 );
 assertContains(
   swiftReleaseWorkflow,
-  "- preserve platform-specific SDK setup errors and expose their schema-defined codes",
+  "- map transport errors exhaustively to distinct JOSE stack reason codes",
 );
 assertContains(
   swiftReleaseWorkflow,
@@ -1495,7 +1495,7 @@ assertContains(
   swiftReleaseWorkflow,
   `- use ReallyMe Crypto ${cryptoVersion} for the shared cryptographic operations`,
 );
-assertContains(swiftReleaseWorkflow, "- regenerate SDK bindings and rebuild native binaries together for V2");
+assertContains(swiftReleaseWorkflow, "- preserve strict verification limits and zeroize owned transport buffers");
 assertContains(swiftReleaseWorkflow, 'git tag "v${RELEASE_VERSION}" "${tag_target}"');
 assertContains(swiftReleaseWorkflow, "--verify-tag");
 assertContains(
@@ -1886,7 +1886,13 @@ const explicitlyTestOnlyRustFiles = new Set([
   ...schemaSelectorTestModules.map((module) => `crates/jose/src/generated_contract/${module}_tests.rs`),
   "crates/jose/src/measure_encoding_tests.rs",
   "crates/jose/src/operation_contract/jws/verify_tests.rs",
+  ...["admission", "budgets", "contract"].map((module) =>
+    `crates/jose/src/jws/transport/tests/${module}_tests.rs`),
 ]);
+assertContains("crates/jose/src/jws/transport/mod.rs", "#[cfg(test)]\nmod tests;");
+for (const module of ["admission", "budgets", "contract"]) {
+  assertContains("crates/jose/src/jws/transport/tests/mod.rs", `mod ${module}_tests;`);
+}
 assertContains("crates/jose/src/lib.rs", "#[cfg(test)]\nmod measure_encoding_tests;");
 assertContains(
   "crates/jose/src/operation_contract/jws/mod.rs",

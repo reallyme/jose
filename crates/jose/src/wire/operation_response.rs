@@ -6,7 +6,7 @@
 
 use crate::operation_contract::protobuf::{capabilities, extended, jwk};
 use crate::operation_contract::providers::{BuiltinProviders, OperationProviders};
-use buffa::{EnumValue, Message};
+use buffa::EnumValue;
 use reallyme_jose_proto::generated::proto::reallyme::jose::v1::{
     __buffa::oneof::{
         jose_jwe_decrypt_response::Outcome as JweDecryptOutcome,
@@ -25,8 +25,7 @@ use zeroize::Zeroizing;
 
 use super::{
     decode_json, decode_protobuf, decode_protobuf_with_limit, encode_protobuf, jose_error,
-    JoseWireError, JoseWireResult, MAX_JOSE_PROTO_MESSAGE_BYTES,
-    MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES,
+    JoseWireError, JoseWireResult,
 };
 use crate::operation_contract::protobuf::{
     decode_unsigned_jwt_request, decrypt_jwe_request, encode_unsigned_jwt_request,
@@ -58,17 +57,8 @@ pub fn execute_operation_request_with_providers<R: SecureRandom + ?Sized>(
     rng: &mut R,
     providers: &mut dyn OperationProviders,
 ) -> JoseOperationResponse {
-    match request
-        .try_encoded_len()
-        .ok()
-        .and_then(|length| usize::try_from(length).ok())
-    {
-        Some(length) if length <= MAX_JOSE_PROTO_MESSAGE_BYTES => {}
-        _ => {
-            return boundary_response(JoseWireError::primitive_internal(
-                JoseErrorReason::CommonResourceLimitExceeded,
-            ))
-        }
+    if let Err(error) = validate_request_policy::validate_request_limit(&request) {
+        return boundary_response(error);
     }
     // Keep both dropping owners alive while extracting the selected child. The
     // native cleanup profile also wipes the oneof discriminator on return.
@@ -94,6 +84,12 @@ pub fn execute_operation_request_with_providers<R: SecureRandom + ?Sized>(
         }
         RequestOperation::JwsInspect(request) => {
             jws_inspect_response(crate::jws::inspect_compact_jws(request))
+        }
+        RequestOperation::JwsFrameUnauthenticated(request) => {
+            jws_frame_unauthenticated_response(crate::jws::transport::execute::frame(request))
+        }
+        RequestOperation::JwsComposeUnauthenticated(request) => {
+            jws_compose_unauthenticated_response(crate::jws::transport::execute::compose(request))
         }
         RequestOperation::JwtEncodeUnsigned(request) => jwt_encode_unsigned_response(
             encode_unsigned_jwt_request(core::mem::take(request.as_mut())),
@@ -203,6 +199,12 @@ fn validate_response(
         return Err(backend_output_error());
     };
     match response {
+        Response::JwsFrameUnauthenticated(response) => {
+            validate_frame_transport_response(response, expected_operation)
+        }
+        Response::JwsComposeUnauthenticated(response) => {
+            validate_compose_transport_response(response, expected_operation)
+        }
         Response::JwkThumbprintSha256(response) => {
             require_operation(expected_operation, JoseOperationKind::JwkThumbprintSha256)?;
             match &response.outcome {
@@ -396,12 +398,6 @@ fn validate_response(
 #[path = "operation_response_proofs.rs"]
 mod proofs;
 
-fn max_response_bytes() -> JoseWireResult<usize> {
-    MAX_JOSE_PROTO_MESSAGE_BYTES
-        .checked_add(MAX_JOSE_PROTO_RESPONSE_OVERHEAD_BYTES)
-        .ok_or_else(backend_output_error)
-}
-
 fn encode_response_or_error(response: JoseOperationResponse) -> Zeroizing<Vec<u8>> {
     let encoded = encode_protobuf(&response);
     match max_response_bytes() {
@@ -418,6 +414,8 @@ fn encode_response_or_error(response: JoseOperationResponse) -> Zeroizing<Vec<u8
 fn operation_scoped_backend_error(mut response: JoseOperationResponse) -> JoseOperationResponse {
     let error = backend_output_error();
     match response.response.take() {
+        Some(Response::JwsFrameUnauthenticated(_)) => jws_frame_backend_response(),
+        Some(Response::JwsComposeUnauthenticated(_)) => jws_compose_backend_response(),
         Some(Response::JwkThumbprintSha256(_)) => jwk_thumbprint_sha256_response(Err(error)),
         Some(Response::JwsSign(_)) => jws_sign_response(Err(error)),
         Some(Response::JwsVerify(_)) => jws_verify_response(Err(error)),
@@ -478,7 +476,9 @@ mod build_response;
 use build_response::{
     contract_info_response, jwe_decrypt_response, jwe_decrypt_with_provider_response,
     jwe_derive_key_response, jwe_encrypt_response, jwe_encrypt_with_provider_response,
-    jwk_thumbprint_sha256_response, jws_inspect_response, jws_sign_response,
+    jwk_thumbprint_sha256_response, jws_compose_backend_response,
+    jws_compose_unauthenticated_response, jws_frame_backend_response,
+    jws_frame_unauthenticated_response, jws_inspect_response, jws_sign_response,
     jws_sign_with_provider_response, jws_verify_response, jws_verify_with_provider_response,
     jwt_claims_parse_response, jwt_decode_unsigned_response, jwt_encode_unsigned_response,
     jwt_sign_response, jwt_sign_with_provider_response, jwt_verify_response,
@@ -489,7 +489,9 @@ use build_response::{
 #[path = "jwe_response_width_proofs.rs"]
 mod jwe_response_width_proofs;
 
+mod validate_request_policy;
 mod validate_response_policy;
 use validate_response_policy::{
-    require_operation, validate_contract_version, validate_response_error,
+    max_response_bytes, require_operation, validate_compose_transport_response,
+    validate_contract_version, validate_frame_transport_response, validate_response_error,
 };

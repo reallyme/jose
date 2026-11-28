@@ -124,6 +124,87 @@ public enum JoseErrorReason
   JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE(161),
   /**
    * <pre>
+   * Unauthenticated JWS transport admission: 180-199.
+   * Rust failure: JwsTransportErrorReason::MissingPolicy
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY = 180;</code>
+   */
+  JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY(180),
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::InvalidCharacterPolicy
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY = 181;</code>
+   */
+  JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY(181),
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::MissingBudget
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET = 182;</code>
+   */
+  JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET(182),
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::MissingMember
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER = 183;</code>
+   */
+  JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER(183),
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::InputTooLarge
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE = 184;</code>
+   */
+  JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE(184),
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::OutputTooLarge
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE = 185;</code>
+   */
+  JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE(185),
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::EmptyMember
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER = 186;</code>
+   */
+  JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER(186),
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::InvalidCharacters
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS = 187;</code>
+   */
+  JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS(187),
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::LengthOverflow
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW = 188;</code>
+   */
+  JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW(188),
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::InvalidFraming
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING = 189;</code>
+   */
+  JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING(189),
+  /**
+   * <pre>
    * Compact JWE protected-header policy: 220-239.
    * Rust failure: JweError::InvalidHeader
    * </pre>
@@ -674,6 +755,14 @@ public enum JoseErrorReason
    * <code>JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION = 941;</code>
    */
   JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION(941),
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::Allocation
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION = 950;</code>
+   */
+  JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION(950),
   UNRECOGNIZED(-1),
   ;
 
@@ -781,6 +870,87 @@ public enum JoseErrorReason
    * <code>JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE = 161;</code>
    */
   public static final int JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE_VALUE = 161;
+  /**
+   * <pre>
+   * Unauthenticated JWS transport admission: 180-199.
+   * Rust failure: JwsTransportErrorReason::MissingPolicy
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY = 180;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY_VALUE = 180;
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::InvalidCharacterPolicy
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY = 181;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY_VALUE = 181;
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::MissingBudget
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET = 182;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET_VALUE = 182;
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::MissingMember
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER = 183;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER_VALUE = 183;
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::InputTooLarge
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE = 184;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE_VALUE = 184;
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::OutputTooLarge
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE = 185;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE_VALUE = 185;
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::EmptyMember
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER = 186;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER_VALUE = 186;
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::InvalidCharacters
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS = 187;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS_VALUE = 187;
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::LengthOverflow
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW = 188;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW_VALUE = 188;
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::InvalidFraming
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING = 189;</code>
+   */
+  public static final int JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING_VALUE = 189;
   /**
    * <pre>
    * Compact JWE protected-header policy: 220-239.
@@ -1333,6 +1503,14 @@ public enum JoseErrorReason
    * <code>JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION = 941;</code>
    */
   public static final int JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION_VALUE = 941;
+  /**
+   * <pre>
+   * Rust failure: JwsTransportErrorReason::Allocation
+   * </pre>
+   *
+   * <code>JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION = 950;</code>
+   */
+  public static final int JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION_VALUE = 950;
 
 
   @java.lang.Override
@@ -1366,6 +1544,16 @@ public enum JoseErrorReason
       case 142: return JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE;
       case 160: return JOSE_ERROR_REASON_JWS_SIGN_FAILED;
       case 161: return JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE;
+      case 180: return JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY;
+      case 181: return JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY;
+      case 182: return JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET;
+      case 183: return JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER;
+      case 184: return JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE;
+      case 185: return JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE;
+      case 186: return JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER;
+      case 187: return JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS;
+      case 188: return JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW;
+      case 189: return JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING;
       case 220: return JOSE_ERROR_REASON_JWE_INVALID_HEADER;
       case 221: return JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM;
       case 222: return JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM;
@@ -1433,6 +1621,7 @@ public enum JoseErrorReason
       case 902: return JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED;
       case 940: return JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION;
       case 941: return JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION;
+      case 950: return JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION;
       default: return null;
     }
   }

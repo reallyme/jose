@@ -58,6 +58,22 @@ fn normalize_response(response: JoseOperationResponse) -> Vec<u8> {
         panic!("canonical response omitted its response oneof");
     };
     match response {
+        Response::JwsFrameUnauthenticated(response) => {
+            use reallyme_jose::api::contract::__buffa::oneof::jose_jws_transport_frame_response::Outcome;
+            match response.outcome.as_ref() {
+                Some(Outcome::Result(result)) => normalized_result(result.as_ref()),
+                Some(Outcome::Error(error)) => normalized_error(error),
+                None => panic!("transport framing omitted its outcome"),
+            }
+        }
+        Response::JwsComposeUnauthenticated(response) => {
+            use reallyme_jose::api::contract::__buffa::oneof::jose_jws_transport_compose_response::Outcome;
+            match response.outcome.as_ref() {
+                Some(Outcome::Result(result)) => normalized_result(result.as_ref()),
+                Some(Outcome::Error(error)) => normalized_error(error),
+                None => panic!("transport composition omitted its outcome"),
+            }
+        }
         Response::JwkThumbprintSha256(response) => {
             use reallyme_jose::api::contract::__buffa::oneof::jose_jwk_thumbprint_sha256response::Outcome;
             match response.outcome.as_ref() {

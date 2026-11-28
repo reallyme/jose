@@ -51,6 +51,8 @@ public  final class JoseOperationRequest extends
         || (hasJwsSignWithProvider() && getJwsSignWithProvider().reallyMeHasUnknownFieldsForValidation())
         || (hasJwsVerifyWithProvider() && getJwsVerifyWithProvider().reallyMeHasUnknownFieldsForValidation())
         || (hasJwsInspect() && getJwsInspect().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwsFrameUnauthenticated() && getJwsFrameUnauthenticated().reallyMeHasUnknownFieldsForValidation())
+        || (hasJwsComposeUnauthenticated() && getJwsComposeUnauthenticated().reallyMeHasUnknownFieldsForValidation())
         || (hasJwtSignWithProvider() && getJwtSignWithProvider().reallyMeHasUnknownFieldsForValidation())
         || (hasJwtClaimsParse() && getJwtClaimsParse().reallyMeHasUnknownFieldsForValidation())
         || (hasJweDeriveKey() && getJweDeriveKey().reallyMeHasUnknownFieldsForValidation())
@@ -90,6 +92,8 @@ public  final class JoseOperationRequest extends
     JWS_SIGN_WITH_PROVIDER(1013),
     JWS_VERIFY_WITH_PROVIDER(1014),
     JWS_INSPECT(1015),
+    JWS_FRAME_UNAUTHENTICATED(1016),
+    JWS_COMPOSE_UNAUTHENTICATED(1017),
     JWT_SIGN_WITH_PROVIDER(2010),
     JWT_CLAIMS_PARSE(2011),
     JWE_DERIVE_KEY(3010),
@@ -126,6 +130,8 @@ public  final class JoseOperationRequest extends
         case 1013: return JWS_SIGN_WITH_PROVIDER;
         case 1014: return JWS_VERIFY_WITH_PROVIDER;
         case 1015: return JWS_INSPECT;
+        case 1016: return JWS_FRAME_UNAUTHENTICATED;
+        case 1017: return JWS_COMPOSE_UNAUTHENTICATED;
         case 2010: return JWT_SIGN_WITH_PROVIDER;
         case 2011: return JWT_CLAIMS_PARSE;
         case 3010: return JWE_DERIVE_KEY;
@@ -1144,6 +1150,106 @@ public  final class JoseOperationRequest extends
    */
   private void clearJwsInspect() {
     if (operationCase_ == 1015) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWS_FRAME_UNAUTHENTICATED_FIELD_NUMBER = 1016;
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwsFrameUnauthenticated() {
+    return operationCase_ == 1016;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwsTransportFrameRequest getJwsFrameUnauthenticated() {
+    if (operationCase_ == 1016) {
+       return (me.really.jose.v1.JoseJwsTransportFrameRequest) operation_;
+    }
+    return me.really.jose.v1.JoseJwsTransportFrameRequest.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+   */
+  private void setJwsFrameUnauthenticated(me.really.jose.v1.JoseJwsTransportFrameRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 1016;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+   */
+  private void mergeJwsFrameUnauthenticated(me.really.jose.v1.JoseJwsTransportFrameRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 1016 &&
+        operation_ != me.really.jose.v1.JoseJwsTransportFrameRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJwsTransportFrameRequest.newBuilder((me.really.jose.v1.JoseJwsTransportFrameRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 1016;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+   */
+  private void clearJwsFrameUnauthenticated() {
+    if (operationCase_ == 1016) {
+      operationCase_ = 0;
+      operation_ = null;
+    }
+  }
+
+  public static final int JWS_COMPOSE_UNAUTHENTICATED_FIELD_NUMBER = 1017;
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+   */
+  @java.lang.Override
+  public boolean hasJwsComposeUnauthenticated() {
+    return operationCase_ == 1017;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+   */
+  @java.lang.Override
+  public me.really.jose.v1.JoseJwsTransportComposeRequest getJwsComposeUnauthenticated() {
+    if (operationCase_ == 1017) {
+       return (me.really.jose.v1.JoseJwsTransportComposeRequest) operation_;
+    }
+    return me.really.jose.v1.JoseJwsTransportComposeRequest.getDefaultInstance();
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+   */
+  private void setJwsComposeUnauthenticated(me.really.jose.v1.JoseJwsTransportComposeRequest value) {
+    java.util.Objects.requireNonNull(value);
+    operation_ = value;
+    operationCase_ = 1017;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+   */
+  private void mergeJwsComposeUnauthenticated(me.really.jose.v1.JoseJwsTransportComposeRequest value) {
+    java.util.Objects.requireNonNull(value);
+    if (operationCase_ == 1017 &&
+        operation_ != me.really.jose.v1.JoseJwsTransportComposeRequest.getDefaultInstance()) {
+      operation_ = me.really.jose.v1.JoseJwsTransportComposeRequest.newBuilder((me.really.jose.v1.JoseJwsTransportComposeRequest) operation_)
+          .mergeFrom(value).buildPartial();
+    } else {
+      operation_ = value;
+    }
+    operationCase_ = 1017;
+  }
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+   */
+  private void clearJwsComposeUnauthenticated() {
+    if (operationCase_ == 1017) {
       operationCase_ = 0;
       operation_ = null;
     }
@@ -2774,6 +2880,102 @@ public  final class JoseOperationRequest extends
     }
 
     /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwsFrameUnauthenticated() {
+      return instance.hasJwsFrameUnauthenticated();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwsTransportFrameRequest getJwsFrameUnauthenticated() {
+      return instance.getJwsFrameUnauthenticated();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+     */
+    public Builder setJwsFrameUnauthenticated(me.really.jose.v1.JoseJwsTransportFrameRequest value) {
+      copyOnWrite();
+      instance.setJwsFrameUnauthenticated(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+     */
+    public Builder setJwsFrameUnauthenticated(
+        me.really.jose.v1.JoseJwsTransportFrameRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwsFrameUnauthenticated(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+     */
+    public Builder mergeJwsFrameUnauthenticated(me.really.jose.v1.JoseJwsTransportFrameRequest value) {
+      copyOnWrite();
+      instance.mergeJwsFrameUnauthenticated(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+     */
+    public Builder clearJwsFrameUnauthenticated() {
+      copyOnWrite();
+      instance.clearJwsFrameUnauthenticated();
+      return this;
+    }
+
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+     */
+    @java.lang.Override
+    public boolean hasJwsComposeUnauthenticated() {
+      return instance.hasJwsComposeUnauthenticated();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+     */
+    @java.lang.Override
+    public me.really.jose.v1.JoseJwsTransportComposeRequest getJwsComposeUnauthenticated() {
+      return instance.getJwsComposeUnauthenticated();
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+     */
+    public Builder setJwsComposeUnauthenticated(me.really.jose.v1.JoseJwsTransportComposeRequest value) {
+      copyOnWrite();
+      instance.setJwsComposeUnauthenticated(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+     */
+    public Builder setJwsComposeUnauthenticated(
+        me.really.jose.v1.JoseJwsTransportComposeRequest.Builder builderForValue) {
+      copyOnWrite();
+      instance.setJwsComposeUnauthenticated(builderForValue.build());
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+     */
+    public Builder mergeJwsComposeUnauthenticated(me.really.jose.v1.JoseJwsTransportComposeRequest value) {
+      copyOnWrite();
+      instance.mergeJwsComposeUnauthenticated(value);
+      return this;
+    }
+    /**
+     * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+     */
+    public Builder clearJwsComposeUnauthenticated() {
+      copyOnWrite();
+      instance.clearJwsComposeUnauthenticated();
+      return this;
+    }
+
+    /**
      * <pre>
      * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
      * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
@@ -3279,6 +3481,8 @@ public  final class JoseOperationRequest extends
             me.really.jose.v1.JoseJwsSignWithProviderRequest.class,
             me.really.jose.v1.JoseJwsVerifyWithProviderRequest.class,
             me.really.jose.v1.JoseJwsInspectRequest.class,
+            me.really.jose.v1.JoseJwsTransportFrameRequest.class,
+            me.really.jose.v1.JoseJwsTransportComposeRequest.class,
             me.really.jose.v1.JoseJwtEncodeUnsignedRequest.class,
             me.really.jose.v1.JoseJwtDecodeUnsignedRequest.class,
             me.really.jose.v1.JoseJwtSignRequest.class,
@@ -3294,11 +3498,11 @@ public  final class JoseOperationRequest extends
             me.really.jose.v1.JoseContractInfoRequest.class,
           };
           java.lang.String info =
-              "\u0000\u0015\u0001\u0000\u03e8\u1b58\u0015\u0000\u0000\u0000\u03e8<\u0000\u03e9<" +
+              "\u0000\u0017\u0001\u0000\u03e8\u1b58\u0017\u0000\u0000\u0000\u03e8<\u0000\u03e9<" +
               "\u0000\u03f2<\u0000\u03f3<\u0000\u03f4<\u0000\u03f5<\u0000\u03f6<\u0000\u03f7<\u0000" +
-              "\u07d0<\u0000\u07d1<\u0000\u07d2<\u0000\u07d3<\u0000\u07da<\u0000\u07db<\u0000\u0bb8" +
-              "<\u0000\u0bb9<\u0000\u0bc2<\u0000\u0bc3<\u0000\u0bc4<\u0000\u0fa0<\u0000\u1b58<\u0000" +
-              "";
+              "\u03f8<\u0000\u03f9<\u0000\u07d0<\u0000\u07d1<\u0000\u07d2<\u0000\u07d3<\u0000\u07da" +
+              "<\u0000\u07db<\u0000\u0bb8<\u0000\u0bb9<\u0000\u0bc2<\u0000\u0bc3<\u0000\u0bc4<\u0000" +
+              "\u0fa0<\u0000\u1b58<\u0000";
           return newMessageInfo(DEFAULT_INSTANCE, info, objects);
       }
       case GET_DEFAULT_INSTANCE: {

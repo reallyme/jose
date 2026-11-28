@@ -2,6 +2,465 @@
 // Modified by ReallyMe Technologies Limited.
 // source: reallyme/jose/v1/jose.proto
 
+/// Character admission never decodes, canonicalizes, or authenticates members.
+#[allow(non_camel_case_types)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[repr(i32)]
+pub enum JoseJwsTransportCharacterPolicy {
+    JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED = 0i32,
+    JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8 = 100i32,
+    JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII = 101i32,
+    /// Matches Rust's is_ascii_whitespace: TAB, LF, FF, CR and SPACE. In
+    /// particular, VT is admitted, preserving existing transport admission.
+    JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE = 102i32,
+    /// Only A-Z, a-z, 0-9, '-' and '_'; no padding or canonicality requirement.
+    JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET = 103i32,
+}
+impl JoseJwsTransportCharacterPolicy {
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Unspecified: Self = Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const OpaqueUtf8: Self = Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Ascii: Self = Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const AsciiWithoutWhitespace: Self = Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Base64urlAlphabet: Self = Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET;
+}
+impl ::core::default::Default for JoseJwsTransportCharacterPolicy {
+    fn default() -> Self {
+        Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED
+    }
+}
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportCharacterPolicy {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::reset_copy(self);
+    }
+}
+impl ::serde::Serialize for JoseJwsTransportCharacterPolicy {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        s.serialize_str(::buffa::Enumeration::proto_name(self))
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportCharacterPolicy {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        ::buffa::json_helpers::closed_enum::deserialize_strict(d)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportCharacterPolicy {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+impl ::buffa::Enumeration for JoseJwsTransportCharacterPolicy {
+    fn from_i32(value: i32) -> ::core::option::Option<Self> {
+        match value {
+            0i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED,
+                )
+            }
+            100i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8,
+                )
+            }
+            101i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII,
+                )
+            }
+            102i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE,
+                )
+            }
+            103i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET,
+                )
+            }
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn to_i32(&self) -> i32 {
+        *self as i32
+    }
+    fn proto_name(&self) -> &'static str {
+        match self {
+            Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED => {
+                "JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED"
+            }
+            Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8 => {
+                "JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8"
+            }
+            Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII => {
+                "JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII"
+            }
+            Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE => {
+                "JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE"
+            }
+            Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET => {
+                "JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET"
+            }
+        }
+    }
+    fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
+        match name {
+            "JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET,
+                )
+            }
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn values() -> &'static [Self] {
+        &[
+            Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED,
+            Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8,
+            Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII,
+            Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE,
+            Self::JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET,
+        ]
+    }
+}
+/// Operation-local transport reasons. Their stack projection uses distinct
+/// JoseErrorReason values; these numbers must not be used as JOSE stack codes.
+#[allow(non_camel_case_types)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[repr(i32)]
+pub enum JoseJwsTransportErrorReason {
+    JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED = 0i32,
+    /// Rust transport failure: JwsTransportErrorReason::MissingPolicy
+    JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY = 101i32,
+    /// Rust transport failure: JwsTransportErrorReason::InvalidCharacterPolicy
+    JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY = 102i32,
+    /// Rust transport failure: JwsTransportErrorReason::MissingBudget
+    JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET = 103i32,
+    /// Rust transport failure: JwsTransportErrorReason::MissingMember
+    JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER = 104i32,
+    /// Rust transport failure: JwsTransportErrorReason::InputTooLarge
+    JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE = 110i32,
+    /// Rust transport failure: JwsTransportErrorReason::OutputTooLarge
+    JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE = 111i32,
+    /// Rust transport failure: JwsTransportErrorReason::InvalidFraming
+    JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING = 120i32,
+    /// Rust transport failure: JwsTransportErrorReason::EmptyMember
+    JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER = 121i32,
+    /// Rust transport failure: JwsTransportErrorReason::InvalidCharacters
+    JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS = 122i32,
+    /// Rust transport failure: JwsTransportErrorReason::LengthOverflow
+    JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW = 900i32,
+    /// Rust transport failure: JwsTransportErrorReason::Allocation
+    JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION = 901i32,
+}
+impl JoseJwsTransportErrorReason {
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Unspecified: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const MissingPolicy: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const InvalidCharacterPolicy: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const MissingBudget: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const MissingMember: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const InputTooLarge: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const OutputTooLarge: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const InvalidFraming: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const EmptyMember: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const InvalidCharacters: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const LengthOverflow: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW;
+    ///Idiomatic alias for [`Self::JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const Allocation: Self = Self::JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION;
+}
+impl ::core::default::Default for JoseJwsTransportErrorReason {
+    fn default() -> Self {
+        Self::JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED
+    }
+}
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportErrorReason {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::reset_copy(self);
+    }
+}
+impl ::serde::Serialize for JoseJwsTransportErrorReason {
+    fn serialize<__S: ::serde::Serializer>(
+        &self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        s.serialize_str(::buffa::Enumeration::proto_name(self))
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportErrorReason {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        ::buffa::json_helpers::closed_enum::deserialize_strict(d)
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportErrorReason {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+impl ::buffa::Enumeration for JoseJwsTransportErrorReason {
+    fn from_i32(value: i32) -> ::core::option::Option<Self> {
+        match value {
+            0i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED,
+                )
+            }
+            101i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY,
+                )
+            }
+            102i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY,
+                )
+            }
+            103i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET,
+                )
+            }
+            104i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER,
+                )
+            }
+            110i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE,
+                )
+            }
+            111i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE,
+                )
+            }
+            120i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING,
+                )
+            }
+            121i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER,
+                )
+            }
+            122i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS,
+                )
+            }
+            900i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW,
+                )
+            }
+            901i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION,
+                )
+            }
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn to_i32(&self) -> i32 {
+        *self as i32
+    }
+    fn proto_name(&self) -> &'static str {
+        match self {
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW"
+            }
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION => {
+                "JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION"
+            }
+        }
+    }
+    fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
+        match name {
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW,
+                )
+            }
+            "JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION,
+                )
+            }
+            _ => ::core::option::Option::None,
+        }
+    }
+    fn values() -> &'static [Self] {
+        &[
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW,
+            Self::JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION,
+        ]
+    }
+}
 /// Public SDK error discriminators. SDKs can raise these before an operation
 /// starts or while validating its response. JOSE_FAILURE carries the branch
 /// and JoseErrorReason of an operation failure in the SDK's error type.
@@ -306,6 +765,27 @@ pub enum JoseErrorReason {
     /// Rust failure: JwsSignErrorReason::BadDerSignature
     /// Rust failure: JwsEs256Error::BadDerSignature
     JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE = 161i32,
+    /// Unauthenticated JWS transport admission: 180-199.
+    /// Rust failure: JwsTransportErrorReason::MissingPolicy
+    JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY = 180i32,
+    /// Rust failure: JwsTransportErrorReason::InvalidCharacterPolicy
+    JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY = 181i32,
+    /// Rust failure: JwsTransportErrorReason::MissingBudget
+    JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET = 182i32,
+    /// Rust failure: JwsTransportErrorReason::MissingMember
+    JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER = 183i32,
+    /// Rust failure: JwsTransportErrorReason::InputTooLarge
+    JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE = 184i32,
+    /// Rust failure: JwsTransportErrorReason::OutputTooLarge
+    JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE = 185i32,
+    /// Rust failure: JwsTransportErrorReason::EmptyMember
+    JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER = 186i32,
+    /// Rust failure: JwsTransportErrorReason::InvalidCharacters
+    JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS = 187i32,
+    /// Rust failure: JwsTransportErrorReason::LengthOverflow
+    JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW = 188i32,
+    /// Rust failure: JwsTransportErrorReason::InvalidFraming
+    JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING = 189i32,
     /// Compact JWE structure and segment encoding: 200-219.
     ///
     /// Compact JWE protected-header policy: 220-239.
@@ -475,6 +955,8 @@ pub enum JoseErrorReason {
     JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION = 940i32,
     /// Rust failure: JwkThumbprintErrorReason::Allocation
     JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION = 941i32,
+    /// Rust failure: JwsTransportErrorReason::Allocation
+    JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION = 950i32,
 }
 impl JoseErrorReason {
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_UNSPECIFIED`]; `Debug` prints the variant name.
@@ -510,6 +992,36 @@ impl JoseErrorReason {
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const JwsBadDerSignature: Self = Self::JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsTransportMissingPolicy: Self = Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsTransportInvalidCharacterPolicy: Self = Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsTransportMissingBudget: Self = Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsTransportMissingMember: Self = Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsTransportInputTooLarge: Self = Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsTransportOutputTooLarge: Self = Self::JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsTransportEmptyMember: Self = Self::JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsTransportInvalidCharacters: Self = Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsTransportLengthOverflow: Self = Self::JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsTransportInvalidFraming: Self = Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING;
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_JWE_INVALID_HEADER`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const JweInvalidHeader: Self = Self::JOSE_ERROR_REASON_JWE_INVALID_HEADER;
@@ -711,6 +1223,9 @@ impl JoseErrorReason {
     ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const BackendJwkThumbprintAllocation: Self = Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION;
+    ///Idiomatic alias for [`Self::JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const BackendJwsTransportAllocation: Self = Self::JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION;
 }
 impl ::core::default::Default for JoseErrorReason {
     fn default() -> Self {
@@ -796,6 +1311,56 @@ impl ::buffa::Enumeration for JoseErrorReason {
             161i32 => {
                 ::core::option::Option::Some(
                     Self::JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE,
+                )
+            }
+            180i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY,
+                )
+            }
+            181i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY,
+                )
+            }
+            182i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET,
+                )
+            }
+            183i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER,
+                )
+            }
+            184i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE,
+                )
+            }
+            185i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE,
+                )
+            }
+            186i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER,
+                )
+            }
+            187i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS,
+                )
+            }
+            188i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW,
+                )
+            }
+            189i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING,
                 )
             }
             220i32 => {
@@ -1109,6 +1674,11 @@ impl ::buffa::Enumeration for JoseErrorReason {
                     Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION,
                 )
             }
+            950i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION,
+                )
+            }
             _ => ::core::option::Option::None,
         }
     }
@@ -1147,6 +1717,36 @@ impl ::buffa::Enumeration for JoseErrorReason {
             }
             Self::JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE => {
                 "JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE"
+            }
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY => {
+                "JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY"
+            }
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY => {
+                "JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY"
+            }
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET => {
+                "JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET"
+            }
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER => {
+                "JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER"
+            }
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE => {
+                "JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE"
+            }
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE => {
+                "JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE"
+            }
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER => {
+                "JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER"
+            }
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS => {
+                "JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS"
+            }
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW => {
+                "JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW"
+            }
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING => {
+                "JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING"
             }
             Self::JOSE_ERROR_REASON_JWE_INVALID_HEADER => {
                 "JOSE_ERROR_REASON_JWE_INVALID_HEADER"
@@ -1347,6 +1947,9 @@ impl ::buffa::Enumeration for JoseErrorReason {
             Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION => {
                 "JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION"
             }
+            Self::JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION => {
+                "JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION"
+            }
         }
     }
     fn from_proto_name(name: &str) -> ::core::option::Option<Self> {
@@ -1396,6 +1999,56 @@ impl ::buffa::Enumeration for JoseErrorReason {
             "JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE" => {
                 ::core::option::Option::Some(
                     Self::JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE,
+                )
+            }
+            "JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY,
+                )
+            }
+            "JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY,
+                )
+            }
+            "JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET,
+                )
+            }
+            "JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER,
+                )
+            }
+            "JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE,
+                )
+            }
+            "JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE,
+                )
+            }
+            "JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER,
+                )
+            }
+            "JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS,
+                )
+            }
+            "JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW,
+                )
+            }
+            "JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING,
                 )
             }
             "JOSE_ERROR_REASON_JWE_INVALID_HEADER" => {
@@ -1711,6 +2364,11 @@ impl ::buffa::Enumeration for JoseErrorReason {
                     Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION,
                 )
             }
+            "JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION,
+                )
+            }
             _ => ::core::option::Option::None,
         }
     }
@@ -1727,6 +2385,16 @@ impl ::buffa::Enumeration for JoseErrorReason {
             Self::JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE,
             Self::JOSE_ERROR_REASON_JWS_SIGN_FAILED,
             Self::JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE,
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY,
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY,
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET,
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER,
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE,
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE,
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER,
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS,
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW,
+            Self::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING,
             Self::JOSE_ERROR_REASON_JWE_INVALID_HEADER,
             Self::JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM,
             Self::JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM,
@@ -1794,6 +2462,7 @@ impl ::buffa::Enumeration for JoseErrorReason {
             Self::JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED,
             Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION,
             Self::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION,
+            Self::JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION,
         ]
     }
 }
@@ -3667,6 +4336,10 @@ pub enum JoseOperationKind {
     /// Append native selector bindings to preserve existing Rust discriminants.
     /// Rust variant: JoseOperationKind.JwkThumbprintSha256
     JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000i32,
+    /// Rust variant: JoseOperationKind.JwsFrameUnauthenticated
+    JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED = 1016i32,
+    /// Rust variant: JoseOperationKind.JwsComposeUnauthenticated
+    JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED = 1017i32,
 }
 impl JoseOperationKind {
     ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_UNSPECIFIED`]; `Debug` prints the variant name.
@@ -3735,6 +4408,12 @@ impl JoseOperationKind {
     ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256`]; `Debug` prints the variant name.
     #[allow(non_upper_case_globals)]
     pub const JwkThumbprintSha256: Self = Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256;
+    ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsFrameUnauthenticated: Self = Self::JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED;
+    ///Idiomatic alias for [`Self::JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED`]; `Debug` prints the variant name.
+    #[allow(non_upper_case_globals)]
+    pub const JwsComposeUnauthenticated: Self = Self::JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED;
 }
 impl ::core::default::Default for JoseOperationKind {
     fn default() -> Self {
@@ -3851,6 +4530,16 @@ impl ::buffa::Enumeration for JoseOperationKind {
                     Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
                 )
             }
+            1016i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED,
+                )
+            }
+            1017i32 => {
+                ::core::option::Option::Some(
+                    Self::JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED,
+                )
+            }
             _ => ::core::option::Option::None,
         }
     }
@@ -3908,6 +4597,12 @@ impl ::buffa::Enumeration for JoseOperationKind {
             }
             Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 => {
                 "JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256"
+            }
+            Self::JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED => {
+                "JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED"
+            }
+            Self::JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED => {
+                "JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED"
             }
         }
     }
@@ -3997,6 +4692,16 @@ impl ::buffa::Enumeration for JoseOperationKind {
                     Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
                 )
             }
+            "JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED,
+                )
+            }
+            "JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED" => {
+                ::core::option::Option::Some(
+                    Self::JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED,
+                )
+            }
             _ => ::core::option::Option::None,
         }
     }
@@ -4024,6 +4729,8 @@ impl ::buffa::Enumeration for JoseOperationKind {
             Self::JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER,
             Self::JOSE_OPERATION_KIND_CONTRACT_INFO,
             Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
+            Self::JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED,
+            Self::JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED,
         ]
     }
 }
@@ -4305,6 +5012,3667 @@ impl ::buffa::Enumeration for JoseNativeAbiVersion {
     fn values() -> &'static [Self] {
         &[Self::JOSE_NATIVE_ABI_VERSION_UNSPECIFIED, Self::JOSE_NATIVE_ABI_VERSION_V1]
     }
+}
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwsTransportMemberPolicy {
+    /// Field 1: `characters`
+    #[serde(
+        rename = "characters",
+        with = "::buffa::json_helpers::guarded_enum::open",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    #[serde(default)]
+    pub characters: ::buffa::EnumValue<JoseJwsTransportCharacterPolicy>,
+    /// Field 2: `allow_empty`
+    #[serde(
+        rename = "allowEmpty",
+        alias = "allow_empty",
+        with = "::buffa::json_helpers::proto_bool",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_false"
+    )]
+    #[serde(default)]
+    pub allow_empty: bool,
+}
+impl ::core::fmt::Debug for JoseJwsTransportMemberPolicy {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportMemberPolicy")
+            .field("characters", &::core::format_args!("[REDACTED]"))
+            .field("allow_empty", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwsTransportMemberPolicy {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportMemberPolicy";
+}
+impl JoseJwsTransportMemberPolicy {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::characters`] to `value`, consuming and returning `self`.
+    pub fn with_characters(
+        mut self,
+        value: impl ::core::convert::Into<
+            ::buffa::EnumValue<JoseJwsTransportCharacterPolicy>,
+        >,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.characters);
+        self.characters = value.into();
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::allow_empty`] to `value`, consuming and returning `self`.
+    pub fn with_allow_empty(mut self, value: bool) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.allow_empty);
+        self.allow_empty = value;
+        self
+    }
+}
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportMemberPolicy {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.characters);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.allow_empty);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportMemberPolicy {}
+impl ::core::ops::Drop for JoseJwsTransportMemberPolicy {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwsTransportMemberPolicy);
+impl ::buffa::MessageName for JoseJwsTransportMemberPolicy {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportMemberPolicy";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportMemberPolicy";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportMemberPolicy";
+}
+impl ::buffa::Message for JoseJwsTransportMemberPolicy {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        {
+            let val = self.characters.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        if self.allow_empty {
+            size += 1u64 + ::buffa::types::BOOL_ENCODED_LEN as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        {
+            let val = self.characters.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(1u32, val, buf);
+            }
+        }
+        if self.allow_empty {
+            ::buffa::types::put_bool_field(2u32, self.allow_empty, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.characters = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.allow_empty = ::buffa::types::decode_bool(buf)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.characters = ::buffa::EnumValue::from(0);
+        self.allow_empty = false;
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportMemberPolicy {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwsTransportMemberPolicy;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwsTransportMemberPolicy")
+            }
+            fn visit_none<__E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJwsTransportMemberPolicy, __E> {
+                ::serde::de::Visitor::visit_map(
+                    self,
+                    ::serde::de::value::MapDeserializer::<
+                        _,
+                        __E,
+                    >::new(
+                        ::core::iter::empty::<
+                            (::core::primitive::u8, ::core::primitive::u8),
+                        >(),
+                    ),
+                )
+            }
+            fn visit_enum<__A: ::serde::de::EnumAccess<'de>>(
+                self,
+                tagged: __A,
+            ) -> ::core::result::Result<Self::Value, __A::Error> {
+                ::buffa::json_helpers::deserialize_tagged(self, tagged)
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwsTransportMemberPolicy, __A::Error> {
+                #[allow(unused_mut)]
+                let mut __r = <JoseJwsTransportMemberPolicy as ::core::default::Default>::default();
+                let mut __f_characters = false;
+                let mut __f_allow_empty = false;
+                #[allow(clippy::never_loop)]
+                while let ::core::option::Option::Some(key) = map
+                    .next_key::<::buffa::alloc::string::String>()?
+                {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    if key.as_str() == ::buffa::json_helpers::SERDE_JSON_NUMBER_KEY {
+                        return ::core::result::Result::Err(
+                            <__A::Error as ::serde::de::Error>::invalid_type(
+                                ::serde::de::Unexpected::Other("number"),
+                                &self,
+                            ),
+                        );
+                    }
+                    match key.as_str() {
+                        "characters" => {
+                            if __f_characters {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "characters",
+                                    ),
+                                );
+                            }
+                            __f_characters = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::buffa::EnumValue<
+                                        JoseJwsTransportCharacterPolicy,
+                                    >;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::buffa::EnumValue<JoseJwsTransportCharacterPolicy>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::guarded_enum::open::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.characters);
+                            __r.characters = value;
+                        }
+                        "allowEmpty" | "allow_empty" => {
+                            if __f_allow_empty {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "allow_empty",
+                                    ),
+                                );
+                            }
+                            __f_allow_empty = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = bool;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<bool, __D::Error> {
+                                        ::buffa::json_helpers::proto_bool::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.allow_empty);
+                            __r.allow_empty = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                ::core::result::Result::Ok(__r)
+            }
+            ::buffa::json_helpers::reject_other_json_kinds!(
+                bool, i64, u64, i128, u128, f64, str, string, bytes, byte_buf, unit, seq
+            );
+        }
+        if d.is_human_readable() { d.deserialize_any(_V) } else { d.deserialize_map(_V) }
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportMemberPolicy {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWS_TRANSPORT_MEMBER_POLICY_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportMemberPolicy",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwsTransportMemberPolicy>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwsTransportMemberPolicy>,
+    is_wkt: false,
+};
+/// Each member independently selects empty-string and character admission.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwsTransportPolicy {
+    /// Field 1: `protected_header`
+    #[serde(
+        rename = "protectedHeader",
+        alias = "protected_header",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    #[serde(default)]
+    pub protected_header: ::buffa::MessageField<
+        JoseJwsTransportMemberPolicy,
+        ::buffa::Inline<JoseJwsTransportMemberPolicy>,
+    >,
+    /// Field 2: `payload`
+    #[serde(
+        rename = "payload",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    #[serde(default)]
+    pub payload: ::buffa::MessageField<
+        JoseJwsTransportMemberPolicy,
+        ::buffa::Inline<JoseJwsTransportMemberPolicy>,
+    >,
+    /// Field 3: `signature`
+    #[serde(
+        rename = "signature",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    #[serde(default)]
+    pub signature: ::buffa::MessageField<
+        JoseJwsTransportMemberPolicy,
+        ::buffa::Inline<JoseJwsTransportMemberPolicy>,
+    >,
+}
+impl ::core::fmt::Debug for JoseJwsTransportPolicy {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportPolicy")
+            .field("protected_header", &::core::format_args!("[REDACTED]"))
+            .field("payload", &::core::format_args!("[REDACTED]"))
+            .field("signature", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwsTransportPolicy {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportPolicy";
+}
+impl JoseJwsTransportPolicy {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::protected_header`] to `value`, consuming and returning `self`.
+    pub fn with_protected_header(
+        mut self,
+        value: impl ::core::convert::Into<
+            ::buffa::MessageField<
+                JoseJwsTransportMemberPolicy,
+                ::buffa::Inline<JoseJwsTransportMemberPolicy>,
+            >,
+        >,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.protected_header);
+        self.protected_header = value.into();
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::payload`] to `value`, consuming and returning `self`.
+    pub fn with_payload(
+        mut self,
+        value: impl ::core::convert::Into<
+            ::buffa::MessageField<
+                JoseJwsTransportMemberPolicy,
+                ::buffa::Inline<JoseJwsTransportMemberPolicy>,
+            >,
+        >,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.payload);
+        self.payload = value.into();
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::signature`] to `value`, consuming and returning `self`.
+    pub fn with_signature(
+        mut self,
+        value: impl ::core::convert::Into<
+            ::buffa::MessageField<
+                JoseJwsTransportMemberPolicy,
+                ::buffa::Inline<JoseJwsTransportMemberPolicy>,
+            >,
+        >,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.signature);
+        self.signature = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<JoseJwsTransportMemberPolicy>();
+    __requires_wipe_owner::<JoseJwsTransportMemberPolicy>();
+    __requires_wipe_owner::<JoseJwsTransportMemberPolicy>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportPolicy {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.protected_header);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.payload);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.signature);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportPolicy {}
+impl ::core::ops::Drop for JoseJwsTransportPolicy {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwsTransportPolicy);
+impl ::buffa::MessageName for JoseJwsTransportPolicy {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportPolicy";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportPolicy";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportPolicy";
+}
+impl ::buffa::Message for JoseJwsTransportPolicy {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(__v) = self.protected_header.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.payload.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.signature.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(__v) = self.protected_header.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                1u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.payload.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.signature.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                3u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.protected_header.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.payload.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.signature.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.protected_header = ::buffa::MessageField::none();
+        self.payload = ::buffa::MessageField::none();
+        self.signature = ::buffa::MessageField::none();
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportPolicy {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwsTransportPolicy;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwsTransportPolicy")
+            }
+            fn visit_none<__E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJwsTransportPolicy, __E> {
+                ::serde::de::Visitor::visit_map(
+                    self,
+                    ::serde::de::value::MapDeserializer::<
+                        _,
+                        __E,
+                    >::new(
+                        ::core::iter::empty::<
+                            (::core::primitive::u8, ::core::primitive::u8),
+                        >(),
+                    ),
+                )
+            }
+            fn visit_enum<__A: ::serde::de::EnumAccess<'de>>(
+                self,
+                tagged: __A,
+            ) -> ::core::result::Result<Self::Value, __A::Error> {
+                ::buffa::json_helpers::deserialize_tagged(self, tagged)
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwsTransportPolicy, __A::Error> {
+                #[allow(unused_mut)]
+                let mut __r = <JoseJwsTransportPolicy as ::core::default::Default>::default();
+                let mut __f_protected_header = false;
+                let mut __f_payload = false;
+                let mut __f_signature = false;
+                #[allow(clippy::never_loop)]
+                while let ::core::option::Option::Some(key) = map
+                    .next_key::<::buffa::alloc::string::String>()?
+                {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    if key.as_str() == ::buffa::json_helpers::SERDE_JSON_NUMBER_KEY {
+                        return ::core::result::Result::Err(
+                            <__A::Error as ::serde::de::Error>::invalid_type(
+                                ::serde::de::Unexpected::Other("number"),
+                                &self,
+                            ),
+                        );
+                    }
+                    match key.as_str() {
+                        "protectedHeader" | "protected_header" => {
+                            if __f_protected_header {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "protected_header",
+                                    ),
+                                );
+                            }
+                            __f_protected_header = true;
+                            let value = map
+                                .next_value::<
+                                    ::buffa::MessageField<
+                                        JoseJwsTransportMemberPolicy,
+                                        ::buffa::Inline<JoseJwsTransportMemberPolicy>,
+                                    >,
+                                >()?;
+                            ::buffa::sensitive::Zeroize::zeroize(
+                                &mut __r.protected_header,
+                            );
+                            __r.protected_header = value;
+                        }
+                        "payload" => {
+                            if __f_payload {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "payload",
+                                    ),
+                                );
+                            }
+                            __f_payload = true;
+                            let value = map
+                                .next_value::<
+                                    ::buffa::MessageField<
+                                        JoseJwsTransportMemberPolicy,
+                                        ::buffa::Inline<JoseJwsTransportMemberPolicy>,
+                                    >,
+                                >()?;
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.payload);
+                            __r.payload = value;
+                        }
+                        "signature" => {
+                            if __f_signature {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "signature",
+                                    ),
+                                );
+                            }
+                            __f_signature = true;
+                            let value = map
+                                .next_value::<
+                                    ::buffa::MessageField<
+                                        JoseJwsTransportMemberPolicy,
+                                        ::buffa::Inline<JoseJwsTransportMemberPolicy>,
+                                    >,
+                                >()?;
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.signature);
+                            __r.signature = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                ::core::result::Result::Ok(__r)
+            }
+            ::buffa::json_helpers::reject_other_json_kinds!(
+                bool, i64, u64, i128, u128, f64, str, string, bytes, byte_buf, unit, seq
+            );
+        }
+        if d.is_human_readable() { d.deserialize_any(_V) } else { d.deserialize_map(_V) }
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportPolicy {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWS_TRANSPORT_POLICY_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportPolicy",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwsTransportPolicy>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwsTransportPolicy>,
+    is_wkt: false,
+};
+/// Required caller budget in UTF-8 bytes, without a verification-limit clamp.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwsTransportFrameBudgets {
+    /// Field 1: `max_input_bytes`
+    #[serde(
+        rename = "maxInputBytes",
+        alias = "max_input_bytes",
+        with = "::buffa::json_helpers::opt_uint64",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub max_input_bytes: ::core::option::Option<u64>,
+}
+impl ::core::fmt::Debug for JoseJwsTransportFrameBudgets {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportFrameBudgets")
+            .field("max_input_bytes", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwsTransportFrameBudgets {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameBudgets";
+}
+impl JoseJwsTransportFrameBudgets {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::max_input_bytes`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_max_input_bytes(mut self, value: u64) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_input_bytes);
+        self.max_input_bytes = ::core::option::Option::Some(value);
+        self
+    }
+}
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportFrameBudgets {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_input_bytes);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportFrameBudgets {}
+impl ::core::ops::Drop for JoseJwsTransportFrameBudgets {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwsTransportFrameBudgets);
+impl ::buffa::MessageName for JoseJwsTransportFrameBudgets {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportFrameBudgets";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportFrameBudgets";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameBudgets";
+}
+impl ::buffa::Message for JoseJwsTransportFrameBudgets {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(v) = self.max_input_bytes {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(v) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(v) = self.max_input_bytes {
+            ::buffa::types::put_uint64_field(1u32, v, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.max_input_bytes = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint64(buf)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.max_input_bytes = ::core::option::Option::None;
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportFrameBudgets {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwsTransportFrameBudgets;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwsTransportFrameBudgets")
+            }
+            fn visit_none<__E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJwsTransportFrameBudgets, __E> {
+                ::serde::de::Visitor::visit_map(
+                    self,
+                    ::serde::de::value::MapDeserializer::<
+                        _,
+                        __E,
+                    >::new(
+                        ::core::iter::empty::<
+                            (::core::primitive::u8, ::core::primitive::u8),
+                        >(),
+                    ),
+                )
+            }
+            fn visit_enum<__A: ::serde::de::EnumAccess<'de>>(
+                self,
+                tagged: __A,
+            ) -> ::core::result::Result<Self::Value, __A::Error> {
+                ::buffa::json_helpers::deserialize_tagged(self, tagged)
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwsTransportFrameBudgets, __A::Error> {
+                #[allow(unused_mut)]
+                let mut __r = <JoseJwsTransportFrameBudgets as ::core::default::Default>::default();
+                let mut __f_max_input_bytes = false;
+                #[allow(clippy::never_loop)]
+                while let ::core::option::Option::Some(key) = map
+                    .next_key::<::buffa::alloc::string::String>()?
+                {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    if key.as_str() == ::buffa::json_helpers::SERDE_JSON_NUMBER_KEY {
+                        return ::core::result::Result::Err(
+                            <__A::Error as ::serde::de::Error>::invalid_type(
+                                ::serde::de::Unexpected::Other("number"),
+                                &self,
+                            ),
+                        );
+                    }
+                    match key.as_str() {
+                        "maxInputBytes" | "max_input_bytes" => {
+                            if __f_max_input_bytes {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "max_input_bytes",
+                                    ),
+                                );
+                            }
+                            __f_max_input_bytes = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<u64>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<u64>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_uint64::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(
+                                &mut __r.max_input_bytes,
+                            );
+                            __r.max_input_bytes = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                ::core::result::Result::Ok(__r)
+            }
+            ::buffa::json_helpers::reject_other_json_kinds!(
+                bool, i64, u64, i128, u128, f64, str, string, bytes, byte_buf, unit, seq
+            );
+        }
+        if d.is_human_readable() { d.deserialize_any(_V) } else { d.deserialize_map(_V) }
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportFrameBudgets {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWS_TRANSPORT_FRAME_BUDGETS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameBudgets",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwsTransportFrameBudgets>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwsTransportFrameBudgets>,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwsTransportComposeBudgets {
+    /// Aggregate UTF-8 bytes of the three member strings, excluding inserted dots.
+    /// Explicit zero admits three empty members when their policies allow them.
+    ///
+    /// Field 1: `max_input_bytes`
+    #[serde(
+        rename = "maxInputBytes",
+        alias = "max_input_bytes",
+        with = "::buffa::json_helpers::opt_uint64",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub max_input_bytes: ::core::option::Option<u64>,
+    /// UTF-8 bytes of the result, including the two inserted dots.
+    ///
+    /// Field 2: `max_output_bytes`
+    #[serde(
+        rename = "maxOutputBytes",
+        alias = "max_output_bytes",
+        with = "::buffa::json_helpers::opt_uint64",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub max_output_bytes: ::core::option::Option<u64>,
+}
+impl ::core::fmt::Debug for JoseJwsTransportComposeBudgets {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportComposeBudgets")
+            .field("max_input_bytes", &::core::format_args!("[REDACTED]"))
+            .field("max_output_bytes", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwsTransportComposeBudgets {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeBudgets";
+}
+impl JoseJwsTransportComposeBudgets {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::max_input_bytes`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_max_input_bytes(mut self, value: u64) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_input_bytes);
+        self.max_input_bytes = ::core::option::Option::Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::max_output_bytes`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_max_output_bytes(mut self, value: u64) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_output_bytes);
+        self.max_output_bytes = ::core::option::Option::Some(value);
+        self
+    }
+}
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportComposeBudgets {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_input_bytes);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.max_output_bytes);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportComposeBudgets {}
+impl ::core::ops::Drop for JoseJwsTransportComposeBudgets {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwsTransportComposeBudgets);
+impl ::buffa::MessageName for JoseJwsTransportComposeBudgets {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportComposeBudgets";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportComposeBudgets";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeBudgets";
+}
+impl ::buffa::Message for JoseJwsTransportComposeBudgets {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(v) = self.max_input_bytes {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(v) as u64;
+        }
+        if let ::core::option::Option::Some(v) = self.max_output_bytes {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(v) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(v) = self.max_input_bytes {
+            ::buffa::types::put_uint64_field(1u32, v, buf);
+        }
+        if let ::core::option::Option::Some(v) = self.max_output_bytes {
+            ::buffa::types::put_uint64_field(2u32, v, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.max_input_bytes = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint64(buf)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.max_output_bytes = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint64(buf)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.max_input_bytes = ::core::option::Option::None;
+        self.max_output_bytes = ::core::option::Option::None;
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportComposeBudgets {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwsTransportComposeBudgets;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwsTransportComposeBudgets")
+            }
+            fn visit_none<__E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJwsTransportComposeBudgets, __E> {
+                ::serde::de::Visitor::visit_map(
+                    self,
+                    ::serde::de::value::MapDeserializer::<
+                        _,
+                        __E,
+                    >::new(
+                        ::core::iter::empty::<
+                            (::core::primitive::u8, ::core::primitive::u8),
+                        >(),
+                    ),
+                )
+            }
+            fn visit_enum<__A: ::serde::de::EnumAccess<'de>>(
+                self,
+                tagged: __A,
+            ) -> ::core::result::Result<Self::Value, __A::Error> {
+                ::buffa::json_helpers::deserialize_tagged(self, tagged)
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwsTransportComposeBudgets, __A::Error> {
+                #[allow(unused_mut)]
+                let mut __r = <JoseJwsTransportComposeBudgets as ::core::default::Default>::default();
+                let mut __f_max_input_bytes = false;
+                let mut __f_max_output_bytes = false;
+                #[allow(clippy::never_loop)]
+                while let ::core::option::Option::Some(key) = map
+                    .next_key::<::buffa::alloc::string::String>()?
+                {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    if key.as_str() == ::buffa::json_helpers::SERDE_JSON_NUMBER_KEY {
+                        return ::core::result::Result::Err(
+                            <__A::Error as ::serde::de::Error>::invalid_type(
+                                ::serde::de::Unexpected::Other("number"),
+                                &self,
+                            ),
+                        );
+                    }
+                    match key.as_str() {
+                        "maxInputBytes" | "max_input_bytes" => {
+                            if __f_max_input_bytes {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "max_input_bytes",
+                                    ),
+                                );
+                            }
+                            __f_max_input_bytes = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<u64>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<u64>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_uint64::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(
+                                &mut __r.max_input_bytes,
+                            );
+                            __r.max_input_bytes = value;
+                        }
+                        "maxOutputBytes" | "max_output_bytes" => {
+                            if __f_max_output_bytes {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "max_output_bytes",
+                                    ),
+                                );
+                            }
+                            __f_max_output_bytes = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<u64>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<u64>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_uint64::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(
+                                &mut __r.max_output_bytes,
+                            );
+                            __r.max_output_bytes = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                ::core::result::Result::Ok(__r)
+            }
+            ::buffa::json_helpers::reject_other_json_kinds!(
+                bool, i64, u64, i128, u128, f64, str, string, bytes, byte_buf, unit, seq
+            );
+        }
+        if d.is_human_readable() { d.deserialize_any(_V) } else { d.deserialize_map(_V) }
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportComposeBudgets {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWS_TRANSPORT_COMPOSE_BUDGETS_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeBudgets",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwsTransportComposeBudgets>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwsTransportComposeBudgets>,
+    is_wkt: false,
+};
+/// Exactly two separators are required. The original input is never decoded.
+/// Rust adapter: jws/transport/frame.rs#frame_compact_jws_unauthenticated
+/// Rust view: jws/transport/frame.rs#FrameCompactJwsRequest
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwsTransportFrameRequest {
+    /// SENSITIVE: encoded claims or other caller-owned transport data.
+    ///
+    /// Field 1: `compact`
+    #[serde(
+        rename = "compact",
+        with = "::buffa::json_helpers::string_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    #[serde(default)]
+    pub compact: crate::SecretString,
+    /// Field 2: `policy`
+    #[serde(
+        rename = "policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    #[serde(default)]
+    pub policy: ::buffa::MessageField<
+        JoseJwsTransportPolicy,
+        ::buffa::Inline<JoseJwsTransportPolicy>,
+    >,
+    /// Field 3: `budgets`
+    #[serde(
+        rename = "budgets",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    #[serde(default)]
+    pub budgets: ::buffa::MessageField<
+        JoseJwsTransportFrameBudgets,
+        ::buffa::Inline<JoseJwsTransportFrameBudgets>,
+    >,
+}
+impl ::core::fmt::Debug for JoseJwsTransportFrameRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportFrameRequest")
+            .field("compact", &::core::format_args!("[REDACTED]"))
+            .field("policy", &::core::format_args!("[REDACTED]"))
+            .field("budgets", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwsTransportFrameRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameRequest";
+}
+impl JoseJwsTransportFrameRequest {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::compact`] to `value`, consuming and returning `self`.
+    pub fn with_compact(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.compact);
+        self.compact = value.into();
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::policy`] to `value`, consuming and returning `self`.
+    pub fn with_policy(
+        mut self,
+        value: impl ::core::convert::Into<
+            ::buffa::MessageField<
+                JoseJwsTransportPolicy,
+                ::buffa::Inline<JoseJwsTransportPolicy>,
+            >,
+        >,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.policy);
+        self.policy = value.into();
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::budgets`] to `value`, consuming and returning `self`.
+    pub fn with_budgets(
+        mut self,
+        value: impl ::core::convert::Into<
+            ::buffa::MessageField<
+                JoseJwsTransportFrameBudgets,
+                ::buffa::Inline<JoseJwsTransportFrameBudgets>,
+            >,
+        >,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.budgets);
+        self.budgets = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<JoseJwsTransportPolicy>();
+    __requires_wipe_owner::<JoseJwsTransportFrameBudgets>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportFrameRequest {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.compact);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.policy);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.budgets);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportFrameRequest {}
+impl ::core::ops::Drop for JoseJwsTransportFrameRequest {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwsTransportFrameRequest);
+impl ::buffa::MessageName for JoseJwsTransportFrameRequest {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportFrameRequest";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportFrameRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameRequest";
+}
+impl ::buffa::Message for JoseJwsTransportFrameRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.compact.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.compact) as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.policy.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.budgets.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.compact.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.compact, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.policy.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                2u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.budgets.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                3u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.compact = ::buffa::types::decode_string_to_ctx(buf, ctx)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.policy.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.budgets.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.compact = ::core::default::Default::default();
+        self.policy = ::buffa::MessageField::none();
+        self.budgets = ::buffa::MessageField::none();
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportFrameRequest {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwsTransportFrameRequest;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwsTransportFrameRequest")
+            }
+            fn visit_none<__E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJwsTransportFrameRequest, __E> {
+                ::serde::de::Visitor::visit_map(
+                    self,
+                    ::serde::de::value::MapDeserializer::<
+                        _,
+                        __E,
+                    >::new(
+                        ::core::iter::empty::<
+                            (::core::primitive::u8, ::core::primitive::u8),
+                        >(),
+                    ),
+                )
+            }
+            fn visit_enum<__A: ::serde::de::EnumAccess<'de>>(
+                self,
+                tagged: __A,
+            ) -> ::core::result::Result<Self::Value, __A::Error> {
+                ::buffa::json_helpers::deserialize_tagged(self, tagged)
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwsTransportFrameRequest, __A::Error> {
+                #[allow(unused_mut)]
+                let mut __r = <JoseJwsTransportFrameRequest as ::core::default::Default>::default();
+                let mut __f_compact = false;
+                let mut __f_policy = false;
+                let mut __f_budgets = false;
+                #[allow(clippy::never_loop)]
+                while let ::core::option::Option::Some(key) = map
+                    .next_key::<::buffa::alloc::string::String>()?
+                {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    if key.as_str() == ::buffa::json_helpers::SERDE_JSON_NUMBER_KEY {
+                        return ::core::result::Result::Err(
+                            <__A::Error as ::serde::de::Error>::invalid_type(
+                                ::serde::de::Unexpected::Other("number"),
+                                &self,
+                            ),
+                        );
+                    }
+                    match key.as_str() {
+                        "compact" => {
+                            if __f_compact {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "compact",
+                                    ),
+                                );
+                            }
+                            __f_compact = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretString;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretString,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.compact);
+                            __r.compact = value;
+                        }
+                        "policy" => {
+                            if __f_policy {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "policy",
+                                    ),
+                                );
+                            }
+                            __f_policy = true;
+                            let value = map
+                                .next_value::<
+                                    ::buffa::MessageField<
+                                        JoseJwsTransportPolicy,
+                                        ::buffa::Inline<JoseJwsTransportPolicy>,
+                                    >,
+                                >()?;
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.policy);
+                            __r.policy = value;
+                        }
+                        "budgets" => {
+                            if __f_budgets {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "budgets",
+                                    ),
+                                );
+                            }
+                            __f_budgets = true;
+                            let value = map
+                                .next_value::<
+                                    ::buffa::MessageField<
+                                        JoseJwsTransportFrameBudgets,
+                                        ::buffa::Inline<JoseJwsTransportFrameBudgets>,
+                                    >,
+                                >()?;
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.budgets);
+                            __r.budgets = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                ::core::result::Result::Ok(__r)
+            }
+            ::buffa::json_helpers::reject_other_json_kinds!(
+                bool, i64, u64, i128, u128, f64, str, string, bytes, byte_buf, unit, seq
+            );
+        }
+        if d.is_human_readable() { d.deserialize_any(_V) } else { d.deserialize_map(_V) }
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportFrameRequest {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWS_TRANSPORT_FRAME_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameRequest",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwsTransportFrameRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwsTransportFrameRequest>,
+    is_wkt: false,
+};
+/// Byte offsets into the original UTF-8 compact string, never an authenticated
+/// receipt. Header is \[0, protected_header_end), payload starts one byte later
+/// and ends at payload_end; signature starts at signature_start and continues
+/// to input end. Signing input is \[0, payload_end). Offsets borrow no ownership.
+/// Rust view: jws/transport/frame.rs#UnauthenticatedCompactJwsView
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwsTransportFrameResult {
+    /// Field 1: `protected_header_end`
+    #[serde(
+        rename = "protectedHeaderEnd",
+        alias = "protected_header_end",
+        with = "::buffa::json_helpers::uint64",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_u64"
+    )]
+    #[serde(default)]
+    pub protected_header_end: u64,
+    /// Field 2: `payload_end`
+    #[serde(
+        rename = "payloadEnd",
+        alias = "payload_end",
+        with = "::buffa::json_helpers::uint64",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_u64"
+    )]
+    #[serde(default)]
+    pub payload_end: u64,
+    /// Field 3: `signature_start`
+    #[serde(
+        rename = "signatureStart",
+        alias = "signature_start",
+        with = "::buffa::json_helpers::uint64",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_zero_u64"
+    )]
+    #[serde(default)]
+    pub signature_start: u64,
+}
+impl ::core::fmt::Debug for JoseJwsTransportFrameResult {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportFrameResult")
+            .field("protected_header_end", &::core::format_args!("[REDACTED]"))
+            .field("payload_end", &::core::format_args!("[REDACTED]"))
+            .field("signature_start", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwsTransportFrameResult {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameResult";
+}
+impl JoseJwsTransportFrameResult {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::protected_header_end`] to `value`, consuming and returning `self`.
+    pub fn with_protected_header_end(mut self, value: u64) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.protected_header_end);
+        self.protected_header_end = value;
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::payload_end`] to `value`, consuming and returning `self`.
+    pub fn with_payload_end(mut self, value: u64) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.payload_end);
+        self.payload_end = value;
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::signature_start`] to `value`, consuming and returning `self`.
+    pub fn with_signature_start(mut self, value: u64) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.signature_start);
+        self.signature_start = value;
+        self
+    }
+}
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportFrameResult {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.protected_header_end);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.payload_end);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.signature_start);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportFrameResult {}
+impl ::core::ops::Drop for JoseJwsTransportFrameResult {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwsTransportFrameResult);
+impl ::buffa::MessageName for JoseJwsTransportFrameResult {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportFrameResult";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportFrameResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameResult";
+}
+impl ::buffa::Message for JoseJwsTransportFrameResult {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if self.protected_header_end != 0u64 {
+            size
+                += 1u64
+                    + ::buffa::types::uint64_encoded_len(self.protected_header_end)
+                        as u64;
+        }
+        if self.payload_end != 0u64 {
+            size += 1u64 + ::buffa::types::uint64_encoded_len(self.payload_end) as u64;
+        }
+        if self.signature_start != 0u64 {
+            size
+                += 1u64
+                    + ::buffa::types::uint64_encoded_len(self.signature_start) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if self.protected_header_end != 0u64 {
+            ::buffa::types::put_uint64_field(1u32, self.protected_header_end, buf);
+        }
+        if self.payload_end != 0u64 {
+            ::buffa::types::put_uint64_field(2u32, self.payload_end, buf);
+        }
+        if self.signature_start != 0u64 {
+            ::buffa::types::put_uint64_field(3u32, self.signature_start, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.protected_header_end = ::buffa::types::decode_uint64(buf)?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.payload_end = ::buffa::types::decode_uint64(buf)?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.signature_start = ::buffa::types::decode_uint64(buf)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.protected_header_end = 0u64;
+        self.payload_end = 0u64;
+        self.signature_start = 0u64;
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportFrameResult {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwsTransportFrameResult;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwsTransportFrameResult")
+            }
+            fn visit_none<__E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJwsTransportFrameResult, __E> {
+                ::serde::de::Visitor::visit_map(
+                    self,
+                    ::serde::de::value::MapDeserializer::<
+                        _,
+                        __E,
+                    >::new(
+                        ::core::iter::empty::<
+                            (::core::primitive::u8, ::core::primitive::u8),
+                        >(),
+                    ),
+                )
+            }
+            fn visit_enum<__A: ::serde::de::EnumAccess<'de>>(
+                self,
+                tagged: __A,
+            ) -> ::core::result::Result<Self::Value, __A::Error> {
+                ::buffa::json_helpers::deserialize_tagged(self, tagged)
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwsTransportFrameResult, __A::Error> {
+                #[allow(unused_mut)]
+                let mut __r = <JoseJwsTransportFrameResult as ::core::default::Default>::default();
+                let mut __f_protected_header_end = false;
+                let mut __f_payload_end = false;
+                let mut __f_signature_start = false;
+                #[allow(clippy::never_loop)]
+                while let ::core::option::Option::Some(key) = map
+                    .next_key::<::buffa::alloc::string::String>()?
+                {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    if key.as_str() == ::buffa::json_helpers::SERDE_JSON_NUMBER_KEY {
+                        return ::core::result::Result::Err(
+                            <__A::Error as ::serde::de::Error>::invalid_type(
+                                ::serde::de::Unexpected::Other("number"),
+                                &self,
+                            ),
+                        );
+                    }
+                    match key.as_str() {
+                        "protectedHeaderEnd" | "protected_header_end" => {
+                            if __f_protected_header_end {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "protected_header_end",
+                                    ),
+                                );
+                            }
+                            __f_protected_header_end = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = u64;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<u64, __D::Error> {
+                                        ::buffa::json_helpers::uint64::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(
+                                &mut __r.protected_header_end,
+                            );
+                            __r.protected_header_end = value;
+                        }
+                        "payloadEnd" | "payload_end" => {
+                            if __f_payload_end {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "payload_end",
+                                    ),
+                                );
+                            }
+                            __f_payload_end = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = u64;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<u64, __D::Error> {
+                                        ::buffa::json_helpers::uint64::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.payload_end);
+                            __r.payload_end = value;
+                        }
+                        "signatureStart" | "signature_start" => {
+                            if __f_signature_start {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "signature_start",
+                                    ),
+                                );
+                            }
+                            __f_signature_start = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = u64;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<u64, __D::Error> {
+                                        ::buffa::json_helpers::uint64::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(
+                                &mut __r.signature_start,
+                            );
+                            __r.signature_start = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                ::core::result::Result::Ok(__r)
+            }
+            ::buffa::json_helpers::reject_other_json_kinds!(
+                bool, i64, u64, i128, u128, f64, str, string, bytes, byte_buf, unit, seq
+            );
+        }
+        if d.is_human_readable() { d.deserialize_any(_V) } else { d.deserialize_map(_V) }
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportFrameResult {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWS_TRANSPORT_FRAME_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameResult",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwsTransportFrameResult>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwsTransportFrameResult>,
+    is_wkt: false,
+};
+/// Join supplied member strings verbatim with two inserted dots. Member text
+/// can itself contain dots when the selected character policy permits them;
+/// the result may therefore fail subsequent framing or strict JOSE inspection.
+/// JSON object parsing and application-profile policy remain caller-owned.
+/// Rust adapter: jws/transport/compose.rs#compose_compact_jws_unauthenticated
+/// Rust view: jws/transport/compose.rs#ComposeCompactJwsRequest
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwsTransportComposeRequest {
+    /// SENSITIVE: original member text; absence differs from an admitted empty value.
+    ///
+    /// Field 1: `protected_header`
+    #[serde(
+        rename = "protectedHeader",
+        alias = "protected_header",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub protected_header: ::core::option::Option<crate::SecretString>,
+    /// SENSITIVE: encoded or opaque payload text; never decoded by transport.
+    ///
+    /// Field 2: `payload`
+    #[serde(
+        rename = "payload",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub payload: ::core::option::Option<crate::SecretString>,
+    /// SENSITIVE: original signature text; no cryptographic assertion is made.
+    ///
+    /// Field 3: `signature`
+    #[serde(
+        rename = "signature",
+        with = "::buffa::json_helpers::opt_string_policy",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    #[serde(default)]
+    pub signature: ::core::option::Option<crate::SecretString>,
+    /// Field 4: `policy`
+    #[serde(
+        rename = "policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    #[serde(default)]
+    pub policy: ::buffa::MessageField<
+        JoseJwsTransportPolicy,
+        ::buffa::Inline<JoseJwsTransportPolicy>,
+    >,
+    /// Field 5: `budgets`
+    #[serde(
+        rename = "budgets",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
+    )]
+    #[serde(default)]
+    pub budgets: ::buffa::MessageField<
+        JoseJwsTransportComposeBudgets,
+        ::buffa::Inline<JoseJwsTransportComposeBudgets>,
+    >,
+}
+impl ::core::fmt::Debug for JoseJwsTransportComposeRequest {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportComposeRequest")
+            .field("protected_header", &::core::format_args!("[REDACTED]"))
+            .field("payload", &::core::format_args!("[REDACTED]"))
+            .field("signature", &::core::format_args!("[REDACTED]"))
+            .field("policy", &::core::format_args!("[REDACTED]"))
+            .field("budgets", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwsTransportComposeRequest {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeRequest";
+}
+impl JoseJwsTransportComposeRequest {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::protected_header`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_protected_header(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.protected_header);
+        self.protected_header = ::core::option::Option::Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::payload`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_payload(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.payload);
+        self.payload = ::core::option::Option::Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::signature`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_signature(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.signature);
+        self.signature = ::core::option::Option::Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::policy`] to `value`, consuming and returning `self`.
+    pub fn with_policy(
+        mut self,
+        value: impl ::core::convert::Into<
+            ::buffa::MessageField<
+                JoseJwsTransportPolicy,
+                ::buffa::Inline<JoseJwsTransportPolicy>,
+            >,
+        >,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.policy);
+        self.policy = value.into();
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::budgets`] to `value`, consuming and returning `self`.
+    pub fn with_budgets(
+        mut self,
+        value: impl ::core::convert::Into<
+            ::buffa::MessageField<
+                JoseJwsTransportComposeBudgets,
+                ::buffa::Inline<JoseJwsTransportComposeBudgets>,
+            >,
+        >,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.budgets);
+        self.budgets = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<crate::SecretString>();
+    __requires_wipe_owner::<JoseJwsTransportPolicy>();
+    __requires_wipe_owner::<JoseJwsTransportComposeBudgets>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportComposeRequest {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.protected_header);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.payload);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.signature);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.policy);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.budgets);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportComposeRequest {}
+impl ::core::ops::Drop for JoseJwsTransportComposeRequest {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwsTransportComposeRequest);
+impl ::buffa::MessageName for JoseJwsTransportComposeRequest {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportComposeRequest";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportComposeRequest";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeRequest";
+}
+impl ::buffa::Message for JoseJwsTransportComposeRequest {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.protected_header {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let ::core::option::Option::Some(ref v) = self.payload {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let ::core::option::Option::Some(ref v) = self.signature {
+            size += 1u64 + ::buffa::types::string_encoded_len(v) as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.policy.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        if let ::core::option::Option::Some(__v) = self.budgets.as_option() {
+            let __slot = __cache.reserve();
+            let inner_size = __v.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u64 + ::buffa::encoding::varint_len(inner_size as u64) as u64
+                    + inner_size as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.protected_header {
+            ::buffa::types::put_string_field(1u32, v, buf);
+        }
+        if let ::core::option::Option::Some(ref v) = self.payload {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        if let ::core::option::Option::Some(ref v) = self.signature {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.policy.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                4u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+        if let ::core::option::Option::Some(__v) = self.budgets.as_option() {
+            ::buffa::types::put_len_delimited_header(
+                5u32,
+                u64::from(__cache.consume_next()),
+                buf,
+            );
+            __v.write_to(__cache, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.protected_header = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to_ctx(buf, ctx)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.payload = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to_ctx(buf, ctx)?,
+                );
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.signature = ::core::option::Option::Some(
+                    ::buffa::types::decode_string_to_ctx(buf, ctx)?,
+                );
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.policy.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::Message::merge_length_delimited(
+                    self.budgets.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.protected_header = ::core::option::Option::None;
+        self.payload = ::core::option::Option::None;
+        self.signature = ::core::option::Option::None;
+        self.policy = ::buffa::MessageField::none();
+        self.budgets = ::buffa::MessageField::none();
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportComposeRequest {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwsTransportComposeRequest;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwsTransportComposeRequest")
+            }
+            fn visit_none<__E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJwsTransportComposeRequest, __E> {
+                ::serde::de::Visitor::visit_map(
+                    self,
+                    ::serde::de::value::MapDeserializer::<
+                        _,
+                        __E,
+                    >::new(
+                        ::core::iter::empty::<
+                            (::core::primitive::u8, ::core::primitive::u8),
+                        >(),
+                    ),
+                )
+            }
+            fn visit_enum<__A: ::serde::de::EnumAccess<'de>>(
+                self,
+                tagged: __A,
+            ) -> ::core::result::Result<Self::Value, __A::Error> {
+                ::buffa::json_helpers::deserialize_tagged(self, tagged)
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwsTransportComposeRequest, __A::Error> {
+                #[allow(unused_mut)]
+                let mut __r = <JoseJwsTransportComposeRequest as ::core::default::Default>::default();
+                let mut __f_protected_header = false;
+                let mut __f_payload = false;
+                let mut __f_signature = false;
+                let mut __f_policy = false;
+                let mut __f_budgets = false;
+                #[allow(clippy::never_loop)]
+                while let ::core::option::Option::Some(key) = map
+                    .next_key::<::buffa::alloc::string::String>()?
+                {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    if key.as_str() == ::buffa::json_helpers::SERDE_JSON_NUMBER_KEY {
+                        return ::core::result::Result::Err(
+                            <__A::Error as ::serde::de::Error>::invalid_type(
+                                ::serde::de::Unexpected::Other("number"),
+                                &self,
+                            ),
+                        );
+                    }
+                    match key.as_str() {
+                        "protectedHeader" | "protected_header" => {
+                            if __f_protected_header {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "protected_header",
+                                    ),
+                                );
+                            }
+                            __f_protected_header = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(
+                                &mut __r.protected_header,
+                            );
+                            __r.protected_header = value;
+                        }
+                        "payload" => {
+                            if __f_payload {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "payload",
+                                    ),
+                                );
+                            }
+                            __f_payload = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.payload);
+                            __r.payload = value;
+                        }
+                        "signature" => {
+                            if __f_signature {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "signature",
+                                    ),
+                                );
+                            }
+                            __f_signature = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::core::option::Option<crate::SecretString>;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::core::option::Option<crate::SecretString>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::opt_string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.signature);
+                            __r.signature = value;
+                        }
+                        "policy" => {
+                            if __f_policy {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "policy",
+                                    ),
+                                );
+                            }
+                            __f_policy = true;
+                            let value = map
+                                .next_value::<
+                                    ::buffa::MessageField<
+                                        JoseJwsTransportPolicy,
+                                        ::buffa::Inline<JoseJwsTransportPolicy>,
+                                    >,
+                                >()?;
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.policy);
+                            __r.policy = value;
+                        }
+                        "budgets" => {
+                            if __f_budgets {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "budgets",
+                                    ),
+                                );
+                            }
+                            __f_budgets = true;
+                            let value = map
+                                .next_value::<
+                                    ::buffa::MessageField<
+                                        JoseJwsTransportComposeBudgets,
+                                        ::buffa::Inline<JoseJwsTransportComposeBudgets>,
+                                    >,
+                                >()?;
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.budgets);
+                            __r.budgets = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                ::core::result::Result::Ok(__r)
+            }
+            ::buffa::json_helpers::reject_other_json_kinds!(
+                bool, i64, u64, i128, u128, f64, str, string, bytes, byte_buf, unit, seq
+            );
+        }
+        if d.is_human_readable() { d.deserialize_any(_V) } else { d.deserialize_map(_V) }
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportComposeRequest {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWS_TRANSPORT_COMPOSE_REQUEST_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeRequest",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwsTransportComposeRequest>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwsTransportComposeRequest>,
+    is_wkt: false,
+};
+/// Rust view: jws/transport/compose.rs#UnauthenticatedCompactJws
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwsTransportCompactResult {
+    /// SENSITIVE: exact forwarded members, with no authentication implication.
+    ///
+    /// Field 1: `compact`
+    #[serde(
+        rename = "compact",
+        with = "::buffa::json_helpers::string_policy",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_str"
+    )]
+    #[serde(default)]
+    pub compact: crate::SecretString,
+}
+impl ::core::fmt::Debug for JoseJwsTransportCompactResult {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportCompactResult")
+            .field("compact", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwsTransportCompactResult {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportCompactResult";
+}
+impl JoseJwsTransportCompactResult {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::compact`] to `value`, consuming and returning `self`.
+    pub fn with_compact(
+        mut self,
+        value: impl ::core::convert::Into<crate::SecretString>,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.compact);
+        self.compact = value.into();
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<crate::SecretString>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportCompactResult {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.compact);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportCompactResult {}
+impl ::core::ops::Drop for JoseJwsTransportCompactResult {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwsTransportCompactResult);
+impl ::buffa::MessageName for JoseJwsTransportCompactResult {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportCompactResult";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportCompactResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportCompactResult";
+}
+impl ::buffa::Message for JoseJwsTransportCompactResult {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if !self.compact.is_empty() {
+            size += 1u64 + ::buffa::types::string_encoded_len(&self.compact) as u64;
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if !self.compact.is_empty() {
+            ::buffa::types::put_string_field(1u32, &self.compact, buf);
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.compact = ::buffa::types::decode_string_to_ctx(buf, ctx)?;
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.compact = ::core::default::Default::default();
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportCompactResult {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwsTransportCompactResult;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwsTransportCompactResult")
+            }
+            fn visit_none<__E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJwsTransportCompactResult, __E> {
+                ::serde::de::Visitor::visit_map(
+                    self,
+                    ::serde::de::value::MapDeserializer::<
+                        _,
+                        __E,
+                    >::new(
+                        ::core::iter::empty::<
+                            (::core::primitive::u8, ::core::primitive::u8),
+                        >(),
+                    ),
+                )
+            }
+            fn visit_enum<__A: ::serde::de::EnumAccess<'de>>(
+                self,
+                tagged: __A,
+            ) -> ::core::result::Result<Self::Value, __A::Error> {
+                ::buffa::json_helpers::deserialize_tagged(self, tagged)
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwsTransportCompactResult, __A::Error> {
+                #[allow(unused_mut)]
+                let mut __r = <JoseJwsTransportCompactResult as ::core::default::Default>::default();
+                let mut __f_compact = false;
+                #[allow(clippy::never_loop)]
+                while let ::core::option::Option::Some(key) = map
+                    .next_key::<::buffa::alloc::string::String>()?
+                {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    if key.as_str() == ::buffa::json_helpers::SERDE_JSON_NUMBER_KEY {
+                        return ::core::result::Result::Err(
+                            <__A::Error as ::serde::de::Error>::invalid_type(
+                                ::serde::de::Unexpected::Other("number"),
+                                &self,
+                            ),
+                        );
+                    }
+                    match key.as_str() {
+                        "compact" => {
+                            if __f_compact {
+                                return ::core::result::Result::Err(
+                                    <__A::Error as ::serde::de::Error>::duplicate_field(
+                                        "compact",
+                                    ),
+                                );
+                            }
+                            __f_compact = true;
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = crate::SecretString;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        crate::SecretString,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::string_policy::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(&mut __r.compact);
+                            __r.compact = value;
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                ::core::result::Result::Ok(__r)
+            }
+            ::buffa::json_helpers::reject_other_json_kinds!(
+                bool, i64, u64, i128, u128, f64, str, string, bytes, byte_buf, unit, seq
+            );
+        }
+        if d.is_human_readable() { d.deserialize_any(_V) } else { d.deserialize_map(_V) }
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportCompactResult {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWS_TRANSPORT_COMPACT_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportCompactResult",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwsTransportCompactResult>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwsTransportCompactResult>,
+    is_wkt: false,
+};
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwsTransportFrameResponse {
+    /// UNSPECIFIED on success or an envelope/backend failure; otherwise this
+    /// operation-local reason must project exactly to the JoseError stack code.
+    ///
+    /// Field 3: `transport_reason`
+    #[serde(
+        rename = "transportReason",
+        alias = "transport_reason",
+        with = "::buffa::json_helpers::guarded_enum::open",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    #[serde(default)]
+    pub transport_reason: ::buffa::EnumValue<JoseJwsTransportErrorReason>,
+    #[serde(flatten)]
+    pub outcome: ::core::option::Option<
+        __buffa::oneof::jose_jws_transport_frame_response::Outcome,
+    >,
+}
+impl ::core::fmt::Debug for JoseJwsTransportFrameResponse {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportFrameResponse")
+            .field("transport_reason", &::core::format_args!("[REDACTED]"))
+            .field("outcome", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwsTransportFrameResponse {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameResponse";
+}
+impl JoseJwsTransportFrameResponse {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::transport_reason`] to `value`, consuming and returning `self`.
+    pub fn with_transport_reason(
+        mut self,
+        value: impl ::core::convert::Into<
+            ::buffa::EnumValue<JoseJwsTransportErrorReason>,
+        >,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.transport_reason);
+        self.transport_reason = value.into();
+        self
+    }
+    /// Sets this oneof, wiping an earlier value before replacement.
+    #[must_use]
+    pub fn with_outcome(
+        mut self,
+        value: __buffa::oneof::jose_jws_transport_frame_response::Outcome,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.outcome);
+        self.outcome = ::core::option::Option::Some(value);
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<JoseJwsTransportFrameResult>();
+    __requires_wipe_owner::<JoseError>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportFrameResponse {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.transport_reason);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.outcome);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportFrameResponse {}
+impl ::core::ops::Drop for JoseJwsTransportFrameResponse {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwsTransportFrameResponse);
+impl ::buffa::MessageName for JoseJwsTransportFrameResponse {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportFrameResponse";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportFrameResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameResponse";
+}
+impl ::buffa::Message for JoseJwsTransportFrameResponse {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                __buffa::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::jose_jws_transport_frame_response::Outcome::Error(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        {
+            let val = self.transport_reason.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                __buffa::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_jws_transport_frame_response::Outcome::Error(x) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+        {
+            let val = self.transport_reason.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(3u32, val, buf);
+            }
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                        ref mut existing,
+                    ),
+                ) = self.outcome
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.outcome = ::core::option::Option::Some(
+                        __buffa::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_jws_transport_frame_response::Outcome::Error(
+                        ref mut existing,
+                    ),
+                ) = self.outcome
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.outcome = ::core::option::Option::Some(
+                        __buffa::oneof::jose_jws_transport_frame_response::Outcome::Error(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.transport_reason = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.outcome = ::core::option::Option::None;
+        self.transport_reason = ::buffa::EnumValue::from(0);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportFrameResponse {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwsTransportFrameResponse;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwsTransportFrameResponse")
+            }
+            fn visit_none<__E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJwsTransportFrameResponse, __E> {
+                ::serde::de::Visitor::visit_map(
+                    self,
+                    ::serde::de::value::MapDeserializer::<
+                        _,
+                        __E,
+                    >::new(
+                        ::core::iter::empty::<
+                            (::core::primitive::u8, ::core::primitive::u8),
+                        >(),
+                    ),
+                )
+            }
+            fn visit_enum<__A: ::serde::de::EnumAccess<'de>>(
+                self,
+                tagged: __A,
+            ) -> ::core::result::Result<Self::Value, __A::Error> {
+                ::buffa::json_helpers::deserialize_tagged(self, tagged)
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwsTransportFrameResponse, __A::Error> {
+                #[allow(unused_mut)]
+                let mut __r = <JoseJwsTransportFrameResponse as ::core::default::Default>::default();
+                #[allow(clippy::never_loop)]
+                while let ::core::option::Option::Some(key) = map
+                    .next_key::<::buffa::alloc::string::String>()?
+                {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    if key.as_str() == ::buffa::json_helpers::SERDE_JSON_NUMBER_KEY {
+                        return ::core::result::Result::Err(
+                            <__A::Error as ::serde::de::Error>::invalid_type(
+                                ::serde::de::Unexpected::Other("number"),
+                                &self,
+                            ),
+                        );
+                    }
+                    match key.as_str() {
+                        "transportReason" | "transport_reason" => {
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::buffa::EnumValue<
+                                        JoseJwsTransportErrorReason,
+                                    >;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::buffa::EnumValue<JoseJwsTransportErrorReason>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::guarded_enum::open::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(
+                                &mut __r.transport_reason,
+                            );
+                            __r.transport_reason = value;
+                        }
+                        "result" => {
+                            let v: ::core::option::Option<JoseJwsTransportFrameResult> = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwsTransportFrameResult,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_jws_transport_frame_response::Outcome::Result(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.outcome.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'outcome'",
+                                        ),
+                                    );
+                                }
+                                __r.outcome = Some(__variant);
+                            }
+                        }
+                        "error" => {
+                            let v: ::core::option::Option<JoseError> = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseError,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_jws_transport_frame_response::Outcome::Error(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.outcome.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'outcome'",
+                                        ),
+                                    );
+                                }
+                                __r.outcome = Some(__variant);
+                            }
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                ::core::result::Result::Ok(__r)
+            }
+            ::buffa::json_helpers::reject_other_json_kinds!(
+                bool, i64, u64, i128, u128, f64, str, string, bytes, byte_buf, unit, seq
+            );
+        }
+        if d.is_human_readable() { d.deserialize_any(_V) } else { d.deserialize_map(_V) }
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportFrameResponse {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWS_TRANSPORT_FRAME_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportFrameResponse",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwsTransportFrameResponse>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwsTransportFrameResponse>,
+    is_wkt: false,
+};
+pub mod jose_jws_transport_frame_response {
+    #[allow(unused_imports)]
+    use super::*;
+    #[doc(inline)]
+    pub use super::__buffa::oneof::jose_jws_transport_frame_response::Outcome;
+    #[doc(inline)]
+    pub use super::__buffa::view::oneof::jose_jws_transport_frame_response::Outcome as OutcomeView;
+}
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize)]
+pub struct JoseJwsTransportComposeResponse {
+    /// UNSPECIFIED on success or an envelope/backend failure; otherwise this
+    /// operation-local reason must project exactly to the JoseError stack code.
+    ///
+    /// Field 3: `transport_reason`
+    #[serde(
+        rename = "transportReason",
+        alias = "transport_reason",
+        with = "::buffa::json_helpers::guarded_enum::open",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_default_enum_value"
+    )]
+    #[serde(default)]
+    pub transport_reason: ::buffa::EnumValue<JoseJwsTransportErrorReason>,
+    #[serde(flatten)]
+    pub outcome: ::core::option::Option<
+        __buffa::oneof::jose_jws_transport_compose_response::Outcome,
+    >,
+}
+impl ::core::fmt::Debug for JoseJwsTransportComposeResponse {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("JoseJwsTransportComposeResponse")
+            .field("transport_reason", &::core::format_args!("[REDACTED]"))
+            .field("outcome", &::core::format_args!("[REDACTED]"))
+            .finish()
+    }
+}
+impl JoseJwsTransportComposeResponse {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeResponse";
+}
+impl JoseJwsTransportComposeResponse {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::transport_reason`] to `value`, consuming and returning `self`.
+    pub fn with_transport_reason(
+        mut self,
+        value: impl ::core::convert::Into<
+            ::buffa::EnumValue<JoseJwsTransportErrorReason>,
+        >,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.transport_reason);
+        self.transport_reason = value.into();
+        self
+    }
+    /// Sets this oneof, wiping an earlier value before replacement.
+    #[must_use]
+    pub fn with_outcome(
+        mut self,
+        value: __buffa::oneof::jose_jws_transport_compose_response::Outcome,
+    ) -> Self {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.outcome);
+        self.outcome = ::core::option::Option::Some(value);
+        self
+    }
+}
+const _: fn() = || {
+    fn __requires_wipe_owner<
+        T: ::buffa::sensitive::Zeroize + ::buffa::sensitive::ZeroizeOnDrop,
+    >() {}
+    __requires_wipe_owner::<JoseJwsTransportCompactResult>();
+    __requires_wipe_owner::<JoseError>();
+};
+impl ::buffa::sensitive::Zeroize for JoseJwsTransportComposeResponse {
+    fn zeroize(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.transport_reason);
+        ::buffa::sensitive::Zeroize::zeroize(&mut self.outcome);
+    }
+}
+impl ::buffa::sensitive::ZeroizeOnDrop for JoseJwsTransportComposeResponse {}
+impl ::core::ops::Drop for JoseJwsTransportComposeResponse {
+    fn drop(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+    }
+}
+::buffa::impl_default_instance!(JoseJwsTransportComposeResponse);
+impl ::buffa::MessageName for JoseJwsTransportComposeResponse {
+    const PACKAGE: &'static str = "reallyme.jose.v1";
+    const NAME: &'static str = "JoseJwsTransportComposeResponse";
+    const FULL_NAME: &'static str = "reallyme.jose.v1.JoseJwsTransportComposeResponse";
+    const TYPE_URL: &'static str = "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeResponse";
+}
+impl ::buffa::Message for JoseJwsTransportComposeResponse {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// Accumulates in `u64` (which cannot overflow for in-memory
+    /// data) and saturates to `u32` at return, so a message whose
+    /// encoded size exceeds the 2 GiB protobuf limit yields a value
+    /// above [`::buffa::MAX_MESSAGE_BYTES`] that the encode entry
+    /// points reject, never a silently wrapped size.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u64;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                __buffa::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 1u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+            }
+        }
+        {
+            let val = self.transport_reason.to_i32();
+            if val != 0 {
+                size += 1u64 + ::buffa::types::int32_encoded_len(val) as u64;
+            }
+        }
+        ::buffa::saturate_size(size)
+    }
+    fn write_to(
+        &self,
+        __cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::EncodeSink,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let ::core::option::Option::Some(ref v) = self.outcome {
+            match v {
+                __buffa::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        2u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+            }
+        }
+        {
+            let val = self.transport_reason.to_i32();
+            if val != 0 {
+                ::buffa::types::put_int32_field(3u32, val, buf);
+            }
+        }
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                        ref mut existing,
+                    ),
+                ) = self.outcome
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.outcome = ::core::option::Option::Some(
+                        __buffa::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                        ref mut existing,
+                    ),
+                ) = self.outcome
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.outcome = ::core::option::Option::Some(
+                        __buffa::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.transport_reason = ::buffa::EnumValue::from(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            _ => {
+                ::buffa::encoding::skip_unknown_field(tag, buf, ctx)?;
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        ::buffa::sensitive::Zeroize::zeroize(self);
+        self.outcome = ::core::option::Option::None;
+        self.transport_reason = ::buffa::EnumValue::from(0);
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for JoseJwsTransportComposeResponse {
+    fn deserialize<__D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        struct _V;
+        impl<'de> ::serde::de::Visitor<'de> for _V {
+            type Value = JoseJwsTransportComposeResponse;
+            fn expecting(
+                &self,
+                f: &mut ::core::fmt::Formatter<'_>,
+            ) -> ::core::fmt::Result {
+                f.write_str("struct JoseJwsTransportComposeResponse")
+            }
+            fn visit_none<__E: ::serde::de::Error>(
+                self,
+            ) -> ::core::result::Result<JoseJwsTransportComposeResponse, __E> {
+                ::serde::de::Visitor::visit_map(
+                    self,
+                    ::serde::de::value::MapDeserializer::<
+                        _,
+                        __E,
+                    >::new(
+                        ::core::iter::empty::<
+                            (::core::primitive::u8, ::core::primitive::u8),
+                        >(),
+                    ),
+                )
+            }
+            fn visit_enum<__A: ::serde::de::EnumAccess<'de>>(
+                self,
+                tagged: __A,
+            ) -> ::core::result::Result<Self::Value, __A::Error> {
+                ::buffa::json_helpers::deserialize_tagged(self, tagged)
+            }
+            #[allow(clippy::field_reassign_with_default)]
+            fn visit_map<__A: ::serde::de::MapAccess<'de>>(
+                self,
+                mut map: __A,
+            ) -> ::core::result::Result<JoseJwsTransportComposeResponse, __A::Error> {
+                #[allow(unused_mut)]
+                let mut __r = <JoseJwsTransportComposeResponse as ::core::default::Default>::default();
+                #[allow(clippy::never_loop)]
+                while let ::core::option::Option::Some(key) = map
+                    .next_key::<::buffa::alloc::string::String>()?
+                {
+                    let key = ::buffa::sensitive::Zeroizing::new(key);
+                    if key.as_str() == ::buffa::json_helpers::SERDE_JSON_NUMBER_KEY {
+                        return ::core::result::Result::Err(
+                            <__A::Error as ::serde::de::Error>::invalid_type(
+                                ::serde::de::Unexpected::Other("number"),
+                                &self,
+                            ),
+                        );
+                    }
+                    match key.as_str() {
+                        "transportReason" | "transport_reason" => {
+                            let value = {
+                                struct _S;
+                                impl<'de> ::serde::de::DeserializeSeed<'de> for _S {
+                                    type Value = ::buffa::EnumValue<
+                                        JoseJwsTransportErrorReason,
+                                    >;
+                                    fn deserialize<__D: ::serde::Deserializer<'de>>(
+                                        self,
+                                        d: __D,
+                                    ) -> ::core::result::Result<
+                                        ::buffa::EnumValue<JoseJwsTransportErrorReason>,
+                                        __D::Error,
+                                    > {
+                                        ::buffa::json_helpers::guarded_enum::open::deserialize(d)
+                                    }
+                                }
+                                map.next_value_seed(_S)?
+                            };
+                            ::buffa::sensitive::Zeroize::zeroize(
+                                &mut __r.transport_reason,
+                            );
+                            __r.transport_reason = value;
+                        }
+                        "result" => {
+                            let v: ::core::option::Option<
+                                JoseJwsTransportCompactResult,
+                            > = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwsTransportCompactResult,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_jws_transport_compose_response::Outcome::Result(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.outcome.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'outcome'",
+                                        ),
+                                    );
+                                }
+                                __r.outcome = Some(__variant);
+                            }
+                        }
+                        "error" => {
+                            let v: ::core::option::Option<JoseError> = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseError,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_jws_transport_compose_response::Outcome::Error(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.outcome.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'outcome'",
+                                        ),
+                                    );
+                                }
+                                __r.outcome = Some(__variant);
+                            }
+                        }
+                        __unknown => {
+                            return ::core::result::Result::Err(
+                                <__A::Error as ::serde::de::Error>::custom(
+                                    ::buffa::sensitive::JsonErrorReason::UnknownField,
+                                ),
+                            );
+                        }
+                    }
+                }
+                ::core::result::Result::Ok(__r)
+            }
+            ::buffa::json_helpers::reject_other_json_kinds!(
+                bool, i64, u64, i128, u128, f64, str, string, bytes, byte_buf, unit, seq
+            );
+        }
+        if d.is_human_readable() { d.deserialize_any(_V) } else { d.deserialize_map(_V) }
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for JoseJwsTransportComposeResponse {
+    fn serialize_proto_json<__S: ::serde::Serializer>(
+        v: &Self,
+        s: __S,
+    ) -> ::core::result::Result<__S::Ok, __S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, __D: ::serde::Deserializer<'de>>(
+        d: __D,
+    ) -> ::core::result::Result<Self, __D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __JOSE_JWS_TRANSPORT_COMPOSE_RESPONSE_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/reallyme.jose.v1.JoseJwsTransportComposeResponse",
+    to_json: ::buffa::type_registry::any_to_json::<JoseJwsTransportComposeResponse>,
+    from_json: ::buffa::type_registry::any_from_json::<JoseJwsTransportComposeResponse>,
+    is_wkt: false,
+};
+pub mod jose_jws_transport_compose_response {
+    #[allow(unused_imports)]
+    use super::*;
+    #[doc(inline)]
+    pub use super::__buffa::oneof::jose_jws_transport_compose_response::Outcome;
+    #[doc(inline)]
+    pub use super::__buffa::view::oneof::jose_jws_transport_compose_response::Outcome as OutcomeView;
 }
 /// JoseError is the public, non-PII error envelope for JOSE boundary failures.
 /// The oneof keeps caller-owned input/primitive failures, provider availability
@@ -5525,6 +9893,8 @@ const _: fn() = || {
     __requires_wipe_owner::<JoseJwsSignResponse>();
     __requires_wipe_owner::<JoseJwsVerifyResponse>();
     __requires_wipe_owner::<JoseJwsInspectResponse>();
+    __requires_wipe_owner::<JoseJwsTransportFrameResponse>();
+    __requires_wipe_owner::<JoseJwsTransportComposeResponse>();
     __requires_wipe_owner::<JoseJwtSignWithProviderResponse>();
     __requires_wipe_owner::<JoseJwtClaimsParseResponse>();
     __requires_wipe_owner::<JoseJweDeriveKeyResponse>();
@@ -5698,6 +10068,26 @@ impl ::buffa::Message for JoseOperationResponse {
                             + inner as u64;
                 }
                 __buffa::oneof::jose_operation_response::Response::JwsInspect(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
+                    x,
+                ) => {
                     let __slot = __cache.reserve();
                     let inner = x.compute_size(__cache);
                     __cache.set(__slot, inner);
@@ -5915,6 +10305,26 @@ impl ::buffa::Message for JoseOperationResponse {
                 __buffa::oneof::jose_operation_response::Response::JwsInspect(x) => {
                     ::buffa::types::put_len_delimited_header(
                         1015u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1016u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1017u32,
                         u64::from(__cache.consume_next()),
                         buf,
                     );
@@ -6332,6 +10742,50 @@ impl ::buffa::Message for JoseOperationResponse {
                     ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
                     self.response = ::core::option::Option::Some(
                         __buffa::oneof::jose_operation_response::Response::JwsInspect(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            1016u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                        ref mut existing,
+                    ),
+                ) = self.response
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.response = ::core::option::Option::Some(
+                        __buffa::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            1017u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
+                        ref mut existing,
+                    ),
+                ) = self.response
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.response = ::core::option::Option::Some(
+                        __buffa::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
                             ::buffa::alloc::boxed::Box::new(val),
                         ),
                     );
@@ -6933,6 +11387,56 @@ impl<'de> ::serde::Deserialize<'de> for JoseOperationResponse {
                                 __r.response = Some(__variant);
                             }
                         }
+                        "jwsFrameUnauthenticated" | "jws_frame_unauthenticated" => {
+                            let v: ::core::option::Option<
+                                JoseJwsTransportFrameResponse,
+                            > = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwsTransportFrameResponse,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_operation_response::Response::JwsFrameUnauthenticated(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.response.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'response'",
+                                        ),
+                                    );
+                                }
+                                __r.response = Some(__variant);
+                            }
+                        }
+                        "jwsComposeUnauthenticated" | "jws_compose_unauthenticated" => {
+                            let v: ::core::option::Option<
+                                JoseJwsTransportComposeResponse,
+                            > = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwsTransportComposeResponse,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_operation_response::Response::JwsComposeUnauthenticated(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.response.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'response'",
+                                        ),
+                                    );
+                                }
+                                __r.response = Some(__variant);
+                            }
+                        }
                         "jwtSignWithProvider" | "jwt_sign_with_provider" => {
                             let v: ::core::option::Option<
                                 JoseJwtSignWithProviderResponse,
@@ -7216,6 +11720,8 @@ const _: fn() = || {
     __requires_wipe_owner::<JoseJwsSignWithProviderRequest>();
     __requires_wipe_owner::<JoseJwsVerifyWithProviderRequest>();
     __requires_wipe_owner::<JoseJwsInspectRequest>();
+    __requires_wipe_owner::<JoseJwsTransportFrameRequest>();
+    __requires_wipe_owner::<JoseJwsTransportComposeRequest>();
     __requires_wipe_owner::<JoseJwtSignWithProviderRequest>();
     __requires_wipe_owner::<JoseJwtClaimsParseRequest>();
     __requires_wipe_owner::<JoseJweDeriveKeyRequest>();
@@ -7374,6 +11880,26 @@ impl ::buffa::Message for JoseOperationRequest {
                             + inner as u64;
                 }
                 __buffa::oneof::jose_operation_request::Operation::JwsInspect(x) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                    x,
+                ) => {
+                    let __slot = __cache.reserve();
+                    let inner = x.compute_size(__cache);
+                    __cache.set(__slot, inner);
+                    size
+                        += 2u64 + ::buffa::encoding::varint_len(inner as u64) as u64
+                            + inner as u64;
+                }
+                __buffa::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
+                    x,
+                ) => {
                     let __slot = __cache.reserve();
                     let inner = x.compute_size(__cache);
                     __cache.set(__slot, inner);
@@ -7577,6 +12103,26 @@ impl ::buffa::Message for JoseOperationRequest {
                 __buffa::oneof::jose_operation_request::Operation::JwsInspect(x) => {
                     ::buffa::types::put_len_delimited_header(
                         1015u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1016u32,
+                        u64::from(__cache.consume_next()),
+                        buf,
+                    );
+                    x.write_to(__cache, buf);
+                }
+                __buffa::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
+                    x,
+                ) => {
+                    ::buffa::types::put_len_delimited_header(
+                        1017u32,
                         u64::from(__cache.consume_next()),
                         buf,
                     );
@@ -7963,6 +12509,50 @@ impl ::buffa::Message for JoseOperationRequest {
                     ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
                     self.operation = ::core::option::Option::Some(
                         __buffa::oneof::jose_operation_request::Operation::JwsInspect(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            1016u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                        ref mut existing,
+                    ),
+                ) = self.operation
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.operation = ::core::option::Option::Some(
+                        __buffa::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                            ::buffa::alloc::boxed::Box::new(val),
+                        ),
+                    );
+                }
+            }
+            1017u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                if let ::core::option::Option::Some(
+                    __buffa::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
+                        ref mut existing,
+                    ),
+                ) = self.operation
+                {
+                    ::buffa::Message::merge_length_delimited(&mut **existing, buf, ctx)?;
+                } else {
+                    let mut val = ::core::default::Default::default();
+                    ::buffa::Message::merge_length_delimited(&mut val, buf, ctx)?;
+                    self.operation = ::core::option::Option::Some(
+                        __buffa::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
                             ::buffa::alloc::boxed::Box::new(val),
                         ),
                     );
@@ -8508,6 +13098,56 @@ impl<'de> ::serde::Deserialize<'de> for JoseOperationRequest {
                                 )?;
                             if let Some(v) = v {
                                 let __variant = __buffa::oneof::jose_operation_request::Operation::JwsInspect(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.operation.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'operation'",
+                                        ),
+                                    );
+                                }
+                                __r.operation = Some(__variant);
+                            }
+                        }
+                        "jwsFrameUnauthenticated" | "jws_frame_unauthenticated" => {
+                            let v: ::core::option::Option<
+                                JoseJwsTransportFrameRequest,
+                            > = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwsTransportFrameRequest,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_operation_request::Operation::JwsFrameUnauthenticated(
+                                    ::buffa::alloc::boxed::Box::new(v),
+                                );
+                                if __r.operation.is_some() {
+                                    return Err(
+                                        ::serde::de::Error::custom(
+                                            "multiple oneof fields set for 'operation'",
+                                        ),
+                                    );
+                                }
+                                __r.operation = Some(__variant);
+                            }
+                        }
+                        "jwsComposeUnauthenticated" | "jws_compose_unauthenticated" => {
+                            let v: ::core::option::Option<
+                                JoseJwsTransportComposeRequest,
+                            > = map
+                                .next_value_seed(
+                                    ::buffa::json_helpers::NullableDeserializeSeed(
+                                        ::buffa::json_helpers::DefaultDeserializeSeed::<
+                                            JoseJwsTransportComposeRequest,
+                                        >::new(),
+                                    ),
+                                )?;
+                            if let Some(v) = v {
+                                let __variant = __buffa::oneof::jose_operation_request::Operation::JwsComposeUnauthenticated(
                                     ::buffa::alloc::boxed::Box::new(v),
                                 );
                                 if __r.operation.is_some() {

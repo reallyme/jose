@@ -52,6 +52,10 @@ pub enum JoseOperationKind {
     ContractInfo,
     /// Schema-defined JwkThumbprintSha256 identity.
     JwkThumbprintSha256,
+    /// Schema-defined JwsFrameUnauthenticated identity.
+    JwsFrameUnauthenticated,
+    /// Schema-defined JwsComposeUnauthenticated identity.
+    JwsComposeUnauthenticated,
 }
 
 impl TryFrom<buffa::EnumValue<crate::api::contract::JoseOperationKind>> for JoseOperationKind {
@@ -92,6 +96,12 @@ impl TryFrom<buffa::EnumValue<crate::api::contract::JoseOperationKind>> for Jose
             Some(Contract::JOSE_OPERATION_KIND_CONTRACT_INFO) => Ok(Self::ContractInfo),
             Some(Contract::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256) => {
                 Ok(Self::JwkThumbprintSha256)
+            }
+            Some(Contract::JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED) => {
+                Ok(Self::JwsFrameUnauthenticated)
+            }
+            Some(Contract::JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED) => {
+                Ok(Self::JwsComposeUnauthenticated)
             }
             _ => Err(crate::wire::JoseWireError::backend_internal(
                 crate::api::contract::JoseErrorReason::JOSE_ERROR_REASON_BACKEND_INTERNAL,
@@ -135,6 +145,12 @@ impl From<JoseOperationKind> for Contract {
             JoseOperationKind::ContractInfo => Self::JOSE_OPERATION_KIND_CONTRACT_INFO,
             JoseOperationKind::JwkThumbprintSha256 => {
                 Self::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256
+            }
+            JoseOperationKind::JwsFrameUnauthenticated => {
+                Self::JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED
+            }
+            JoseOperationKind::JwsComposeUnauthenticated => {
+                Self::JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED
             }
         }
     }

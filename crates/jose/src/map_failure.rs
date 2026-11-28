@@ -9,6 +9,7 @@
 use crate::jwe::JweError;
 use crate::jwk::JwkThumbprintErrorReason;
 use crate::jws::suites::{eddsa::JwsEddsaError, es256::JwsEs256Error};
+use crate::jws::transport::JwsTransportErrorReason;
 use crate::jwt::JwtError;
 use crate::operation_contract::jws::{
     JwsSignError, JwsSignErrorReason, JwsVerifyError, JwsVerifyErrorReason,
@@ -236,6 +237,44 @@ pub(crate) const fn jwk_thumbprint(error: &JwkThumbprintErrorReason) -> JoseWire
         ),
         JwkThumbprintErrorReason::Allocation => JoseWireError::backend_internal(
             JoseErrorReason::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION,
+        ),
+    }
+}
+
+pub(crate) const fn jws_transport(error: &JwsTransportErrorReason) -> JoseWireError {
+    match error {
+        JwsTransportErrorReason::MissingPolicy => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY,
+        ),
+        JwsTransportErrorReason::InvalidCharacterPolicy => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY,
+        ),
+        JwsTransportErrorReason::MissingBudget => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET,
+        ),
+        JwsTransportErrorReason::MissingMember => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER,
+        ),
+        JwsTransportErrorReason::InputTooLarge => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE,
+        ),
+        JwsTransportErrorReason::OutputTooLarge => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE,
+        ),
+        JwsTransportErrorReason::EmptyMember => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER,
+        ),
+        JwsTransportErrorReason::InvalidCharacters => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS,
+        ),
+        JwsTransportErrorReason::LengthOverflow => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW,
+        ),
+        JwsTransportErrorReason::InvalidFraming => JoseWireError::primitive_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING,
+        ),
+        JwsTransportErrorReason::Allocation => JoseWireError::backend_internal(
+            JoseErrorReason::JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION,
         ),
     }
 }

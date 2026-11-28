@@ -95,7 +95,7 @@
       "name": "contract-info",
       "request_json": "{\"contractInfo\":{}}",
       "request_hex": "c2b50300",
-      "response_hex": "5002c2b503630a610a0d80804080806020804040ac023c1209646e78c801d201dc011a0564c801ac02222ae807e907f207f307f407f507f607f707d00fd10fd20fd30fda0fdb0fb817b917c217c317c417d836a01f2a0d64c801ac029003f403d804bc0530013a0120"
+      "response_hex": "5002c2b503670a650a0d80804080806020804040ac023c1209646e78c801d201dc011a0564c801ac02222ee807e907f207f307f407f507f607f707d00fd10fd20fd30fda0fdb0fb817b917c217c317c417d836a01ff807f9072a0d64c801ac029003f403d804bc0530013a0120"
     },
     {
       "name": "jwk-ec",
@@ -144,6 +144,60 @@
       "request_json": "{\"jwkThumbprintSha256\":{\"oct\":{\"k\":\"\"}}}",
       "request_hex": "82fa01022200",
       "response_hex": "500282fa010712050a03089003"
+    },
+    {
+      "name": "transport-frame-opaque-unicode",
+      "request_json": "{\"jwsFrameUnauthenticated\":{\"compact\":\"hé.p.s\",\"policy\":{\"protectedHeader\":{\"characters\":100,\"allowEmpty\":false},\"payload\":{\"characters\":100,\"allowEmpty\":false},\"signature\":{\"characters\":100,\"allowEmpty\":false}},\"budgets\":{\"maxInputBytes\":\"100\"}}}",
+      "request_hex": "c23f1b0a0768c3a92e702e73120c0a020864120208641a0208641a020864",
+      "response_hex": "5002c23f080a06080310051806"
+    },
+    {
+      "name": "transport-frame-noncanonical-alphabet",
+      "request_json": "{\"jwsFrameUnauthenticated\":{\"compact\":\"Zh.A.Z_\",\"policy\":{\"protectedHeader\":{\"characters\":103,\"allowEmpty\":false},\"payload\":{\"characters\":103,\"allowEmpty\":false},\"signature\":{\"characters\":103,\"allowEmpty\":false}},\"budgets\":{\"maxInputBytes\":\"100\"}}}",
+      "request_hex": "c23f1b0a075a682e412e5a5f120c0a020867120208671a0208671a020864",
+      "response_hex": "5002c23f080a06080210041805"
+    },
+    {
+      "name": "transport-frame-empty-members",
+      "request_json": "{\"jwsFrameUnauthenticated\":{\"compact\":\"..\",\"policy\":{\"protectedHeader\":{\"characters\":100,\"allowEmpty\":true},\"payload\":{\"characters\":100,\"allowEmpty\":true},\"signature\":{\"characters\":100,\"allowEmpty\":true}},\"budgets\":{\"maxInputBytes\":\"100\"}}}",
+      "request_hex": "c23f1c0a022e2e12120a04086410011204086410011a04086410011a020864",
+      "response_hex": "5002c23f060a0410011802"
+    },
+    {
+      "name": "transport-frame-extra-separator",
+      "request_json": "{\"jwsFrameUnauthenticated\":{\"compact\":\"a.b.c.d\",\"policy\":{\"protectedHeader\":{\"characters\":100,\"allowEmpty\":false},\"payload\":{\"characters\":100,\"allowEmpty\":false},\"signature\":{\"characters\":100,\"allowEmpty\":false}},\"budgets\":{\"maxInputBytes\":\"100\"}}}",
+      "request_hex": "c23f1b0a07612e622e632e64120c0a020864120208641a0208641a020864",
+      "response_hex": "5002c23f0912050a0308bd011878"
+    },
+    {
+      "name": "transport-compose-opaque-dots",
+      "request_json": "{\"jwsComposeUnauthenticated\":{\"protectedHeader\":\" .h\",\"payload\":\"p.q\",\"signature\":\" s \",\"policy\":{\"protectedHeader\":{\"characters\":100,\"allowEmpty\":false},\"payload\":{\"characters\":100,\"allowEmpty\":false},\"signature\":{\"characters\":100,\"allowEmpty\":false}},\"budgets\":{\"maxInputBytes\":\"100\",\"maxOutputBytes\":\"102\"}}}",
+      "request_hex": "ca3f230a03202e681203702e711a03207320220c0a020864120208641a0208642a0408641066",
+      "response_hex": "5002ca3f0f0a0d0a0b202e682e702e712e207320"
+    },
+    {
+      "name": "transport-compose-empty-members",
+      "request_json": "{\"jwsComposeUnauthenticated\":{\"protectedHeader\":\"\",\"payload\":\"\",\"signature\":\"\",\"policy\":{\"protectedHeader\":{\"characters\":100,\"allowEmpty\":true},\"payload\":{\"characters\":100,\"allowEmpty\":true},\"signature\":{\"characters\":100,\"allowEmpty\":true}},\"budgets\":{\"maxInputBytes\":\"0\",\"maxOutputBytes\":\"2\"}}}",
+      "request_hex": "ca3f200a0012001a0022120a04086410011204086410011a04086410012a0408001002",
+      "response_hex": "5002ca3f060a040a022e2e"
+    },
+    {
+      "name": "transport-compose-whitespace-rejected",
+      "request_json": "{\"jwsComposeUnauthenticated\":{\"protectedHeader\":\"h\",\"payload\":\"p q\",\"signature\":\"s\",\"policy\":{\"protectedHeader\":{\"characters\":102,\"allowEmpty\":false},\"payload\":{\"characters\":102,\"allowEmpty\":false},\"signature\":{\"characters\":102,\"allowEmpty\":false}},\"budgets\":{\"maxInputBytes\":\"100\",\"maxOutputBytes\":\"102\"}}}",
+      "request_hex": "ca3f1f0a016812037020711a0173220c0a020866120208661a0208662a0408641066",
+      "response_hex": "5002ca3f0912050a0308bb01187a"
+    },
+    {
+      "name": "transport-compose-output-budget",
+      "request_json": "{\"jwsComposeUnauthenticated\":{\"protectedHeader\":\"h\",\"payload\":\"p\",\"signature\":\"s\",\"policy\":{\"protectedHeader\":{\"characters\":100,\"allowEmpty\":false},\"payload\":{\"characters\":100,\"allowEmpty\":false},\"signature\":{\"characters\":100,\"allowEmpty\":false}},\"budgets\":{\"maxInputBytes\":\"3\",\"maxOutputBytes\":\"4\"}}}",
+      "request_hex": "ca3f1d0a01681201701a0173220c0a020864120208641a0208642a0408031004",
+      "response_hex": "5002ca3f0912050a0308b901186f"
+    },
+    {
+      "name": "transport-compose-missing-member",
+      "request_json": "{\"jwsComposeUnauthenticated\":{\"protectedHeader\":\"h\",\"signature\":\"s\",\"policy\":{\"protectedHeader\":{\"characters\":100,\"allowEmpty\":false},\"payload\":{\"characters\":100,\"allowEmpty\":false},\"signature\":{\"characters\":100,\"allowEmpty\":false}},\"budgets\":{\"maxInputBytes\":\"100\",\"maxOutputBytes\":\"102\"}}}",
+      "request_hex": "ca3f1a0a01681a0173220c0a020864120208641a0208642a0408641066",
+      "response_hex": "5002ca3f0912050a0308b7011868"
     }
   ]
 }

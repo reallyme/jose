@@ -33,6 +33,16 @@ pub mod __buffa {
     }
     /// Register this package's `Any` type entries and extension entries.
     pub fn register_types(reg: &mut ::buffa::type_registry::TypeRegistry) {
+        reg.register_json_any(super::__JOSE_JWS_TRANSPORT_MEMBER_POLICY_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_TRANSPORT_POLICY_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_TRANSPORT_FRAME_BUDGETS_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_TRANSPORT_COMPOSE_BUDGETS_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_TRANSPORT_FRAME_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_TRANSPORT_FRAME_RESULT_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_TRANSPORT_COMPOSE_REQUEST_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_TRANSPORT_COMPACT_RESULT_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_TRANSPORT_FRAME_RESPONSE_JSON_ANY);
+        reg.register_json_any(super::__JOSE_JWS_TRANSPORT_COMPOSE_RESPONSE_JSON_ANY);
         reg.register_json_any(super::__JOSE_ERROR_JSON_ANY);
         reg.register_json_any(super::__JOSE_PRIMITIVE_ERROR_JSON_ANY);
         reg.register_json_any(super::__JOSE_PROVIDER_ERROR_JSON_ANY);
@@ -111,6 +121,26 @@ pub mod __buffa {
         reg.register_json_any(super::__JOSE_JWK_THUMBPRINT_SHA256RESPONSE_JSON_ANY);
     }
 }
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsTransportMemberPolicyView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsTransportPolicyView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsTransportFrameBudgetsView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsTransportComposeBudgetsView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsTransportFrameRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsTransportFrameResultView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsTransportComposeRequestView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsTransportCompactResultView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsTransportFrameResponseView;
+#[doc(inline)]
+pub use self::__buffa::view::JoseJwsTransportComposeResponseView;
 #[doc(inline)]
 pub use self::__buffa::view::JoseErrorView;
 #[doc(inline)]

@@ -8,7 +8,7 @@ libraries and supports the Android 16 KiB page-size requirement on 64-bit ABIs.
 
 ```kotlin
 repositories { mavenCentral() }
-dependencies { implementation("me.really:jose-android:0.6.0") }
+dependencies { implementation("me.really:jose-android:0.7.0") }
 ```
 
 Use the packaged native library and consumer R8 rules. `loadLibrary(path)` is

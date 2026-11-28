@@ -6,6 +6,63 @@
 
 import ReallyMeJOSEProto
 
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsTransportMemberPolicy) {
+  message = ReallyMeProtoJoseJwsTransportMemberPolicy()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsTransportPolicy) {
+  if message.hasProtectedHeader { clearSensitiveFields(&message.protectedHeader) }
+  if message.hasPayload { clearSensitiveFields(&message.payload) }
+  if message.hasSignature { clearSensitiveFields(&message.signature) }
+  message = ReallyMeProtoJoseJwsTransportPolicy()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsTransportFrameBudgets) {
+  message = ReallyMeProtoJoseJwsTransportFrameBudgets()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsTransportComposeBudgets) {
+  message = ReallyMeProtoJoseJwsTransportComposeBudgets()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsTransportFrameRequest) {
+  if message.hasPolicy { clearSensitiveFields(&message.policy) }
+  if message.hasBudgets { clearSensitiveFields(&message.budgets) }
+  message = ReallyMeProtoJoseJwsTransportFrameRequest()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsTransportFrameResult) {
+  message = ReallyMeProtoJoseJwsTransportFrameResult()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsTransportComposeRequest) {
+  if message.hasPolicy { clearSensitiveFields(&message.policy) }
+  if message.hasBudgets { clearSensitiveFields(&message.budgets) }
+  message = ReallyMeProtoJoseJwsTransportComposeRequest()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsTransportCompactResult) {
+  message = ReallyMeProtoJoseJwsTransportCompactResult()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsTransportFrameResponse) {
+  switch message.outcome {
+  case .result: clearSensitiveFields(&message.result)
+  case .error: clearSensitiveFields(&message.error)
+  case nil: break
+  }
+  message = ReallyMeProtoJoseJwsTransportFrameResponse()
+}
+
+func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsTransportComposeResponse) {
+  switch message.outcome {
+  case .result: clearSensitiveFields(&message.result)
+  case .error: clearSensitiveFields(&message.error)
+  case nil: break
+  }
+  message = ReallyMeProtoJoseJwsTransportComposeResponse()
+}
+
 func clearSensitiveFields(_ message: inout ReallyMeProtoJoseJwsSignWithProviderRequest) {
   ReallyMeJOSEMemory.clearOwned(&message.protectedHeaderJson)
   ReallyMeJOSEMemory.clearOwned(&message.payload)

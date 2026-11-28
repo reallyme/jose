@@ -29,6 +29,156 @@ fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobu
   typealias Version = _2
 }
 
+/// Character admission never decodes, canonicalizes, or authenticates members.
+public nonisolated enum ReallyMeProtoJoseJwsTransportCharacterPolicy: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+  case opaqueUtf8 // = 100
+  case ascii // = 101
+
+  /// Matches Rust's is_ascii_whitespace: TAB, LF, FF, CR and SPACE. In
+  /// particular, VT is admitted, preserving existing transport admission.
+  case asciiWithoutWhitespace // = 102
+
+  /// Only A-Z, a-z, 0-9, '-' and '_'; no padding or canonicality requirement.
+  case base64URLAlphabet // = 103
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 100: self = .opaqueUtf8
+    case 101: self = .ascii
+    case 102: self = .asciiWithoutWhitespace
+    case 103: self = .base64URLAlphabet
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .opaqueUtf8: return 100
+    case .ascii: return 101
+    case .asciiWithoutWhitespace: return 102
+    case .base64URLAlphabet: return 103
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [ReallyMeProtoJoseJwsTransportCharacterPolicy] = [
+    .unspecified,
+    .opaqueUtf8,
+    .ascii,
+    .asciiWithoutWhitespace,
+    .base64URLAlphabet,
+  ]
+
+}
+
+/// Operation-local transport reasons. Their stack projection uses distinct
+/// JoseErrorReason values; these numbers must not be used as JOSE stack codes.
+public nonisolated enum ReallyMeProtoJoseJwsTransportErrorReason: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+
+  /// Rust transport failure: JwsTransportErrorReason::MissingPolicy
+  case missingPolicy // = 101
+
+  /// Rust transport failure: JwsTransportErrorReason::InvalidCharacterPolicy
+  case invalidCharacterPolicy // = 102
+
+  /// Rust transport failure: JwsTransportErrorReason::MissingBudget
+  case missingBudget // = 103
+
+  /// Rust transport failure: JwsTransportErrorReason::MissingMember
+  case missingMember // = 104
+
+  /// Rust transport failure: JwsTransportErrorReason::InputTooLarge
+  case inputTooLarge // = 110
+
+  /// Rust transport failure: JwsTransportErrorReason::OutputTooLarge
+  case outputTooLarge // = 111
+
+  /// Rust transport failure: JwsTransportErrorReason::InvalidFraming
+  case invalidFraming // = 120
+
+  /// Rust transport failure: JwsTransportErrorReason::EmptyMember
+  case emptyMember // = 121
+
+  /// Rust transport failure: JwsTransportErrorReason::InvalidCharacters
+  case invalidCharacters // = 122
+
+  /// Rust transport failure: JwsTransportErrorReason::LengthOverflow
+  case lengthOverflow // = 900
+
+  /// Rust transport failure: JwsTransportErrorReason::Allocation
+  case allocation // = 901
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 101: self = .missingPolicy
+    case 102: self = .invalidCharacterPolicy
+    case 103: self = .missingBudget
+    case 104: self = .missingMember
+    case 110: self = .inputTooLarge
+    case 111: self = .outputTooLarge
+    case 120: self = .invalidFraming
+    case 121: self = .emptyMember
+    case 122: self = .invalidCharacters
+    case 900: self = .lengthOverflow
+    case 901: self = .allocation
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .missingPolicy: return 101
+    case .invalidCharacterPolicy: return 102
+    case .missingBudget: return 103
+    case .missingMember: return 104
+    case .inputTooLarge: return 110
+    case .outputTooLarge: return 111
+    case .invalidFraming: return 120
+    case .emptyMember: return 121
+    case .invalidCharacters: return 122
+    case .lengthOverflow: return 900
+    case .allocation: return 901
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [ReallyMeProtoJoseJwsTransportErrorReason] = [
+    .unspecified,
+    .missingPolicy,
+    .invalidCharacterPolicy,
+    .missingBudget,
+    .missingMember,
+    .inputTooLarge,
+    .outputTooLarge,
+    .invalidFraming,
+    .emptyMember,
+    .invalidCharacters,
+    .lengthOverflow,
+    .allocation,
+  ]
+
+}
+
 /// Public SDK error discriminators. SDKs can raise these before an operation
 /// starts or while validating its response. JOSE_FAILURE carries the branch
 /// and JoseErrorReason of an operation failure in the SDK's error type.
@@ -177,6 +327,37 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
   /// Rust failure: JwsSignErrorReason::BadDerSignature
   /// Rust failure: JwsEs256Error::BadDerSignature
   case jwsBadDerSignature // = 161
+
+  /// Unauthenticated JWS transport admission: 180-199.
+  /// Rust failure: JwsTransportErrorReason::MissingPolicy
+  case jwsTransportMissingPolicy // = 180
+
+  /// Rust failure: JwsTransportErrorReason::InvalidCharacterPolicy
+  case jwsTransportInvalidCharacterPolicy // = 181
+
+  /// Rust failure: JwsTransportErrorReason::MissingBudget
+  case jwsTransportMissingBudget // = 182
+
+  /// Rust failure: JwsTransportErrorReason::MissingMember
+  case jwsTransportMissingMember // = 183
+
+  /// Rust failure: JwsTransportErrorReason::InputTooLarge
+  case jwsTransportInputTooLarge // = 184
+
+  /// Rust failure: JwsTransportErrorReason::OutputTooLarge
+  case jwsTransportOutputTooLarge // = 185
+
+  /// Rust failure: JwsTransportErrorReason::EmptyMember
+  case jwsTransportEmptyMember // = 186
+
+  /// Rust failure: JwsTransportErrorReason::InvalidCharacters
+  case jwsTransportInvalidCharacters // = 187
+
+  /// Rust failure: JwsTransportErrorReason::LengthOverflow
+  case jwsTransportLengthOverflow // = 188
+
+  /// Rust failure: JwsTransportErrorReason::InvalidFraming
+  case jwsTransportInvalidFraming // = 189
 
   /// Compact JWE protected-header policy: 220-239.
   /// Rust failure: JweError::InvalidHeader
@@ -404,6 +585,9 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
 
   /// Rust failure: JwkThumbprintErrorReason::Allocation
   case backendJwkThumbprintAllocation // = 941
+
+  /// Rust failure: JwsTransportErrorReason::Allocation
+  case backendJwsTransportAllocation // = 950
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -423,6 +607,16 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     case 142: self = .jwsInvalidSignature
     case 160: self = .jwsSignFailed
     case 161: self = .jwsBadDerSignature
+    case 180: self = .jwsTransportMissingPolicy
+    case 181: self = .jwsTransportInvalidCharacterPolicy
+    case 182: self = .jwsTransportMissingBudget
+    case 183: self = .jwsTransportMissingMember
+    case 184: self = .jwsTransportInputTooLarge
+    case 185: self = .jwsTransportOutputTooLarge
+    case 186: self = .jwsTransportEmptyMember
+    case 187: self = .jwsTransportInvalidCharacters
+    case 188: self = .jwsTransportLengthOverflow
+    case 189: self = .jwsTransportInvalidFraming
     case 220: self = .jweInvalidHeader
     case 221: self = .jweUnsupportedKeyManagementAlgorithm
     case 222: self = .jweUnsupportedContentEncryptionAlgorithm
@@ -490,6 +684,7 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     case 902: self = .backendKeyDerivationFailed
     case 940: self = .backendJwkThumbprintSerialization
     case 941: self = .backendJwkThumbprintAllocation
+    case 950: self = .backendJwsTransportAllocation
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -507,6 +702,16 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     case .jwsInvalidSignature: return 142
     case .jwsSignFailed: return 160
     case .jwsBadDerSignature: return 161
+    case .jwsTransportMissingPolicy: return 180
+    case .jwsTransportInvalidCharacterPolicy: return 181
+    case .jwsTransportMissingBudget: return 182
+    case .jwsTransportMissingMember: return 183
+    case .jwsTransportInputTooLarge: return 184
+    case .jwsTransportOutputTooLarge: return 185
+    case .jwsTransportEmptyMember: return 186
+    case .jwsTransportInvalidCharacters: return 187
+    case .jwsTransportLengthOverflow: return 188
+    case .jwsTransportInvalidFraming: return 189
     case .jweInvalidHeader: return 220
     case .jweUnsupportedKeyManagementAlgorithm: return 221
     case .jweUnsupportedContentEncryptionAlgorithm: return 222
@@ -574,6 +779,7 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     case .backendKeyDerivationFailed: return 902
     case .backendJwkThumbprintSerialization: return 940
     case .backendJwkThumbprintAllocation: return 941
+    case .backendJwsTransportAllocation: return 950
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -591,6 +797,16 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     .jwsInvalidSignature,
     .jwsSignFailed,
     .jwsBadDerSignature,
+    .jwsTransportMissingPolicy,
+    .jwsTransportInvalidCharacterPolicy,
+    .jwsTransportMissingBudget,
+    .jwsTransportMissingMember,
+    .jwsTransportInputTooLarge,
+    .jwsTransportOutputTooLarge,
+    .jwsTransportEmptyMember,
+    .jwsTransportInvalidCharacters,
+    .jwsTransportLengthOverflow,
+    .jwsTransportInvalidFraming,
     .jweInvalidHeader,
     .jweUnsupportedKeyManagementAlgorithm,
     .jweUnsupportedContentEncryptionAlgorithm,
@@ -658,6 +874,7 @@ public nonisolated enum ReallyMeProtoJoseErrorReason: SwiftProtobuf.Enum, Swift.
     .backendKeyDerivationFailed,
     .backendJwkThumbprintSerialization,
     .backendJwkThumbprintAllocation,
+    .backendJwsTransportAllocation,
   ]
 
 }
@@ -1427,6 +1644,12 @@ public nonisolated enum ReallyMeProtoJoseOperationKind: SwiftProtobuf.Enum, Swif
   /// Append native selector bindings to preserve existing Rust discriminants.
   /// Rust variant: JoseOperationKind.JwkThumbprintSha256
   case jwkThumbprintSha256 // = 4000
+
+  /// Rust variant: JoseOperationKind.JwsFrameUnauthenticated
+  case jwsFrameUnauthenticated // = 1016
+
+  /// Rust variant: JoseOperationKind.JwsComposeUnauthenticated
+  case jwsComposeUnauthenticated // = 1017
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -1444,6 +1667,8 @@ public nonisolated enum ReallyMeProtoJoseOperationKind: SwiftProtobuf.Enum, Swif
     case 1013: self = .jwsSignWithProvider
     case 1014: self = .jwsVerifyWithProvider
     case 1015: self = .jwsInspect
+    case 1016: self = .jwsFrameUnauthenticated
+    case 1017: self = .jwsComposeUnauthenticated
     case 2000: self = .jwtEncodeUnsigned
     case 2001: self = .jwtDecodeUnsigned
     case 2002: self = .jwtSign
@@ -1472,6 +1697,8 @@ public nonisolated enum ReallyMeProtoJoseOperationKind: SwiftProtobuf.Enum, Swif
     case .jwsSignWithProvider: return 1013
     case .jwsVerifyWithProvider: return 1014
     case .jwsInspect: return 1015
+    case .jwsFrameUnauthenticated: return 1016
+    case .jwsComposeUnauthenticated: return 1017
     case .jwtEncodeUnsigned: return 2000
     case .jwtDecodeUnsigned: return 2001
     case .jwtSign: return 2002
@@ -1513,6 +1740,8 @@ public nonisolated enum ReallyMeProtoJoseOperationKind: SwiftProtobuf.Enum, Swif
     .jweDecryptWithProvider,
     .contractInfo,
     .jwkThumbprintSha256,
+    .jwsFrameUnauthenticated,
+    .jwsComposeUnauthenticated,
   ]
 
 }
@@ -1626,6 +1855,336 @@ public nonisolated enum ReallyMeProtoJoseNativeAbiVersion: SwiftProtobuf.Enum, S
     .v1,
   ]
 
+}
+
+public nonisolated struct ReallyMeProtoJoseJwsTransportMemberPolicy: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var characters: ReallyMeProtoJoseJwsTransportCharacterPolicy = .unspecified
+
+  public var allowEmpty: Bool = false
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Each member independently selects empty-string and character admission.
+public nonisolated struct ReallyMeProtoJoseJwsTransportPolicy: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var protectedHeader: ReallyMeProtoJoseJwsTransportMemberPolicy {
+    get {_protectedHeader ?? ReallyMeProtoJoseJwsTransportMemberPolicy()}
+    set {_protectedHeader = newValue}
+  }
+  /// Returns true if `protectedHeader` has been explicitly set.
+  public var hasProtectedHeader: Bool {self._protectedHeader != nil}
+  /// Clears the value of `protectedHeader`. Subsequent reads from it will return its default value.
+  public mutating func clearProtectedHeader() {self._protectedHeader = nil}
+
+  public var payload: ReallyMeProtoJoseJwsTransportMemberPolicy {
+    get {_payload ?? ReallyMeProtoJoseJwsTransportMemberPolicy()}
+    set {_payload = newValue}
+  }
+  /// Returns true if `payload` has been explicitly set.
+  public var hasPayload: Bool {self._payload != nil}
+  /// Clears the value of `payload`. Subsequent reads from it will return its default value.
+  public mutating func clearPayload() {self._payload = nil}
+
+  public var signature: ReallyMeProtoJoseJwsTransportMemberPolicy {
+    get {_signature ?? ReallyMeProtoJoseJwsTransportMemberPolicy()}
+    set {_signature = newValue}
+  }
+  /// Returns true if `signature` has been explicitly set.
+  public var hasSignature: Bool {self._signature != nil}
+  /// Clears the value of `signature`. Subsequent reads from it will return its default value.
+  public mutating func clearSignature() {self._signature = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _protectedHeader: ReallyMeProtoJoseJwsTransportMemberPolicy? = nil
+  fileprivate var _payload: ReallyMeProtoJoseJwsTransportMemberPolicy? = nil
+  fileprivate var _signature: ReallyMeProtoJoseJwsTransportMemberPolicy? = nil
+}
+
+/// Required caller budget in UTF-8 bytes, without a verification-limit clamp.
+public nonisolated struct ReallyMeProtoJoseJwsTransportFrameBudgets: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var maxInputBytes: UInt64 {
+    get {_maxInputBytes ?? 0}
+    set {_maxInputBytes = newValue}
+  }
+  /// Returns true if `maxInputBytes` has been explicitly set.
+  public var hasMaxInputBytes: Bool {self._maxInputBytes != nil}
+  /// Clears the value of `maxInputBytes`. Subsequent reads from it will return its default value.
+  public mutating func clearMaxInputBytes() {self._maxInputBytes = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _maxInputBytes: UInt64? = nil
+}
+
+public nonisolated struct ReallyMeProtoJoseJwsTransportComposeBudgets: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Aggregate UTF-8 bytes of the three member strings, excluding inserted dots.
+  /// Explicit zero admits three empty members when their policies allow them.
+  public var maxInputBytes: UInt64 {
+    get {_maxInputBytes ?? 0}
+    set {_maxInputBytes = newValue}
+  }
+  /// Returns true if `maxInputBytes` has been explicitly set.
+  public var hasMaxInputBytes: Bool {self._maxInputBytes != nil}
+  /// Clears the value of `maxInputBytes`. Subsequent reads from it will return its default value.
+  public mutating func clearMaxInputBytes() {self._maxInputBytes = nil}
+
+  /// UTF-8 bytes of the result, including the two inserted dots.
+  public var maxOutputBytes: UInt64 {
+    get {_maxOutputBytes ?? 0}
+    set {_maxOutputBytes = newValue}
+  }
+  /// Returns true if `maxOutputBytes` has been explicitly set.
+  public var hasMaxOutputBytes: Bool {self._maxOutputBytes != nil}
+  /// Clears the value of `maxOutputBytes`. Subsequent reads from it will return its default value.
+  public mutating func clearMaxOutputBytes() {self._maxOutputBytes = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _maxInputBytes: UInt64? = nil
+  fileprivate var _maxOutputBytes: UInt64? = nil
+}
+
+/// Exactly two separators are required. The original input is never decoded.
+/// Rust adapter: jws/transport/frame.rs#frame_compact_jws_unauthenticated
+/// Rust view: jws/transport/frame.rs#FrameCompactJwsRequest
+public nonisolated struct ReallyMeProtoJoseJwsTransportFrameRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// SENSITIVE: encoded claims or other caller-owned transport data.
+  public var compact: String = String()
+
+  public var policy: ReallyMeProtoJoseJwsTransportPolicy {
+    get {_policy ?? ReallyMeProtoJoseJwsTransportPolicy()}
+    set {_policy = newValue}
+  }
+  /// Returns true if `policy` has been explicitly set.
+  public var hasPolicy: Bool {self._policy != nil}
+  /// Clears the value of `policy`. Subsequent reads from it will return its default value.
+  public mutating func clearPolicy() {self._policy = nil}
+
+  public var budgets: ReallyMeProtoJoseJwsTransportFrameBudgets {
+    get {_budgets ?? ReallyMeProtoJoseJwsTransportFrameBudgets()}
+    set {_budgets = newValue}
+  }
+  /// Returns true if `budgets` has been explicitly set.
+  public var hasBudgets: Bool {self._budgets != nil}
+  /// Clears the value of `budgets`. Subsequent reads from it will return its default value.
+  public mutating func clearBudgets() {self._budgets = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _policy: ReallyMeProtoJoseJwsTransportPolicy? = nil
+  fileprivate var _budgets: ReallyMeProtoJoseJwsTransportFrameBudgets? = nil
+}
+
+/// Byte offsets into the original UTF-8 compact string, never an authenticated
+/// receipt. Header is [0, protected_header_end), payload starts one byte later
+/// and ends at payload_end; signature starts at signature_start and continues
+/// to input end. Signing input is [0, payload_end). Offsets borrow no ownership.
+/// Rust view: jws/transport/frame.rs#UnauthenticatedCompactJwsView
+public nonisolated struct ReallyMeProtoJoseJwsTransportFrameResult: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var protectedHeaderEnd: UInt64 = 0
+
+  public var payloadEnd: UInt64 = 0
+
+  public var signatureStart: UInt64 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Join supplied member strings verbatim with two inserted dots. Member text
+/// can itself contain dots when the selected character policy permits them;
+/// the result may therefore fail subsequent framing or strict JOSE inspection.
+/// JSON object parsing and application-profile policy remain caller-owned.
+/// Rust adapter: jws/transport/compose.rs#compose_compact_jws_unauthenticated
+/// Rust view: jws/transport/compose.rs#ComposeCompactJwsRequest
+public nonisolated struct ReallyMeProtoJoseJwsTransportComposeRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// SENSITIVE: original member text; absence differs from an admitted empty value.
+  public var protectedHeader: String {
+    get {_protectedHeader ?? String()}
+    set {_protectedHeader = newValue}
+  }
+  /// Returns true if `protectedHeader` has been explicitly set.
+  public var hasProtectedHeader: Bool {self._protectedHeader != nil}
+  /// Clears the value of `protectedHeader`. Subsequent reads from it will return its default value.
+  public mutating func clearProtectedHeader() {self._protectedHeader = nil}
+
+  /// SENSITIVE: encoded or opaque payload text; never decoded by transport.
+  public var payload: String {
+    get {_payload ?? String()}
+    set {_payload = newValue}
+  }
+  /// Returns true if `payload` has been explicitly set.
+  public var hasPayload: Bool {self._payload != nil}
+  /// Clears the value of `payload`. Subsequent reads from it will return its default value.
+  public mutating func clearPayload() {self._payload = nil}
+
+  /// SENSITIVE: original signature text; no cryptographic assertion is made.
+  public var signature: String {
+    get {_signature ?? String()}
+    set {_signature = newValue}
+  }
+  /// Returns true if `signature` has been explicitly set.
+  public var hasSignature: Bool {self._signature != nil}
+  /// Clears the value of `signature`. Subsequent reads from it will return its default value.
+  public mutating func clearSignature() {self._signature = nil}
+
+  public var policy: ReallyMeProtoJoseJwsTransportPolicy {
+    get {_policy ?? ReallyMeProtoJoseJwsTransportPolicy()}
+    set {_policy = newValue}
+  }
+  /// Returns true if `policy` has been explicitly set.
+  public var hasPolicy: Bool {self._policy != nil}
+  /// Clears the value of `policy`. Subsequent reads from it will return its default value.
+  public mutating func clearPolicy() {self._policy = nil}
+
+  public var budgets: ReallyMeProtoJoseJwsTransportComposeBudgets {
+    get {_budgets ?? ReallyMeProtoJoseJwsTransportComposeBudgets()}
+    set {_budgets = newValue}
+  }
+  /// Returns true if `budgets` has been explicitly set.
+  public var hasBudgets: Bool {self._budgets != nil}
+  /// Clears the value of `budgets`. Subsequent reads from it will return its default value.
+  public mutating func clearBudgets() {self._budgets = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _protectedHeader: String? = nil
+  fileprivate var _payload: String? = nil
+  fileprivate var _signature: String? = nil
+  fileprivate var _policy: ReallyMeProtoJoseJwsTransportPolicy? = nil
+  fileprivate var _budgets: ReallyMeProtoJoseJwsTransportComposeBudgets? = nil
+}
+
+/// Rust view: jws/transport/compose.rs#UnauthenticatedCompactJws
+public nonisolated struct ReallyMeProtoJoseJwsTransportCompactResult: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// SENSITIVE: exact forwarded members, with no authentication implication.
+  public var compact: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct ReallyMeProtoJoseJwsTransportFrameResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var outcome: ReallyMeProtoJoseJwsTransportFrameResponse.OneOf_Outcome? = nil
+
+  public var result: ReallyMeProtoJoseJwsTransportFrameResult {
+    get {
+      if case .result(let v)? = outcome {return v}
+      return ReallyMeProtoJoseJwsTransportFrameResult()
+    }
+    set {outcome = .result(newValue)}
+  }
+
+  public var error: ReallyMeProtoJoseError {
+    get {
+      if case .error(let v)? = outcome {return v}
+      return ReallyMeProtoJoseError()
+    }
+    set {outcome = .error(newValue)}
+  }
+
+  /// UNSPECIFIED on success or an envelope/backend failure; otherwise this
+  /// operation-local reason must project exactly to the JoseError stack code.
+  public var transportReason: ReallyMeProtoJoseJwsTransportErrorReason = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public nonisolated enum OneOf_Outcome: Equatable, Sendable {
+    case result(ReallyMeProtoJoseJwsTransportFrameResult)
+    case error(ReallyMeProtoJoseError)
+
+  }
+
+  public init() {}
+}
+
+public nonisolated struct ReallyMeProtoJoseJwsTransportComposeResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var outcome: ReallyMeProtoJoseJwsTransportComposeResponse.OneOf_Outcome? = nil
+
+  public var result: ReallyMeProtoJoseJwsTransportCompactResult {
+    get {
+      if case .result(let v)? = outcome {return v}
+      return ReallyMeProtoJoseJwsTransportCompactResult()
+    }
+    set {outcome = .result(newValue)}
+  }
+
+  public var error: ReallyMeProtoJoseError {
+    get {
+      if case .error(let v)? = outcome {return v}
+      return ReallyMeProtoJoseError()
+    }
+    set {outcome = .error(newValue)}
+  }
+
+  /// UNSPECIFIED on success or an envelope/backend failure; otherwise this
+  /// operation-local reason must project exactly to the JoseError stack code.
+  public var transportReason: ReallyMeProtoJoseJwsTransportErrorReason = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public nonisolated enum OneOf_Outcome: Equatable, Sendable {
+    case result(ReallyMeProtoJoseJwsTransportCompactResult)
+    case error(ReallyMeProtoJoseError)
+
+  }
+
+  public init() {}
 }
 
 /// JoseError is the public, non-PII error envelope for JOSE boundary failures.
@@ -1862,6 +2421,22 @@ public nonisolated struct ReallyMeProtoJoseOperationResponse: Sendable {
     set {response = .jwsInspect(newValue)}
   }
 
+  public var jwsFrameUnauthenticated: ReallyMeProtoJoseJwsTransportFrameResponse {
+    get {
+      if case .jwsFrameUnauthenticated(let v)? = response {return v}
+      return ReallyMeProtoJoseJwsTransportFrameResponse()
+    }
+    set {response = .jwsFrameUnauthenticated(newValue)}
+  }
+
+  public var jwsComposeUnauthenticated: ReallyMeProtoJoseJwsTransportComposeResponse {
+    get {
+      if case .jwsComposeUnauthenticated(let v)? = response {return v}
+      return ReallyMeProtoJoseJwsTransportComposeResponse()
+    }
+    set {response = .jwsComposeUnauthenticated(newValue)}
+  }
+
   public var jwtSignWithProvider: ReallyMeProtoJoseJwtSignWithProviderResponse {
     get {
       if case .jwtSignWithProvider(let v)? = response {return v}
@@ -1940,6 +2515,8 @@ public nonisolated struct ReallyMeProtoJoseOperationResponse: Sendable {
     case jwsSignWithProvider(ReallyMeProtoJoseJwsSignResponse)
     case jwsVerifyWithProvider(ReallyMeProtoJoseJwsVerifyResponse)
     case jwsInspect(ReallyMeProtoJoseJwsInspectResponse)
+    case jwsFrameUnauthenticated(ReallyMeProtoJoseJwsTransportFrameResponse)
+    case jwsComposeUnauthenticated(ReallyMeProtoJoseJwsTransportComposeResponse)
     case jwtSignWithProvider(ReallyMeProtoJoseJwtSignWithProviderResponse)
     case jwtClaimsParse(ReallyMeProtoJoseJwtClaimsParseResponse)
     case jweDeriveKey(ReallyMeProtoJoseJweDeriveKeyResponse)
@@ -2117,6 +2694,22 @@ public nonisolated struct ReallyMeProtoJoseOperationRequest: Sendable {
     set {operation = .jwsInspect(newValue)}
   }
 
+  public var jwsFrameUnauthenticated: ReallyMeProtoJoseJwsTransportFrameRequest {
+    get {
+      if case .jwsFrameUnauthenticated(let v)? = operation {return v}
+      return ReallyMeProtoJoseJwsTransportFrameRequest()
+    }
+    set {operation = .jwsFrameUnauthenticated(newValue)}
+  }
+
+  public var jwsComposeUnauthenticated: ReallyMeProtoJoseJwsTransportComposeRequest {
+    get {
+      if case .jwsComposeUnauthenticated(let v)? = operation {return v}
+      return ReallyMeProtoJoseJwsTransportComposeRequest()
+    }
+    set {operation = .jwsComposeUnauthenticated(newValue)}
+  }
+
   /// Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
   /// Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
   public var jwtSignWithProvider: ReallyMeProtoJoseJwtSignWithProviderRequest {
@@ -2228,6 +2821,8 @@ public nonisolated struct ReallyMeProtoJoseOperationRequest: Sendable {
     case jwsSignWithProvider(ReallyMeProtoJoseJwsSignWithProviderRequest)
     case jwsVerifyWithProvider(ReallyMeProtoJoseJwsVerifyWithProviderRequest)
     case jwsInspect(ReallyMeProtoJoseJwsInspectRequest)
+    case jwsFrameUnauthenticated(ReallyMeProtoJoseJwsTransportFrameRequest)
+    case jwsComposeUnauthenticated(ReallyMeProtoJoseJwsTransportComposeRequest)
     /// Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
     /// Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
     case jwtSignWithProvider(ReallyMeProtoJoseJwtSignWithProviderRequest)
@@ -4368,12 +4963,20 @@ public nonisolated struct ReallyMeProtoJoseJwkThumbprintSha256Response: Sendable
 
 fileprivate nonisolated let _protobuf_package = "reallyme.jose.v1"
 
+nonisolated extension ReallyMeProtoJoseJwsTransportCharacterPolicy: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED\0\u{2}d\u{1}JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8\0\u{1}JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII\0\u{1}JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE\0\u{1}JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET\0")
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportErrorReason: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED\0\u{2}e\u{1}JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY\0\u{1}JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY\0\u{1}JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET\0\u{1}JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER\0\u{2}\u{6}JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE\0\u{1}JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE\0\u{2}\u{9}JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING\0\u{1}JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER\0\u{1}JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS\0\u{2}J\u{c}JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW\0\u{1}JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION\0")
+}
+
 nonisolated extension ReallyMeProtoJoseSdkErrorCode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_SDK_ERROR_CODE_UNSPECIFIED\0\u{2}d\u{1}JOSE_SDK_ERROR_CODE_INVALID_INPUT\0\u{2}d\u{1}JOSE_SDK_ERROR_CODE_PROVIDER_NOT_INSTALLED\0\u{2}\u{a}JOSE_SDK_ERROR_CODE_PROVIDER_FAILURE\0\u{2}\u{a}JOSE_SDK_ERROR_CODE_MALFORMED_PROVIDER_RESPONSE\0\u{2}P\u{1}JOSE_SDK_ERROR_CODE_UNSUPPORTED_PLATFORM\0\u{2}\u{a}JOSE_SDK_ERROR_CODE_NATIVE_LIBRARY_NOT_FOUND\0\u{2}\u{a}JOSE_SDK_ERROR_CODE_NATIVE_LIBRARY_LOAD_FAILED\0\u{2}\u{a}JOSE_SDK_ERROR_CODE_NATIVE_SYMBOL_MISSING\0\u{2}\u{a}JOSE_SDK_ERROR_CODE_INCOMPATIBLE_ABI\0\u{2}<JOSE_SDK_ERROR_CODE_JOSE_FAILURE\0")
 }
 
 nonisolated extension ReallyMeProtoJoseErrorReason: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_ERROR_REASON_UNSPECIFIED\0\u{2}g\u{1}JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8\0\u{1}JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64\0\u{2}\u{10}JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64\0\u{1}JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8\0\u{1}JOSE_ERROR_REASON_JWS_HEADER_MISMATCH\0\u{2}\u{12}JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64\0\u{1}JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE\0\u{1}JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE\0\u{2}\u{12}JOSE_ERROR_REASON_JWS_SIGN_FAILED\0\u{1}JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE\0\u{2};JOSE_ERROR_REASON_JWE_INVALID_HEADER\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER\0\u{1}JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM\0\u{2}\u{c}JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT\0\u{1}JOSE_ERROR_REASON_JWE_DECRYPT_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY\0\u{2}\u{2}JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET\0\u{2}\u{d}JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON\0\u{1}JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE\0\u{2}9JOSE_ERROR_REASON_JWT_INVALID_HEADER\0\u{1}JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY\0\u{1}JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_JWK\0\u{2}\u{b}JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE\0\u{1}JOSE_ERROR_REASON_JWT_CRYPTO_FAILED\0\u{2}\u{13}JOSE_ERROR_REASON_JWT_INVALID_CLAIMS\0\u{1}JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED\0\u{2}\u{13}JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE\0\u{1}JOSE_ERROR_REASON_JWT_EXPIRED\0\u{1}JOSE_ERROR_REASON_JWT_NOT_YET_VALID\0\u{1}JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY\0\u{1}JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE\0\u{1}JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH\0\u{2}\u{8}JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER\0\u{1}JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE\0\u{1}JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE\0\u{1}JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT\0\u{1}JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE\0\u{2}h\u{4}JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF\0\u{1}JOSE_ERROR_REASON_COMMON_MALFORMED_JSON\0\u{1}JOSE_ERROR_REASON_COMMON_MISSING_OPERATION\0\u{1}JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED\0\u{1}JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW\0\u{1}JOSE_ERROR_REASON_COMMON_INVALID_COMPACT\0\u{1}JOSE_ERROR_REASON_COMMON_INVALID_ENCODING\0\u{2}^\u{1}JOSE_ERROR_REASON_PROVIDER_UNAVAILABLE\0\u{1}JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED\0\u{1}JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE\0\u{2}b\u{1}JOSE_ERROR_REASON_BACKEND_INTERNAL\0\u{1}JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION\0\u{1}JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED\0\u{2}&JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION\0\u{1}JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_ERROR_REASON_UNSPECIFIED\0\u{2}g\u{1}JOSE_ERROR_REASON_JWS_INVALID_PAYLOAD_UTF8\0\u{1}JOSE_ERROR_REASON_JWS_BAD_PAYLOAD_BASE64\0\u{2}\u{10}JOSE_ERROR_REASON_JWS_BAD_HEADER_BASE64\0\u{1}JOSE_ERROR_REASON_JWS_BAD_HEADER_UTF8\0\u{1}JOSE_ERROR_REASON_JWS_HEADER_MISMATCH\0\u{2}\u{12}JOSE_ERROR_REASON_JWS_BAD_SIGNATURE_BASE64\0\u{1}JOSE_ERROR_REASON_JWS_BAD_RAW_SIGNATURE\0\u{1}JOSE_ERROR_REASON_JWS_INVALID_SIGNATURE\0\u{2}\u{12}JOSE_ERROR_REASON_JWS_SIGN_FAILED\0\u{1}JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE\0\u{2}\u{13}JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY\0\u{1}JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY\0\u{1}JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET\0\u{1}JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER\0\u{1}JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE\0\u{1}JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE\0\u{1}JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER\0\u{1}JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS\0\u{1}JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW\0\u{1}JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING\0\u{2}\u{1f}JOSE_ERROR_REASON_JWE_INVALID_HEADER\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWE_MISSING_REQUIRED_HEADER_PARAMETER\0\u{1}JOSE_ERROR_REASON_JWE_HEADER_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_KID_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_APU_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_APV_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWE_UNSUPPORTED_COMPRESSION_ALGORITHM\0\u{2}\u{c}JOSE_ERROR_REASON_JWE_INVALID_ENCRYPTED_KEY\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_CONTENT_ENCRYPTION_KEY\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_CONTENT_CIPHER_INPUT\0\u{1}JOSE_ERROR_REASON_JWE_DECRYPT_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_ENCRYPT_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_INVALID_KEY_AGREEMENT_KEY\0\u{2}\u{2}JOSE_ERROR_REASON_JWE_INVALID_SHARED_SECRET\0\u{2}\u{d}JOSE_ERROR_REASON_JWE_INVALID_PAYLOAD_JSON\0\u{1}JOSE_ERROR_REASON_JWE_COMPRESSION_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_DECOMPRESSION_FAILED\0\u{1}JOSE_ERROR_REASON_JWE_DECOMPRESSED_PLAINTEXT_TOO_LARGE\0\u{2}9JOSE_ERROR_REASON_JWT_INVALID_HEADER\0\u{1}JOSE_ERROR_REASON_JWT_UNSUPPORTED_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWT_ALGORITHM_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_ALGORITHM\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_PRIVATE_KEY\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_PUBLIC_KEY\0\u{1}JOSE_ERROR_REASON_JWT_KID_POLICY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_PUBLIC_KEY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_PUBLIC_KEY\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_JWK\0\u{2}\u{b}JOSE_ERROR_REASON_JWT_INVALID_SIGNATURE\0\u{1}JOSE_ERROR_REASON_JWT_CRYPTO_FAILED\0\u{2}\u{13}JOSE_ERROR_REASON_JWT_INVALID_CLAIMS\0\u{1}JOSE_ERROR_REASON_JWT_SERIALIZATION_FAILED\0\u{2}\u{13}JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_TEMPORAL_CLAIM\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_TEMPORAL_CLAIM_VALUE\0\u{1}JOSE_ERROR_REASON_JWT_EXPIRED\0\u{1}JOSE_ERROR_REASON_JWT_NOT_YET_VALID\0\u{1}JOSE_ERROR_REASON_JWT_ISSUED_AT_IN_FUTURE\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_TIME\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_VERIFICATION_POLICY\0\u{1}JOSE_ERROR_REASON_JWT_SIGNING_KEY_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_MISSING_REQUIRED_REGISTERED_CLAIM\0\u{1}JOSE_ERROR_REASON_JWT_INVALID_REGISTERED_CLAIM_VALUE\0\u{1}JOSE_ERROR_REASON_JWT_AUDIENCE_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_ISSUER_MISMATCH\0\u{1}JOSE_ERROR_REASON_JWT_SUBJECT_MISMATCH\0\u{2}\u{8}JOSE_ERROR_REASON_JWK_THUMBPRINT_MISSING_MEMBER\0\u{1}JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_MEMBER_TYPE\0\u{1}JOSE_ERROR_REASON_JWK_THUMBPRINT_UNSUPPORTED_KEY_TYPE\0\u{1}JOSE_ERROR_REASON_JWK_THUMBPRINT_INVALID_JSON_OBJECT\0\u{1}JOSE_ERROR_REASON_JWK_THUMBPRINT_MEMBER_TOO_LARGE\0\u{2}h\u{4}JOSE_ERROR_REASON_COMMON_MALFORMED_PROTOBUF\0\u{1}JOSE_ERROR_REASON_COMMON_MALFORMED_JSON\0\u{1}JOSE_ERROR_REASON_COMMON_MISSING_OPERATION\0\u{1}JOSE_ERROR_REASON_COMMON_RESOURCE_LIMIT_EXCEEDED\0\u{1}JOSE_ERROR_REASON_COMMON_LENGTH_OVERFLOW\0\u{1}JOSE_ERROR_REASON_COMMON_INVALID_COMPACT\0\u{1}JOSE_ERROR_REASON_COMMON_INVALID_ENCODING\0\u{2}^\u{1}JOSE_ERROR_REASON_PROVIDER_UNAVAILABLE\0\u{1}JOSE_ERROR_REASON_PROVIDER_UNSUPPORTED\0\u{1}JOSE_ERROR_REASON_PROVIDER_RANDOMNESS_UNAVAILABLE\0\u{2}b\u{1}JOSE_ERROR_REASON_BACKEND_INTERNAL\0\u{1}JOSE_ERROR_REASON_BACKEND_JSON_SERIALIZATION\0\u{1}JOSE_ERROR_REASON_BACKEND_KEY_DERIVATION_FAILED\0\u{2}&JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION\0\u{1}JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION\0\u{2}\u{9}JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION\0")
 }
 
 nonisolated extension ReallyMeProtoJoseSignatureAlgorithm: SwiftProtobuf._ProtoNameProviding {
@@ -4429,7 +5032,7 @@ nonisolated extension ReallyMeProtoJoseErrorBranch: SwiftProtobuf._ProtoNameProv
 }
 
 nonisolated extension ReallyMeProtoJoseOperationKind: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_OPERATION_KIND_UNSPECIFIED\0\u{2}h\u{f}JOSE_OPERATION_KIND_JWS_SIGN\0\u{1}JOSE_OPERATION_KIND_JWS_VERIFY\0\u{2}\u{9}JOSE_OPERATION_KIND_SIGNATURE_SIGN\0\u{1}JOSE_OPERATION_KIND_SIGNATURE_VERIFY\0\u{1}JOSE_OPERATION_KIND_SIGNATURE_SUITE_INFO\0\u{1}JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER\0\u{1}JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER\0\u{1}JOSE_OPERATION_KIND_JWS_INSPECT\0\u{2}Y\u{f}JOSE_OPERATION_KIND_JWT_ENCODE_UNSIGNED\0\u{1}JOSE_OPERATION_KIND_JWT_DECODE_UNSIGNED\0\u{1}JOSE_OPERATION_KIND_JWT_SIGN\0\u{1}JOSE_OPERATION_KIND_JWT_VERIFY\0\u{2}\u{7}JOSE_OPERATION_KIND_JWT_SIGN_WITH_PROVIDER\0\u{1}JOSE_OPERATION_KIND_JWT_CLAIMS_PARSE\0\u{2}]\u{f}JOSE_OPERATION_KIND_JWE_ENCRYPT\0\u{1}JOSE_OPERATION_KIND_JWE_DECRYPT\0\u{2}\u{9}JOSE_OPERATION_KIND_JWE_DERIVE_KEY\0\u{1}JOSE_OPERATION_KIND_JWE_ENCRYPT_WITH_PROVIDER\0\u{1}JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER\0\u{2}\\\u{f}JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256\0\u{2}x.JOSE_OPERATION_KIND_CONTRACT_INFO\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_OPERATION_KIND_UNSPECIFIED\0\u{2}h\u{f}JOSE_OPERATION_KIND_JWS_SIGN\0\u{1}JOSE_OPERATION_KIND_JWS_VERIFY\0\u{2}\u{9}JOSE_OPERATION_KIND_SIGNATURE_SIGN\0\u{1}JOSE_OPERATION_KIND_SIGNATURE_VERIFY\0\u{1}JOSE_OPERATION_KIND_SIGNATURE_SUITE_INFO\0\u{1}JOSE_OPERATION_KIND_JWS_SIGN_WITH_PROVIDER\0\u{1}JOSE_OPERATION_KIND_JWS_VERIFY_WITH_PROVIDER\0\u{1}JOSE_OPERATION_KIND_JWS_INSPECT\0\u{1}JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED\0\u{1}JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED\0\u{2}W\u{f}JOSE_OPERATION_KIND_JWT_ENCODE_UNSIGNED\0\u{1}JOSE_OPERATION_KIND_JWT_DECODE_UNSIGNED\0\u{1}JOSE_OPERATION_KIND_JWT_SIGN\0\u{1}JOSE_OPERATION_KIND_JWT_VERIFY\0\u{2}\u{7}JOSE_OPERATION_KIND_JWT_SIGN_WITH_PROVIDER\0\u{1}JOSE_OPERATION_KIND_JWT_CLAIMS_PARSE\0\u{2}]\u{f}JOSE_OPERATION_KIND_JWE_ENCRYPT\0\u{1}JOSE_OPERATION_KIND_JWE_DECRYPT\0\u{2}\u{9}JOSE_OPERATION_KIND_JWE_DERIVE_KEY\0\u{1}JOSE_OPERATION_KIND_JWE_ENCRYPT_WITH_PROVIDER\0\u{1}JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER\0\u{2}\\\u{f}JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256\0\u{2}x.JOSE_OPERATION_KIND_CONTRACT_INFO\0")
 }
 
 nonisolated extension ReallyMeProtoJoseTransportStatus: SwiftProtobuf._ProtoNameProviding {
@@ -4438,6 +5041,470 @@ nonisolated extension ReallyMeProtoJoseTransportStatus: SwiftProtobuf._ProtoName
 
 nonisolated extension ReallyMeProtoJoseNativeAbiVersion: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0JOSE_NATIVE_ABI_VERSION_UNSPECIFIED\0\u{1}JOSE_NATIVE_ABI_VERSION_V1\0")
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportMemberPolicy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".JoseJwsTransportMemberPolicy"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}characters\0\u{3}allow_empty\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.characters) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.allowEmpty) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.characters != .unspecified {
+      try visitor.visitSingularEnumField(value: self.characters, fieldNumber: 1)
+    }
+    if self.allowEmpty != false {
+      try visitor.visitSingularBoolField(value: self.allowEmpty, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoJoseJwsTransportMemberPolicy, rhs: ReallyMeProtoJoseJwsTransportMemberPolicy) -> Bool {
+    if lhs.characters != rhs.characters {return false}
+    if lhs.allowEmpty != rhs.allowEmpty {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportPolicy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".JoseJwsTransportPolicy"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}protected_header\0\u{1}payload\0\u{1}signature\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._protectedHeader) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._payload) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._signature) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._protectedHeader {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._payload {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._signature {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoJoseJwsTransportPolicy, rhs: ReallyMeProtoJoseJwsTransportPolicy) -> Bool {
+    if lhs._protectedHeader != rhs._protectedHeader {return false}
+    if lhs._payload != rhs._payload {return false}
+    if lhs._signature != rhs._signature {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportFrameBudgets: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".JoseJwsTransportFrameBudgets"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}max_input_bytes\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt64Field(value: &self._maxInputBytes) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._maxInputBytes {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoJoseJwsTransportFrameBudgets, rhs: ReallyMeProtoJoseJwsTransportFrameBudgets) -> Bool {
+    if lhs._maxInputBytes != rhs._maxInputBytes {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportComposeBudgets: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".JoseJwsTransportComposeBudgets"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}max_input_bytes\0\u{3}max_output_bytes\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt64Field(value: &self._maxInputBytes) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self._maxOutputBytes) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._maxInputBytes {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._maxOutputBytes {
+      try visitor.visitSingularUInt64Field(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoJoseJwsTransportComposeBudgets, rhs: ReallyMeProtoJoseJwsTransportComposeBudgets) -> Bool {
+    if lhs._maxInputBytes != rhs._maxInputBytes {return false}
+    if lhs._maxOutputBytes != rhs._maxOutputBytes {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportFrameRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".JoseJwsTransportFrameRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}compact\0\u{1}policy\0\u{1}budgets\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.compact) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._policy) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._budgets) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.compact.isEmpty {
+      try visitor.visitSingularStringField(value: self.compact, fieldNumber: 1)
+    }
+    try { if let v = self._policy {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._budgets {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoJoseJwsTransportFrameRequest, rhs: ReallyMeProtoJoseJwsTransportFrameRequest) -> Bool {
+    if lhs.compact != rhs.compact {return false}
+    if lhs._policy != rhs._policy {return false}
+    if lhs._budgets != rhs._budgets {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportFrameResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".JoseJwsTransportFrameResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}protected_header_end\0\u{3}payload_end\0\u{3}signature_start\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt64Field(value: &self.protectedHeaderEnd) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.payloadEnd) }()
+      case 3: try { try decoder.decodeSingularUInt64Field(value: &self.signatureStart) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.protectedHeaderEnd != 0 {
+      try visitor.visitSingularUInt64Field(value: self.protectedHeaderEnd, fieldNumber: 1)
+    }
+    if self.payloadEnd != 0 {
+      try visitor.visitSingularUInt64Field(value: self.payloadEnd, fieldNumber: 2)
+    }
+    if self.signatureStart != 0 {
+      try visitor.visitSingularUInt64Field(value: self.signatureStart, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoJoseJwsTransportFrameResult, rhs: ReallyMeProtoJoseJwsTransportFrameResult) -> Bool {
+    if lhs.protectedHeaderEnd != rhs.protectedHeaderEnd {return false}
+    if lhs.payloadEnd != rhs.payloadEnd {return false}
+    if lhs.signatureStart != rhs.signatureStart {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportComposeRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".JoseJwsTransportComposeRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}protected_header\0\u{1}payload\0\u{1}signature\0\u{1}policy\0\u{1}budgets\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self._protectedHeader) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self._payload) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self._signature) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._policy) }()
+      case 5: try { try decoder.decodeSingularMessageField(value: &self._budgets) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._protectedHeader {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._payload {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._signature {
+      try visitor.visitSingularStringField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._policy {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._budgets {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoJoseJwsTransportComposeRequest, rhs: ReallyMeProtoJoseJwsTransportComposeRequest) -> Bool {
+    if lhs._protectedHeader != rhs._protectedHeader {return false}
+    if lhs._payload != rhs._payload {return false}
+    if lhs._signature != rhs._signature {return false}
+    if lhs._policy != rhs._policy {return false}
+    if lhs._budgets != rhs._budgets {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportCompactResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".JoseJwsTransportCompactResult"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}compact\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.compact) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.compact.isEmpty {
+      try visitor.visitSingularStringField(value: self.compact, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoJoseJwsTransportCompactResult, rhs: ReallyMeProtoJoseJwsTransportCompactResult) -> Bool {
+    if lhs.compact != rhs.compact {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportFrameResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".JoseJwsTransportFrameResponse"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}result\0\u{1}error\0\u{3}transport_reason\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try {
+        var v: ReallyMeProtoJoseJwsTransportFrameResult?
+        var hadOneofValue = false
+        if let current = self.outcome {
+          hadOneofValue = true
+          if case .result(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.outcome = .result(v)
+        }
+      }()
+      case 2: try {
+        var v: ReallyMeProtoJoseError?
+        var hadOneofValue = false
+        if let current = self.outcome {
+          hadOneofValue = true
+          if case .error(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.outcome = .error(v)
+        }
+      }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.transportReason) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.outcome {
+    case .result?: try {
+      guard case .result(let v)? = self.outcome else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }()
+    case .error?: try {
+      guard case .error(let v)? = self.outcome else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case nil: break
+    }
+    if self.transportReason != .unspecified {
+      try visitor.visitSingularEnumField(value: self.transportReason, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoJoseJwsTransportFrameResponse, rhs: ReallyMeProtoJoseJwsTransportFrameResponse) -> Bool {
+    if lhs.outcome != rhs.outcome {return false}
+    if lhs.transportReason != rhs.transportReason {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportComposeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".JoseJwsTransportComposeResponse"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}result\0\u{1}error\0\u{3}transport_reason\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try {
+        var v: ReallyMeProtoJoseJwsTransportCompactResult?
+        var hadOneofValue = false
+        if let current = self.outcome {
+          hadOneofValue = true
+          if case .result(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.outcome = .result(v)
+        }
+      }()
+      case 2: try {
+        var v: ReallyMeProtoJoseError?
+        var hadOneofValue = false
+        if let current = self.outcome {
+          hadOneofValue = true
+          if case .error(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.outcome = .error(v)
+        }
+      }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.transportReason) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    switch self.outcome {
+    case .result?: try {
+      guard case .result(let v)? = self.outcome else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    }()
+    case .error?: try {
+      guard case .error(let v)? = self.outcome else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    }()
+    case nil: break
+    }
+    if self.transportReason != .unspecified {
+      try visitor.visitSingularEnumField(value: self.transportReason, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: ReallyMeProtoJoseJwsTransportComposeResponse, rhs: ReallyMeProtoJoseJwsTransportComposeResponse) -> Bool {
+    if lhs.outcome != rhs.outcome {return false}
+    if lhs.transportReason != rhs.transportReason {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }
 
 nonisolated extension ReallyMeProtoJoseError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
@@ -4616,7 +5683,7 @@ nonisolated extension ReallyMeProtoJoseBackendError: SwiftProtobuf.Message, Swif
 
 nonisolated extension ReallyMeProtoJoseOperationResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".JoseOperationResponse"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}\u{a}contract_version\0\u{4}z\u{d}boundary_error\0\u{4}d\u{1}jws_sign\0\u{3}jws_verify\0\u{4}\u{9}signature_sign\0\u{3}signature_verify\0\u{3}signature_suite_info\0\u{3}jws_sign_with_provider\0\u{3}jws_verify_with_provider\0\u{3}jws_inspect\0\u{4}Y\u{f}jwt_encode_unsigned\0\u{3}jwt_decode_unsigned\0\u{3}jwt_sign\0\u{3}jwt_verify\0\u{4}\u{7}jwt_sign_with_provider\0\u{3}jwt_claims_parse\0\u{4}]\u{f}jwe_encrypt\0\u{3}jwe_decrypt\0\u{4}\u{9}jwe_derive_key\0\u{3}jwe_encrypt_with_provider\0\u{3}jwe_decrypt_with_provider\0\u{4}\\\u{f}jwk_thumbprint_sha256\0\u{4}x.contract_info\0\u{c}\u{1}\u{9}\u{c}\u{b}y\u{d}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}\u{a}contract_version\0\u{4}z\u{d}boundary_error\0\u{4}d\u{1}jws_sign\0\u{3}jws_verify\0\u{4}\u{9}signature_sign\0\u{3}signature_verify\0\u{3}signature_suite_info\0\u{3}jws_sign_with_provider\0\u{3}jws_verify_with_provider\0\u{3}jws_inspect\0\u{3}jws_frame_unauthenticated\0\u{3}jws_compose_unauthenticated\0\u{4}W\u{f}jwt_encode_unsigned\0\u{3}jwt_decode_unsigned\0\u{3}jwt_sign\0\u{3}jwt_verify\0\u{4}\u{7}jwt_sign_with_provider\0\u{3}jwt_claims_parse\0\u{4}]\u{f}jwe_encrypt\0\u{3}jwe_decrypt\0\u{4}\u{9}jwe_derive_key\0\u{3}jwe_encrypt_with_provider\0\u{3}jwe_decrypt_with_provider\0\u{4}\\\u{f}jwk_thumbprint_sha256\0\u{4}x.contract_info\0\u{c}\u{1}\u{9}\u{c}\u{b}y\u{d}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -4740,6 +5807,32 @@ nonisolated extension ReallyMeProtoJoseOperationResponse: SwiftProtobuf.Message,
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
           self.response = .jwsInspect(v)
+        }
+      }()
+      case 1016: try {
+        var v: ReallyMeProtoJoseJwsTransportFrameResponse?
+        var hadOneofValue = false
+        if let current = self.response {
+          hadOneofValue = true
+          if case .jwsFrameUnauthenticated(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.response = .jwsFrameUnauthenticated(v)
+        }
+      }()
+      case 1017: try {
+        var v: ReallyMeProtoJoseJwsTransportComposeResponse?
+        var hadOneofValue = false
+        if let current = self.response {
+          hadOneofValue = true
+          if case .jwsComposeUnauthenticated(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.response = .jwsComposeUnauthenticated(v)
         }
       }()
       case 2000: try {
@@ -4961,6 +6054,14 @@ nonisolated extension ReallyMeProtoJoseOperationResponse: SwiftProtobuf.Message,
       guard case .jwsInspect(let v)? = self.response else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1015)
     }()
+    case .jwsFrameUnauthenticated?: try {
+      guard case .jwsFrameUnauthenticated(let v)? = self.response else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1016)
+    }()
+    case .jwsComposeUnauthenticated?: try {
+      guard case .jwsComposeUnauthenticated(let v)? = self.response else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1017)
+    }()
     case .jwtEncodeUnsigned?: try {
       guard case .jwtEncodeUnsigned(let v)? = self.response else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2000)
@@ -5028,7 +6129,7 @@ nonisolated extension ReallyMeProtoJoseOperationResponse: SwiftProtobuf.Message,
 
 nonisolated extension ReallyMeProtoJoseOperationRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".JoseOperationRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}h\u{f}jws_sign\0\u{3}jws_verify\0\u{4}\u{9}signature_sign\0\u{3}signature_verify\0\u{3}signature_suite_info\0\u{3}jws_sign_with_provider\0\u{3}jws_verify_with_provider\0\u{3}jws_inspect\0\u{4}Y\u{f}jwt_encode_unsigned\0\u{3}jwt_decode_unsigned\0\u{3}jwt_sign\0\u{3}jwt_verify\0\u{4}\u{7}jwt_sign_with_provider\0\u{3}jwt_claims_parse\0\u{4}]\u{f}jwe_encrypt\0\u{3}jwe_decrypt\0\u{4}\u{9}jwe_derive_key\0\u{3}jwe_encrypt_with_provider\0\u{3}jwe_decrypt_with_provider\0\u{4}\\\u{f}jwk_thumbprint_sha256\0\u{4}x.contract_info\0\u{c}\u{1}\u{8}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}h\u{f}jws_sign\0\u{3}jws_verify\0\u{4}\u{9}signature_sign\0\u{3}signature_verify\0\u{3}signature_suite_info\0\u{3}jws_sign_with_provider\0\u{3}jws_verify_with_provider\0\u{3}jws_inspect\0\u{3}jws_frame_unauthenticated\0\u{3}jws_compose_unauthenticated\0\u{4}W\u{f}jwt_encode_unsigned\0\u{3}jwt_decode_unsigned\0\u{3}jwt_sign\0\u{3}jwt_verify\0\u{4}\u{7}jwt_sign_with_provider\0\u{3}jwt_claims_parse\0\u{4}]\u{f}jwe_encrypt\0\u{3}jwe_decrypt\0\u{4}\u{9}jwe_derive_key\0\u{3}jwe_encrypt_with_provider\0\u{3}jwe_decrypt_with_provider\0\u{4}\\\u{f}jwk_thumbprint_sha256\0\u{4}x.contract_info\0\u{c}\u{1}\u{8}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5138,6 +6239,32 @@ nonisolated extension ReallyMeProtoJoseOperationRequest: SwiftProtobuf.Message, 
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
           self.operation = .jwsInspect(v)
+        }
+      }()
+      case 1016: try {
+        var v: ReallyMeProtoJoseJwsTransportFrameRequest?
+        var hadOneofValue = false
+        if let current = self.operation {
+          hadOneofValue = true
+          if case .jwsFrameUnauthenticated(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.operation = .jwsFrameUnauthenticated(v)
+        }
+      }()
+      case 1017: try {
+        var v: ReallyMeProtoJoseJwsTransportComposeRequest?
+        var hadOneofValue = false
+        if let current = self.operation {
+          hadOneofValue = true
+          if case .jwsComposeUnauthenticated(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.operation = .jwsComposeUnauthenticated(v)
         }
       }()
       case 2000: try {
@@ -5351,6 +6478,14 @@ nonisolated extension ReallyMeProtoJoseOperationRequest: SwiftProtobuf.Message, 
     case .jwsInspect?: try {
       guard case .jwsInspect(let v)? = self.operation else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1015)
+    }()
+    case .jwsFrameUnauthenticated?: try {
+      guard case .jwsFrameUnauthenticated(let v)? = self.operation else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1016)
+    }()
+    case .jwsComposeUnauthenticated?: try {
+      guard case .jwsComposeUnauthenticated(let v)? = self.operation else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1017)
     }()
     case .jwtEncodeUnsigned?: try {
       guard case .jwtEncodeUnsigned(let v)? = self.operation else { preconditionFailure() }
@@ -8888,6 +10023,76 @@ nonisolated extension ReallyMeProtoJoseJwkThumbprintSha256Response: SwiftProtobu
 }
 
 // Generated JOSE message reflection redaction.
+nonisolated extension ReallyMeProtoJoseJwsTransportMemberPolicy: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsTransportMemberPolicy(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportPolicy: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsTransportPolicy(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportFrameBudgets: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsTransportFrameBudgets(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportComposeBudgets: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsTransportComposeBudgets(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportFrameRequest: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsTransportFrameRequest(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportFrameResult: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsTransportFrameResult(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportComposeRequest: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsTransportComposeRequest(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportCompactResult: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsTransportCompactResult(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportFrameResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsTransportFrameResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
+nonisolated extension ReallyMeProtoJoseJwsTransportComposeResponse: Swift.CustomReflectable {
+  public var debugDescription: String { "ReallyMeProtoJoseJwsTransportComposeResponse(<redacted>)" }
+  public var customMirror: Mirror {
+    Mirror(self, children: [("value", "<redacted>")])
+  }
+}
+
 nonisolated extension ReallyMeProtoJoseError: Swift.CustomReflectable {
   public var debugDescription: String { "ReallyMeProtoJoseError(<redacted>)" }
   public var customMirror: Mirror {

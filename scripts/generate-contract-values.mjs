@@ -74,10 +74,27 @@ export function generateContractValues({ check = false } = {}) {
     pendingFailures = [];
   }
   if (pendingFailures.length !== 0) throw new TypeError("native failure lacks a schema reason");
+  const transportBindings = [...schema.matchAll(/\/\/ Rust transport failure: (\w+::\w+)\n\s*(JOSE_JWS_TRANSPORT_ERROR_REASON_[A-Z_]+)\s*=/gu)];
+  if (transportBindings.length === 0 || new Set(transportBindings.map(([, native]) => native)).size !== transportBindings.length) {
+    throw new TypeError("invalid transport reason bindings");
+  }
+  const transportReasons = header +
+    "use super::JwsTransportErrorReason;\nuse crate::api::contract::JoseJwsTransportErrorReason;\n\n" +
+    "pub(super) const fn reason(error: &JwsTransportErrorReason) -> JoseJwsTransportErrorReason {\n    match error {\n" +
+    transportBindings.map(([, native, reason]) => `        ${native} => JoseJwsTransportErrorReason::${reason},`).join("\n") +
+    "\n    }\n}\n\n" +
+    "pub(crate) const fn stack_reason(reason: JoseJwsTransportErrorReason) -> Option<crate::api::contract::JoseErrorReason> {\n    match reason {\n" +
+    transportBindings.map(([, native, reason]) => {
+      const stack = failureBindings.get(native);
+      if (stack === undefined) throw new TypeError("transport failure lacks a stack projection");
+      return `        JoseJwsTransportErrorReason::${reason} => Some(crate::api::contract::JoseErrorReason::${stack}),`;
+    }).join("\n") +
+    "\n        JoseJwsTransportErrorReason::Unspecified => None,\n    }\n}\n";
   let failureSource = header + `//! Total native failure mappings derived from schema bindings.
 
 use crate::jwe::JweError;
 use crate::jws::suites::{eddsa::JwsEddsaError, es256::JwsEs256Error};
+use crate::jws::transport::JwsTransportErrorReason;
 use crate::jwt::JwtError;
 use crate::jwk::JwkThumbprintErrorReason;
 use crate::operation_contract::jws::{JwsSignError, JwsSignErrorReason, JwsVerifyError, JwsVerifyErrorReason};
@@ -89,6 +106,7 @@ use reallyme_jose_proto::generated::proto::reallyme::jose::v1::JoseErrorReason;
     ["construction", "JoseWireErrorConstructionError", "JoseWireErrorConstructionError"],
     ["jwe", "JweError", "JweError"], ["jwt", "JwtError", "JwtError"],
     ["jwk_thumbprint", "JwkThumbprintErrorReason", "JwkThumbprintErrorReason"],
+    ["jws_transport", "JwsTransportErrorReason", "JwsTransportErrorReason"],
     ["jws_sign", "JwsSignError", "JwsSignErrorReason"], ["jws_verify", "JwsVerifyError", "JwsVerifyErrorReason"],
     ["eddsa", "JwsEddsaError", "JwsEddsaError"], ["es256", "JwsEs256Error", "JwsEs256Error"],
   ]) {
@@ -166,11 +184,14 @@ use reallyme_jose_proto::generated::proto::reallyme::jose::v1::JoseErrorReason;
   if (formattedRust.status !== 0) throw new TypeError("formatting schema-derived Rust values failed");
   const formattedFailures = spawnSync("rustfmt", ["--edition", "2021", "--emit", "stdout"], { input: failureSource, encoding: "utf8" });
   if (formattedFailures.status !== 0) throw new TypeError("formatting schema-derived failure mappings failed");
+  const formattedTransportReasons = spawnSync("rustfmt", ["--edition", "2021", "--emit", "stdout"], { input: transportReasons, encoding: "utf8" });
+  if (formattedTransportReasons.status !== 0) throw new TypeError("formatting transport reason mappings failed");
   const files = new Map([
     ...nativeSelectors(schema, header),
     ...policyPresets(schema, header),
     ...sdkVerification(schema, header),
     ["crates/jose/src/map_failure.rs", formattedFailures.stdout],
+    ["crates/jose/src/jws/transport/map_reason.rs", formattedTransportReasons.stdout],
     ["crates/proto/src/generated/package.rs", header + `/// Canonical protobuf package for ReallyMe JOSE boundary messages.\npub const JOSE_PROTO_PACKAGE: &str = "${packageName}";\n`],
     ["crates/proto/src/generated/contract_values.rs", formattedRust.stdout],
     ["packages/ts/src/proto/contract-values.ts", typescript],

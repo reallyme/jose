@@ -283,6 +283,28 @@ public interface JoseOperationRequestOrBuilder extends
   me.really.jose.v1.JoseJwsInspectRequest getJwsInspect();
 
   /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+   * @return Whether the jwsFrameUnauthenticated field is set.
+   */
+  boolean hasJwsFrameUnauthenticated();
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+   * @return The jwsFrameUnauthenticated.
+   */
+  me.really.jose.v1.JoseJwsTransportFrameRequest getJwsFrameUnauthenticated();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+   * @return Whether the jwsComposeUnauthenticated field is set.
+   */
+  boolean hasJwsComposeUnauthenticated();
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+   * @return The jwsComposeUnauthenticated.
+   */
+  me.really.jose.v1.JoseJwsTransportComposeRequest getJwsComposeUnauthenticated();
+
+  /**
    * <pre>
    * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
    * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options

@@ -28,6 +28,16 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
   case jwsInvalidSignature = 142
   case jwsSignFailed = 160
   case jwsBadDerSignature = 161
+  case jwsTransportMissingPolicy = 180
+  case jwsTransportInvalidCharacterPolicy = 181
+  case jwsTransportMissingBudget = 182
+  case jwsTransportMissingMember = 183
+  case jwsTransportInputTooLarge = 184
+  case jwsTransportOutputTooLarge = 185
+  case jwsTransportEmptyMember = 186
+  case jwsTransportInvalidCharacters = 187
+  case jwsTransportLengthOverflow = 188
+  case jwsTransportInvalidFraming = 189
   case jweInvalidHeader = 220
   case jweUnsupportedKeyManagementAlgorithm = 221
   case jweUnsupportedContentEncryptionAlgorithm = 222
@@ -95,6 +105,7 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
   case backendKeyDerivationFailed = 902
   case backendJwkThumbprintSerialization = 940
   case backendJwkThumbprintAllocation = 941
+  case backendJwsTransportAllocation = 950
 
   var branch: ReallyMeJOSEErrorBranch {
     switch self {
@@ -108,6 +119,16 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
     case .jwsInvalidSignature: .primitive
     case .jwsSignFailed: .primitive
     case .jwsBadDerSignature: .primitive
+    case .jwsTransportMissingPolicy: .primitive
+    case .jwsTransportInvalidCharacterPolicy: .primitive
+    case .jwsTransportMissingBudget: .primitive
+    case .jwsTransportMissingMember: .primitive
+    case .jwsTransportInputTooLarge: .primitive
+    case .jwsTransportOutputTooLarge: .primitive
+    case .jwsTransportEmptyMember: .primitive
+    case .jwsTransportInvalidCharacters: .primitive
+    case .jwsTransportLengthOverflow: .primitive
+    case .jwsTransportInvalidFraming: .primitive
     case .jweInvalidHeader: .primitive
     case .jweUnsupportedKeyManagementAlgorithm: .primitive
     case .jweUnsupportedContentEncryptionAlgorithm: .primitive
@@ -175,6 +196,7 @@ public enum ReallyMeJOSEErrorReason: Int, Sendable, Equatable {
     case .backendKeyDerivationFailed: .backend
     case .backendJwkThumbprintSerialization: .backend
     case .backendJwkThumbprintAllocation: .backend
+    case .backendJwsTransportAllocation: .backend
     }
   }
 

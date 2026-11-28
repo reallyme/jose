@@ -2037,7 +2037,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-jose"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "flate2",
  "reallyme-buffa",
@@ -2053,7 +2053,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-jose-ffi"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "jni",
  "reallyme-buffa",
@@ -2066,7 +2066,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-jose-proto"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "base64",
  "reallyme-buffa",
@@ -2079,7 +2079,7 @@ dependencies = [
 
 [[package]]
 name = "reallyme-jose-wasm"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "js-sys",
  "reallyme-crypto",

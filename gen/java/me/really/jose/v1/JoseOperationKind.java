@@ -189,6 +189,22 @@ public enum JoseOperationKind
    * <code>JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000;</code>
    */
   JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256(4000),
+  /**
+   * <pre>
+   * Rust variant: JoseOperationKind.JwsFrameUnauthenticated
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED = 1016;</code>
+   */
+  JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED(1016),
+  /**
+   * <pre>
+   * Rust variant: JoseOperationKind.JwsComposeUnauthenticated
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED = 1017;</code>
+   */
+  JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED(1017),
   UNRECOGNIZED(-1),
   ;
 
@@ -365,6 +381,22 @@ public enum JoseOperationKind
    * <code>JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000;</code>
    */
   public static final int JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256_VALUE = 4000;
+  /**
+   * <pre>
+   * Rust variant: JoseOperationKind.JwsFrameUnauthenticated
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED = 1016;</code>
+   */
+  public static final int JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED_VALUE = 1016;
+  /**
+   * <pre>
+   * Rust variant: JoseOperationKind.JwsComposeUnauthenticated
+   * </pre>
+   *
+   * <code>JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED = 1017;</code>
+   */
+  public static final int JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED_VALUE = 1017;
 
 
   @java.lang.Override
@@ -409,6 +441,8 @@ public enum JoseOperationKind
       case 3012: return JOSE_OPERATION_KIND_JWE_DECRYPT_WITH_PROVIDER;
       case 7000: return JOSE_OPERATION_KIND_CONTRACT_INFO;
       case 4000: return JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256;
+      case 1016: return JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED;
+      case 1017: return JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED;
       default: return null;
     }
   }

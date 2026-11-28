@@ -30,6 +30,16 @@ public enum class ReallyMeJoseErrorReason(public val code: Int, internal val bra
     JWS_INVALID_SIGNATURE(142, ReallyMeJoseErrorBranch.PRIMITIVE),
     JWS_SIGN_FAILED(160, ReallyMeJoseErrorBranch.PRIMITIVE),
     JWS_BAD_DER_SIGNATURE(161, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_TRANSPORT_MISSING_POLICY(180, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_TRANSPORT_INVALID_CHARACTER_POLICY(181, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_TRANSPORT_MISSING_BUDGET(182, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_TRANSPORT_MISSING_MEMBER(183, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_TRANSPORT_INPUT_TOO_LARGE(184, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_TRANSPORT_OUTPUT_TOO_LARGE(185, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_TRANSPORT_EMPTY_MEMBER(186, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_TRANSPORT_INVALID_CHARACTERS(187, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_TRANSPORT_LENGTH_OVERFLOW(188, ReallyMeJoseErrorBranch.PRIMITIVE),
+    JWS_TRANSPORT_INVALID_FRAMING(189, ReallyMeJoseErrorBranch.PRIMITIVE),
     JWE_INVALID_HEADER(220, ReallyMeJoseErrorBranch.PRIMITIVE),
     JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM(221, ReallyMeJoseErrorBranch.PRIMITIVE),
     JWE_UNSUPPORTED_CONTENT_ENCRYPTION_ALGORITHM(222, ReallyMeJoseErrorBranch.PRIMITIVE),
@@ -97,6 +107,7 @@ public enum class ReallyMeJoseErrorReason(public val code: Int, internal val bra
     BACKEND_KEY_DERIVATION_FAILED(902, ReallyMeJoseErrorBranch.BACKEND),
     BACKEND_JWK_THUMBPRINT_SERIALIZATION(940, ReallyMeJoseErrorBranch.BACKEND),
     BACKEND_JWK_THUMBPRINT_ALLOCATION(941, ReallyMeJoseErrorBranch.BACKEND),
+    BACKEND_JWS_TRANSPORT_ALLOCATION(950, ReallyMeJoseErrorBranch.BACKEND),
     ;
     internal companion object {
         private val byCode: Map<Int, ReallyMeJoseErrorReason> = entries.associateBy { it.code }

@@ -219,6 +219,28 @@ public interface JoseOperationResponseOrBuilder extends
   me.really.jose.v1.JoseJwsInspectResponse getJwsInspect();
 
   /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportFrameResponse jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+   * @return Whether the jwsFrameUnauthenticated field is set.
+   */
+  boolean hasJwsFrameUnauthenticated();
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportFrameResponse jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];</code>
+   * @return The jwsFrameUnauthenticated.
+   */
+  me.really.jose.v1.JoseJwsTransportFrameResponse getJwsFrameUnauthenticated();
+
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportComposeResponse jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+   * @return Whether the jwsComposeUnauthenticated field is set.
+   */
+  boolean hasJwsComposeUnauthenticated();
+  /**
+   * <code>.reallyme.jose.v1.JoseJwsTransportComposeResponse jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];</code>
+   * @return The jwsComposeUnauthenticated.
+   */
+  me.really.jose.v1.JoseJwsTransportComposeResponse getJwsComposeUnauthenticated();
+
+  /**
    * <code>.reallyme.jose.v1.JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010 [json_name = "jwtSignWithProvider"];</code>
    * @return Whether the jwtSignWithProvider field is set.
    */

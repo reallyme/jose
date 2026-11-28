@@ -8,7 +8,7 @@ service or transport. Use the matching `reallyme-jose` release to execute them.
 
 ```toml
 [dependencies]
-reallyme-jose-proto = { version = "0.6.0", features = ["generated"] }
+reallyme-jose-proto = { version = "0.7.0", features = ["generated"] }
 ```
 
 ## Requests and responses

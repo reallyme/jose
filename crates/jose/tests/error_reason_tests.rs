@@ -10,6 +10,85 @@ use reallyme_jose::jwt::{JwtError, JwtRegisteredClaim, JwtTemporalClaim};
 use reallyme_jose::wire::proto::proto::reallyme::jose::v1::JoseErrorReason;
 
 #[test]
+fn transport_errors_cover_exactly_the_schema_reasons() {
+    use buffa::Enumeration;
+    use reallyme_jose::api::contract::JoseErrorReason as Reason;
+    use reallyme_jose::jws::transport::JwsTransportErrorReason;
+    let cases = [
+        (
+            JwsTransportErrorReason::MissingPolicy,
+            Reason::JwsTransportMissingPolicy,
+        ),
+        (
+            JwsTransportErrorReason::InvalidCharacterPolicy,
+            Reason::JwsTransportInvalidCharacterPolicy,
+        ),
+        (
+            JwsTransportErrorReason::MissingBudget,
+            Reason::JwsTransportMissingBudget,
+        ),
+        (
+            JwsTransportErrorReason::MissingMember,
+            Reason::JwsTransportMissingMember,
+        ),
+        (
+            JwsTransportErrorReason::InputTooLarge,
+            Reason::JwsTransportInputTooLarge,
+        ),
+        (
+            JwsTransportErrorReason::OutputTooLarge,
+            Reason::JwsTransportOutputTooLarge,
+        ),
+        (
+            JwsTransportErrorReason::InvalidFraming,
+            Reason::JwsTransportInvalidFraming,
+        ),
+        (
+            JwsTransportErrorReason::EmptyMember,
+            Reason::JwsTransportEmptyMember,
+        ),
+        (
+            JwsTransportErrorReason::InvalidCharacters,
+            Reason::JwsTransportInvalidCharacters,
+        ),
+        (
+            JwsTransportErrorReason::LengthOverflow,
+            Reason::JwsTransportLengthOverflow,
+        ),
+        (
+            JwsTransportErrorReason::Allocation,
+            Reason::BackendJwsTransportAllocation,
+        ),
+    ];
+    for (native, contract) in &cases {
+        assert_eq!(native.stack_reason(), *contract);
+    }
+    let stack: std::collections::BTreeSet<_> = cases
+        .iter()
+        .map(|(native, _)| native.stack_reason().to_i32())
+        .collect();
+    let local: std::collections::BTreeSet<_> = cases
+        .iter()
+        .map(|(native, _)| native.reason().to_i32())
+        .collect();
+    assert_eq!(stack.len(), cases.len());
+    assert_eq!(local.len(), cases.len());
+    for value in reallyme_jose::api::contract::JoseJwsTransportErrorReason::values() {
+        if *value != reallyme_jose::api::contract::JoseJwsTransportErrorReason::Unspecified {
+            assert!(local.contains(&value.to_i32()));
+        }
+    }
+    for value in Reason::values() {
+        if (180..200).contains(&value.to_i32()) || *value == Reason::BackendJwsTransportAllocation {
+            assert_eq!(
+                cases.iter().filter(|(_, reason)| reason == value).count(),
+                1
+            );
+        }
+    }
+}
+
+#[test]
 fn wire_construction_error_is_schema_mapped() {
     let error = reallyme_jose::wire::JoseWireErrorConstructionError::BranchReasonMismatch;
     assert_eq!(error.reason(), JoseErrorReason::BackendInternal);

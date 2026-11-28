@@ -2,6 +2,152 @@
 // Modified by ReallyMe Technologies Limited.
 // source: reallyme/jose/v1/jose.proto
 
+pub mod jose_jws_transport_frame_response {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, PartialEq)]
+    pub enum Outcome {
+        Result(
+            ::buffa::alloc::boxed::Box<super::super::super::JoseJwsTransportFrameResult>,
+        ),
+        Error(::buffa::alloc::boxed::Box<super::super::super::JoseError>),
+    }
+    impl ::core::fmt::Debug for Outcome {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.write_str("Outcome([REDACTED])")
+        }
+    }
+    impl ::buffa::sensitive::Zeroize for Outcome {
+        fn zeroize(&mut self) {
+            match self {
+                Self::Result(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Error(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+            }
+        }
+    }
+    impl ::buffa::sensitive::ZeroizeOnDrop for Outcome {}
+    impl ::core::ops::Drop for Outcome {
+        fn drop(&mut self) {
+            ::buffa::sensitive::Zeroize::zeroize(self);
+        }
+    }
+    impl ::buffa::Oneof for Outcome {}
+    impl ::core::convert::From<super::super::super::JoseJwsTransportFrameResult>
+    for Outcome {
+        fn from(v: super::super::super::JoseJwsTransportFrameResult) -> Self {
+            Self::Result(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsTransportFrameResult>
+    for ::core::option::Option<Outcome> {
+        fn from(v: super::super::super::JoseJwsTransportFrameResult) -> Self {
+            Self::Some(Outcome::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseError> for Outcome {
+        fn from(v: super::super::super::JoseError) -> Self {
+            Self::Error(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseError>
+    for ::core::option::Option<Outcome> {
+        fn from(v: super::super::super::JoseError) -> Self {
+            Self::Some(Outcome::from(v))
+        }
+    }
+    impl ::serde::Serialize for Outcome {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            s: __S,
+        ) -> ::core::result::Result<__S::Ok, __S::Error> {
+            use ::serde::ser::SerializeMap;
+            let mut map = s.serialize_map(Some(1))?;
+            match self {
+                Self::Result(v) => {
+                    map.serialize_entry("result", &**v)?;
+                }
+                Self::Error(v) => {
+                    map.serialize_entry("error", &**v)?;
+                }
+            }
+            map.end()
+        }
+    }
+}
+pub mod jose_jws_transport_compose_response {
+    #[allow(unused_imports)]
+    use super::*;
+    #[derive(Clone, PartialEq)]
+    pub enum Outcome {
+        Result(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::JoseJwsTransportCompactResult,
+            >,
+        ),
+        Error(::buffa::alloc::boxed::Box<super::super::super::JoseError>),
+    }
+    impl ::core::fmt::Debug for Outcome {
+        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+            f.write_str("Outcome([REDACTED])")
+        }
+    }
+    impl ::buffa::sensitive::Zeroize for Outcome {
+        fn zeroize(&mut self) {
+            match self {
+                Self::Result(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+                Self::Error(value) => ::buffa::sensitive::Zeroize::zeroize(&mut **value),
+            }
+        }
+    }
+    impl ::buffa::sensitive::ZeroizeOnDrop for Outcome {}
+    impl ::core::ops::Drop for Outcome {
+        fn drop(&mut self) {
+            ::buffa::sensitive::Zeroize::zeroize(self);
+        }
+    }
+    impl ::buffa::Oneof for Outcome {}
+    impl ::core::convert::From<super::super::super::JoseJwsTransportCompactResult>
+    for Outcome {
+        fn from(v: super::super::super::JoseJwsTransportCompactResult) -> Self {
+            Self::Result(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsTransportCompactResult>
+    for ::core::option::Option<Outcome> {
+        fn from(v: super::super::super::JoseJwsTransportCompactResult) -> Self {
+            Self::Some(Outcome::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseError> for Outcome {
+        fn from(v: super::super::super::JoseError) -> Self {
+            Self::Error(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseError>
+    for ::core::option::Option<Outcome> {
+        fn from(v: super::super::super::JoseError) -> Self {
+            Self::Some(Outcome::from(v))
+        }
+    }
+    impl ::serde::Serialize for Outcome {
+        fn serialize<__S: ::serde::Serializer>(
+            &self,
+            s: __S,
+        ) -> ::core::result::Result<__S::Ok, __S::Error> {
+            use ::serde::ser::SerializeMap;
+            let mut map = s.serialize_map(Some(1))?;
+            match self {
+                Self::Result(v) => {
+                    map.serialize_entry("result", &**v)?;
+                }
+                Self::Error(v) => {
+                    map.serialize_entry("error", &**v)?;
+                }
+            }
+            map.end()
+        }
+    }
+}
 pub mod jose_error {
     #[allow(unused_imports)]
     use super::*;
@@ -143,6 +289,16 @@ pub mod jose_operation_response {
         JwsInspect(
             ::buffa::alloc::boxed::Box<super::super::super::JoseJwsInspectResponse>,
         ),
+        JwsFrameUnauthenticated(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::JoseJwsTransportFrameResponse,
+            >,
+        ),
+        JwsComposeUnauthenticated(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::JoseJwsTransportComposeResponse,
+            >,
+        ),
         JwtSignWithProvider(
             ::buffa::alloc::boxed::Box<
                 super::super::super::JoseJwtSignWithProviderResponse,
@@ -224,6 +380,12 @@ pub mod jose_operation_response {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JwsInspect(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsFrameUnauthenticated(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsComposeUnauthenticated(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JwtSignWithProvider(value) => {
@@ -386,6 +548,30 @@ pub mod jose_operation_response {
             Self::Some(Response::from(v))
         }
     }
+    impl ::core::convert::From<super::super::super::JoseJwsTransportFrameResponse>
+    for Response {
+        fn from(v: super::super::super::JoseJwsTransportFrameResponse) -> Self {
+            Self::JwsFrameUnauthenticated(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsTransportFrameResponse>
+    for ::core::option::Option<Response> {
+        fn from(v: super::super::super::JoseJwsTransportFrameResponse) -> Self {
+            Self::Some(Response::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsTransportComposeResponse>
+    for Response {
+        fn from(v: super::super::super::JoseJwsTransportComposeResponse) -> Self {
+            Self::JwsComposeUnauthenticated(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsTransportComposeResponse>
+    for ::core::option::Option<Response> {
+        fn from(v: super::super::super::JoseJwsTransportComposeResponse) -> Self {
+            Self::Some(Response::from(v))
+        }
+    }
     impl ::core::convert::From<super::super::super::JoseJwtSignWithProviderResponse>
     for Response {
         fn from(v: super::super::super::JoseJwtSignWithProviderResponse) -> Self {
@@ -523,6 +709,12 @@ pub mod jose_operation_response {
                 Self::JwsInspect(v) => {
                     map.serialize_entry("jwsInspect", &**v)?;
                 }
+                Self::JwsFrameUnauthenticated(v) => {
+                    map.serialize_entry("jwsFrameUnauthenticated", &**v)?;
+                }
+                Self::JwsComposeUnauthenticated(v) => {
+                    map.serialize_entry("jwsComposeUnauthenticated", &**v)?;
+                }
                 Self::JwtSignWithProvider(v) => {
                     map.serialize_entry("jwtSignWithProvider", &**v)?;
                 }
@@ -593,6 +785,14 @@ pub mod jose_operation_request {
         ),
         JwsInspect(
             ::buffa::alloc::boxed::Box<super::super::super::JoseJwsInspectRequest>,
+        ),
+        JwsFrameUnauthenticated(
+            ::buffa::alloc::boxed::Box<super::super::super::JoseJwsTransportFrameRequest>,
+        ),
+        JwsComposeUnauthenticated(
+            ::buffa::alloc::boxed::Box<
+                super::super::super::JoseJwsTransportComposeRequest,
+            >,
         ),
         JwtSignWithProvider(
             ::buffa::alloc::boxed::Box<
@@ -672,6 +872,12 @@ pub mod jose_operation_request {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JwsInspect(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsFrameUnauthenticated(value) => {
+                    ::buffa::sensitive::Zeroize::zeroize(&mut **value)
+                }
+                Self::JwsComposeUnauthenticated(value) => {
                     ::buffa::sensitive::Zeroize::zeroize(&mut **value)
                 }
                 Self::JwtSignWithProvider(value) => {
@@ -869,6 +1075,30 @@ pub mod jose_operation_request {
             Self::Some(Operation::from(v))
         }
     }
+    impl ::core::convert::From<super::super::super::JoseJwsTransportFrameRequest>
+    for Operation {
+        fn from(v: super::super::super::JoseJwsTransportFrameRequest) -> Self {
+            Self::JwsFrameUnauthenticated(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsTransportFrameRequest>
+    for ::core::option::Option<Operation> {
+        fn from(v: super::super::super::JoseJwsTransportFrameRequest) -> Self {
+            Self::Some(Operation::from(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsTransportComposeRequest>
+    for Operation {
+        fn from(v: super::super::super::JoseJwsTransportComposeRequest) -> Self {
+            Self::JwsComposeUnauthenticated(::buffa::alloc::boxed::Box::new(v))
+        }
+    }
+    impl ::core::convert::From<super::super::super::JoseJwsTransportComposeRequest>
+    for ::core::option::Option<Operation> {
+        fn from(v: super::super::super::JoseJwsTransportComposeRequest) -> Self {
+            Self::Some(Operation::from(v))
+        }
+    }
     impl ::core::convert::From<super::super::super::JoseJwtSignWithProviderRequest>
     for Operation {
         fn from(v: super::super::super::JoseJwtSignWithProviderRequest) -> Self {
@@ -1002,6 +1232,12 @@ pub mod jose_operation_request {
                 }
                 Self::JwsInspect(v) => {
                     map.serialize_entry("jwsInspect", &**v)?;
+                }
+                Self::JwsFrameUnauthenticated(v) => {
+                    map.serialize_entry("jwsFrameUnauthenticated", &**v)?;
+                }
+                Self::JwsComposeUnauthenticated(v) => {
+                    map.serialize_entry("jwsComposeUnauthenticated", &**v)?;
                 }
                 Self::JwtSignWithProvider(v) => {
                     map.serialize_entry("jwtSignWithProvider", &**v)?;

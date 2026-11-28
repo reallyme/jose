@@ -94,6 +94,14 @@ fn schema_parity_and_invalid_values() {
             Contract::JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256,
             JoseOperationKind::JwkThumbprintSha256,
         ),
+        (
+            Contract::JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED,
+            JoseOperationKind::JwsFrameUnauthenticated,
+        ),
+        (
+            Contract::JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED,
+            JoseOperationKind::JwsComposeUnauthenticated,
+        ),
     ];
     for (contract, native) in cases {
         assert_eq!(

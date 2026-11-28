@@ -12,6 +12,135 @@ option java_outer_classname = "JoseProto";
 option java_package = "me.really.jose.v1";
 option swift_prefix = "ReallyMeProto";
 
+// Character admission never decodes, canonicalizes, or authenticates members.
+enum JoseJwsTransportCharacterPolicy {
+  JOSE_JWS_TRANSPORT_CHARACTER_POLICY_UNSPECIFIED = 0;
+  JOSE_JWS_TRANSPORT_CHARACTER_POLICY_OPAQUE_UTF8 = 100;
+  JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII = 101;
+  // Matches Rust's is_ascii_whitespace: TAB, LF, FF, CR and SPACE. In
+  // particular, VT is admitted, preserving existing transport admission.
+  JOSE_JWS_TRANSPORT_CHARACTER_POLICY_ASCII_WITHOUT_WHITESPACE = 102;
+  // Only A-Z, a-z, 0-9, '-' and '_'; no padding or canonicality requirement.
+  JOSE_JWS_TRANSPORT_CHARACTER_POLICY_BASE64URL_ALPHABET = 103;
+}
+
+message JoseJwsTransportMemberPolicy {
+  JoseJwsTransportCharacterPolicy characters = 1;
+  bool allow_empty = 2;
+}
+
+// Each member independently selects empty-string and character admission.
+message JoseJwsTransportPolicy {
+  JoseJwsTransportMemberPolicy protected_header = 1;
+  JoseJwsTransportMemberPolicy payload = 2;
+  JoseJwsTransportMemberPolicy signature = 3;
+}
+
+// Required caller budget in UTF-8 bytes, without a verification-limit clamp.
+message JoseJwsTransportFrameBudgets {
+  optional uint64 max_input_bytes = 1;
+}
+
+message JoseJwsTransportComposeBudgets {
+  // Aggregate UTF-8 bytes of the three member strings, excluding inserted dots.
+  // Explicit zero admits three empty members when their policies allow them.
+  optional uint64 max_input_bytes = 1;
+  // UTF-8 bytes of the result, including the two inserted dots.
+  optional uint64 max_output_bytes = 2;
+}
+
+// Exactly two separators are required. The original input is never decoded.
+// Rust adapter: jws/transport/frame.rs#frame_compact_jws_unauthenticated
+// Rust view: jws/transport/frame.rs#FrameCompactJwsRequest
+message JoseJwsTransportFrameRequest {
+  // SENSITIVE: encoded claims or other caller-owned transport data.
+  string compact = 1;
+  JoseJwsTransportPolicy policy = 2;
+  JoseJwsTransportFrameBudgets budgets = 3;
+}
+
+// Byte offsets into the original UTF-8 compact string, never an authenticated
+// receipt. Header is [0, protected_header_end), payload starts one byte later
+// and ends at payload_end; signature starts at signature_start and continues
+// to input end. Signing input is [0, payload_end). Offsets borrow no ownership.
+// Rust view: jws/transport/frame.rs#UnauthenticatedCompactJwsView
+message JoseJwsTransportFrameResult {
+  uint64 protected_header_end = 1;
+  uint64 payload_end = 2;
+  uint64 signature_start = 3;
+}
+
+// Join supplied member strings verbatim with two inserted dots. Member text
+// can itself contain dots when the selected character policy permits them;
+// the result may therefore fail subsequent framing or strict JOSE inspection.
+// JSON object parsing and application-profile policy remain caller-owned.
+// Rust adapter: jws/transport/compose.rs#compose_compact_jws_unauthenticated
+// Rust view: jws/transport/compose.rs#ComposeCompactJwsRequest
+message JoseJwsTransportComposeRequest {
+  // SENSITIVE: original member text; absence differs from an admitted empty value.
+  optional string protected_header = 1;
+  // SENSITIVE: encoded or opaque payload text; never decoded by transport.
+  optional string payload = 2;
+  // SENSITIVE: original signature text; no cryptographic assertion is made.
+  optional string signature = 3;
+  JoseJwsTransportPolicy policy = 4;
+  JoseJwsTransportComposeBudgets budgets = 5;
+}
+
+// Rust view: jws/transport/compose.rs#UnauthenticatedCompactJws
+message JoseJwsTransportCompactResult {
+  // SENSITIVE: exact forwarded members, with no authentication implication.
+  string compact = 1;
+}
+
+message JoseJwsTransportFrameResponse {
+  oneof outcome {
+    JoseJwsTransportFrameResult result = 1;
+    JoseError error = 2;
+  }
+  // UNSPECIFIED on success or an envelope/backend failure; otherwise this
+  // operation-local reason must project exactly to the JoseError stack code.
+  JoseJwsTransportErrorReason transport_reason = 3;
+}
+
+message JoseJwsTransportComposeResponse {
+  oneof outcome {
+    JoseJwsTransportCompactResult result = 1;
+    JoseError error = 2;
+  }
+  // UNSPECIFIED on success or an envelope/backend failure; otherwise this
+  // operation-local reason must project exactly to the JoseError stack code.
+  JoseJwsTransportErrorReason transport_reason = 3;
+}
+
+// Operation-local transport reasons. Their stack projection uses distinct
+// JoseErrorReason values; these numbers must not be used as JOSE stack codes.
+enum JoseJwsTransportErrorReason {
+  JOSE_JWS_TRANSPORT_ERROR_REASON_UNSPECIFIED = 0;
+  // Rust transport failure: JwsTransportErrorReason::MissingPolicy
+  JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_POLICY = 101;
+  // Rust transport failure: JwsTransportErrorReason::InvalidCharacterPolicy
+  JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTER_POLICY = 102;
+  // Rust transport failure: JwsTransportErrorReason::MissingBudget
+  JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_BUDGET = 103;
+  // Rust transport failure: JwsTransportErrorReason::MissingMember
+  JOSE_JWS_TRANSPORT_ERROR_REASON_MISSING_MEMBER = 104;
+  // Rust transport failure: JwsTransportErrorReason::InputTooLarge
+  JOSE_JWS_TRANSPORT_ERROR_REASON_INPUT_TOO_LARGE = 110;
+  // Rust transport failure: JwsTransportErrorReason::OutputTooLarge
+  JOSE_JWS_TRANSPORT_ERROR_REASON_OUTPUT_TOO_LARGE = 111;
+  // Rust transport failure: JwsTransportErrorReason::InvalidFraming
+  JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_FRAMING = 120;
+  // Rust transport failure: JwsTransportErrorReason::EmptyMember
+  JOSE_JWS_TRANSPORT_ERROR_REASON_EMPTY_MEMBER = 121;
+  // Rust transport failure: JwsTransportErrorReason::InvalidCharacters
+  JOSE_JWS_TRANSPORT_ERROR_REASON_INVALID_CHARACTERS = 122;
+  // Rust transport failure: JwsTransportErrorReason::LengthOverflow
+  JOSE_JWS_TRANSPORT_ERROR_REASON_LENGTH_OVERFLOW = 900;
+  // Rust transport failure: JwsTransportErrorReason::Allocation
+  JOSE_JWS_TRANSPORT_ERROR_REASON_ALLOCATION = 901;
+}
+
 // JoseError is the public, non-PII error envelope for JOSE boundary failures.
 // The oneof keeps caller-owned input/primitive failures, provider availability
 // failures, and backend/internal failures distinct while JoseErrorReason keeps
@@ -132,6 +261,28 @@ enum JoseErrorReason {
   // Rust failure: JwsSignErrorReason::BadDerSignature
   // Rust failure: JwsEs256Error::BadDerSignature
   JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE = 161;
+
+  // Unauthenticated JWS transport admission: 180-199.
+  // Rust failure: JwsTransportErrorReason::MissingPolicy
+  JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY = 180;
+  // Rust failure: JwsTransportErrorReason::InvalidCharacterPolicy
+  JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY = 181;
+  // Rust failure: JwsTransportErrorReason::MissingBudget
+  JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET = 182;
+  // Rust failure: JwsTransportErrorReason::MissingMember
+  JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER = 183;
+  // Rust failure: JwsTransportErrorReason::InputTooLarge
+  JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE = 184;
+  // Rust failure: JwsTransportErrorReason::OutputTooLarge
+  JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE = 185;
+  // Rust failure: JwsTransportErrorReason::EmptyMember
+  JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER = 186;
+  // Rust failure: JwsTransportErrorReason::InvalidCharacters
+  JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS = 187;
+  // Rust failure: JwsTransportErrorReason::LengthOverflow
+  JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW = 188;
+  // Rust failure: JwsTransportErrorReason::InvalidFraming
+  JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING = 189;
 
   // Compact JWE structure and segment encoding: 200-219.
 
@@ -312,6 +463,8 @@ enum JoseErrorReason {
   JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_SERIALIZATION = 940;
   // Rust failure: JwkThumbprintErrorReason::Allocation
   JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION = 941;
+  // Rust failure: JwsTransportErrorReason::Allocation
+  JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION = 950;
 }
 
 // Rust selector: JwsAlgorithm; crate; provider; PROVIDER_UNSUPPORTED
@@ -423,6 +576,8 @@ message JoseOperationResponse {
     JoseJwsSignResponse jws_sign_with_provider = 1013;
     JoseJwsVerifyResponse jws_verify_with_provider = 1014;
     JoseJwsInspectResponse jws_inspect = 1015;
+    JoseJwsTransportFrameResponse jws_frame_unauthenticated = 1016;
+    JoseJwsTransportComposeResponse jws_compose_unauthenticated = 1017;
     JoseJwtSignWithProviderResponse jwt_sign_with_provider = 2010;
     JoseJwtClaimsParseResponse jwt_claims_parse = 2011;
     JoseJweDeriveKeyResponse jwe_derive_key = 3010;
@@ -498,6 +653,8 @@ message JoseOperationRequest {
     JoseJwsSignWithProviderRequest jws_sign_with_provider = 1013;
     JoseJwsVerifyWithProviderRequest jws_verify_with_provider = 1014;
     JoseJwsInspectRequest jws_inspect = 1015;
+    JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016;
+    JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017;
     // Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
     // Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
     JoseJwtSignWithProviderRequest jwt_sign_with_provider = 2010;
@@ -1210,6 +1367,10 @@ enum JoseOperationKind {
   // Append native selector bindings to preserve existing Rust discriminants.
   // Rust variant: JoseOperationKind.JwkThumbprintSha256
   JOSE_OPERATION_KIND_JWK_THUMBPRINT_SHA256 = 4000;
+  // Rust variant: JoseOperationKind.JwsFrameUnauthenticated
+  JOSE_OPERATION_KIND_JWS_FRAME_UNAUTHENTICATED = 1016;
+  // Rust variant: JoseOperationKind.JwsComposeUnauthenticated
+  JOSE_OPERATION_KIND_JWS_COMPOSE_UNAUTHENTICATED = 1017;
 }
 
 // Semantic native transport classes; C ABI numeric representations remain an

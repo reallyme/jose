@@ -9,7 +9,7 @@ RSA JWS/JWE, AES-KW, PBES2, and JWE JSON serialization are unsupported.
 
 ```toml
 [dependencies]
-reallyme-jose = "0.6.0"
+reallyme-jose = "0.7.0"
 ```
 
 `Algorithm` is re-exported for callers selecting JWT algorithms.
@@ -34,6 +34,30 @@ Quotes, backslashes, and control characters are JSON-escaped; RFC 7638 section
 3.3 specifies only unescaped values. Errors use `JwkThumbprintErrorReason`.
 Canonical JSON and digest owners zeroize on drop; borrowed inputs remain
 caller-owned.
+
+## Unauthenticated compact transport
+
+`jws::transport::frame_compact_jws_unauthenticated` borrows the original encoded
+header, payload, signature and signing-input slices. It requires exactly two
+dots. Each member independently selects empty-string admission and opaque
+UTF-8, ASCII, ASCII without Rust ASCII whitespace, or base64url-alphabet
+admission. Alphabet admission does not decode or require canonical base64url.
+
+`compose_compact_jws_unauthenticated` joins three supplied strings verbatim with
+two inserted dots and returns a zeroizing owner. An opaque member may contain
+dots, whitespace or Unicode; the composed result may fail subsequent strict
+inspection. Neither API authenticates data or creates an authentication receipt.
+SD-JWT disclosure separation and application-profile policy remain caller-owned.
+
+Supply explicit UTF-8 byte budgets. Framing limits the complete input;
+composition separately limits aggregate member input and output including the
+two inserted dots. These operations and typed `api::execute` requests are not
+clamped to the 1 MiB verification limit. The existing serialized `wire` entrypoints
+retain their separate envelope limits. Borrowed inputs remain caller-owned;
+owned outputs and generated request fields zeroize on drop and redact diagnostics.
+`JwsTransportErrorReason::reason()` returns the transport-local protobuf code;
+use `stack_reason()` for its distinct `JoseErrorReason` when forwarding a JOSE
+domain error across component boundaries.
 
 ## Verification and encryption requirements
 

@@ -562,6 +562,54 @@ public object JoseOperationRequestKt {
     }
 
     /**
+     * `.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];`
+     */
+    public var jwsFrameUnauthenticated: me.really.jose.v1.JoseJwsTransportFrameRequest
+      @kotlin.jvm.JvmName("getJwsFrameUnauthenticated")
+        get() = _builder.jwsFrameUnauthenticated
+      @kotlin.jvm.JvmName("setJwsFrameUnauthenticated")
+        set(value) {
+        _builder.jwsFrameUnauthenticated = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];`
+     */
+    public fun clearJwsFrameUnauthenticated() {
+      _builder.clearJwsFrameUnauthenticated()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseJwsTransportFrameRequest jws_frame_unauthenticated = 1016 [json_name = "jwsFrameUnauthenticated"];`
+     * @return Whether the jwsFrameUnauthenticated field is set.
+     */
+    public fun hasJwsFrameUnauthenticated(): kotlin.Boolean {
+      return _builder.hasJwsFrameUnauthenticated()
+    }
+
+    /**
+     * `.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];`
+     */
+    public var jwsComposeUnauthenticated: me.really.jose.v1.JoseJwsTransportComposeRequest
+      @kotlin.jvm.JvmName("getJwsComposeUnauthenticated")
+        get() = _builder.jwsComposeUnauthenticated
+      @kotlin.jvm.JvmName("setJwsComposeUnauthenticated")
+        set(value) {
+        _builder.jwsComposeUnauthenticated = value
+      }
+    /**
+     * `.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];`
+     */
+    public fun clearJwsComposeUnauthenticated() {
+      _builder.clearJwsComposeUnauthenticated()
+    }
+    /**
+     * `.reallyme.jose.v1.JoseJwsTransportComposeRequest jws_compose_unauthenticated = 1017 [json_name = "jwsComposeUnauthenticated"];`
+     * @return Whether the jwsComposeUnauthenticated field is set.
+     */
+    public fun hasJwsComposeUnauthenticated(): kotlin.Boolean {
+      return _builder.hasJwsComposeUnauthenticated()
+    }
+
+    /**
      * ```
      * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer
      * Rust adapter: jwt/sign.rs#encode_signed_jwt_with_signer_and_header_options
@@ -853,6 +901,12 @@ public val me.really.jose.v1.JoseOperationRequestOrBuilder.jwsVerifyWithProvider
 
 public val me.really.jose.v1.JoseOperationRequestOrBuilder.jwsInspectOrNull: me.really.jose.v1.JoseJwsInspectRequest?
   get() = if (hasJwsInspect()) getJwsInspect() else null
+
+public val me.really.jose.v1.JoseOperationRequestOrBuilder.jwsFrameUnauthenticatedOrNull: me.really.jose.v1.JoseJwsTransportFrameRequest?
+  get() = if (hasJwsFrameUnauthenticated()) getJwsFrameUnauthenticated() else null
+
+public val me.really.jose.v1.JoseOperationRequestOrBuilder.jwsComposeUnauthenticatedOrNull: me.really.jose.v1.JoseJwsTransportComposeRequest?
+  get() = if (hasJwsComposeUnauthenticated()) getJwsComposeUnauthenticated() else null
 
 public val me.really.jose.v1.JoseOperationRequestOrBuilder.jwtSignWithProviderOrNull: me.really.jose.v1.JoseJwtSignWithProviderRequest?
   get() = if (hasJwtSignWithProvider()) getJwtSignWithProvider() else null

@@ -54,6 +54,36 @@ pub const fn error_branch(reason: JoseErrorReason) -> Option<JoseErrorBranch> {
         JoseErrorReason::JOSE_ERROR_REASON_JWS_BAD_DER_SIGNATURE => {
             Some(JoseErrorBranch::Primitive)
         }
+        JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_POLICY => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTER_POLICY => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_BUDGET => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_MISSING_MEMBER => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_INPUT_TOO_LARGE => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_OUTPUT_TOO_LARGE => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_EMPTY_MEMBER => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_CHARACTERS => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_LENGTH_OVERFLOW => {
+            Some(JoseErrorBranch::Primitive)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_JWS_TRANSPORT_INVALID_FRAMING => {
+            Some(JoseErrorBranch::Primitive)
+        }
         JoseErrorReason::JOSE_ERROR_REASON_JWE_INVALID_HEADER => Some(JoseErrorBranch::Primitive),
         JoseErrorReason::JOSE_ERROR_REASON_JWE_UNSUPPORTED_KEY_MANAGEMENT_ALGORITHM => {
             Some(JoseErrorBranch::Primitive)
@@ -225,6 +255,9 @@ pub const fn error_branch(reason: JoseErrorReason) -> Option<JoseErrorBranch> {
             Some(JoseErrorBranch::Backend)
         }
         JoseErrorReason::JOSE_ERROR_REASON_BACKEND_JWK_THUMBPRINT_ALLOCATION => {
+            Some(JoseErrorBranch::Backend)
+        }
+        JoseErrorReason::JOSE_ERROR_REASON_BACKEND_JWS_TRANSPORT_ALLOCATION => {
             Some(JoseErrorBranch::Backend)
         }
         JoseErrorReason::Unspecified => None,
