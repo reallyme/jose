@@ -97,7 +97,7 @@ const releaseReadinessCommand = "node .release-readiness/scripts/run-consumer-ch
 const releaseRust = "1.100.0";
 const minimumRust = "1.100.0";
 const rustWorkflow = ".github/workflows/rust-ci.yml";
-const cargoDenyInstall = `cargo +${releaseRust} install cargo-deny --version '=0.22.0' --locked --force`;
+const cargoDenyInstall = `cargo +${releaseRust} install cargo-deny --version '=0.22.2' --locked --force`;
 const releaseRustTest = `cargo +${releaseRust} test --locked --workspace --all-features`;
 const rustReleasePolicy = {
   release: { workflow: rustWorkflow, job: "rust", step: "Test on the release toolchain" },
@@ -1207,7 +1207,7 @@ assertContains(".github/workflows/rust-ci.yml", "CARGO_NEXTEST_VERSION: 0.9.152"
 assertContains(".github/workflows/crates-package-preflight.yml", "CARGO_NEXTEST_VERSION: 0.9.152");
 assertContains(
   ".github/workflows/crates-package-preflight.yml",
-  "cargo-deny@0.22.0",
+  cargoDenyInstall,
 );
 assertContains(
   ".github/workflows/crates-package-preflight.yml",

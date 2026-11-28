@@ -158,7 +158,7 @@
       "kind": "crate",
       "path": "Cargo.lock",
       "name": "allocator-api2",
-      "current": "0.2.21",
+      "current": "0.2.22",
       "latest": "0.4.0",
       "reason": "Required by hashbrown 0.17.2 (^0.2.9). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
       "expires": "2026-12-21"
@@ -356,7 +356,7 @@
       "kind": "crate",
       "path": "fuzz/Cargo.lock",
       "name": "allocator-api2",
-      "current": "0.2.21",
+      "current": "0.2.22",
       "latest": "0.4.0",
       "reason": "Required by hashbrown 0.17.2 (^0.2.9). The latest stable release is outside those upstream constraints; replacing it requires compatible upstream releases.",
       "expires": "2026-12-21"

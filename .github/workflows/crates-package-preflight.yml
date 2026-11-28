@@ -29,7 +29,7 @@ concurrency:
 env:
   CARGO_AUDIT_VERSION: 0.23.0
   CARGO_CHECK_EXTERNAL_TYPES_VERSION: 0.5.0
-  CARGO_DENY_VERSION: 0.22.0
+  CARGO_DENY_VERSION: 0.22.2
   CARGO_NEXTEST_VERSION: 0.9.152
   CARGO_SEMVER_CHECKS_VERSION: 0.51.0
   EXTERNAL_TYPES_NIGHTLY: nightly-2026-03-20
@@ -62,14 +62,14 @@ jobs:
           toolchain: 1.100.0
 
       - name: Install dependency maintenance tools
-        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
+        uses: taiki-e/install-action@073e1fd0bc889c9aee68dbaaa927cde1b5653a83 # v2.90.11
         with:
           tool: cargo-audit@0.23.0
           fallback: none
 
       - name: Install pinned dependency update checker
         # The current installer catalog does not yet include this release.
-        run: cargo +1.100.0 install cargo-outdated --version '=0.19.0' --locked
+        run: cargo +1.100.0 install cargo-outdated --version '=0.20.0' --locked
 
       - name: Install Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -145,23 +145,21 @@ jobs:
           key: buffa-${{ env.BUFFA_VERSION }}
 
       - name: Install nextest
-        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
+        uses: taiki-e/install-action@073e1fd0bc889c9aee68dbaaa927cde1b5653a83 # v2.90.11
         with:
           tool: cargo-nextest@0.9.152
 
       - name: Install cargo-deny
-        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
-        with:
-          tool: cargo-deny@0.22.0
-          fallback: none
+        # The patched release is newer than the pinned installer catalog.
+        run: cargo +1.100.0 install cargo-deny --version '=0.22.2' --locked --force
 
       - name: Install cargo-audit
-        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
+        uses: taiki-e/install-action@073e1fd0bc889c9aee68dbaaa927cde1b5653a83 # v2.90.11
         with:
           tool: cargo-audit@0.23.0
 
       - name: Install external-type checker
-        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
+        uses: taiki-e/install-action@073e1fd0bc889c9aee68dbaaa927cde1b5653a83 # v2.90.11
         with:
           tool: cargo-check-external-types@0.5.0
 
@@ -169,7 +167,7 @@ jobs:
         run: rustup toolchain install "$EXTERNAL_TYPES_NIGHTLY" --profile minimal
 
       - name: Install wasm-bindgen test runner
-        uses: taiki-e/install-action@fe3acb53a98b62c772db35de75ce0e4595e7ca8c # v2.90.8
+        uses: taiki-e/install-action@073e1fd0bc889c9aee68dbaaa927cde1b5653a83 # v2.90.11
         with:
           tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}
 
